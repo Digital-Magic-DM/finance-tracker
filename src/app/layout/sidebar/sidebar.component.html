@@ -1,0 +1,46 @@
+<aside class="sidebar">
+  <!-- Brand Header -->
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+          <path d="M16 2L29 9V23L16 30L3 23V9L16 2Z" fill="url(#sg)" />
+          <path d="M10 16L14 20L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="sg" x1="3" y1="2" x2="29" y2="30" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#6C63FF"/>
+              <stop offset="1" stop-color="#00D4AA"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <span class="logo-text">DM Finance</span>
+    </div>
+    <button class="close-btn btn-icon" (click)="closeSidebar.emit()">✕</button>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    <span class="nav-label">MAIN MENU</span>
+    @for (item of navItems; track item.route) {
+      <a
+        class="nav-item"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        (click)="closeSidebar.emit()">
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-text">{{ item.label }}</span>
+        <span class="nav-arrow">›</span>
+      </a>
+    }
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <button class="sign-out-btn" (click)="signOut()">
+      <span>⏻</span>
+      <span>Sign Out</span>
+    </button>
+    <p class="version">v1.0.0 · DM Finance</p>
+  </div>
+</aside>

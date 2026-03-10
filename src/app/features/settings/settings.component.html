@@ -1,0 +1,114 @@
+<div class="settings-page">
+  <div class="page-header">
+    <h1>Settings</h1>
+  </div>
+
+  @if (user$ | async; as user) {
+    <!-- Profile card -->
+    <div class="card profile-card">
+      <div class="profile-header">
+        @if (user.photoURL) {
+          <img [src]="user.photoURL" [alt]="user.displayName || 'User'" class="profile-avatar" referrerpolicy="no-referrer" />
+        } @else {
+          <div class="profile-avatar-fallback">
+            {{ (user.displayName || user.email || 'U').charAt(0).toUpperCase() }}
+          </div>
+        }
+        <div class="profile-info">
+          <h2>{{ user.displayName || 'User' }}</h2>
+          <p>{{ user.email }}</p>
+          <span class="badge badge-success" style="margin-top:8px">● Google Account Connected</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="settings-grid">
+      <div class="card setting-stat">
+        <div class="ss-label">Total Assets</div>
+        <div class="ss-value">{{ assets().length }}</div>
+      </div>
+      <div class="card setting-stat">
+        <div class="ss-label">Total Transactions</div>
+        <div class="ss-value">{{ transactions().length }}</div>
+      </div>
+      <div class="card setting-stat">
+        <div class="ss-label">Theme</div>
+        <div class="ss-value">{{ themeService.isDark() ? '🌙 Dark' : '☀️ Light' }}</div>
+      </div>
+    </div>
+
+    <!-- Settings Options -->
+    <div class="card settings-list">
+      <!-- Theme Toggle -->
+      <div class="setting-row">
+        <div class="setting-info">
+          <h4>Dark Mode</h4>
+          <p>Toggle between dark and light theme</p>
+        </div>
+        <button class="toggle-btn" [class.on]="themeService.isDark()" (click)="themeService.toggle()">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+
+      <!-- Export CSV -->
+      <div class="setting-row">
+        <div class="setting-info">
+          <h4>Export Transactions</h4>
+          <p>Download your transactions as a CSV file</p>
+        </div>
+        <button class="btn btn-secondary" (click)="exportCSV()">
+          <span class="material-icons" style="font-size:18px">download</span> Export CSV
+        </button>
+      </div>
+
+      <!-- Import Portfolio -->
+      <div class="setting-row">
+        <div class="setting-info">
+          <h4>Import Portfolio</h4>
+          <p>Import mutual funds &amp; stocks from Groww or INDmoney</p>
+        </div>
+        <button class="btn btn-secondary" (click)="showImport.set(true)">
+          <span class="material-icons" style="font-size:18px">cloud_upload</span> Import CSV
+        </button>
+      </div>
+
+      <!-- Sign Out -->
+      <div class="setting-row danger">
+        <div class="setting-info">
+          <h4>Sign Out</h4>
+          <p>Sign out of your DM Finance account</p>
+        </div>
+        <button class="btn btn-danger" (click)="signOut()">
+          <span class="material-icons" style="font-size:18px">power_settings_new</span> Sign Out
+        </button>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="card about-card">
+      <div class="about-logo">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <path d="M16 2L29 9V23L16 30L3 23V9L16 2Z" fill="url(#agrad)" />
+          <path d="M10 16L14 20L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="agrad" x1="3" y1="2" x2="29" y2="30" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#6C63FF"/><stop offset="1" stop-color="#00D4AA"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="about-name">DM Finance</span>
+      </div>
+      <p>Personal Finance Dashboard · v1.0.0</p>
+      <p style="margin-top:4px">Built with Angular 20 · Firebase · Chart.js</p>
+    </div>
+  }
+</div>
+
+<!-- Import Data Modal -->
+@if (showImport()) {
+  <app-import-data
+    (closed)="showImport.set(false)"
+    (imported)="onImportComplete($event)"
+  />
+}

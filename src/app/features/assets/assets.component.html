@@ -1,0 +1,123 @@
+<div class="assets-page">
+  <div class="page-header">
+    <div>
+      <h1>Assets</h1>
+      <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">
+        Total Portfolio Value: <strong style="color:var(--accent-primary)">{{ totalValue() | currency:'INR':'symbol':'1.0-0' }}</strong>
+      </p>
+    </div>
+    <button class="btn btn-primary" id="add-asset-btn" (click)="openAdd()">
+      <span>+</span> Add Asset
+    </button>
+  </div>
+
+  <!-- Asset cards grid -->
+  @if (assets().length > 0) {
+    <div class="assets-grid">
+      @for (asset of assets(); track asset.id) {
+        <div class="card asset-card">
+          <div class="asset-header">
+            <div class="asset-type-badge" [style.background]="getColor(asset.type) + '20'" [style.color]="getColor(asset.type)">
+              {{ asset.type }}
+            </div>
+            <div class="asset-actions">
+              <button class="btn-icon" (click)="openEdit(asset)" title="Edit">✎</button>
+              <button class="btn-icon" style="color: var(--accent-danger)" (click)="delete(asset.id!)" title="Delete">✕</button>
+            </div>
+          </div>
+
+          <div class="asset-body">
+            <h3 class="asset-name">{{ asset.name }}</h3>
+            @if (asset.symbol) {
+              <span class="asset-symbol">{{ asset.symbol }}</span>
+            }
+
+            <div class="asset-value">{{ getAssetValue(asset) | currency:'INR':'symbol':'1.0-0' }}</div>
+
+            <div class="asset-qty">{{ asset.quantity | number:'1.0-4' }} units · ₹{{ asset.currentPrice | number:'1.0-2' }}/unit</div>
+
+            <div class="asset-gain" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
+              {{ getGain(asset) >= 0 ? '▲' : '▼' }}
+              {{ getGainPct(asset) | number:'1.1-1' }}%
+              ({{ getGain(asset) | currency:'INR':'symbol':'1.0-0' }})
+            </div>
+          </div>
+
+          <div class="asset-footer">
+            <span>Avg. cost: {{ asset.buyPrice | currency:'INR':'symbol':'1.0-2' }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="card empty-state" style="margin-top: 40px;">
+      <span class="empty-icon">💼</span>
+      <span class="empty-title">No assets yet</span>
+      <span class="empty-text">Add your first asset to start tracking your portfolio.</span>
+      <button class="btn btn-primary" style="margin-top:16px" (click)="openAdd()">+ Add Asset</button>
+    </div>
+  }
+</div>
+
+<!-- Add/Edit Modal -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingId() ? 'Edit' : 'Add' }} Asset</h3>
+        <button class="btn-icon" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Asset Name *</label>
+          <input class="form-control" type="text" [value]="form().name"
+            (input)="updateForm('name', $any($event.target).value)" placeholder="e.g. Reliance Industries" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type *</label>
+            <select class="form-control" [value]="form().type"
+              (change)="updateForm('type', $any($event.target).value)">
+              @for (t of assetTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Symbol</label>
+            <input class="form-control" type="text" [value]="form().symbol || ''"
+              (input)="updateForm('symbol', $any($event.target).value)" placeholder="e.g. TCS" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Quantity *</label>
+            <input class="form-control" type="number" [value]="form().quantity"
+              (input)="updateForm('quantity', +$any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label>Buy Price (₹) *</label>
+            <input class="form-control" type="number" [value]="form().buyPrice"
+              (input)="updateForm('buyPrice', +$any($event.target).value)" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Current Price (₹) *</label>
+          <input class="form-control" type="number" [value]="form().currentPrice"
+            (input)="updateForm('currentPrice', +$any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input class="form-control" type="text" [value]="form().notes || ''"
+            (input)="updateForm('notes', $any($event.target).value)" placeholder="Optional" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="saving()">
+          {{ saving() ? 'Saving...' : (editingId() ? 'Update' : 'Add Asset') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

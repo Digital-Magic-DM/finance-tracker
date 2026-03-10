@@ -1,0 +1,208 @@
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+
+    @media (max-width: 1100px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 560px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.net-worth-card {
+    border-top: 2px solid var(--accent-primary);
+}
+
+/* Charts Grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Bottom Grid */
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Card header */
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    h3 {
+        font-size: 16px;
+        font-weight: 700;
+    }
+}
+
+.chart-card {
+    min-height: 300px;
+}
+
+/* Transaction list */
+.tx-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tx-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 8px;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+
+    &:hover {
+        background: var(--bg-card-hover);
+    }
+}
+
+.tx-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+
+    &.positive {
+        background: rgba(0, 212, 170, 0.12);
+        color: var(--accent-secondary);
+    }
+
+    &.negative {
+        background: rgba(255, 107, 107, 0.12);
+        color: var(--accent-danger);
+    }
+}
+
+.tx-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.tx-desc {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.tx-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.tx-amount {
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &.positive {
+        color: var(--accent-secondary);
+    }
+
+    &.negative {
+        color: var(--accent-danger);
+    }
+}
+
+/* Allocation list */
+.alloc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.alloc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alloc-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100px;
+    flex-shrink: 0;
+}
+
+.alloc-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.alloc-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.alloc-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-card-hover);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.alloc-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+.alloc-values {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 90px;
+}
+
+.alloc-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.alloc-pct {
+    font-size: 11px;
+    color: var(--text-muted);
+}

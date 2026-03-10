@@ -1,0 +1,19 @@
+<div class="app-shell">
+  <!-- Sidebar overlay for mobile -->
+  @if (sidebarOpen()) {
+    <div class="sidebar-overlay" (click)="closeSidebar()"></div>
+  }
+
+  <!-- Sidebar -->
+  <div class="sidebar-wrapper" [class.open]="sidebarOpen()">
+    <app-sidebar (closeSidebar)="closeSidebar()" />
+  </div>
+
+  <!-- Main content -->
+  <div class="main-wrapper">
+    <app-toolbar (sidebarToggle)="toggleSidebar()" />
+    <main class="content-area">
+      <router-outlet />
+    </main>
+  </div>
+</div>

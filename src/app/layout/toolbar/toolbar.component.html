@@ -1,0 +1,48 @@
+<header class="toolbar">
+  <!-- Menu toggle (mobile) -->
+  <button class="menu-btn btn-icon" id="sidebar-toggle" (click)="sidebarToggle.emit()" aria-label="Toggle sidebar">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+      <rect y="2" width="18" height="2" rx="1"/>
+      <rect y="8" width="12" height="2" rx="1"/>
+      <rect y="14" width="18" height="2" rx="1"/>
+    </svg>
+  </button>
+
+  <!-- Page title -->
+  <h2 class="page-title">{{ pageTitle() }}</h2>
+
+  <!-- Right actions -->
+  <div class="toolbar-actions">
+    <!-- Theme toggle -->
+    <button
+      class="btn-icon theme-btn"
+      id="theme-toggle"
+      (click)="themeService.toggle()"
+      [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
+      @if (themeService.isDark()) {
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
+        </svg>
+      } @else {
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        </svg>
+      }
+    </button>
+
+    <!-- User avatar -->
+    @if (user | async; as currentUser) {
+      <div class="user-info">
+        @if (currentUser.photoURL) {
+          <img [src]="currentUser.photoURL" [alt]="currentUser.displayName || 'User'" class="avatar" referrerpolicy="no-referrer" />
+        } @else {
+          <div class="avatar-placeholder">
+            {{ (currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase() }}
+          </div>
+        }
+        <span class="user-name">{{ currentUser.displayName?.split(' ')?.at(0) || 'User' }}</span>
+      </div>
+    }
+  </div>
+</header>

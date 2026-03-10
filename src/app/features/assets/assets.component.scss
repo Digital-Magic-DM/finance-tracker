@@ -1,0 +1,93 @@
+.assets-page {
+    animation: fadeIn 0.3s ease;
+}
+
+.assets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.asset-card {
+    padding: 20px;
+}
+
+.asset-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.asset-type-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+}
+
+.asset-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.asset-body {
+    margin-bottom: 16px;
+}
+
+.asset-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.asset-symbol {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: monospace;
+    background: var(--bg-card-hover);
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.asset-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.asset-qty {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.asset-gain {
+    font-size: 13px;
+    font-weight: 600;
+
+    &.positive {
+        color: var(--accent-secondary);
+    }
+
+    &.negative {
+        color: var(--accent-danger);
+    }
+}
+
+.asset-footer {
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}

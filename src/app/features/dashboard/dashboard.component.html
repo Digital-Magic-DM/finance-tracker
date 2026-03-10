@@ -1,0 +1,150 @@
+<div class="dashboard">
+  <!-- Stats Row -->
+  <div class="stats-grid">
+    <!-- Net Worth -->
+    <div class="card stat-card net-worth-card">
+      <div class="stat-icon" style="background: rgba(108,99,255,0.12)">💰</div>
+      <p class="stat-label">Total Net Worth</p>
+      <div class="stat-value">{{ totalNetWorth() | currency:'INR':'symbol':'1.0-0' }}</div>
+      <div class="stat-change" [class.positive]="totalGain() >= 0" [class.negative]="totalGain() < 0">
+        {{ totalGain() >= 0 ? '▲' : '▼' }}
+        {{ totalGainPct() | number:'1.1-1' }}%
+        ({{ totalGain() | currency:'INR':'symbol':'1.0-0' }})
+      </div>
+    </div>
+
+    <!-- Monthly Income -->
+    <div class="card stat-card">
+      <div class="stat-icon" style="background: rgba(0,212,170,0.12)">💵</div>
+      <p class="stat-label">Monthly Income</p>
+      <div class="stat-value" style="background: var(--gradient-green); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        {{ monthlyIncome() | currency:'INR':'symbol':'1.0-0' }}
+      </div>
+    </div>
+
+    <!-- Monthly Expense -->
+    <div class="card stat-card">
+      <div class="stat-icon" style="background: rgba(255,107,107,0.12)">💸</div>
+      <p class="stat-label">Monthly Expense</p>
+      <div class="stat-value" style="background: var(--gradient-danger); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        {{ monthlyExpense() | currency:'INR':'symbol':'1.0-0' }}
+      </div>
+    </div>
+
+    <!-- Total Assets -->
+    <div class="card stat-card">
+      <div class="stat-icon" style="background: rgba(255,215,0,0.12)">📦</div>
+      <p class="stat-label">Total Assets</p>
+      <div class="stat-value" style="background: var(--gradient-gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        {{ assets().length }}
+      </div>
+      <div class="stat-change positive">Across {{ allocations().length }} categories</div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="charts-grid">
+    <!-- Portfolio Allocation -->
+    <div class="card chart-card">
+      <div class="card-header">
+        <h3>Portfolio Allocation</h3>
+        <span class="badge badge-primary">{{ assets().length }} Assets</span>
+      </div>
+      @if (allocations().length > 0) {
+        <app-portfolio-chart [allocations]="allocations()" />
+      } @else {
+        <div class="empty-state">
+          <span class="empty-icon">📊</span>
+          <span class="empty-title">No assets yet</span>
+          <span class="empty-text">Add your first asset to see allocation</span>
+        </div>
+      }
+    </div>
+
+    <!-- Net Worth History -->
+    <div class="card chart-card">
+      <div class="card-header">
+        <h3>Net Worth History</h3>
+        <span class="badge badge-success">{{ networthHistory().length }} Days</span>
+      </div>
+      @if (networthHistory().length > 0) {
+        <app-networth-chart [data]="networthHistory()" />
+      } @else {
+        <div class="empty-state">
+          <span class="empty-icon">📈</span>
+          <span class="empty-title">Building history...</span>
+          <span class="empty-text">Visit daily to track your net worth</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Bottom Row -->
+  <div class="bottom-grid">
+    <!-- Recent Transactions -->
+    <div class="card recent-tx">
+      <div class="card-header">
+        <h3>Recent Transactions</h3>
+        <a routerLink="/transactions" class="btn btn-ghost" style="font-size:12px; padding: 6px 12px;">View All →</a>
+      </div>
+
+      @if (recentTransactions().length > 0) {
+        <div class="tx-list">
+          @for (tx of recentTransactions(); track tx.id) {
+            <div class="tx-item">
+              <div class="tx-icon" [class]="getTransactionClass(tx.type)">
+                {{ getTransactionIcon(tx.type) }}
+              </div>
+              <div class="tx-details">
+                <p class="tx-desc">{{ tx.description }}</p>
+                <span class="tx-meta">{{ tx.category }} · {{ formatDate(tx.date) | date:'MMM d' }}</span>
+              </div>
+              <div class="tx-amount" [class]="getTransactionClass(tx.type)">
+                {{ tx.type === 'Income' || tx.type === 'Sell' ? '+' : '-' }}
+                {{ tx.amount | currency:'INR':'symbol':'1.0-0' }}
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span class="empty-icon">🧾</span>
+          <span class="empty-title">No transactions yet</span>
+        </div>
+      }
+    </div>
+
+    <!-- Allocation details -->
+    <div class="card allocation-detail">
+      <div class="card-header">
+        <h3>Asset Breakdown</h3>
+        <a routerLink="/assets" class="btn btn-ghost" style="font-size:12px; padding: 6px 12px;">Manage →</a>
+      </div>
+
+      @if (allocations().length > 0) {
+        <div class="alloc-list">
+          @for (alloc of allocations(); track alloc.label) {
+            <div class="alloc-item">
+              <div class="alloc-info">
+                <div class="alloc-dot" [style.background]="alloc.color"></div>
+                <span class="alloc-label">{{ alloc.label }}</span>
+              </div>
+              <div class="alloc-bar-wrap">
+                <div class="alloc-bar" [style.width.%]="alloc.percentage" [style.background]="alloc.color"></div>
+              </div>
+              <div class="alloc-values">
+                <span class="alloc-value">{{ alloc.value | currency:'INR':'symbol':'1.0-0' }}</span>
+                <span class="alloc-pct">{{ alloc.percentage | number:'1.1-1' }}%</span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span class="empty-icon">◈</span>
+          <span class="empty-title">No assets yet</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>

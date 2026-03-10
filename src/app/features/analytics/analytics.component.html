@@ -1,0 +1,76 @@
+<div class="analytics-page">
+  <div class="page-header">
+    <h1>Analytics</h1>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-row">
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:rgba(0,212,170,0.12)">💰</div>
+      <p class="stat-label">Total Income</p>
+      <div class="stat-value" style="background:var(--gradient-green);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+        {{ totalIncome() | currency:'INR':'symbol':'1.0-0' }}
+      </div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:rgba(255,107,107,0.12)">💸</div>
+      <p class="stat-label">Total Expense</p>
+      <div class="stat-value" style="background:var(--gradient-danger);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+        {{ totalExpense() | currency:'INR':'symbol':'1.0-0' }}
+      </div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon" style="background:rgba(108,99,255,0.12)">📊</div>
+      <p class="stat-label">Savings Rate</p>
+      <div class="stat-value">{{ savingsRate() | number:'1.1-1' }}%</div>
+      <div class="stat-change" [class.positive]="savingsRate() >= 0" [class.negative]="savingsRate() < 0">
+        {{ savingsRate() >= 20 ? 'Great savings!' : 'Keep saving more' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Net Worth History Chart -->
+  <div class="card chart-section">
+    <div class="card-header">
+      <h3>Net Worth Over Time</h3>
+      <span class="badge badge-success">{{ networthHistory().length }} data points</span>
+    </div>
+    @if (networthHistory().length > 0) {
+      <app-networth-chart [data]="networthHistory()" [height]="300" />
+    } @else {
+      <div class="empty-state">
+        <span class="empty-icon">📈</span>
+        <span class="empty-title">No history yet</span>
+        <span class="empty-text">Visit daily to build your net worth history chart.</span>
+      </div>
+    }
+  </div>
+
+  <!-- Category Breakdown -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Expense by Category</h3>
+    </div>
+    @if (categoryBreakdown().length > 0) {
+      <div class="category-list">
+        @for (item of categoryBreakdown(); track item.cat) {
+          <div class="cat-row">
+            <div class="cat-name">{{ item.cat }}</div>
+            <div class="cat-bar-wrap">
+              <div class="cat-bar" [style.width.%]="item.pct"></div>
+            </div>
+            <div class="cat-values">
+              <span class="cat-amount">{{ item.val | currency:'INR':'symbol':'1.0-0' }}</span>
+              <span class="cat-pct">{{ item.pct | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <span class="empty-icon">🗂️</span>
+        <span class="empty-title">No expense data</span>
+      </div>
+    }
+  </div>
+</div>

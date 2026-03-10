@@ -1,0 +1,140 @@
+<div class="transactions-page">
+  <div class="page-header">
+    <h1>Transactions</h1>
+    <button class="btn btn-primary" id="add-tx-btn" (click)="openAdd()">+ Add Transaction</button>
+  </div>
+
+  <!-- Summary -->
+  <div class="tx-summary">
+    <div class="card summary-item">
+      <div class="s-label">Total Income</div>
+      <div class="s-value positive">{{ totalIncome() | currency:'INR':'symbol':'1.0-0' }}</div>
+    </div>
+    <div class="card summary-item">
+      <div class="s-label">Total Expense</div>
+      <div class="s-value negative">{{ totalExpense() | currency:'INR':'symbol':'1.0-0' }}</div>
+    </div>
+    <div class="card summary-item">
+      <div class="s-label">Net Flow</div>
+      <div class="s-value" [class.positive]="totalIncome() >= totalExpense()" [class.negative]="totalIncome() < totalExpense()">
+        {{ (totalIncome() - totalExpense()) | currency:'INR':'symbol':'1.0-0' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card filters-bar">
+    <div class="filter-group">
+      @for (type of txTypes; track type) {
+        <button class="filter-btn" [class.active]="filterType() === type"
+          (click)="filterType.set(type)">{{ type }}</button>
+      }
+    </div>
+    <input class="form-control search-input" type="text" placeholder="🔍 Search..."
+      [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" />
+  </div>
+
+  <!-- Transaction List -->
+  <div class="card tx-table-card">
+    @if (filtered().length > 0) {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th style="text-align:right">Amount</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tx of filtered(); track tx.id) {
+            <tr>
+              <td>
+                <div class="tx-row-desc">
+                  <span class="tx-type-icon" [class]="getTypeClass(tx.type)">{{ getTypeIcon(tx.type) }}</span>
+                  {{ tx.description }}
+                </div>
+              </td>
+              <td><span class="badge badge-primary">{{ tx.category }}</span></td>
+              <td>{{ tx.type }}</td>
+              <td>{{ formatDate(tx.date) | date:'MMM d, yyyy' }}</td>
+              <td style="text-align:right">
+                <span [class]="getTypeClass(tx.type)" style="font-weight:700">
+                  {{ tx.type === 'Income' || tx.type === 'Sell' ? '+' : '-' }}
+                  {{ tx.amount | currency:'INR':'symbol':'1.0-0' }}
+                </span>
+              </td>
+              <td>
+                <div style="display:flex; gap:6px; justify-content:flex-end">
+                  <button class="btn-icon" (click)="openEdit(tx)">✎</button>
+                  <button class="btn-icon" style="color:var(--accent-danger)" (click)="delete(tx.id!)">✕</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <div class="empty-state">
+        <span class="empty-icon">🧾</span>
+        <span class="empty-title">No transactions found</span>
+        <span class="empty-text">Try changing filters or add a new transaction.</span>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal -->
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingId() ? 'Edit' : 'Add' }} Transaction</h3>
+        <button class="btn-icon" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Type</label>
+          <select class="form-control" [value]="form().type"
+            (change)="updateForm('type', $any($event.target).value)">
+            @for (t of ['Income','Expense','Buy','Sell']; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description *</label>
+          <input class="form-control" type="text" [value]="form().description"
+            (input)="updateForm('description', $any($event.target).value)" placeholder="e.g. Monthly salary" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Amount (₹) *</label>
+            <input class="form-control" type="number" [value]="form().amount"
+              (input)="updateForm('amount', +$any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select class="form-control" [value]="form().category"
+              (change)="updateForm('category', $any($event.target).value)">
+              @for (c of categories; track c) { <option [value]="c">{{ c }}</option> }
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input class="form-control" type="text" [value]="form().notes || ''"
+            (input)="updateForm('notes', $any($event.target).value)" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="saving()">
+          {{ saving() ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
