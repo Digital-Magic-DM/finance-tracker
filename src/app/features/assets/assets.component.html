@@ -4,11 +4,20 @@
       <h1>Assets</h1>
       <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">
         Total Portfolio Value: <strong style="color:var(--accent-primary)">{{ totalValue() | currency:'INR':'symbol':'1.0-0' }}</strong>
+        @if (lastRefreshed()) {
+          <span style="margin-left:12px; font-size:11px; opacity:0.6;">Updated: {{ lastRefreshed() }}</span>
+        }
       </p>
     </div>
-    <button class="btn btn-primary" id="add-asset-btn" (click)="openAdd()">
-      <span>+</span> Add Asset
-    </button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-ghost" [disabled]="refreshing()" (click)="refreshPrices()" title="Fetch live prices">
+        <span class="material-icons" [class.spin]="refreshing()" style="font-size:18px; vertical-align:middle;">sync</span>
+        {{ refreshing() ? 'Refreshing...' : 'Refresh Prices' }}
+      </button>
+      <button class="btn btn-primary" id="add-asset-btn" (click)="openAdd()">
+        <span>+</span> Add Asset
+      </button>
+    </div>
   </div>
 
   <!-- Asset cards grid -->

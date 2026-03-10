@@ -1,7 +1,8 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AssetService } from '../../services/asset.service';
+import { PriceService } from '../../services/price.service';
 import { Asset, AssetType, ASSET_COLORS } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -14,11 +15,16 @@ import { toSignal } from '@angular/core/rxjs-interop';
 })
 export class AssetsComponent {
     private assetService = inject(AssetService);
+    private priceService = inject(PriceService);
+    private ngZone = inject(NgZone);
+    private cdr = inject(ChangeDetectorRef);
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     showModal = signal(false);
     editingId = signal<string | null>(null);
     saving = signal(false);
+    refreshing = signal(false);
+    lastRefreshed = signal<string>('');
 
     assetTypes = Object.values(AssetType);
 
@@ -96,4 +102,24 @@ export class AssetsComponent {
             await this.assetService.deleteAsset(id);
         }
     }
+
+    async refreshPrices() {
+        if (this.refreshing()) return;
+        this.refreshing.set(true);
+        try {
+            const count = await this.priceService.refreshAllPrices(this.assets());
+            this.ngZone.run(() => {
+                this.lastRefreshed.set(new Date().toLocaleTimeString());
+                this.refreshing.set(false);
+                this.cdr.markForCheck();
+            });
+        } catch (err) {
+            console.error('[Assets] Price refresh failed:', err);
+            this.ngZone.run(() => {
+                this.refreshing.set(false);
+                this.cdr.markForCheck();
+            });
+        }
+    }
 }
+
