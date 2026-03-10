@@ -9,55 +9,115 @@
         }
       </p>
     </div>
-    <div style="display:flex; gap:8px;">
-      <button class="btn btn-ghost" [disabled]="refreshing()" (click)="refreshPrices()" title="Fetch live prices">
-        <span class="material-icons" [class.spin]="refreshing()" style="font-size:18px; vertical-align:middle;">sync</span>
-        {{ refreshing() ? 'Refreshing...' : 'Refresh Prices' }}
-      </button>
-      <button class="btn btn-primary" id="add-asset-btn" (click)="openAdd()">
-        <span>+</span> Add Asset
-      </button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      @if (selectMode()) {
+        <span class="select-count">{{ selectedCount() }} selected</span>
+        <button class="btn btn-ghost btn-sm" (click)="selectAll()">Select All</button>
+        <button class="btn btn-ghost btn-sm" (click)="deselectAll()">Deselect</button>
+        <button class="btn btn-danger btn-sm" [disabled]="selectedCount() === 0 || deleting()"
+          (click)="deleteSelected()">
+          <span class="material-icons" style="font-size:16px; vertical-align:middle;">delete</span>
+          {{ deleting() ? 'Deleting...' : 'Delete (' + selectedCount() + ')' }}
+        </button>
+        <button class="btn btn-ghost btn-sm" (click)="toggleSelectMode()">Cancel</button>
+      } @else {
+        <button class="btn btn-ghost" [disabled]="refreshing()" (click)="refreshPrices()" title="Fetch live prices">
+          <span class="material-icons" [class.spin]="refreshing()" style="font-size:18px; vertical-align:middle;">sync</span>
+          {{ refreshing() ? 'Refreshing...' : 'Refresh Prices' }}
+        </button>
+        @if (assets().length > 0) {
+          <button class="btn btn-ghost" (click)="toggleSelectMode()" title="Multi-select to delete">
+            <span class="material-icons" style="font-size:18px; vertical-align:middle;">checklist</span>
+            Select
+          </button>
+        }
+        <button class="btn btn-primary" id="add-asset-btn" (click)="openAdd()">
+          <span>+</span> Add Asset
+        </button>
+      }
     </div>
   </div>
 
-  <!-- Asset cards grid -->
-  @if (assets().length > 0) {
-    <div class="assets-grid">
-      @for (asset of assets(); track asset.id) {
-        <div class="card asset-card">
-          <div class="asset-header">
-            <div class="asset-type-badge" [style.background]="getColor(asset.type) + '20'" [style.color]="getColor(asset.type)">
-              {{ asset.type }}
-            </div>
-            <div class="asset-actions">
-              <button class="btn-icon" (click)="openEdit(asset)" title="Edit">✎</button>
-              <button class="btn-icon" style="color: var(--accent-danger)" (click)="delete(asset.id!)" title="Delete">✕</button>
-            </div>
+  <!-- Grouped asset sections -->
+  @if (assetGroups().length > 0) {
+    @for (group of assetGroups(); track group.type) {
+      <div class="asset-group">
+        <div class="group-header" (click)="toggleGroup(group.type)">
+          <div class="group-header-left">
+            <span class="group-collapse-icon material-icons">
+              {{ group.collapsed ? 'expand_more' : 'expand_less' }}
+            </span>
+            <span class="group-type-dot" [style.background]="group.color"></span>
+            <h2 class="group-title">{{ group.label }}</h2>
+            <span class="group-count">{{ group.assets.length }}</span>
           </div>
-
-          <div class="asset-body">
-            <h3 class="asset-name">{{ asset.name }}</h3>
-            @if (asset.symbol) {
-              <span class="asset-symbol">{{ asset.symbol }}</span>
-            }
-
-            <div class="asset-value">{{ getAssetValue(asset) | currency:'INR':'symbol':'1.0-0' }}</div>
-
-            <div class="asset-qty">{{ asset.quantity | number:'1.0-4' }} units · ₹{{ asset.currentPrice | number:'1.0-2' }}/unit</div>
-
-            <div class="asset-gain" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
-              {{ getGain(asset) >= 0 ? '▲' : '▼' }}
-              {{ getGainPct(asset) | number:'1.1-1' }}%
-              ({{ getGain(asset) | currency:'INR':'symbol':'1.0-0' }})
-            </div>
-          </div>
-
-          <div class="asset-footer">
-            <span>Avg. cost: {{ asset.buyPrice | currency:'INR':'symbol':'1.0-2' }}</span>
+          <div class="group-header-right">
+            <span class="group-value">{{ group.totalValue | currency:'INR':'symbol':'1.0-0' }}</span>
+            <span class="group-gain" [class.positive]="group.totalGain >= 0" [class.negative]="group.totalGain < 0">
+              {{ group.totalGain >= 0 ? '▲' : '▼' }}
+              {{ group.totalGain | currency:'INR':'symbol':'1.0-0' }}
+            </span>
           </div>
         </div>
-      }
-    </div>
+
+        @if (!group.collapsed) {
+          @if (selectMode()) {
+            <div class="group-select-bar">
+              <button class="btn btn-ghost btn-xs" (click)="selectGroupAll(group); $event.stopPropagation()">
+                Select all {{ group.label }}
+              </button>
+            </div>
+          }
+
+          <div class="assets-grid">
+            @for (asset of group.assets; track asset.id) {
+              <div class="card asset-card"
+                [class.selected]="selectMode() && isSelected(asset.id!)"
+                (click)="selectMode() ? toggleAssetSelection(asset.id!) : null">
+
+                @if (selectMode()) {
+                  <div class="select-checkbox" (click)="toggleAssetSelection(asset.id!); $event.stopPropagation()">
+                    <span class="material-icons">
+                      {{ isSelected(asset.id!) ? 'check_box' : 'check_box_outline_blank' }}
+                    </span>
+                  </div>
+                }
+
+                <div class="asset-header">
+                  <div class="asset-type-badge" [style.background]="getColor(asset.type) + '20'" [style.color]="getColor(asset.type)">
+                    {{ asset.type }}
+                  </div>
+                  @if (!selectMode()) {
+                    <div class="asset-actions">
+                      <button class="btn-icon" (click)="openEdit(asset)" title="Edit">✎</button>
+                      <button class="btn-icon" style="color: var(--accent-danger)" (click)="delete(asset.id!)" title="Delete">✕</button>
+                    </div>
+                  }
+                </div>
+
+                <div class="asset-body">
+                  <h3 class="asset-name">{{ asset.name }}</h3>
+                  @if (asset.symbol) {
+                    <span class="asset-symbol">{{ asset.symbol }}</span>
+                  }
+                  <div class="asset-value">{{ getAssetValue(asset) | currency:'INR':'symbol':'1.0-0' }}</div>
+                  <div class="asset-qty">{{ asset.quantity | number:'1.0-4' }} units · ₹{{ asset.currentPrice | number:'1.0-2' }}/unit</div>
+                  <div class="asset-gain" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
+                    {{ getGain(asset) >= 0 ? '▲' : '▼' }}
+                    {{ getGainPct(asset) | number:'1.1-1' }}%
+                    ({{ getGain(asset) | currency:'INR':'symbol':'1.0-0' }})
+                  </div>
+                </div>
+
+                <div class="asset-footer">
+                  <span>Avg. cost: {{ asset.buyPrice | currency:'INR':'symbol':'1.0-2' }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
   } @else {
     <div class="card empty-state" style="margin-top: 40px;">
       <span class="empty-icon">💼</span>

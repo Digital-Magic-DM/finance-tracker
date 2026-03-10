@@ -7,15 +7,142 @@
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+// ─── Multi-select toolbar ────────────────────
+.select-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-primary);
+    padding: 4px 12px;
+    background: var(--accent-primary-10, rgba(108, 99, 255, 0.1));
+    border-radius: 20px;
+}
+
+.btn-sm {
+    font-size: 12px;
+    padding: 6px 12px;
+}
+
+.btn-xs {
+    font-size: 11px;
+    padding: 4px 10px;
+}
+
+.btn-danger {
+    background: var(--accent-danger);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.9;
     }
 
-    to {
-        transform: rotate(360deg);
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 }
 
+// ─── Asset group sections ────────────────────
+.asset-group {
+    margin-bottom: 28px;
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg-card, rgba(255,255,255,0.04));
+    border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+    border-radius: 12px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+
+    &:hover {
+        background: var(--bg-card-hover, rgba(255,255,255,0.07));
+    }
+}
+
+.group-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.group-collapse-icon {
+    font-size: 20px;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+}
+
+.group-type-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.group-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.group-count {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--bg-card-hover, rgba(255,255,255,0.08));
+    color: var(--text-muted);
+}
+
+.group-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.group-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.group-gain {
+    font-size: 12px;
+    font-weight: 600;
+
+    &.positive {
+        color: var(--accent-secondary);
+    }
+
+    &.negative {
+        color: var(--accent-danger);
+    }
+}
+
+.group-select-bar {
+    margin-bottom: 10px;
+    padding-left: 4px;
+}
+
+// ─── Assets grid ─────────────────────────────
 .assets-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -24,8 +151,34 @@
 
 .asset-card {
     padding: 20px;
+    position: relative;
+    transition: box-shadow 0.2s, border-color 0.2s;
+
+    &.selected {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 2px var(--accent-primary-10, rgba(108, 99, 255, 0.2));
+    }
 }
 
+.select-checkbox {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    z-index: 2;
+    transition: color 0.15s;
+
+    .selected & {
+        color: var(--accent-primary);
+    }
+
+    .material-icons {
+        font-size: 22px;
+    }
+}
+
+// ─── Asset card internals ────────────────────
 .asset-header {
     display: flex;
     align-items: center;
