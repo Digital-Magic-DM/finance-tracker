@@ -22,6 +22,11 @@ export class TransactionsComponent {
     filterType = signal<string>('All');
     searchQuery = signal('');
 
+    // Multi-select state
+    selectMode = signal(false);
+    selectedIds = signal<Set<string>>(new Set());
+    deleting = signal(false);
+
     txTypes = ['All', ...Object.values(TransactionType)];
     categories = TRANSACTION_CATEGORIES;
 
@@ -87,6 +92,59 @@ export class TransactionsComponent {
         } finally { this.saving.set(false); }
     }
 
+    // ─── Multi-select & Delete ───────────────────
+    toggleSelectMode() {
+        if (this.selectMode()) {
+            this.selectMode.set(false);
+            this.selectedIds.set(new Set());
+        } else {
+            this.selectMode.set(true);
+        }
+    }
+
+    toggleSelection(id: string) {
+        this.selectedIds.update(set => {
+            const next = new Set(set);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    }
+
+    isSelected(id: string): boolean {
+        return this.selectedIds().has(id);
+    }
+
+    selectAll() {
+        const allIds = this.filtered().filter(t => t.id).map(t => t.id!);
+        this.selectedIds.set(new Set(allIds));
+    }
+
+    deselectAll() {
+        this.selectedIds.set(new Set());
+    }
+
+    async deleteSelected() {
+        const ids = Array.from(this.selectedIds());
+        if (ids.length === 0) return;
+
+        const confirmText = `Delete ${ids.length} selected transaction${ids.length > 1 ? 's' : ''}?`;
+        if (!confirm(confirmText)) return;
+
+        this.deleting.set(true);
+        try {
+            for (const id of ids) {
+                await this.txService.deleteTransaction(id);
+            }
+            this.selectedIds.set(new Set());
+            this.selectMode.set(false);
+        } catch (err) {
+            console.error('[Transactions] Batch delete failed:', err);
+        } finally {
+            this.deleting.set(false);
+        }
+    }
+
     async delete(id: string) {
         if (confirm('Delete this transaction?')) await this.txService.deleteTransaction(id);
     }
@@ -96,8 +154,8 @@ export class TransactionsComponent {
     }
 
     getTypeIcon(type: TransactionType) {
-        const icons = { Income: '↑', Sell: '↑', Expense: '↓', Buy: '◈' };
-        return icons[type] || '•';
+        const icons = { Income: 'arrow_upward', Sell: 'arrow_upward', Expense: 'arrow_downward', Buy: 'add_circle' };
+        return icons[type] || 'circle';
     }
 
     formatDate(date: any): Date {

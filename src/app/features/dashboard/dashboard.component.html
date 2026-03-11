@@ -3,7 +3,7 @@
   <div class="stats-grid">
     <!-- Net Worth -->
     <div class="card stat-card net-worth-card">
-      <div class="stat-icon" style="background: rgba(108,99,255,0.12)">💰</div>
+      <div class="material-icons stat-icon" style="background: rgba(108,99,255,0.12)">account_balance_wallet</div>
       <p class="stat-label">Total Net Worth</p>
       <div class="stat-value">{{ totalNetWorth() | currency:'INR':'symbol':'1.0-0' }}</div>
       <div class="stat-change" [class.positive]="totalGain() >= 0" [class.negative]="totalGain() < 0">
@@ -15,27 +15,27 @@
 
     <!-- Monthly Income -->
     <div class="card stat-card">
-      <div class="stat-icon" style="background: rgba(0,212,170,0.12)">💵</div>
+      <div class="material-icons stat-icon" style="background: rgba(0,212,170,0.12)">payments</div>
       <p class="stat-label">Monthly Income</p>
-      <div class="stat-value" style="background: var(--gradient-green); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+      <div class="stat-value" style="background: var(--gradient-green); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
         {{ monthlyIncome() | currency:'INR':'symbol':'1.0-0' }}
       </div>
     </div>
 
     <!-- Monthly Expense -->
     <div class="card stat-card">
-      <div class="stat-icon" style="background: rgba(255,107,107,0.12)">💸</div>
+      <div class="material-icons stat-icon" style="background: rgba(255,107,107,0.12)">money_off</div>
       <p class="stat-label">Monthly Expense</p>
-      <div class="stat-value" style="background: var(--gradient-danger); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+      <div class="stat-value" style="background: var(--gradient-danger); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
         {{ monthlyExpense() | currency:'INR':'symbol':'1.0-0' }}
       </div>
     </div>
 
     <!-- Total Assets -->
     <div class="card stat-card">
-      <div class="stat-icon" style="background: rgba(255,215,0,0.12)">📦</div>
+      <div class="material-icons stat-icon" style="background: rgba(255,215,0,0.12)">inventory_2</div>
       <p class="stat-label">Total Assets</p>
-      <div class="stat-value" style="background: var(--gradient-gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+      <div class="stat-value" style="background: var(--gradient-gold); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
         {{ assets().length }}
       </div>
       <div class="stat-change positive">Across {{ allocations().length }} categories</div>
@@ -54,7 +54,7 @@
         <app-portfolio-chart [allocations]="allocations()" />
       } @else {
         <div class="empty-state">
-          <span class="empty-icon">📊</span>
+          <span class="material-icons empty-icon">insert_chart</span>
           <span class="empty-title">No assets yet</span>
           <span class="empty-text">Add your first asset to see allocation</span>
         </div>
@@ -71,7 +71,7 @@
         <app-networth-chart [data]="networthHistory()" />
       } @else {
         <div class="empty-state">
-          <span class="empty-icon">📈</span>
+          <span class="material-icons empty-icon">trending_up</span>
           <span class="empty-title">Building history...</span>
           <span class="empty-text">Visit daily to track your net worth</span>
         </div>
@@ -92,7 +92,7 @@
         <div class="tx-list">
           @for (tx of recentTransactions(); track tx.id) {
             <div class="tx-item">
-              <div class="tx-icon" [class]="getTransactionClass(tx.type)">
+              <div class="material-icons tx-icon" [class]="getTransactionClass(tx.type)">
                 {{ getTransactionIcon(tx.type) }}
               </div>
               <div class="tx-details">
@@ -108,7 +108,7 @@
         </div>
       } @else {
         <div class="empty-state">
-          <span class="empty-icon">🧾</span>
+          <span class="material-icons empty-icon">receipt_long</span>
           <span class="empty-title">No transactions yet</span>
         </div>
       }
@@ -141,7 +141,7 @@
         </div>
       } @else {
         <div class="empty-state">
-          <span class="empty-icon">◈</span>
+          <span class="material-icons empty-icon">category</span>
           <span class="empty-title">No assets yet</span>
         </div>
       }

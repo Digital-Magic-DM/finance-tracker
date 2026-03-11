@@ -46,6 +46,31 @@ export class SettingsComponent {
         a.click();
     }
 
+    exportPortfolio() {
+        const asts = this.assets();
+        const rows = [
+            ['Name', 'Symbol', 'Type', 'Quantity', 'Buy Price', 'Current Price', 'Currency', 'Notes'],
+            ...asts.map((a) => {
+                return [
+                    `"${a.name || ''}"`,
+                    a.symbol || '',
+                    a.type || '',
+                    a.quantity.toString(),
+                    a.buyPrice.toString(),
+                    a.currentPrice.toString(),
+                    a.currency || 'INR',
+                    `"${a.notes || ''}"`
+                ];
+            }),
+        ];
+        const csv = rows.map((r) => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'portfolio_export.csv';
+        a.click();
+    }
+
     signOut() {
         this.authService.signOut().subscribe();
     }

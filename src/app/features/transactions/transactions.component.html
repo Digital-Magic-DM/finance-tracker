@@ -1,7 +1,18 @@
 <div class="transactions-page">
   <div class="page-header">
     <h1>Transactions</h1>
-    <button class="btn btn-primary" id="add-tx-btn" (click)="openAdd()">+ Add Transaction</button>
+    <div class="header-actions">
+      @if (selectMode()) {
+        <span class="selected-count">{{ selectedIds().size }} selected</span>
+        <button class="btn btn-danger" [disabled]="selectedIds().size === 0 || deleting()" (click)="deleteSelected()">
+          {{ deleting() ? 'Deleting...' : 'Delete Selected' }}
+        </button>
+        <button class="btn btn-ghost" (click)="toggleSelectMode()">Cancel</button>
+      } @else {
+        <button class="btn btn-secondary" (click)="toggleSelectMode()">Select</button>
+        <button class="btn btn-primary" id="add-tx-btn" (click)="openAdd()">+ Add</button>
+      }
+    </div>
   </div>
 
   <!-- Summary -->
@@ -40,6 +51,13 @@
       <table class="data-table">
         <thead>
           <tr>
+            @if (selectMode()) {
+              <th style="width: 40px; text-align: center;">
+                <input type="checkbox"
+                  [checked]="selectedIds().size > 0 && selectedIds().size === filtered().length"
+                  (change)="$any($event.target).checked ? selectAll() : deselectAll()" />
+              </th>
+            }
             <th>Description</th>
             <th>Category</th>
             <th>Type</th>
@@ -50,10 +68,15 @@
         </thead>
         <tbody>
           @for (tx of filtered(); track tx.id) {
-            <tr>
+            <tr [class.selected]="isSelected(tx.id!)" (click)="selectMode() && toggleSelection(tx.id!)">
+              @if (selectMode()) {
+                <td style="text-align: center;" (click)="$event.stopPropagation()">
+                  <input type="checkbox" [checked]="isSelected(tx.id!)" (change)="toggleSelection(tx.id!)" />
+                </td>
+              }
               <td>
                 <div class="tx-row-desc">
-                  <span class="tx-type-icon" [class]="getTypeClass(tx.type)">{{ getTypeIcon(tx.type) }}</span>
+                  <span class="material-icons tx-type-icon" [class]="getTypeClass(tx.type)">{{ getTypeIcon(tx.type) }}</span>
                   {{ tx.description }}
                 </div>
               </td>
@@ -78,7 +101,7 @@
       </table>
     } @else {
       <div class="empty-state">
-        <span class="empty-icon">🧾</span>
+        <span class="material-icons empty-icon">receipt_long</span>
         <span class="empty-title">No transactions found</span>
         <span class="empty-text">Try changing filters or add a new transaction.</span>
       </div>

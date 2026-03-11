@@ -4,7 +4,6 @@ import { RouterLink } from '@angular/router';
 import { AssetService } from '../../services/asset.service';
 import { TransactionService } from '../../services/transaction.service';
 import { SnapshotService } from '../../services/snapshot.service';
-import { MockDataService } from '../../services/mock-data.service';
 import { AuthService } from '../../services/auth.service';
 import {
     Asset, Transaction, TransactionType,
@@ -25,7 +24,6 @@ export class DashboardComponent implements OnInit {
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
     private snapshotService = inject(SnapshotService);
-    private mockDataService = inject(MockDataService);
     private authService = inject(AuthService);
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
@@ -93,23 +91,20 @@ export class DashboardComponent implements OnInit {
     );
 
     async ngOnInit() {
-        // Wait briefly for assets to load, then seed if empty
+        // Wait briefly for assets to load, then save a daily snapshot
         setTimeout(async () => {
-            const count = this.assets().length;
-            await this.mockDataService.seedIfEmpty(count);
-            // Save a daily snapshot
             await this.snapshotService.saveSnapshot(this.assets());
         }, 1500);
     }
 
     getTransactionIcon(type: TransactionType): string {
         const icons: Record<TransactionType, string> = {
-            [TransactionType.Income]: '↑',
-            [TransactionType.Expense]: '↓',
-            [TransactionType.Buy]: '◈',
-            [TransactionType.Sell]: '◇',
+            [TransactionType.Income]: 'arrow_upward',
+            [TransactionType.Expense]: 'arrow_downward',
+            [TransactionType.Buy]: 'add_circle',
+            [TransactionType.Sell]: 'remove_circle',
         };
-        return icons[type] || '•';
+        return icons[type] || 'circle';
     }
 
     getTransactionClass(type: TransactionType): string {

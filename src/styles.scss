@@ -2,37 +2,37 @@
 
 /* ===== CSS Custom Properties ===== */
 :root {
-  /* Colors - Dark Theme (default) */
-  --bg-primary: #0a0e1a;
-  --bg-secondary: #111827;
-  --bg-card: #1a2235;
-  --bg-card-hover: #1e2a40;
-  --bg-sidebar: #0d1526;
-  --bg-input: #1e2a40;
+  /* Colors - Dark Theme (Matte Royal Black) */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #121212;
+  --bg-card: #18181b;
+  --bg-card-hover: #27272a;
+  --bg-sidebar: #09090b;
+  --bg-input: #18181b;
 
-  --text-primary: #f0f4ff;
-  --text-secondary: #8896b0;
-  --text-muted: #4a5568;
+  --text-primary: #FAFAFA;
+  --text-secondary: #A1A1AA;
+  --text-muted: #52525B;
 
-  --accent-primary: #6C63FF;
+  --accent-primary: #D4AF37; /* Metallic Gold */
   --accent-secondary: #00D4AA;
-  --accent-gold: #FFD700;
-  --accent-danger: #FF6B6B;
-  --accent-warning: #FF9800;
+  --accent-gold: #FACC15;
+  --accent-danger: #EF4444;
+  --accent-warning: #F59E0B;
 
-  --border-color: #1e2a40;
-  --border-light: #243050;
+  --border-color: #27272a;
+  --border-light: #3f3f46;
 
-  --gradient-primary: linear-gradient(135deg, #6C63FF 0%, #4FC3F7 100%);
-  --gradient-green: linear-gradient(135deg, #00D4AA 0%, #00897B 100%);
-  --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FF9800 100%);
-  --gradient-danger: linear-gradient(135deg, #FF6B6B 0%, #D32F2F 100%);
-  --gradient-card: linear-gradient(145deg, #1a2235, #111827);
+  --gradient-primary: linear-gradient(135deg, #D4AF37 0%, #FBBF24 100%);
+  --gradient-green: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  --gradient-gold: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
+  --gradient-danger: linear-gradient(135deg, #F87171 0%, #DC2626 100%);
+  --gradient-card: linear-gradient(145deg, #18181b, #0a0a0a);
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 30px rgba(108, 99, 255, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.8);
+  --shadow-glow: 0 0 30px rgba(212, 175, 55, 0.15); /* Gold glow */
 
   --sidebar-width: 260px;
   --toolbar-height: 64px;
@@ -46,26 +46,26 @@
   --transition-slow: 0.4s ease;
 }
 
-/* Light Theme */
+/* Light Theme (Crisp Royal White) */
 [data-theme="light"] {
-  --bg-primary: #f0f4ff;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f8faff;
-  --bg-sidebar: #1a2235;
-  --bg-input: #f0f4ff;
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F1F5F9;
+  --bg-sidebar: #FFFFFF;
+  --bg-input: #F8FAFC;
 
-  --text-primary: #1a2235;
-  --text-secondary: #4a5568;
-  --text-muted: #9aa5b4;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
 
-  --border-color: #e2e8f0;
-  --border-light: #edf2f7;
+  --border-color: #E2E8F0;
+  --border-light: #CBD5E1;
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 30px rgba(108, 99, 255, 0.1);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 30px rgba(212, 175, 55, 0.1);
 }
 
 /* ===== Global Reset ===== */

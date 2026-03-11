@@ -16,17 +16,20 @@ export interface ImportResult {
 }
 
 // ─── Header synonyms for each platform ─────────────────────────────
-const GROWW_STOCK_MARKERS = ['stock name', 'quantity', 'avg cost', 'ltp'];
-const GROWW_MF_MARKERS = ['scheme name', 'folio number', 'units', 'avg. nav'];
-const INDMONEY_MARKERS = ['security name', 'current value', 'invested value'];
+const GROWW_STOCK_MARKERS = ['stock name', 'quantity', 'avg cost', 'ltp', 'average buy price', 'closing price'];
+const GROWW_MF_MARKERS = ['scheme name', 'units', 'invested value', 'current value', 'amc', 'category'];
+const INDMONEY_MARKERS = ['stock name', 'isin', 'quantity', 'average buy price'];
+
+// Rows whose first non-empty cell matches these are summary/footer rows → skip them
+const SUMMARY_ROW_KEYWORDS = ['invested value', 'current value', 'returns', 'xirr', 'total', 'grand total', 'overall'];
 
 // Column synonym maps — used for flexible header matching
 const NAME_SYNONYMS = ['stock name', 'scheme name', 'security name', 'company name', 'name of the fund', 'fund name', 'name', 'scrip name'];
 const QTY_SYNONYMS = ['quantity', 'units', 'shares', 'qty', 'no. of units', 'no of units', 'total units'];
-const BUY_PRICE_SYNONYMS = ['avg cost', 'avg. nav', 'average price', 'buy price', 'purchase nav', 'average cost', 'buy avg', 'avg price', 'invested value'];
-const CURRENT_PRICE_SYNONYMS = ['ltp', 'current nav', 'current price', 'market price', 'present nav', 'current value'];
+const BUY_PRICE_SYNONYMS = ['avg cost', 'avg. nav', 'average price', 'average buy price', 'buy price', 'purchase nav', 'average cost', 'buy avg', 'avg price', 'invested value'];
+const CURRENT_PRICE_SYNONYMS = ['ltp', 'current nav', 'current price', 'closing price', 'market price', 'present nav', 'current value'];
 const SYMBOL_SYNONYMS = ['symbol', 'ticker', 'isin', 'nse symbol', 'bse code', 'scrip code', 'nse/bse code'];
-const TYPE_SYNONYMS = ['type', 'asset type', 'instrument type', 'segment', 'category', 'instrument'];
+const TYPE_SYNONYMS = ['type', 'asset type', 'instrument type', 'segment', 'category', 'instrument', 'amc'];
 
 @Injectable({ providedIn: 'root' })
 export class ImportDataService {
@@ -71,8 +74,19 @@ export class ImportDataService {
         const platform = this.detectPlatform(headers);
         console.log('[ImportDataService] Detected platform:', platform);
 
-        const dataRows = allRows.slice(headerIndex + 1)
-            .filter(row => row.some((cell: any) => cell !== '' && cell != null)); // skip fully empty rows
+        // Take rows until the first fully-empty row (stop at blank separator)
+        const rawDataRows = allRows.slice(headerIndex + 1);
+        const dataRows: any[][] = [];
+        for (const row of rawDataRows) {
+            const hasContent = row.some((cell: any) => cell !== '' && cell != null);
+            if (!hasContent) break; // stop at first empty row
+
+            // Skip summary / footer rows
+            const firstCell = String(row.find((c: any) => c !== '' && c != null) ?? '').toLowerCase().trim();
+            if (SUMMARY_ROW_KEYWORDS.some(kw => firstCell === kw || firstCell.startsWith(kw))) continue;
+
+            dataRows.push(row);
+        }
         console.log('[ImportDataService] Data rows count:', dataRows.length);
 
         let assets: Omit<Asset, 'id'>[];
@@ -296,16 +310,16 @@ export class ImportDataService {
         return AssetType.Stock;
     }
 
-    /** Group assets with the same name — sum their quantities, keep the latest prices */
+    /** Group assets with the same name — sum their quantities, recalculate weighted-avg buy price */
     private groupDuplicates(assets: Omit<Asset, 'id'>[]): Omit<Asset, 'id'>[] {
         const map = new Map<string, Omit<Asset, 'id'>>();
         for (const a of assets) {
             const key = (a.symbol?.toLowerCase()) || a.name.toLowerCase();
             const existing = map.get(key);
             if (existing) {
-                existing.quantity += a.quantity;
-                // Weighted average buy price
-                const totalCost = existing.buyPrice * (existing.quantity - a.quantity) + a.buyPrice * a.quantity;
+                const oldQty = existing.quantity;
+                const totalCost = existing.buyPrice * oldQty + a.buyPrice * a.quantity;
+                existing.quantity = oldQty + a.quantity;
                 existing.buyPrice = existing.quantity > 0 ? totalCost / existing.quantity : 0;
                 if (a.currentPrice) existing.currentPrice = a.currentPrice;
             } else {
@@ -320,11 +334,11 @@ export class ImportDataService {
         return val == null ? '' : String(val).trim();
     }
 
-    /** Normalize a cell to a number — strips commas, ₹, whitespace */
+    /** Normalize a cell to a number — strips commas, currency symbols, whitespace */
     private num(val: any): number {
         if (val == null) return 0;
         if (typeof val === 'number') return val;
-        return parseFloat(String(val).replace(/[₹,\s]/g, '')) || 0;
+        return parseFloat(String(val).replace(/[₹$,\s]|Rs\.?/gi, '')) || 0;
     }
 
     /** Read file as ArrayBuffer for xlsx */

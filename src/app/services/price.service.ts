@@ -205,8 +205,10 @@ export class PriceService {
         const symbol = this.resolveYahooSymbol(asset);
         if (!symbol) return null;
 
+        // Bust allorigins cache with a timestamp
+        const cb = Date.now();
         const url = `${this.PROXY}${encodeURIComponent(
-            `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1d&interval=1d`
+            `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1d&interval=1d&_cb=${cb}`
         )}`;
 
         const data: any = await firstValueFrom(this.http.get(url));

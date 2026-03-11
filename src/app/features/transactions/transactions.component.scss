@@ -2,6 +2,22 @@
     animation: fadeIn 0.3s ease;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .selected-count {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+}
+
+tr.selected {
+    background: rgba(108, 99, 255, 0.05);
+}
+
 .tx-summary {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

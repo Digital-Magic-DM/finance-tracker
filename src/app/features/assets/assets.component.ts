@@ -3,8 +3,10 @@ import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AssetService } from '../../services/asset.service';
 import { PriceService } from '../../services/price.service';
+import { SnackbarService } from '../../services/snackbar.service';
 import { Asset, AssetType, ASSET_COLORS } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ImportDataComponent } from '../settings/import-data/import-data.component';
 
 interface AssetGroup {
     type: AssetType;
@@ -19,18 +21,20 @@ interface AssetGroup {
 @Component({
     selector: 'app-assets',
     standalone: true,
-    imports: [CurrencyPipe, DecimalPipe, FormsModule],
+    imports: [CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent],
     templateUrl: './assets.component.html',
     styleUrl: './assets.component.scss',
 })
 export class AssetsComponent {
     private assetService = inject(AssetService);
     private priceService = inject(PriceService);
+    private snackbar = inject(SnackbarService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     showModal = signal(false);
+    showImport = signal(false);
     editingId = signal<string | null>(null);
     saving = signal(false);
     refreshing = signal(false);
@@ -270,15 +274,30 @@ export class AssetsComponent {
             const count = await this.priceService.refreshAllPrices(this.assets());
             this.ngZone.run(() => {
                 this.lastRefreshed.set(new Date().toLocaleTimeString());
+                if (count > 0) {
+                    this.snackbar.show(`Successfully refreshed ${count} prices`, 'success');
+                } else {
+                    this.snackbar.show('Prices are up to date. No changes detected.', 'info');
+                }
                 this.refreshing.set(false);
                 this.cdr.markForCheck();
             });
         } catch (err) {
             console.error('[Assets] Price refresh failed:', err);
             this.ngZone.run(() => {
+                this.snackbar.show('Failed to refresh prices. Please try again later.', 'error');
                 this.refreshing.set(false);
                 this.cdr.markForCheck();
             });
         }
+    }
+
+    // ─── Import ──────────────────────────────────
+    openImport() {
+        this.showImport.set(true);
+    }
+
+    onImportComplete(count: number) {
+        this.showImport.set(false);
     }
 }

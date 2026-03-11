@@ -6,21 +6,21 @@
   <!-- Summary Cards -->
   <div class="summary-row">
     <div class="card stat-card">
-      <div class="stat-icon" style="background:rgba(0,212,170,0.12)">💰</div>
+      <div class="material-icons stat-icon" style="background:rgba(0,212,170,0.12)">account_balance_wallet</div>
       <p class="stat-label">Total Income</p>
-      <div class="stat-value" style="background:var(--gradient-green);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+      <div class="stat-value" style="background:var(--gradient-green);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent">
         {{ totalIncome() | currency:'INR':'symbol':'1.0-0' }}
       </div>
     </div>
     <div class="card stat-card">
-      <div class="stat-icon" style="background:rgba(255,107,107,0.12)">💸</div>
+      <div class="material-icons stat-icon" style="background:rgba(255,107,107,0.12)">money_off</div>
       <p class="stat-label">Total Expense</p>
-      <div class="stat-value" style="background:var(--gradient-danger);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+      <div class="stat-value" style="background:var(--gradient-danger);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent">
         {{ totalExpense() | currency:'INR':'symbol':'1.0-0' }}
       </div>
     </div>
     <div class="card stat-card">
-      <div class="stat-icon" style="background:rgba(108,99,255,0.12)">📊</div>
+      <div class="material-icons stat-icon" style="background:rgba(108,99,255,0.12)">savings</div>
       <p class="stat-label">Savings Rate</p>
       <div class="stat-value">{{ savingsRate() | number:'1.1-1' }}%</div>
       <div class="stat-change" [class.positive]="savingsRate() >= 0" [class.negative]="savingsRate() < 0">
@@ -39,7 +39,7 @@
       <app-networth-chart [data]="networthHistory()" [height]="300" />
     } @else {
       <div class="empty-state">
-        <span class="empty-icon">📈</span>
+        <span class="material-icons empty-icon">trending_up</span>
         <span class="empty-title">No history yet</span>
         <span class="empty-text">Visit daily to build your net worth history chart.</span>
       </div>
@@ -68,7 +68,7 @@
       </div>
     } @else {
       <div class="empty-state">
-        <span class="empty-icon">🗂️</span>
+        <span class="material-icons empty-icon">folder</span>
         <span class="empty-title">No expense data</span>
       </div>
     }

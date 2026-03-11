@@ -1,6 +1,7 @@
 import { Component, inject, signal, output, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImportDataService, ParsedImportRow, ImportPlatform } from '../../../services/import-data.service';
+import { SnackbarService } from '../../../services/snackbar.service';
 
 @Component({
     selector: 'app-import-data',
@@ -13,6 +14,7 @@ export class ImportDataComponent {
     private importService = inject(ImportDataService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
+    private snackbar = inject(SnackbarService);
 
     closed = output<void>();
     imported = output<number>();
@@ -125,6 +127,10 @@ export class ImportDataComponent {
                 this.importing.set(false);
                 this.cdr.markForCheck();
                 this.imported.emit(created + updated);
+                this.snackbar.show(
+                    `✅ Import complete! ${created} asset${created !== 1 ? 's' : ''} added successfully.`,
+                    'success',
+                );
             });
         } catch (err: any) {
             console.error('[ImportComponent] Import error:', err);

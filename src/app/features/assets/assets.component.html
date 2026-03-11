@@ -120,7 +120,7 @@
     }
   } @else {
     <div class="card empty-state" style="margin-top: 40px;">
-      <span class="empty-icon">💼</span>
+      <span class="material-icons empty-icon">work</span>
       <span class="empty-title">No assets yet</span>
       <span class="empty-text">Add your first asset to start tracking your portfolio.</span>
       <button class="btn btn-primary" style="margin-top:16px" (click)="openAdd()">+ Add Asset</button>
@@ -189,4 +189,12 @@
       </div>
     </div>
   </div>
+}
+
+<!-- Import Data Modal -->
+@if (showImport()) {
+  <app-import-data
+    (closed)="showImport.set(false)"
+    (imported)="onImportComplete($event)"
+  />
 }
