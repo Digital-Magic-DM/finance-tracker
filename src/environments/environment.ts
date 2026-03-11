@@ -7,5 +7,6 @@ export const environment = {
         messagingSenderId: "896660427302",
         appId: "1:896660427302:web:8e3997408942c8634acce7",
         measurementId: "G-8L6M4J69J4"
-    }
+    },
+    finnhubApiKey: "d6orulhr01qmqugc4uhgd6orulhr01qmqugc4ui0"
 };

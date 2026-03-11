@@ -113,13 +113,10 @@ export class ImportDataComponent {
 
     async confirmImport() {
         if (this.importing()) return;
-        console.log('[ImportComponent] confirmImport called, selected:', this.selectedCount);
         this.importing.set(true);
         this.error.set('');
         try {
-            console.log('[ImportComponent] Calling importAssets...');
             const { created, updated } = await this.importService.importAssets(this.rows());
-            console.log('[ImportComponent] Import result:', { created, updated });
             this.ngZone.run(() => {
                 this.importedCount.set(created);
                 this.updatedCount.set(updated);
@@ -133,7 +130,6 @@ export class ImportDataComponent {
                 );
             });
         } catch (err: any) {
-            console.error('[ImportComponent] Import error:', err);
             this.ngZone.run(() => {
                 this.error.set(err?.message || 'Import failed. Please try again.');
                 this.importing.set(false);

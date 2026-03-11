@@ -1,5 +1,5 @@
 <section class="login-page">
-  <!-- Animated background -->
+  <!-- Elegant dark animated background -->
   <div class="bg-orbs">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -7,89 +7,75 @@
   </div>
 
   <div class="login-container">
-    <!-- Logo / Brand -->
-    <div class="brand">
-      <div class="brand-icon">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <path d="M16 2L29 9V23L16 30L3 23V9L16 2Z" fill="url(#grad)" />
-          <path d="M10 16L14 20L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <defs>
-            <linearGradient id="grad" x1="3" y1="2" x2="29" y2="30" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#6C63FF"/>
-              <stop offset="1" stop-color="#00D4AA"/>
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-      <h1>DM Finance</h1>
-      <p class="brand-sub">Personal Finance Dashboard</p>
-    </div>
-
-    <!-- Card -->
-    <div class="login-card card-glass">
-      <h2>Welcome back 👋</h2>
-      <p class="subtitle">Sign in to manage your investments, track your portfolio, and achieve your financial goals.</p>
-
-      <!-- Stats row -->
-      <div class="stats-row">
-        <div class="stat-pill">
-          <span class="stat-num">₹12L+</span>
-          <span>Tracked</span>
+    <div class="login-split-layout">
+      
+      <!-- Left side: Brand identity -->
+      <div class="brand-section">
+        <div class="brand">
+          <img src="assets/applogo.png" alt="DM Finance Logo" class="app-logo" />
+          <h1>DM Finance</h1>
+          <p class="brand-sub">The smartest way to track your wealth.</p>
         </div>
-        <div class="stat-pill">
-          <span class="stat-num">5</span>
-          <span>Asset Classes</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-num">100%</span>
-          <span>Private</span>
+
+        <div class="features-list">
+          <div class="feature-item">
+            <div class="feature-icon-wrapper"><span class="material-icons">insights</span></div>
+            <div class="feature-text">
+              <h3>Real-time Analytics</h3>
+              <p>Monitor your entire portfolio across all asset classes instantly.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-wrapper"><span class="material-icons">security</span></div>
+            <div class="feature-text">
+              <h3>Bank-level Security</h3>
+              <p>Your financial data is completely encrypted and strictly private.</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      @if (error()) {
-        <div class="error-msg">
-          <span>⚠️</span> {{ error() }}
+      <!-- Right side: Login Card -->
+      <div class="login-card-section">
+        <div class="login-card card-glass">
+          <div class="card-header">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Securely sign in to access your dashboard</p>
+          </div>
+
+          @if (error()) {
+            <div class="error-msg">
+              <span class="material-icons">error_outline</span> {{ error() }}
+            </div>
+          }
+
+          <div class="auth-actions">
+            <button
+              id="google-signin-btn"
+              class="google-btn"
+              (click)="signInWithGoogle()"
+              [disabled]="loading()">
+              @if (loading()) {
+                <div class="spinner"></div>
+                <span>Authenticating...</span>
+              } @else {
+                <svg width="22" height="22" viewBox="0 0 48 48">
+                  <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+                  <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+                  <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+                  <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+                </svg>
+                <span>Continue with Google</span>
+              }
+            </button>
+          </div>
+
+          <p class="privacy-note">
+            By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+          </p>
         </div>
-      }
-
-      <button
-        id="google-signin-btn"
-        class="google-btn"
-        (click)="signInWithGoogle()"
-        [disabled]="loading()">
-        @if (loading()) {
-          <div class="spinner"></div>
-          <span>Signing in...</span>
-        } @else {
-          <svg width="20" height="20" viewBox="0 0 48 48">
-            <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
-            <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
-            <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
-            <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
-          </svg>
-          <span>Continue with Google</span>
-        }
-      </button>
-
-      <p class="privacy-note">
-        🔒 Your data is encrypted and stored securely in Firebase. We never share your information.
-      </p>
-    </div>
-
-    <!-- Features -->
-    <div class="features">
-      <div class="feature">
-        <span class="feature-icon">📊</span>
-        <span>Portfolio Charts</span>
       </div>
-      <div class="feature">
-        <span class="feature-icon">📈</span>
-        <span>Net Worth Tracking</span>
-      </div>
-      <div class="feature">
-        <span class="feature-icon">🏆</span>
-        <span>Asset Management</span>
-      </div>
+      
     </div>
   </div>
 </section>

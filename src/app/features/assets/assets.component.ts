@@ -37,7 +37,8 @@ export class AssetsComponent {
     showImport = signal(false);
     editingId = signal<string | null>(null);
     saving = signal(false);
-    refreshing = signal(false);
+    refreshingMFs = signal(false);
+    refreshingStocks = signal(false);
     lastRefreshed = signal<string>('');
 
     // Multi-select state
@@ -267,26 +268,88 @@ export class AssetsComponent {
         }
     }
 
-    async refreshPrices() {
-        if (this.refreshing()) return;
-        this.refreshing.set(true);
+    async refreshMutualFunds() {
+        if (this.refreshingMFs()) return;
+        this.refreshingMFs.set(true);
         try {
-            const count = await this.priceService.refreshAllPrices(this.assets());
+            // Only refresh Mutual Funds
+            const mfAssets = this.assets().filter(a => a.type === AssetType.MutualFund);
+
+            if (mfAssets.length === 0) {
+                this.ngZone.run(() => {
+                    this.snackbar.show('No Mutual Funds to refresh.', 'info');
+                    this.refreshingMFs.set(false);
+                });
+                return;
+            }
+
+            const result = await this.priceService.refreshAllPrices(mfAssets);
+
             this.ngZone.run(() => {
                 this.lastRefreshed.set(new Date().toLocaleTimeString());
-                if (count > 0) {
-                    this.snackbar.show(`Successfully refreshed ${count} prices`, 'success');
+
+                if (result.failed > 0 && result.updated === 0 && result.unchanged === 0) {
+                    this.snackbar.show(`Failed to fetch prices for all ${result.failed} mutual funds.`, 'error');
+                } else if (result.failed > 0) {
+                    this.snackbar.show(`Refreshed prices (Updated: ${result.updated}), but ${result.failed} funds failed.`, 'error');
+                } else if (result.updated > 0) {
+                    this.snackbar.show(`Successfully refreshed ${result.updated} mutual fund prices`, 'success');
                 } else {
-                    this.snackbar.show('Prices are up to date. No changes detected.', 'info');
+                    this.snackbar.show('Mutual Fund prices are up to date.', 'info');
                 }
-                this.refreshing.set(false);
+
+                this.refreshingMFs.set(false);
                 this.cdr.markForCheck();
             });
         } catch (err) {
-            console.error('[Assets] Price refresh failed:', err);
+            console.error('[Assets] ML Price refresh failed:', err);
             this.ngZone.run(() => {
-                this.snackbar.show('Failed to refresh prices. Please try again later.', 'error');
-                this.refreshing.set(false);
+                this.snackbar.show('Failed to refresh Mutual Funds. Please try again later.', 'error');
+                this.refreshingMFs.set(false);
+                this.cdr.markForCheck();
+            });
+        }
+    }
+
+    async refreshStocks() {
+        if (this.refreshingStocks()) return;
+        this.refreshingStocks.set(true);
+        try {
+            // Only refresh Stocks and ETFs
+            const stockAssets = this.assets().filter(a => [AssetType.Stock, AssetType.ETF].includes(a.type as AssetType));
+
+            if (stockAssets.length === 0) {
+                this.ngZone.run(() => {
+                    this.snackbar.show('No Stocks/ETFs to refresh.', 'info');
+                    this.refreshingStocks.set(false);
+                });
+                return;
+            }
+
+            const result = await this.priceService.refreshAllPrices(stockAssets);
+
+            this.ngZone.run(() => {
+                this.lastRefreshed.set(new Date().toLocaleTimeString());
+                console.log(`Failed to fetch prices for all ${result.failed} stocks.`, result);
+                if (result.failed > 0 && result.updated === 0 && result.unchanged === 0) {
+                    this.snackbar.show(`Failed to fetch prices for all ${result.failed} stocks.`, 'error');
+
+                } else if (result.failed > 0) {
+                    this.snackbar.show(`Refreshed prices (Updated: ${result.updated}), but ${result.failed} stocks failed.`, 'error');
+                } else if (result.updated > 0) {
+                    this.snackbar.show(`Successfully refreshed ${result.updated} stock prices`, 'success');
+                } else {
+                    this.snackbar.show('Stock prices are up to date.', 'info');
+                }
+
+                this.refreshingStocks.set(false);
+                this.cdr.markForCheck();
+            });
+        } catch (err) {
+            console.error('[Assets] Stock Price refresh failed:', err);
+            this.ngZone.run(() => {
+                this.snackbar.show('Failed to refresh Stocks. Please try again later.', 'error');
+                this.refreshingStocks.set(false);
                 this.cdr.markForCheck();
             });
         }

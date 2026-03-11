@@ -50,9 +50,6 @@ export class ImportDataService {
         const sheet = workbook.Sheets[sheetName];
         const allRows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
 
-        console.log('[ImportDataService] Total rows read:', allRows.length);
-        console.log('[ImportDataService] First 5 rows:', allRows.slice(0, 5));
-
         // Scan for the real header row (skip summary rows)
         let { headerIndex, headers } = this.findHeaderRow(allRows);
 
@@ -68,18 +65,14 @@ export class ImportDataService {
             return { platform: 'unknown', rows: [] };
         }
 
-        console.log('[ImportDataService] Header row index:', headerIndex);
-        console.log('[ImportDataService] Headers:', headers);
-
         const platform = this.detectPlatform(headers);
-        console.log('[ImportDataService] Detected platform:', platform);
 
-        // Take rows until the first fully-empty row (stop at blank separator)
+        // Take rows and skip empty ones
         const rawDataRows = allRows.slice(headerIndex + 1);
         const dataRows: any[][] = [];
         for (const row of rawDataRows) {
             const hasContent = row.some((cell: any) => cell !== '' && cell != null);
-            if (!hasContent) break; // stop at first empty row
+            if (!hasContent) continue; // skip empty rows
 
             // Skip summary / footer rows
             const firstCell = String(row.find((c: any) => c !== '' && c != null) ?? '').toLowerCase().trim();
@@ -87,7 +80,6 @@ export class ImportDataService {
 
             dataRows.push(row);
         }
-        console.log('[ImportDataService] Data rows count:', dataRows.length);
 
         let assets: Omit<Asset, 'id'>[];
         switch (platform) {
@@ -104,11 +96,6 @@ export class ImportDataService {
                 // Fall back to generic parsing
                 assets = this.parseGeneric(headers, dataRows);
                 break;
-        }
-
-        console.log('[ImportDataService] Parsed assets count:', assets.length);
-        if (assets.length > 0) {
-            console.log('[ImportDataService] First asset:', assets[0]);
         }
 
         // Group duplicates (same name → sum quantities)
@@ -141,7 +128,6 @@ export class ImportDataService {
      * Returns { created, updated } counts.
      */
     async importAssets(rows: ParsedImportRow[]): Promise<{ created: number; updated: number }> {
-        console.log('importAssets calleds', rows)
         const selected = rows.filter(r => r.selected).map(r => r.asset);
         return this.assetService.batchSaveAssets(selected);
     }
@@ -157,7 +143,7 @@ export class ImportDataService {
         const curIdx = this.findCol(headers, CURRENT_PRICE_SYNONYMS);
         const symIdx = this.findCol(headers, SYMBOL_SYNONYMS);
 
-        return this.mapRows(rows, nameIdx, qtyIdx, buyIdx, curIdx, symIdx, AssetType.Stock, 'Groww');
+        return this.mapRows(headers, rows, nameIdx, qtyIdx, buyIdx, curIdx, symIdx, AssetType.Stock, 'Groww');
     }
 
     parseGrowwMutualFunds(headers: string[], rows: any[][]): Omit<Asset, 'id'>[] {
@@ -167,7 +153,7 @@ export class ImportDataService {
         const curIdx = this.findCol(headers, CURRENT_PRICE_SYNONYMS);
         const symIdx = this.findCol(headers, SYMBOL_SYNONYMS);
 
-        return this.mapRows(rows, nameIdx, qtyIdx, buyIdx, curIdx, symIdx, AssetType.MutualFund, 'Groww');
+        return this.mapRows(headers, rows, nameIdx, qtyIdx, buyIdx, curIdx, symIdx, AssetType.MutualFund, 'Groww');
     }
 
     parseINDmoney(headers: string[], rows: any[][]): Omit<Asset, 'id'>[] {
@@ -183,12 +169,23 @@ export class ImportDataService {
             const name = this.str(row[nameIdx]);
             if (!name) continue;
 
+            const quantity = qtyIdx >= 0 ? this.num(row[qtyIdx]) : 0;
+            let buyPrice = buyIdx >= 0 ? this.num(row[buyIdx]) : 0;
+            if (buyIdx >= 0 && headers[buyIdx] && headers[buyIdx].toLowerCase().trim() === 'invested value' && quantity > 0) {
+                buyPrice = buyPrice / quantity;
+            }
+
+            let currentPrice = curIdx >= 0 ? this.num(row[curIdx]) : 0;
+            if (curIdx >= 0 && headers[curIdx] && headers[curIdx].toLowerCase().trim() === 'current value' && quantity > 0) {
+                currentPrice = currentPrice / quantity;
+            }
+
             assets.push({
                 name,
                 type: this.inferType(row, typeIdx, name),
-                quantity: qtyIdx >= 0 ? this.num(row[qtyIdx]) : 0,
-                buyPrice: buyIdx >= 0 ? this.num(row[buyIdx]) : 0,
-                currentPrice: curIdx >= 0 ? this.num(row[curIdx]) : 0,
+                quantity,
+                buyPrice,
+                currentPrice,
                 symbol: symIdx >= 0 ? this.str(row[symIdx]) : '',
                 currency: 'INR',
                 purchaseDate: new Date(),
@@ -242,12 +239,23 @@ export class ImportDataService {
             const name = this.str(row[nameIdx]);
             if (!name) continue;
 
+            const quantity = qtyIdx >= 0 ? this.num(row[qtyIdx]) : 0;
+            let buyPrice = buyIdx >= 0 ? this.num(row[buyIdx]) : 0;
+            if (buyIdx >= 0 && headers[buyIdx] && headers[buyIdx].toLowerCase().trim() === 'invested value' && quantity > 0) {
+                buyPrice = buyPrice / quantity;
+            }
+
+            let currentPrice = curIdx >= 0 ? this.num(row[curIdx]) : 0;
+            if (curIdx >= 0 && headers[curIdx] && headers[curIdx].toLowerCase().trim() === 'current value' && quantity > 0) {
+                currentPrice = currentPrice / quantity;
+            }
+
             assets.push({
                 name,
                 type: this.inferType(row, typeIdx, name),
-                quantity: qtyIdx >= 0 ? this.num(row[qtyIdx]) : 0,
-                buyPrice: buyIdx >= 0 ? this.num(row[buyIdx]) : 0,
-                currentPrice: curIdx >= 0 ? this.num(row[curIdx]) : 0,
+                quantity,
+                buyPrice,
+                currentPrice,
                 symbol: symIdx >= 0 ? this.str(row[symIdx]) : '',
                 currency: 'INR',
                 purchaseDate: new Date(),
@@ -259,7 +267,7 @@ export class ImportDataService {
 
     /** Map rows to Asset[] using column indices and a default type */
     private mapRows(
-        rows: any[][], nameIdx: number, qtyIdx: number, buyIdx: number,
+        headers: string[], rows: any[][], nameIdx: number, qtyIdx: number, buyIdx: number,
         curIdx: number, symIdx: number, defaultType: AssetType, source: string,
     ): Omit<Asset, 'id'>[] {
         const assets: Omit<Asset, 'id'>[] = [];
@@ -267,12 +275,23 @@ export class ImportDataService {
             const name = nameIdx >= 0 ? this.str(row[nameIdx]) : '';
             if (!name) continue;
 
+            const quantity = qtyIdx >= 0 ? this.num(row[qtyIdx]) : 0;
+            let buyPrice = buyIdx >= 0 ? this.num(row[buyIdx]) : 0;
+            if (buyIdx >= 0 && headers[buyIdx] && headers[buyIdx].toLowerCase().trim() === 'invested value' && quantity > 0) {
+                buyPrice = buyPrice / quantity;
+            }
+
+            let currentPrice = curIdx >= 0 ? this.num(row[curIdx]) : 0;
+            if (curIdx >= 0 && headers[curIdx] && headers[curIdx].toLowerCase().trim() === 'current value' && quantity > 0) {
+                currentPrice = currentPrice / quantity;
+            }
+
             assets.push({
                 name,
                 type: defaultType,
-                quantity: qtyIdx >= 0 ? this.num(row[qtyIdx]) : 0,
-                buyPrice: buyIdx >= 0 ? this.num(row[buyIdx]) : 0,
-                currentPrice: curIdx >= 0 ? this.num(row[curIdx]) : 0,
+                quantity,
+                buyPrice,
+                currentPrice,
                 symbol: symIdx >= 0 ? this.str(row[symIdx]) : '',
                 currency: 'INR',
                 purchaseDate: new Date(),
