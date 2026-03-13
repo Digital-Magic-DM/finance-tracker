@@ -129,12 +129,12 @@ body {
   align-items: baseline;
   
   .ash {
-    color: #888888;
+    color: var(--text-muted);
     font-weight: 950 !important;
   }
   
   .black {
-    color: #000000 !important;
+    color: var(--text-primary) !important;
     font-weight: 950 !important;
   }
 }

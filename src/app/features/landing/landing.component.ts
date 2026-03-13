@@ -26,11 +26,11 @@ export class LandingComponent {
   private isDeleting = false;
 
   constructor() {
-    this.title.setTitle('DOMTRACKER | High-Precision Financial Dashboard');
+    this.title.setTitle('DM FinTracker | High-Precision Financial Dashboard');
     this.meta.addTags([
-      { name: 'description', content: 'DOMTRACKER is a minimalist, high-precision financial dashboard for tracking expenses, investments, and net worth with unit-level accuracy.' },
-      { name: 'keywords', content: 'DOMTRACKER, finance dashboard, wealth forge, expense tracker, investment analytics, net worth tracking' },
-      { property: 'og:title', content: 'DOMTRACKER | Forged for Wealth' },
+      { name: 'description', content: 'DM FinTracker is a minimalist, high-precision financial dashboard for tracking expenses, investments, and net worth with unit-level accuracy.' },
+      { name: 'keywords', content: 'DM FinTracker, finance dashboard, wealth forge, expense tracker, investment analytics, net worth tracking' },
+      { property: 'og:title', content: 'DM FinTracker | Forged for Wealth' },
       { property: 'og:description', content: 'A high-precision financial dashboard for individuals who value mathematical clarity.' },
       { property: 'og:type', content: 'website' }
     ]);
@@ -74,10 +74,13 @@ export class LandingComponent {
     }
   }
 
+  private targetScroll = 0;
+  private currentScroll = 0;
+
   private initMomentumScroll() {
     const scrollContainer = this.el.nativeElement;
-    let target = scrollContainer.scrollTop;
-    let current = scrollContainer.scrollTop;
+    this.targetScroll = scrollContainer.scrollTop;
+    this.currentScroll = scrollContainer.scrollTop;
     const lerp = (start: number, end: number, amt: number) => (1 - amt) * start + amt * end;
 
     scrollContainer.addEventListener('wheel', (e: WheelEvent) => {
@@ -86,30 +89,30 @@ export class LandingComponent {
       if (isOverGrid && window.innerWidth <= 768) return;
 
       e.preventDefault();
-      target += e.deltaY;
+      this.targetScroll += e.deltaY;
       const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-      target = Math.max(0, Math.min(target, maxScroll));
+      this.targetScroll = Math.max(0, Math.min(this.targetScroll, maxScroll));
     }, { passive: false });
 
     const animate = () => {
-      current = lerp(current, target, 0.1);
-      scrollContainer.scrollTop = current;
+      this.currentScroll = lerp(this.currentScroll, this.targetScroll, 0.1);
+      scrollContainer.scrollTop = this.currentScroll;
       
-      // If we are close to target, just snap to it to let CSS Snap take over if needed
-      if (Math.abs(target - current) < 1) {
-        current = target;
-        scrollContainer.scrollTop = target;
+      // If we are close to target, just snap to it
+      if (Math.abs(this.targetScroll - this.currentScroll) < 1) {
+        this.currentScroll = this.targetScroll;
+        scrollContainer.scrollTop = this.targetScroll;
       }
       
       requestAnimationFrame(animate);
     };
     requestAnimationFrame(animate);
 
-    // Sync target on manual scroll (e.g. scroll snap)
+    // Sync target on manual scroll (e.g. scroll snap or key navigation)
     scrollContainer.addEventListener('scroll', () => {
-      if (Math.abs(scrollContainer.scrollTop - current) > 10) {
-        target = scrollContainer.scrollTop;
-        current = scrollContainer.scrollTop;
+      if (Math.abs(scrollContainer.scrollTop - this.currentScroll) > 10) {
+        this.targetScroll = scrollContainer.scrollTop;
+        this.currentScroll = scrollContainer.scrollTop;
       }
 
       // Active link tracking
@@ -138,7 +141,9 @@ export class LandingComponent {
   scrollToSection(id: string) {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Update targetScroll instead of using scrollIntoView
+      // This allows the animation loop to take over smoothly
+      this.targetScroll = el.offsetTop;
     }
   }
 

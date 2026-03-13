@@ -4,7 +4,7 @@
   <div class="blur-blob two"></div>
 
   <nav class="nav">
-    <div class="logo brand-name"><span class="ash">DOM</span><span class="black">TRACKER</span></div>
+    <div class="logo brand-name"><span class="ash">DM</span> <span class="black">FinTracker</span></div>
     <div class="nav-links">
       <a (click)="scrollToSection('about')" class="nav-link" style="cursor: pointer;"><span>&lbrace;</span> About Us <span>&rbrace;</span></a>
       <a (click)="scrollToSection('solutions')" class="nav-link" style="cursor: pointer;"><span><</span> Solutions <span>></span></a>
@@ -25,7 +25,9 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
       </p>
       <div class="hero-actions">
         <a routerLink="/login" class="btn-main">[ Get Started ]</a>
-            <button (click)="pwaService.installApp()" class="btn-sub">< Install App ></button>
+            @if (pwaService.canInstall()) {
+              <button (click)="pwaService.installApp()" class="btn-sub">< Install App ></button>
+            }
       </div>
     </div>
     <div class="hero-right">
@@ -49,7 +51,7 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
             <li><span>•</span> surface performance without financial theater</li>
             <li><span>•</span> keep data structured, fast, and brutally honest</li>
         </ul>
-        <p class="about-conclusion">Because serious investors don’t need fireworks — they need control panels. <br><span class="brand-name"><span class="ash">DOM</span><span class="black">TRACKER</span></span> is that panel.</p>
+        <p class="about-conclusion">Because serious investors don’t need fireworks — they need control panels. <br><span class="brand-name"><span class="ash">DM</span> <span class="black">FinTracker</span></span> is that panel.</p>
     </div>
   </section>
 
@@ -57,7 +59,7 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
     <div class="section-label">< Systems Analysis ></div>
     <div class="solutions-intro">
         <h2>Solutions</h2>
-        <p>DOMtracker is a toolkit for people who prefer organized numbers over chaotic spreadsheets.</p>
+        <p>DM FinTracker is a toolkit for people who prefer organized numbers over chaotic spreadsheets.</p>
     </div>
     <div class="solutions-grid">
         <div class="solution-card">
@@ -73,7 +75,7 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
         <div class="solution-card">
             <div class="card-num">03</div>
             <h3>Transaction Intelligence</h3>
-            <p>Import your transactions and let DOMtracker do the sorting. Your past investment decisions finally make sense.</p>
+            <p>Import your transactions and let DM FinTracker do the sorting. Your past investment decisions finally make sense.</p>
         </div>
         <div class="solution-card">
             <div class="card-num">04</div>
@@ -83,14 +85,14 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
         <div class="solution-card">
             <div class="card-num">05</div>
             <h3>Personal Financial Control</h3>
-            <p>Stop juggling spreadsheets, screenshots, and memory. DOMtracker turns scattered records into a single command center for your portfolio.</p>
+            <p>Stop juggling spreadsheets, screenshots, and memory. DM FinTracker turns scattered records into a single command center for your portfolio.</p>
         </div>
     </div>
   </section>
 
   <footer class="footer">
     <div class="footer-left">
-        &copy; 2026 DOMTRACKER. All rights reserved.
+        &copy; 2026 DM FinTracker. All rights reserved.
     </div>
     <div class="footer-right">
         Inspired by <a href="https://www.domforge.com/" target="_blank" class="footer-link">Domforge</a>

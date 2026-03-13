@@ -11,15 +11,26 @@ export class ThemeService {
             this.isDark.set(dark);
             this.applyTheme(dark);
         } else {
-            this.applyTheme(true);
+            // Default to light for app
+            this.applyTheme(false);
         }
+    }
+
+    setTheme(dark: boolean) {
+        this.isDark.set(dark);
+        this.applyTheme(dark);
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+    }
+
+    clearTheme() {
+        localStorage.removeItem('theme');
+        this.isDark.set(false); // Default to light when cleared or on landing
+        this.applyTheme(false);
     }
 
     toggle() {
         const next = !this.isDark();
-        this.isDark.set(next);
-        this.applyTheme(next);
-        localStorage.setItem('theme', next ? 'dark' : 'light');
+        this.setTheme(next);
     }
 
     private applyTheme(dark: boolean) {

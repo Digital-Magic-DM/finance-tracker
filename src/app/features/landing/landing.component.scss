@@ -1,7 +1,7 @@
 :host {
   display: block;
-  background: #ffffff;
-  color: #000000;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: 'Inter', sans-serif;
   height: 100vh;
   overflow-y: scroll;
@@ -51,8 +51,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
-  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-primary);
   backdrop-filter: blur(8px);
   z-index: 100;
 
@@ -100,7 +100,7 @@
 
 .nav-link {
   text-decoration: none;
-  color: #000000;
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -204,7 +204,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 4px;
-  color: #666;
+  color: var(--text-muted);
   margin-bottom: 24px;
 }
 
@@ -251,7 +251,7 @@
 .hero-subtext {
   font-size: 18px;
   line-height: 1.6;
-  color: #444;
+  color: var(--text-secondary);
   max-width: 500px;
   margin-bottom: 48px;
 
@@ -300,8 +300,8 @@
 
 .btn-sub {
   background: transparent;
-  border: 1px solid #000;
-  color: #000;
+  border: 1px solid var(--text-primary);
+  color: var(--text-primary);
   padding: 18px 40px;
   font-weight: 700;
   text-transform: uppercase;
@@ -319,7 +319,7 @@
 .line-illustration {
   width: 100%;
   height: auto;
-  color: #000;
+  color: var(--text-primary);
   opacity: 0.1;
   max-width: 400px;
 
@@ -378,7 +378,7 @@
   line-height: 1.4;
   font-weight: 500;
   margin-bottom: 32px;
-  color: #000;
+  color: var(--text-primary);
 
   @media (max-width: 768px) {
     font-size: 18px;

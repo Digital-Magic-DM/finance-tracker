@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Meta } from '@angular/platform-browser';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
     selector: 'app-login',
@@ -14,8 +15,10 @@ export class LoginComponent {
     private authService = inject(AuthService);
     private router = inject(Router);
     private meta = inject(Meta);
+    private themeService = inject(ThemeService);
 
     constructor() {
+        this.themeService.clearTheme();
         this.meta.addTag({ name: 'robots', content: 'noindex, follow' });
     }
 
