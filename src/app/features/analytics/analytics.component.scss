@@ -54,8 +54,11 @@
 
 .cat-name {
     width: 120px;
-    font-size: 13px;
-    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 800; /* Extra bold for minimalist look */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
     flex-shrink: 0;
     white-space: nowrap;
     overflow: hidden;

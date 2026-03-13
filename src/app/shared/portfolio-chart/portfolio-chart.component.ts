@@ -1,11 +1,12 @@
 import {
     Component, Input, OnChanges, AfterViewInit,
-    ElementRef, ViewChild, OnDestroy
+    ElementRef, ViewChild, OnDestroy, inject, effect
 } from '@angular/core';
 import {
     Chart, DoughnutController, ArcElement, Tooltip, Legend
 } from 'chart.js';
 import { AssetAllocation } from '../../models/finance.models';
+import { ThemeService } from '../../services/theme.service';
 
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
@@ -22,7 +23,16 @@ export class PortfolioChartComponent implements AfterViewInit, OnChanges, OnDest
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
     @Input() allocations: AssetAllocation[] = [];
 
+    private themeService = inject(ThemeService);
     private chart?: Chart;
+
+    constructor() {
+        effect(() => {
+            if (this.themeService.isDark() !== undefined && this.chart) {
+                this.updateChart();
+            }
+        });
+    }
 
     ngAfterViewInit() { this.buildChart(); }
 
@@ -47,8 +57,8 @@ export class PortfolioChartComponent implements AfterViewInit, OnChanges, OnDest
                     legend: {
                         position: 'right',
                         labels: {
-                            color: '#999999',
-                            font: { family: 'Inter', size: 12, weight: 500 },
+                            color: this.resolveColor('var(--text-muted)'),
+                            font: { family: 'Inter', size: 12, weight: 600 },
                             padding: 16,
                             usePointStyle: true,
                             pointStyleWidth: 10,
@@ -92,7 +102,13 @@ export class PortfolioChartComponent implements AfterViewInit, OnChanges, OnDest
 
     private updateChart() {
         if (!this.chart) return;
+
+        // Update legend color
+        this.chart.options.plugins!.legend!.labels!.color = this.resolveColor('var(--text-muted)');
+        
+        // Update data and colors
         this.chart.data = this.getChartData();
-        this.chart.update('active');
+        
+        this.chart.update('none');
     }
 }

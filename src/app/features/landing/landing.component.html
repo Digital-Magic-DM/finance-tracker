@@ -9,6 +9,17 @@
       <a (click)="scrollToSection('about')" class="nav-link" style="cursor: pointer;"><span>&lbrace;</span> About Us <span>&rbrace;</span></a>
       <a (click)="scrollToSection('solutions')" class="nav-link" style="cursor: pointer;"><span><</span> Solutions <span>></span></a>
       <a routerLink="/login" class="nav-link active"><span>(</span> Sign In <span>)</span></a>
+      <button 
+        class="nav-link theme-toggle-btn" 
+        (click)="themeService.toggle()" 
+        [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+        style="background: none; border: none; cursor: pointer; padding: 4px 0;">
+        <span>[</span> 
+        <i class="material-icons" style="font-size: 16px; vertical-align: middle;">
+          {{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}
+        </i> 
+        <span>]</span>
+      </button>
     </div>
   </nav>
 

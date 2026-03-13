@@ -4,6 +4,7 @@ import { RouterLink, Router } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { Auth } from '@angular/fire/auth';
 import { PwaService } from '../../services/pwa.service';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-landing',
@@ -18,6 +19,7 @@ export class LandingComponent {
   private router = inject(Router);
   private el = inject(ElementRef);
   public pwaService = inject(PwaService);
+  public themeService = inject(ThemeService);
 
   phrases = ['Wealth', 'Web', 'We'];
   currentPhrase = signal('');

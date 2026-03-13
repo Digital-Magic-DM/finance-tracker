@@ -95,6 +95,7 @@
     &.positive {
         background: var(--text-primary);
         color: var(--bg-primary);
+        border-color: var(--text-primary);
     }
 }
 
@@ -105,16 +106,19 @@
 
 .tx-desc {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 700;
     color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 .tx-meta {
     font-size: 11px;
+    font-weight: 600;
     color: var(--text-muted);
 }
 
@@ -126,12 +130,10 @@
 
     &.positive {
       color: var(--accent-success-blend);
-      font-weight: 800;
     }
     
     &.negative {
       color: var(--accent-danger-blend);
-      font-weight: 500;
       font-style: italic;
     }
 }
