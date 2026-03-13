@@ -37,15 +37,15 @@
               {{ (authService.firebaseUser()?.displayName || authService.firebaseUser()?.email || 'D').charAt(0).toUpperCase() }}
             </div>
           }
-          <span class="user-name">{{ authService.firebaseUser()?.displayName?.split(' ')?.at(0) || 'Developer' }}</span>
+          <span class="user-name">{{ authService.firebaseUser()?.displayName?.split(' ')?.at(0) || 'User' }}</span>
           <span class="material-icons dropdown-arrow" [class.open]="showProfileDropdown()">expand_more</span>
         </div>
 
         @if (showProfileDropdown()) {
           <div class="profile-dropdown">
             <div class="dropdown-header">
-              <span class="fw-bold">{{ authService.firebaseUser()?.displayName || 'Developer Mode' }}</span>
-              <span class="text-muted text-sm">{{ authService.firebaseUser()?.email || 'local@developer.com' }}</span>
+              <span class="fw-bold">{{ authService.firebaseUser()?.displayName || 'User Profile' }}</span>
+              <span class="text-muted text-sm">{{ authService.firebaseUser()?.email || '' }}</span>
             </div>
             <div class="dropdown-divider"></div>
             <a routerLink="/app/settings" class="dropdown-item" (click)="showProfileDropdown.set(false)">

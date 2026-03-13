@@ -15,22 +15,17 @@ export class AuthService {
     private auth = inject(Auth);
     private router = inject(Router);
 
-    readonly firebaseUser = toSignal(user(this.auth));
-    private devBypass = signal(false);
-
-    readonly isLoggedIn = computed(() => this.devBypass() || !!this.firebaseUser());
+    readonly user$ = user(this.auth);
+    readonly firebaseUser = toSignal(this.user$);
+    readonly isLoggedIn = computed(() => !!this.firebaseUser());
 
     signInWithGoogle(): Observable<any> {
         const provider = new GoogleAuthProvider();
         return from(signInWithPopup(this.auth, provider));
     }
 
-    setBypass(value: boolean) {
-        this.devBypass.set(value);
-    }
 
     signOut(): Observable<void> {
-        this.devBypass.set(false);
         return from(
             signOut(this.auth).then(() => {
                 this.router.navigate(['/']);

@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AsyncPipe } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
@@ -11,7 +12,7 @@ import { ImportDataComponent } from './import-data/import-data.component';
 @Component({
     selector: 'app-settings',
     standalone: true,
-    imports: [ImportDataComponent],
+    imports: [ImportDataComponent, RouterLink],
     templateUrl: './settings.component.html',
     styleUrl: './settings.component.scss',
 })

@@ -4,7 +4,7 @@
   <div class="blur-blob two"></div>
 
   <nav class="nav">
-    <div class="logo brand-name"><span class="ash">DM</span> <span class="black">FinTracker</span></div>
+    <div class="logo brand-name" [routerLink]="['/']" style="cursor: pointer;"><span class="ash">DM</span> <span class="black">FinTracker</span></div>
     <div class="nav-links">
       <a (click)="scrollToSection('about')" class="nav-link" style="cursor: pointer;"><span>&lbrace;</span> About Us <span>&rbrace;</span></a>
       <a (click)="scrollToSection('solutions')" class="nav-link" style="cursor: pointer;"><span><</span> Solutions <span>></span></a>
@@ -62,7 +62,7 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
             <li><span>•</span> surface performance without financial theater</li>
             <li><span>•</span> keep data structured, fast, and brutally honest</li>
         </ul>
-        <p class="about-conclusion">Because serious investors don’t need fireworks — they need control panels. <br><span class="brand-name"><span class="ash">DM</span> <span class="black">FinTracker</span></span> is that panel.</p>
+        <p class="about-conclusion">Because serious investors don’t need fireworks — they need control panels. <br><span class="brand-name" [routerLink]="['/']" style="cursor: pointer;"><span class="ash">DM</span> <span class="black">FinTracker</span></span> is that panel.</p>
     </div>
   </section>
 

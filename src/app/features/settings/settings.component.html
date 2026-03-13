@@ -14,9 +14,11 @@
           </div>
         }
         <div class="profile-info">
-          <h2>{{ authService.firebaseUser()?.displayName || 'Developer Mode' }}</h2>
-          <p>{{ authService.firebaseUser()?.email || 'local@developer.com' }}</p>
-          <span class="badge badge-success" style="margin-top:8px">● {{ authService.firebaseUser() ? 'Google Account Connected' : 'Local Bypass Active' }}</span>
+          <h2>{{ authService.firebaseUser()?.displayName || 'User Profile' }}</h2>
+          <p>{{ authService.firebaseUser()?.email || '' }}</p>
+          @if (authService.firebaseUser()) {
+            <span class="badge badge-success" style="margin-top:8px">● Google Account Connected</span>
+          }
         </div>
       </div>
     </div>
@@ -110,7 +112,7 @@
 
     <!-- About -->
     <div class="card about-card">
-      <div class="about-logo">
+      <div class="about-logo" [routerLink]="['/app/dashboard']" style="cursor: pointer;">
         <img src="/assets/applogo.png" alt="Logo" style="width: 28px; height: 28px; object-fit: contain;" />
         <span class="about-name brand-name"><span class="ash">DM</span> <span class="black">FinTracker</span></span>
       </div>
