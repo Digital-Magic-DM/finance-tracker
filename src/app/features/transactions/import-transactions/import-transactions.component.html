@@ -1,0 +1,141 @@
+<div class="modal-overlay" (click)="close()">
+  <div class="import-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">cloud_upload</span>
+        Import Transactions
+      </h3>
+      <button class="btn-icon" (click)="close()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Step 1: Upload -->
+    @if (step() === 'upload') {
+      <div class="modal-body">
+        <p class="upload-subtitle">Import your bank statements or app transaction logs (CSV / Excel).</p>
+
+        <div class="supported-formats">
+          <span class="material-icons" style="font-size: 16px; color: var(--text-muted)">info</span>
+          <span>Supports: <strong>.csv</strong>, <strong>.xlsx</strong>, <strong>.xls</strong></span>
+        </div>
+
+        <div
+          class="drop-zone"
+          [class.drag-over]="dragOver()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (click)="fileInput.click()"
+        >
+          <span class="material-icons drop-icon">account_balance_wallet</span>
+          <span class="drop-title">Drag & drop your statement here</span>
+          <span class="drop-subtitle">or click to browse</span>
+          <input #fileInput type="file" accept=".csv,.xlsx,.xls" hidden (change)="onFileSelected($event)" />
+        </div>
+
+        @if (error()) {
+          <div class="error-msg">
+            <span class="material-icons" style="font-size: 18px">error_outline</span>
+            {{ error() }}
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Step 2: Preview -->
+    @if (step() === 'preview') {
+      <div class="modal-body preview-body">
+        <div class="preview-header">
+          <div class="detected-badge">
+            <span class="material-icons" style="font-size: 16px">check_circle</span>
+            Transactions Detected
+          </div>
+          <span class="preview-count">{{ selectedCount }} of {{ rows().length }} selected</span>
+        </div>
+
+        @if (fileName()) {
+          <div class="file-name-badge">
+            <span class="material-icons" style="font-size: 16px">description</span>
+            {{ fileName() }}
+          </div>
+        }
+
+        <div class="preview-table-wrap">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th style="width: 40px">
+                  <input type="checkbox" [checked]="selectedCount === rows().length" (change)="toggleAll()" />
+                </th>
+                <th>Date</th>
+                <th>Description</th>
+                <th class="num">Amount</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of rows(); track $index) {
+                <tr [class.deselected]="!row.selected" (click)="toggleRow($index)">
+                  <td><input type="checkbox" [checked]="row.selected" (click)="$event.stopPropagation()" (change)="toggleRow($index)" /></td>
+                  <td>{{ row.transaction.date | date:'dd MMM yyyy' }}</td>
+                  <td class="name-cell">{{ row.transaction.description }}</td>
+                  <td class="num" [class.positive]="row.transaction.type === 'Income'" [class.negative]="row.transaction.type === 'Expense'">
+                    {{ row.transaction.type === 'Income' ? '+' : '-' }}
+                    {{ row.transaction.amount | currency:'INR':'symbol':'1.0-0' }}
+                  </td>
+                  <td>
+                    <span class="type-badge" [class.income]="row.transaction.type === 'Income'" [class.expense]="row.transaction.type === 'Expense'">
+                      {{ row.transaction.type }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (error()) {
+          <div class="error-msg">
+            <span class="material-icons" style="font-size: 18px">error_outline</span>
+            {{ error() }}
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="reset()">
+          <span class="material-icons" style="font-size: 18px">arrow_back</span> Back
+        </button>
+        <button class="btn btn-primary" [disabled]="importing() || selectedCount === 0" (click)="confirmImport()">
+          @if (importing()) {
+            <span class="material-icons spin" style="font-size: 18px">sync</span> Importing...
+          } @else {
+            <span class="material-icons" style="font-size: 18px">download_done</span> Import {{ selectedCount }} Transactions
+          }
+        </button>
+      </div>
+    }
+
+    <!-- Step 3: Done -->
+    @if (step() === 'done') {
+      <div class="modal-body done-body">
+        <div class="done-check">
+          <span class="material-icons">check_circle</span>
+        </div>
+        <h3>Import Complete!</h3>
+        <p class="done-summary">
+          <strong>{{ importedCount() }}</strong> transactions added successfully
+        </p>
+        <div class="done-actions">
+          <button class="btn btn-ghost" (click)="reset()">
+            <span class="material-icons" style="font-size: 18px">add</span> Import More
+          </button>
+          <button class="btn btn-primary" (click)="close()">
+            <span class="material-icons" style="font-size: 18px">done</span> Done
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

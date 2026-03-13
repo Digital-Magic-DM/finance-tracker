@@ -5,6 +5,7 @@ import { AssetService } from '../../services/asset.service';
 import { TransactionService } from '../../services/transaction.service';
 import { SnapshotService } from '../../services/snapshot.service';
 import { AuthService } from '../../services/auth.service';
+import { ImportPlatform } from '../../services/import-data.service';
 import {
     Asset, Transaction, TransactionType,
     AssetType, ASSET_COLORS, AssetAllocation
@@ -46,26 +47,38 @@ export class DashboardComponent implements OnInit {
 
     monthlyIncome = computed(() => {
         const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+
         return this.transactions()
             .filter((t) => {
-                const d = t.date instanceof Date ? t.date : new Date((t.date as any).seconds * 1000);
-                return t.type === TransactionType.Income &&
-                    d.getMonth() === now.getMonth() &&
-                    d.getFullYear() === now.getFullYear();
+                const d = this.formatDate(t.date);
+                if (isNaN(d.getTime())) return false;
+                
+                const isCorrectMonth = d.getMonth() === month && d.getFullYear() === year;
+                const isIncomeType = t.type === TransactionType.Income || t.type === TransactionType.Sell;
+                
+                return isIncomeType && isCorrectMonth;
             })
-            .reduce((s, t) => s + t.amount, 0);
+            .reduce((s, t) => s + (Number(t.amount) || 0), 0);
     });
 
     monthlyExpense = computed(() => {
         const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+
         return this.transactions()
             .filter((t) => {
-                const d = t.date instanceof Date ? t.date : new Date((t.date as any).seconds * 1000);
-                return t.type === TransactionType.Expense &&
-                    d.getMonth() === now.getMonth() &&
-                    d.getFullYear() === now.getFullYear();
+                const d = this.formatDate(t.date);
+                if (isNaN(d.getTime())) return false;
+
+                const isCorrectMonth = d.getMonth() === month && d.getFullYear() === year;
+                const isExpenseType = t.type === TransactionType.Expense || t.type === TransactionType.Buy;
+
+                return isExpenseType && isCorrectMonth;
             })
-            .reduce((s, t) => s + t.amount, 0);
+            .reduce((s, t) => s + (Number(t.amount) || 0), 0);
     });
 
     recentTransactions = computed(() => this.transactions().slice(0, 5));
@@ -84,6 +97,32 @@ export class DashboardComponent implements OnInit {
             percentage: (value / total) * 100,
             color: ASSET_COLORS[type as AssetType] || '#9E9E9E',
         }));
+    });
+    
+    appWiseHoldings = computed(() => {
+        const total = this.totalNetWorth();
+        if (total === 0) return [];
+        
+        const grouped: { [key: string]: number } = {};
+        for (const a of this.assets()) {
+            const val = a.quantity * a.currentPrice;
+            let source = 'Manual';
+            
+            // Parse source from notes: "Imported from Groww" -> "Groww"
+            if (a.notes?.includes('Imported from')) {
+                source = a.notes.replace('Imported from', '').trim();
+            }
+            
+            grouped[source] = (grouped[source] || 0) + val;
+        }
+        
+        return Object.entries(grouped)
+            .map(([label, value]) => ({
+                label,
+                value,
+                percentage: (value / total) * 100
+            }))
+            .sort((a, b) => b.value - a.value);
     });
 
     networthHistory = computed(() =>

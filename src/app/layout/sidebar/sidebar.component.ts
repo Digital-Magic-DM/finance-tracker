@@ -1,6 +1,7 @@
 import { Component, inject, signal, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { PwaService } from '../../services/pwa.service';
 
 interface NavItem {
     label: string;
@@ -17,15 +18,16 @@ interface NavItem {
 })
 export class SidebarComponent {
     private authService = inject(AuthService);
+    public pwaService = inject(PwaService);
     collapsed = signal(false);
     closeSidebar = output<void>();
 
     navItems: NavItem[] = [
-        { label: 'Dashboard', icon: '◈', route: '/dashboard' },
-        { label: 'Assets', icon: '◆', route: '/assets' },
-        { label: 'Transactions', icon: '⇌', route: '/transactions' },
-        { label: 'Analytics', icon: '▲', route: '/analytics' },
-        { label: 'Settings', icon: '⚙', route: '/settings' },
+        { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard' },
+        { label: 'Assets', icon: 'account_balance_wallet', route: '/app/assets' },
+        { label: 'Transactions', icon: 'receipt_long', route: '/app/transactions' },
+        { label: 'Analytics', icon: 'analytics', route: '/app/analytics' },
+        { label: 'Settings', icon: 'settings', route: '/app/settings' },
     ];
 
     signOut() {

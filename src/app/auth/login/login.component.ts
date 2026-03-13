@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { Meta } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-login',
@@ -12,6 +13,11 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent {
     private authService = inject(AuthService);
     private router = inject(Router);
+    private meta = inject(Meta);
+
+    constructor() {
+        this.meta.addTag({ name: 'robots', content: 'noindex, follow' });
+    }
 
     loading = signal(false);
     error = signal('');
@@ -21,7 +27,7 @@ export class LoginComponent {
         this.error.set('');
         this.authService.signInWithGoogle().subscribe({
             next: () => {
-                this.router.navigate(['/dashboard']);
+                this.router.navigate(['/app/dashboard']);
             },
             error: (err: any) => {
                 this.error.set('Sign in failed. Please try again.');

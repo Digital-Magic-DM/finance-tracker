@@ -6,21 +6,21 @@
   <!-- Summary Cards -->
   <div class="summary-row">
     <div class="card stat-card">
-      <div class="material-icons stat-icon" style="background:rgba(0,212,170,0.12)">account_balance_wallet</div>
+      <div class="material-icons stat-icon">account_balance_wallet</div>
       <p class="stat-label">Total Income</p>
-      <div class="stat-value" style="background:var(--gradient-green);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+      <div class="stat-value text-success">
         {{ totalIncome() | currency:'INR':'symbol':'1.0-0' }}
       </div>
     </div>
     <div class="card stat-card">
-      <div class="material-icons stat-icon" style="background:rgba(255,107,107,0.12)">money_off</div>
+      <div class="material-icons stat-icon">money_off</div>
       <p class="stat-label">Total Expense</p>
-      <div class="stat-value" style="background:var(--gradient-danger);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+      <div class="stat-value text-danger">
         {{ totalExpense() | currency:'INR':'symbol':'1.0-0' }}
       </div>
     </div>
     <div class="card stat-card">
-      <div class="material-icons stat-icon" style="background:rgba(108,99,255,0.12)">savings</div>
+      <div class="material-icons stat-icon">savings</div>
       <p class="stat-label">Savings Rate</p>
       <div class="stat-value">{{ savingsRate() | number:'1.1-1' }}%</div>
       <div class="stat-change" [class.positive]="savingsRate() >= 0" [class.negative]="savingsRate() < 0">

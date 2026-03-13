@@ -1,14 +1,22 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
+import { authRedirectGuard } from './auth/auth-redirect.guard';
 
 export const routes: Routes = [
     {
+        path: '',
+        canActivate: [authRedirectGuard],
+        loadComponent: () =>
+            import('./features/landing/landing.component').then((m) => m.LandingComponent),
+    },
+    {
         path: 'login',
+        canActivate: [authRedirectGuard],
         loadComponent: () =>
             import('./auth/login/login.component').then((m) => m.LoginComponent),
     },
     {
-        path: '',
+        path: 'app',
         canActivate: [authGuard],
         loadComponent: () =>
             import('./layout/layout.component').then((m) => m.LayoutComponent),

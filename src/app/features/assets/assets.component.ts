@@ -45,6 +45,8 @@ export class AssetsComponent {
     selectMode = signal(false);
     selectedIds = signal<Set<string>>(new Set());
     deleting = signal(false);
+    
+    viewMode = signal<'grid' | 'table'>((localStorage.getItem('assetsViewMode') as 'grid' | 'table') || 'grid');
 
     // Collapsed groups tracking
     private collapsedGroups = signal<Set<string>>(new Set());
@@ -157,7 +159,12 @@ export class AssetsComponent {
         });
     }
 
-    // ─── Multi-select ────────────────────────────
+    toggleViewMode() {
+        const next = this.viewMode() === 'table' ? 'grid' : 'table';
+        this.viewMode.set(next);
+        localStorage.setItem('assetsViewMode', next);
+    }
+   // ─── Multi-select ────────────────────────────
     toggleSelectMode() {
         if (this.selectMode()) {
             // Exiting select mode — clear selections

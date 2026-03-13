@@ -4,6 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { AssetService } from '../../services/asset.service';
 import { TransactionService } from '../../services/transaction.service';
+import { PwaService } from '../../services/pwa.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportDataComponent } from './import-data/import-data.component';
 
@@ -17,6 +18,7 @@ import { ImportDataComponent } from './import-data/import-data.component';
 export class SettingsComponent {
     authService = inject(AuthService);
     themeService = inject(ThemeService);
+    pwaService = inject(PwaService);
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
 

@@ -5,10 +5,11 @@
       <div class="logo-icon">
         <img src="/assets/applogo.png" alt="Logo" style="width: 20px; height: 20px; object-fit: contain;" />
       </div>
-      <span class="logo-text">DM Finance</span>
+      <div class="logo-text brand-name"><span class="ash">DOM</span><span class="black">TRACKER</span></div>
     </div>
     <button class="close-btn btn-icon" (click)="closeSidebar.emit()">✕</button>
   </div>
+
 
   <!-- Navigation -->
   <nav class="sidebar-nav">
@@ -19,19 +20,30 @@
         [routerLink]="item.route"
         routerLinkActive="active"
         (click)="closeSidebar.emit()">
-        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-icon material-icons">{{ item.icon }}</span>
         <span class="nav-text">{{ item.label }}</span>
-        <span class="nav-arrow">›</span>
+        <span class="nav-arrow material-icons">chevron_right</span>
       </a>
     }
   </nav>
 
   <!-- Footer -->
   <div class="sidebar-footer">
-    <button class="sign-out-btn" (click)="signOut()">
-      <span>⏻</span>
+    
+    @if (pwaService.canInstall()) {
+      <div class="sidebar-pwa-promo footer-pwa" (click)="pwaService.installApp(); closeSidebar.emit()">
+        <span class="material-icons">install_mobile</span>
+        <div class="pwa-text">
+          <span class="pwa-title">Install App</span>
+          <span class="pwa-subtitle">Click to install</span>
+        </div>
+      </div>
+    }
+
+    <button class="footer-btn sign-out-btn" (click)="signOut()">
+      <span class="material-icons">logout</span>
       <span>Sign Out</span>
     </button>
-    <p class="version">v1.0.0 · DM Finance</p>
+    <p class="version">v1.0.0 · DOMTRACKER</p>
   </div>
 </aside>

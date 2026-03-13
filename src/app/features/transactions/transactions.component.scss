@@ -15,7 +15,8 @@
 }
 
 tr.selected {
-    background: rgba(108, 99, 255, 0.05);
+    background: var(--bg-card-hover);
+    outline: 2px solid var(--text-primary);
 }
 
 .tx-summary {
@@ -42,15 +43,18 @@ tr.selected {
 }
 
 .s-value {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 800;
+    color: var(--text-primary);
 
     &.positive {
-        color: var(--accent-secondary);
+        color: var(--accent-success-blend);
+        text-decoration: underline;
     }
 
     &.negative {
-        color: var(--accent-danger);
+        color: var(--accent-danger-blend);
+        font-style: italic;
     }
 }
 
@@ -71,34 +75,47 @@ tr.selected {
 }
 
 .filter-btn {
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border: 2px solid var(--border-color);
     background: transparent;
-    color: var(--text-secondary);
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
     cursor: pointer;
     transition: all var(--transition-fast);
 
     &:hover {
-        border-color: var(--accent-primary);
-        color: var(--accent-primary);
+        background: var(--bg-card-hover);
     }
 
     &.active {
-        background: var(--accent-primary);
-        border-color: var(--accent-primary);
-        color: white;
+        background: var(--text-primary);
+        color: var(--bg-primary);
     }
 }
 
-.search-input {
-    width: 200px;
+.search-box {
+    position: relative;
+    width: 220px;
 
-    @media (max-width:600px) {
+    @media (max-width: 600px) {
         width: 100%;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 18px;
+        color: var(--text-muted);
+        pointer-events: none;
+    }
+
+    .search-input {
+        width: 100%;
+        padding-left: 40px;
     }
 }
 
@@ -114,33 +131,27 @@ tr.selected {
 }
 
 .tx-type-icon {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border-color);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    font-weight: 700;
     flex-shrink: 0;
 
     &.positive {
-        background: rgba(0, 212, 170, 0.12);
-        color: var(--accent-secondary);
-    }
-
-    &.negative {
-        background: rgba(255, 107, 107, 0.12);
-        color: var(--accent-danger);
+        background: var(--text-primary);
+        color: var(--bg-primary);
     }
 }
 
 .positive {
-    color: var(--accent-secondary);
+    color: var(--accent-success-blend);
 }
 
 .negative {
-    color: var(--accent-danger);
+    color: var(--accent-danger-blend);
 }
 
 .form-row {

@@ -286,9 +286,14 @@ export class ImportDataService {
                 currentPrice = currentPrice / quantity;
             }
 
+            let type = defaultType;
+            if (name.toUpperCase().includes(' ETF') || name.toUpperCase().endsWith(' ETF')) {
+                type = AssetType.ETF;
+            }
+
             assets.push({
                 name,
-                type: defaultType,
+                type,
                 quantity,
                 buyPrice,
                 currentPrice,
@@ -322,10 +327,11 @@ export class ImportDataService {
         }
         // Heuristic from name
         const lower = name.toLowerCase();
-        if (lower.includes('fund') || lower.includes('scheme') || lower.includes('nifty') || lower.includes('sensex')) {
+        if (lower.includes('fund') || lower.includes('scheme') || lower.includes('amc')) {
             if (lower.includes('etf') || lower.includes('exchange traded')) return AssetType.ETF;
             return AssetType.MutualFund;
         }
+        if (lower.includes('etf')) return AssetType.ETF;
         return AssetType.Stock;
     }
 

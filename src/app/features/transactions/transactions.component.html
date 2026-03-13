@@ -11,6 +11,10 @@
       } @else {
         <button class="btn btn-secondary" (click)="toggleSelectMode()">Select</button>
         <button class="btn btn-primary" id="add-tx-btn" (click)="openAdd()">+ Add</button>
+        <button class="btn btn-ghost" (click)="showImport.set(true)" title="Import from CSV/Excel">
+          <span class="material-icons sm-icon">upload_file</span>
+          Import
+        </button>
       }
     </div>
   </div>
@@ -41,8 +45,11 @@
           (click)="filterType.set(type)">{{ type }}</button>
       }
     </div>
-    <input class="form-control search-input" type="text" placeholder="🔍 Search..."
-      [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" />
+    <div class="search-box">
+      <span class="material-icons search-icon">search</span>
+      <input class="form-control search-input" type="text" placeholder="Search..."
+        [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" />
+    </div>
   </div>
 
   <!-- Transaction List -->
@@ -52,7 +59,7 @@
         <thead>
           <tr>
             @if (selectMode()) {
-              <th style="width: 40px; text-align: center;">
+              <th class="col-check">
                 <input type="checkbox"
                   [checked]="selectedIds().size > 0 && selectedIds().size === filtered().length"
                   (change)="$any($event.target).checked ? selectAll() : deselectAll()" />
@@ -70,7 +77,7 @@
           @for (tx of filtered(); track tx.id) {
             <tr [class.selected]="isSelected(tx.id!)" (click)="selectMode() && toggleSelection(tx.id!)">
               @if (selectMode()) {
-                <td style="text-align: center;" (click)="$event.stopPropagation()">
+                <td class="col-check" (click)="$event.stopPropagation()">
                   <input type="checkbox" [checked]="isSelected(tx.id!)" (change)="toggleSelection(tx.id!)" />
                 </td>
               }
@@ -128,7 +135,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Description *</label>
+          <label>Label *</label>
           <input class="form-control" type="text" [value]="form().description"
             (input)="updateForm('description', $any($event.target).value)" placeholder="e.g. Monthly salary" />
         </div>
@@ -160,4 +167,12 @@
       </div>
     </div>
   </div>
+}
+
+<!-- Import Modal -->
+@if (showImport()) {
+  <app-import-transactions
+    (closed)="showImport.set(false)"
+    (imported)="showImport.set(false)"
+  />
 }

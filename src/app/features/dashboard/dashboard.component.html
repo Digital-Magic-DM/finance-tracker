@@ -1,43 +1,22 @@
 <div class="dashboard">
   <!-- Stats Row -->
   <div class="stats-grid">
-    <!-- Net Worth -->
-    <div class="card stat-card net-worth-card">
-      <div class="material-icons stat-icon" style="background: rgba(108,99,255,0.12)">account_balance_wallet</div>
-      <p class="stat-label">Total Net Worth</p>
-      <div class="stat-value">{{ totalNetWorth() | currency:'INR':'symbol':'1.0-0' }}</div>
-      <div class="stat-change" [class.positive]="totalGain() >= 0" [class.negative]="totalGain() < 0">
-        {{ totalGain() >= 0 ? '▲' : '▼' }}
-        {{ totalGainPct() | number:'1.1-1' }}%
-        ({{ totalGain() | currency:'INR':'symbol':'1.0-0' }})
-      </div>
-    </div>
-
-    <!-- Monthly Income -->
     <div class="card stat-card">
-      <div class="material-icons stat-icon" style="background: rgba(0,212,170,0.12)">payments</div>
+      <div class="material-icons stat-icon">account_balance_wallet</div>
       <p class="stat-label">Monthly Income</p>
-      <div class="stat-value" style="background: var(--gradient-green); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        {{ monthlyIncome() | currency:'INR':'symbol':'1.0-0' }}
-      </div>
+      <div class="stat-value text-success">₹{{ monthlyIncome() | number:'1.0-0' }}</div>
     </div>
-
-    <!-- Monthly Expense -->
     <div class="card stat-card">
-      <div class="material-icons stat-icon" style="background: rgba(255,107,107,0.12)">money_off</div>
+      <div class="material-icons stat-icon">money_off</div>
       <p class="stat-label">Monthly Expense</p>
-      <div class="stat-value" style="background: var(--gradient-danger); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        {{ monthlyExpense() | currency:'INR':'symbol':'1.0-0' }}
-      </div>
+      <div class="stat-value text-danger">₹{{ monthlyExpense() | number:'1.0-0' }}</div>
     </div>
 
     <!-- Total Assets -->
     <div class="card stat-card">
-      <div class="material-icons stat-icon" style="background: rgba(255,215,0,0.12)">inventory_2</div>
+      <div class="material-icons stat-icon">inventory_2</div>
       <p class="stat-label">Total Assets</p>
-      <div class="stat-value" style="background: var(--gradient-gold); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        {{ assets().length }}
-      </div>
+      <div class="stat-value">{{ assets().length }}</div>
       <div class="stat-change positive">Across {{ allocations().length }} categories</div>
     </div>
   </div>
@@ -85,7 +64,7 @@
     <div class="card recent-tx">
       <div class="card-header">
         <h3>Recent Transactions</h3>
-        <a routerLink="/transactions" class="btn btn-ghost" style="font-size:12px; padding: 6px 12px;">View All →</a>
+        <a routerLink="/app/transactions" class="btn btn-ghost" style="font-size:12px; padding: 6px 12px;">View All →</a>
       </div>
 
       @if (recentTransactions().length > 0) {
@@ -118,7 +97,7 @@
     <div class="card allocation-detail">
       <div class="card-header">
         <h3>Asset Breakdown</h3>
-        <a routerLink="/assets" class="btn btn-ghost" style="font-size:12px; padding: 6px 12px;">Manage →</a>
+        <a routerLink="/app/assets" class="btn btn-ghost" style="font-size:12px; padding: 6px 12px;">Manage →</a>
       </div>
 
       @if (allocations().length > 0) {
@@ -143,6 +122,39 @@
         <div class="empty-state">
           <span class="material-icons empty-icon">category</span>
           <span class="empty-title">No assets yet</span>
+        </div>
+      }
+    </div>
+
+    <!-- App-wise Holdings -->
+    <div class="card app-holdings">
+      <div class="card-header">
+        <h3>App-wise Holdings</h3>
+        <span class="badge badge-secondary">{{ appWiseHoldings().length }} Apps</span>
+      </div>
+
+      @if (appWiseHoldings().length > 0) {
+        <div class="alloc-list">
+          @for (app of appWiseHoldings(); track app.label) {
+            <div class="alloc-item">
+              <div class="alloc-info">
+                <div class="alloc-dot" style="background: #333"></div>
+                <span class="alloc-label">{{ app.label }}</span>
+              </div>
+              <div class="alloc-bar-wrap">
+                <div class="alloc-bar" [style.width.%]="app.percentage" style="background: #000"></div>
+              </div>
+              <div class="alloc-values">
+                <span class="alloc-value">{{ app.value | currency:'INR':'symbol':'1.0-0' }}</span>
+                <span class="alloc-pct">{{ app.percentage | number:'1.1-1' }}%</span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span class="material-icons empty-icon">apps</span>
+          <span class="empty-title">No holdings recorded</span>
         </div>
       }
     </div>

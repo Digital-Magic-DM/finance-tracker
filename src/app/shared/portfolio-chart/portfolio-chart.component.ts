@@ -40,12 +40,15 @@ export class PortfolioChartComponent implements AfterViewInit, OnChanges, OnDest
                 responsive: true,
                 maintainAspectRatio: false,
                 cutout: '70%',
+                animation: {
+                    duration: 0 // Faster updates when colors change or data refreshes
+                },
                 plugins: {
                     legend: {
                         position: 'right',
                         labels: {
-                            color: '#8896b0',
-                            font: { family: 'Inter', size: 12 },
+                            color: '#999999',
+                            font: { family: 'Inter', size: 12, weight: 500 },
                             padding: 16,
                             usePointStyle: true,
                             pointStyleWidth: 10,
@@ -64,16 +67,24 @@ export class PortfolioChartComponent implements AfterViewInit, OnChanges, OnDest
         });
     }
 
+    private resolveColor(color: string): string {
+        if (color.startsWith('var(')) {
+            const varName = color.substring(4, color.length - 1);
+            return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || '#888888';
+        }
+        return color;
+    }
+
     private getChartData() {
         return {
             labels: this.allocations.map((a) => a.label),
             datasets: [{
                 data: this.allocations.map((a) => a.value),
-                backgroundColor: this.allocations.map((a) => a.color),
-                hoverBackgroundColor: this.allocations.map((a) => a.color + 'CC'),
-                borderWidth: 2,
-                borderColor: 'transparent',
-                hoverBorderColor: 'transparent',
+                backgroundColor: this.allocations.map((a) => this.resolveColor(a.color)),
+                hoverBackgroundColor: this.allocations.map((a) => this.resolveColor(a.color) + 'CC'),
+                borderWidth: 1,
+                borderColor: '#333333',
+                hoverBorderColor: '#ffffff',
                 hoverOffset: 6,
             }],
         };

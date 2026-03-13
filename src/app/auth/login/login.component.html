@@ -1,36 +1,33 @@
 <section class="login-page">
-  <!-- Elegant dark animated background -->
-  <div class="bg-orbs">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
+  <!-- Background Blur blobs for consistency with landing page -->
+  <div class="blur-blob one"></div>
+  <div class="blur-blob two"></div>
 
   <div class="login-container">
     <div class="login-split-layout">
       
-      <!-- Left side: Brand identity -->
+      <!-- Left side: Brand identity & Insights -->
       <div class="brand-section">
         <div class="brand">
-          <img src="assets/applogo.png" alt="DM Finance Logo" class="app-logo" />
-          <h1>DM Finance</h1>
-          <p class="brand-sub">The smartest way to track your wealth.</p>
+          <div class="logo-text brand-name"><span class="ash">DOM</span><span class="black">TRACKER</span></div>
+          <p class="brand-sub">High-precision wealth analysis.</p>
         </div>
 
-        <div class="features-list">
-          <div class="feature-item">
-            <div class="feature-icon-wrapper"><span class="material-icons">insights</span></div>
-            <div class="feature-text">
-              <h3>Real-time Analytics</h3>
-              <p>Monitor your entire portfolio across all asset classes instantly.</p>
-            </div>
+        <div class="insights-list">
+          <div class="insight-item">
+            <div class="insight-label">Insights</div>
+            <h3>Real-time Portfolio Analytics</h3>
+            <p>Track your investments across assets with clear numbers, clean charts, and zero spreadsheet chaos.</p>
           </div>
-          <div class="feature-item">
-            <div class="feature-icon-wrapper"><span class="material-icons">security</span></div>
-            <div class="feature-text">
-              <h3>Bank-level Security</h3>
-              <p>Your financial data is completely encrypted and strictly private.</p>
-            </div>
+          
+          <div class="insight-item">
+            <div class="insight-label">Privacy First</div>
+            <p class="privacy-text">Your portfolio data isn’t sold, shared, or turned into ads. It’s your data — <span class="brand-name"><span class="ash">DOM</span><span class="black">TRACKER</span></span> just organizes it.</p>
+          </div>
+
+          <div class="insight-item">
+            <div class="insight-label">Built by a Developer</div>
+            <p class="dev-text">Forged in Chennai by a solo builder who prefers clean code and cleaner financial dashboards.</p>
           </div>
         </div>
       </div>
@@ -40,7 +37,7 @@
         <div class="login-card card-glass">
           <div class="card-header">
             <h2>Welcome Back</h2>
-            <p class="subtitle">Securely sign in to access your dashboard</p>
+            <p class="subtitle">Sign in to access your portfolio dashboard.</p>
           </div>
 
           @if (error()) {

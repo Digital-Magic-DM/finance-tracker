@@ -1,14 +1,15 @@
-import { Component, inject, signal, computed } from '@angular/core';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { Component, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/transaction.service';
 import { Transaction, TransactionType, TRANSACTION_CATEGORIES } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ImportTransactionsComponent } from './import-transactions/import-transactions.component';
 
 @Component({
     selector: 'app-transactions',
     standalone: true,
-    imports: [CurrencyPipe, DatePipe, FormsModule],
+    imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe, ImportTransactionsComponent],
     templateUrl: './transactions.component.html',
     styleUrl: './transactions.component.scss',
 })
@@ -17,6 +18,7 @@ export class TransactionsComponent {
 
     all = toSignal(this.txService.getTransactions(), { initialValue: [] });
     showModal = signal(false);
+    showImport = signal(false);
     editingId = signal<string | null>(null);
     saving = signal(false);
     filterType = signal<string>('All');
@@ -128,7 +130,7 @@ export class TransactionsComponent {
         const ids = Array.from(this.selectedIds());
         if (ids.length === 0) return;
 
-        const confirmText = `Delete ${ids.length} selected transaction${ids.length > 1 ? 's' : ''}?`;
+        const confirmText = `Delete ${ids.length} selected transactions?`;
         if (!confirm(confirmText)) return;
 
         this.deleting.set(true);
@@ -154,7 +156,7 @@ export class TransactionsComponent {
     }
 
     getTypeIcon(type: TransactionType) {
-        const icons = { Income: 'arrow_upward', Sell: 'arrow_upward', Expense: 'arrow_downward', Buy: 'add_circle' };
+        const icons: Record<string, string> = { Income: 'arrow_upward', Sell: 'arrow_upward', Expense: 'arrow_downward', Buy: 'add_circle' };
         return icons[type] || 'circle';
     }
 

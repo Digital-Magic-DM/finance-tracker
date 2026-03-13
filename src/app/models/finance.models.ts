@@ -71,14 +71,14 @@ export interface NetWorthPoint {
 }
 
 export const ASSET_COLORS: { [key in AssetType]: string } = {
-    [AssetType.Stock]: '#6C63FF',
-    [AssetType.MutualFund]: '#00D4AA',
-    [AssetType.ETF]: '#29B6F6',
-    [AssetType.Gold]: '#FFD700',
-    [AssetType.Cash]: '#4FC3F7',
-    [AssetType.RealEstate]: '#FF6B6B',
-    [AssetType.Crypto]: '#FF9800',
-    [AssetType.Other]: '#9E9E9E',
+    [AssetType.Stock]: 'var(--asset-stock)',
+    [AssetType.MutualFund]: 'var(--asset-mf)',
+    [AssetType.ETF]: 'var(--asset-etf)',
+    [AssetType.Gold]: 'var(--asset-gold)',
+    [AssetType.Cash]: 'var(--asset-cash)',
+    [AssetType.RealEstate]: 'var(--asset-re)',
+    [AssetType.Crypto]: 'var(--asset-crypto)',
+    [AssetType.Other]: 'var(--asset-other)',
 };
 
 export const TRANSACTION_CATEGORIES = [

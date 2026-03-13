@@ -1,0 +1,99 @@
+<div class="landing-page">
+  <!-- Background Blurs -->
+  <div class="blur-blob one"></div>
+  <div class="blur-blob two"></div>
+
+  <nav class="nav">
+    <div class="logo brand-name"><span class="ash">DOM</span><span class="black">TRACKER</span></div>
+    <div class="nav-links">
+      <a (click)="scrollToSection('about')" class="nav-link" style="cursor: pointer;"><span>&lbrace;</span> About Us <span>&rbrace;</span></a>
+      <a (click)="scrollToSection('solutions')" class="nav-link" style="cursor: pointer;"><span><</span> Solutions <span>></span></a>
+      <a routerLink="/login" class="nav-link active"><span>(</span> Sign In <span>)</span></a>
+    </div>
+  </nav>
+
+  <main class="hero">
+    <div class="hero-left">
+      <div class="industrial-label">Forged in Chennai</div>
+      <h1 class="hero-title"> 
+        Forged for <span class="typewriter">{{ currentPhrase() }}</span><span class="cursor">|</span>
+      </h1>
+      <p class="hero-subtext">
+       it's a high-precision (maybe) financial dashboard for people who prefer numbers over noise.
+No hype. No “get rich quick.” Just clean math, clear signals, and tools engineered for disciplined portfolio tracking.  <br>
+(Ai Generated - not Ai Powered)
+      </p>
+      <div class="hero-actions">
+        <a routerLink="/login" class="btn-main">[ Get Started ]</a>
+            <button (click)="pwaService.installApp()" class="btn-sub">< Install App ></button>
+      </div>
+    </div>
+    <div class="hero-right">
+        <div class="line-art-container">
+            <svg viewBox="0 0 200 200" class="line-illustration">
+                <line x1="20" y1="180" x2="180" y2="180" stroke="currentColor" stroke-width="2" />
+                <line x1="20" y1="180" x2="20" y2="20" stroke="currentColor" stroke-width="2" stroke-dasharray="4" />
+                <path d="M20 150 L60 120 L100 140 L140 80 L180 100" fill="none" stroke="currentColor" stroke-width="3" />
+                <circle cx="180" cy="100" r="4" fill="currentColor" />
+            </svg>
+        </div>
+    </div>
+  </main>
+
+  <section class="about-us-section" id="about">
+    <div class="section-label">< Core Philosophy ></div>
+    <div class="about-content">
+        <p class="about-lead">Written in anti-gravity code somewhere between midnight curiosity and early-morning caffeine, the system is designed to:</p>
+        <ul class="about-list">
+            <li><span>•</span> track portfolios with mechanical clarity</li>
+            <li><span>•</span> surface performance without financial theater</li>
+            <li><span>•</span> keep data structured, fast, and brutally honest</li>
+        </ul>
+        <p class="about-conclusion">Because serious investors don’t need fireworks — they need control panels. <br><span class="brand-name"><span class="ash">DOM</span><span class="black">TRACKER</span></span> is that panel.</p>
+    </div>
+  </section>
+
+  <section class="solutions-section" id="solutions">
+    <div class="section-label">< Systems Analysis ></div>
+    <div class="solutions-intro">
+        <h2>Solutions</h2>
+        <p>DOMtracker is a toolkit for people who prefer organized numbers over chaotic spreadsheets.</p>
+    </div>
+    <div class="solutions-grid">
+        <div class="solution-card">
+            <div class="card-num">01</div>
+            <h3>Portfolio Tracking</h3>
+            <p>Your investments finally live in one place. Stocks, ETFs, bonds — tracked without the spreadsheet gymnastics.</p>
+        </div>
+        <div class="solution-card">
+            <div class="card-num">02</div>
+            <h3>Performance Analytics</h3>
+            <p>See what’s actually working. Gains, losses, trends, and patterns — no financial astrology involved.</p>
+        </div>
+        <div class="solution-card">
+            <div class="card-num">03</div>
+            <h3>Transaction Intelligence</h3>
+            <p>Import your transactions and let DOMtracker do the sorting. Your past investment decisions finally make sense.</p>
+        </div>
+        <div class="solution-card">
+            <div class="card-num">04</div>
+            <h3>Minimal Financial Dashboard</h3>
+            <p>A clean dashboard built for speed and focus. No blinking banners, no noise — just the data that matters.</p>
+        </div>
+        <div class="solution-card">
+            <div class="card-num">05</div>
+            <h3>Personal Financial Control</h3>
+            <p>Stop juggling spreadsheets, screenshots, and memory. DOMtracker turns scattered records into a single command center for your portfolio.</p>
+        </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-left">
+        &copy; 2026 DOMTRACKER. All rights reserved.
+    </div>
+    <div class="footer-right">
+        Inspired by <a href="https://www.domforge.com/" target="_blank" class="footer-link">Domforge</a>
+    </div>
+  </footer>
+</div>
