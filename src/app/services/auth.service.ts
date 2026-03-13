@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import {
     Auth,
     GoogleAuthProvider,
@@ -8,30 +8,32 @@ import {
 } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { from, Observable } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
     private auth = inject(Auth);
     private router = inject(Router);
 
-    readonly currentUser$ = user(this.auth);
-    readonly isLoggedIn = signal(false);
+    readonly firebaseUser = toSignal(user(this.auth));
+    private devBypass = signal(false);
 
-    constructor() {
-        this.currentUser$.subscribe((u) => {
-            this.isLoggedIn.set(!!u);
-        });
-    }
+    readonly isLoggedIn = computed(() => this.devBypass() || !!this.firebaseUser());
 
     signInWithGoogle(): Observable<any> {
         const provider = new GoogleAuthProvider();
         return from(signInWithPopup(this.auth, provider));
     }
 
+    setBypass(value: boolean) {
+        this.devBypass.set(value);
+    }
+
     signOut(): Observable<void> {
+        this.devBypass.set(false);
         return from(
             signOut(this.auth).then(() => {
-                this.router.navigate(['/login']);
+                this.router.navigate(['/']);
             })
         );
     }

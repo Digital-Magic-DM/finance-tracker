@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "dmfinance",
+    "site": "dmfintracker",
     "public": "dist/finance-tracker/browser",
     "ignore": [
       "firebase.json",
@@ -17,18 +17,45 @@
       {
         "source": "/**",
         "headers": [
-          { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
-          { "key": "X-Content-Type-Options", "value": "nosniff" },
-          { "key": "X-Frame-Options", "value": "DENY" },
-          { "key": "X-XSS-Protection", "value": "1; mode=block" }
+          {
+            "key": "Strict-Transport-Security",
+            "value": "max-age=31536000; includeSubDomains"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "X-XSS-Protection",
+            "value": "1; mode=block"
+          }
         ]
       },
       {
         "source": "**/*.@(js|css|png|jpg|jpeg|gif|ico|svg|mjs)",
         "headers": [
-          { "key": "Cache-Control", "value": "max-age=31536000" }
+          {
+            "key": "Cache-Control",
+            "value": "max-age=31536000"
+          }
         ]
       }
     ]
-  }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    }
+  ]
 }

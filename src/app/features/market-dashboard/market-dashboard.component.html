@@ -1,0 +1,110 @@
+<div class="market-dashboard">
+  <header class="page-header">
+
+    <div class="refresh-status" [class.closed]="isMarketClosed()">
+      <span class="dot" [class.pulse]="!isMarketClosed()"></span>
+      @if (isMarketClosed()) {
+        <span class="status-text">Market Closed</span>
+        @if (timeUntilOpen(); as timer) {
+          <span class="timer-badge">Opens in {{ timer.formatted }}</span>
+        }
+      } @else {
+        Live Feed Active
+      }
+    </div>
+  </header>
+
+  <!-- Indices Grid -->
+  <div class="indices-grid">
+    @for (index of indices(); track index.name) {
+      <div class="card index-card">
+        <div class="index-info">
+          <span class="index-name">{{ index.name }}</span>
+          <div class="index-price">₹{{ index.price | number:'1.2-2' }}</div>
+        </div>
+        <div class="index-change" [class.positive]="index.change > 0" [class.negative]="index.change < 0">
+          <span class="material-icons">
+            {{ index.change > 0 ? 'trending_up' : 'trending_down' }}
+          </span>
+          <span>{{ index.change > 0 ? '+' : '' }}{{ index.change | number:'1.2-2' }}</span>
+          <span class="pct">({{ index.changePercent | number:'1.2-2' }}%)</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Performance Tables -->
+  <div class="market-grid">
+    <!-- Top Gainers -->
+    <div class="card market-card">
+      <div class="card-header">
+        <h3>Top Gainers</h3>
+        <span class="material-icons text-success">bolt</span>
+      </div>
+      <div class="market-list">
+        @for (stock of topGainers(); track stock.symbol) {
+          <div class="stock-item">
+            <div class="stock-info">
+              <span class="stock-symbol">{{ stock.symbol }}</span>
+              <span class="stock-name">{{ stock.name }}</span>
+            </div>
+            <div class="stock-values">
+              <div class="stock-price">₹{{ stock.currentPrice | number:'1.2-2' }}</div>
+              <div class="stock-change positive">+{{ stock.changePercent | number:'1.2-2' }}%</div>
+            </div>
+          </div>
+        } @empty {
+          <div class="loading-state">Fetching latest data...</div>
+        }
+      </div>
+    </div>
+
+    <!-- Top Losers -->
+    <div class="card market-card">
+      <div class="card-header">
+        <h3>Top Losers</h3>
+        <span class="material-icons text-danger">trending_down</span>
+      </div>
+      <div class="market-list">
+        @for (stock of topLosers(); track stock.symbol) {
+          <div class="stock-item">
+            <div class="stock-info">
+              <span class="stock-symbol">{{ stock.symbol }}</span>
+              <span class="stock-name">{{ stock.name }}</span>
+            </div>
+            <div class="stock-values">
+              <div class="stock-price">₹{{ stock.currentPrice | number:'1.2-2' }}</div>
+              <div class="stock-change negative">{{ stock.changePercent | number:'1.2-2' }}%</div>
+            </div>
+          </div>
+        } @empty {
+          <div class="loading-state">Fetching latest data...</div>
+        }
+      </div>
+    </div>
+
+    <!-- High Volume -->
+    <div class="card market-card">
+      <div class="card-header">
+        <h3>Top Volume</h3>
+        <span class="material-icons text-primary">bar_chart</span>
+      </div>
+      <div class="market-list">
+        @for (stock of highVolume(); track stock.symbol) {
+          <div class="stock-item">
+            <div class="stock-info">
+              <span class="stock-symbol">{{ stock.symbol }}</span>
+              <span class="stock-name">{{ stock.name }}</span>
+            </div>
+            <div class="stock-values">
+              <div class="stock-price">₹{{ stock.currentPrice | number:'1.2-2' }}</div>
+              <div class="stock-volume">{{ stock.volume / 1000000 | number:'1.1-1' }}M vol</div>
+            </div>
+          </div>
+        } @empty {
+          <div class="loading-state">Fetching latest data...</div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

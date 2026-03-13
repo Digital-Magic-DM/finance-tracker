@@ -9,6 +9,11 @@
     position: sticky;
     top: 0;
     z-index: 100;
+
+    @media (max-width: 600px) {
+        padding: 0 12px;
+        height: 56px;
+    }
 }
 
 .menu-btn {
@@ -35,6 +40,12 @@
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.3px;
+    margin-left: 12px;
+
+    @media (max-width: 600px) {
+        font-size: 16px;
+        margin-left: 8px;
+    }
 }
 
 .toolbar-actions {
@@ -79,6 +90,11 @@
     max-height: 40px;
 
     &:hover { background: var(--bg-card-hover); }
+
+    @media (max-width: 600px) {
+        padding: 4px 8px;
+        gap: 0;
+    }
 }
 
 .avatar {
@@ -113,7 +129,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 
-    @media (max-width: 480px) {
+    @media (max-width: 600px) {
         display: none;
     }
 }

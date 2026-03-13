@@ -1,23 +1,22 @@
 <div class="settings-page">
   <div class="page-header">
-    <h1>Settings</h1>
   </div>
 
-  @if (user$ | async; as user) {
+  @if (authService.isLoggedIn()) {
     <!-- Profile card -->
     <div class="card profile-card">
       <div class="profile-header">
-        @if (user.photoURL) {
-          <img [src]="user.photoURL" [alt]="user.displayName || 'User'" class="profile-avatar" referrerpolicy="no-referrer" />
+        @if (authService.firebaseUser()?.photoURL) {
+          <img [src]="authService.firebaseUser()?.photoURL" [alt]="authService.firebaseUser()?.displayName || 'User'" class="profile-avatar" referrerpolicy="no-referrer" />
         } @else {
           <div class="profile-avatar-fallback">
-            {{ (user.displayName || user.email || 'U').charAt(0).toUpperCase() }}
+            {{ (authService.firebaseUser()?.displayName || authService.firebaseUser()?.email || 'D').charAt(0).toUpperCase() }}
           </div>
         }
         <div class="profile-info">
-          <h2>{{ user.displayName || 'User' }}</h2>
-          <p>{{ user.email }}</p>
-          <span class="badge badge-success" style="margin-top:8px">● Google Account Connected</span>
+          <h2>{{ authService.firebaseUser()?.displayName || 'Developer Mode' }}</h2>
+          <p>{{ authService.firebaseUser()?.email || 'local@developer.com' }}</p>
+          <span class="badge badge-success" style="margin-top:8px">● {{ authService.firebaseUser() ? 'Google Account Connected' : 'Local Bypass Active' }}</span>
         </div>
       </div>
     </div>

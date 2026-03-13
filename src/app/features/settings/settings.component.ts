@@ -11,7 +11,7 @@ import { ImportDataComponent } from './import-data/import-data.component';
 @Component({
     selector: 'app-settings',
     standalone: true,
-    imports: [AsyncPipe, ImportDataComponent],
+    imports: [ImportDataComponent],
     templateUrl: './settings.component.html',
     styleUrl: './settings.component.scss',
 })
@@ -21,8 +21,8 @@ export class SettingsComponent {
     pwaService = inject(PwaService);
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
-
-    user$ = this.authService.currentUser$;
+    
+    user = this.authService.firebaseUser;
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });
     showImport = signal(false);

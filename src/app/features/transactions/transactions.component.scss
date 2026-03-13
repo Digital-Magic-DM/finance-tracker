@@ -65,6 +65,12 @@ tr.selected {
     padding: 16px;
     margin-bottom: 16px;
     flex-wrap: wrap;
+
+    @media (max-width: 600px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
 }
 
 .filter-group {
@@ -121,7 +127,7 @@ tr.selected {
 
 .tx-table-card {
     padding: 0;
-    overflow: hidden;
+    overflow-x: auto;
 }
 
 .tx-row-desc {
@@ -159,3 +165,4 @@ tr.selected {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
+@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; gap: 0; } }

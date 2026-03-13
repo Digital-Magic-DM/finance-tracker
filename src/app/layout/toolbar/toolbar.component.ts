@@ -9,7 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
     selector: 'app-toolbar',
     standalone: true,
-    imports: [AsyncPipe, RouterLink],
+    imports: [RouterLink],
     templateUrl: './toolbar.component.html',
     styleUrl: './toolbar.component.scss',
 })
@@ -33,16 +33,15 @@ export class ToolbarComponent {
         this.router.events.pipe(
             filter((e) => e instanceof NavigationEnd),
             map(() => {
-                const url = this.router.url.split('/')[1] || 'dashboard';
-                return url.charAt(0).toUpperCase() + url.slice(1);
+                const parts = this.router.url.split('/');
+                const url = parts[2] || parts[1] || 'dashboard';
+                // Handle complex routes like market-dashboard -> Market
+                const title = url.split('-')[0];
+                return title.charAt(0).toUpperCase() + title.slice(1);
             })
         ),
         { initialValue: 'Dashboard' }
     );
-
-    get user() {
-        return this.authService.currentUser$;
-    }
 
     signOut() {
         this.authService.signOut().subscribe();

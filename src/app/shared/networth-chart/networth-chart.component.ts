@@ -14,7 +14,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
     selector: 'app-networth-chart',
     standalone: true,
     template: `<div class="chart-wrap" [style.height.px]="height"><canvas #canvas></canvas></div>`,
-    styles: [`.chart-wrap { width: 100%; } canvas { max-width: 100%; }`],
+    styles: [`.chart-wrap { width: 100%; height: auto; } canvas { max-width: 100%; }`],
 })
 export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;

@@ -31,6 +31,7 @@ export interface Asset {
     quantity: number;
     buyPrice: number;
     currentPrice: number;
+    dailyChange?: number;
     symbol?: string;
     currency: string;
     purchaseDate: Date;

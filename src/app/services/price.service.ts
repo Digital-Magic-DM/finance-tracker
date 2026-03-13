@@ -315,28 +315,7 @@ export class PriceService {
     private async fetchStockPrice(asset: Asset): Promise<number | null> {
         let symbol: string | null = this.resolveYahooSymbol(asset);
         
-        // 1. Try Finnhub for US Stocks (or any stock it supports without 403 errors)
-        if (symbol && !this.isISIN(symbol)) {
-             try {
-                 // Finnhub expects standard tickers like AAPL. Strip the .NS/.BO if it's there
-                 // though Finnhub might reject Indian tickers anyway, this allows US tickers
-                 const fhSymbol = symbol.split('.')[0]; 
-                 const fhUrl = `https://finnhub.io/api/v1/quote?symbol=${fhSymbol}&token=${environment.finnhubApiKey}`;
-                 const fhData: any = await firstValueFrom(this.http.get(fhUrl));
-                 
-                 // Finnhub returns 'c' for current price. 
-                 // If there's an error (like 403 for Indian Stocks), it returns fhData.error
-                 if (fhData && fhData.c && typeof fhData.c === 'number' && fhData.c > 0 && !fhData.error) {
-                     return fhData.c;
-                 }
-             } catch (e: any) {
-                 console.warn(`[PriceService] Finnhub fetch failed/rejected for ${symbol}, falling back to Yahoo:`, e.message);
-             }
-        }
-
-        // 2. Fallback to Yahoo Finance (Handles Indian Stocks and ISINs by name)
-        
-        // If the symbol is an ISIN or missing, try to search for it by name
+        // 1. Resolve Yahoo Symbol if missing or ISIN
         if (!symbol || this.isISIN(asset?.symbol || '')) {
              const cacheKey = asset.name || asset.symbol || '';
              if (this.yahooSymbolCache.has(cacheKey)) {
@@ -352,6 +331,7 @@ export class PriceService {
              return null;
         }
 
+        // 2. Fetch from Yahoo Finance (via proxies)
         const cb = Date.now();
         const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1d&interval=1d&_cb=${cb}`;
         

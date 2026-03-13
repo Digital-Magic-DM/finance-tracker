@@ -47,3 +47,17 @@ Thumbs.db
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# Firebase & Secrets
+.firebase/
+firebase-debug.log*
+.runtimeconfig.json
+.env
+.secret.local
+functions/node_modules/
+functions/.env
+functions/.secret.local
+
+# Web Secrets
+src/environments/environment.ts
+src/environments/environment.prod.ts
