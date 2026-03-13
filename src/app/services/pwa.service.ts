@@ -8,21 +8,21 @@ export class PwaService {
   canInstall = signal(false);
 
   constructor() {
-    // For development/styling purposes, we can show the button if in dev mode
-    // or if the actual prompt is available
-    if ((window as any).location.hostname === 'localhost' || (window as any).location.hostname === '127.0.0.1') {
-      console.log('Dev mode: PWA install button will be visible for styling');
-      this.canInstall.set(true); 
+    // Check if the event was already captured by index.html script
+    if ((window as any).deferredPrompt) {
+      this.deferredPrompt = (window as any).deferredPrompt;
+      this.canInstall.set(true);
+      console.log('PwaService: Captured early install prompt');
     }
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      // Prevent the mini-infobar from appearing on mobile
+    window.addEventListener('beforeinstallprompt', (e: any) => {
+      // Prevent original mini-infobar
       e.preventDefault();
-      // Stash the event so it can be triggered later.
+      // Store event
       this.deferredPrompt = e;
-      // Update UI notify the user they can install the PWA
+      (window as any).deferredPrompt = e; // Keep global in sync
       this.canInstall.set(true);
-      console.log('beforeinstallprompt event fired');
+      console.log('PwaService: beforeinstallprompt received');
     });
 
     window.addEventListener('appinstalled', () => {
