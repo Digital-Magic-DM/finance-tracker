@@ -1,4 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { filter } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -6,8 +8,11 @@ import { Injectable, signal } from '@angular/core';
 export class PwaService {
   deferredPrompt: any = null;
   canInstall = signal(false);
+  updateAvailable = signal(false);
   isIOS = signal(false);
   isStandalone = signal(false);
+
+  private swUpdate = inject(SwUpdate);
 
   constructor() {
     this.detectEnvironment();
@@ -33,6 +38,21 @@ export class PwaService {
       this.isStandalone.set(true);
       console.log('PWA was installed');
     });
+
+    this.checkUpdates();
+  }
+
+  private checkUpdates() {
+    if (this.swUpdate.isEnabled) {
+      this.swUpdate.versionUpdates
+        .pipe(
+          filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
+        )
+        .subscribe(() => {
+          console.log('PwaService: New version available');
+          this.updateAvailable.set(true);
+        });
+    }
   }
 
   private detectEnvironment() {
@@ -77,5 +97,15 @@ export class PwaService {
     console.log(`PwaService: User response to the install prompt: ${outcome}`);
     this.deferredPrompt = null;
     this.canInstall.set(false);
+  }
+
+  async updateApp() {
+    console.log('PwaService: updateApp called');
+    if (this.swUpdate.isEnabled) {
+      await this.swUpdate.activateUpdate();
+      window.location.reload();
+    } else {
+      window.location.reload();
+    }
   }
 }

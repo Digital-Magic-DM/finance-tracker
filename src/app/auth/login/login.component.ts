@@ -15,10 +15,9 @@ export class LoginComponent {
     private authService = inject(AuthService);
     private router = inject(Router);
     private meta = inject(Meta);
-    private themeService = inject(ThemeService);
+    public themeService = inject(ThemeService);
 
     constructor() {
-        this.themeService.clearTheme();
         this.meta.addTag({ name: 'robots', content: 'noindex, follow' });
     }
 

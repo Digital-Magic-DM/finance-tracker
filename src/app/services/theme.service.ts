@@ -11,7 +11,8 @@ export class ThemeService {
             this.isDark.set(dark);
             this.applyTheme(dark);
         } else {
-            // Default to light for app
+            // Default to light for app and sync signal
+            this.isDark.set(false);
             this.applyTheme(false);
         }
     }

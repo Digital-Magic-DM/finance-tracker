@@ -3,7 +3,9 @@
 
     <div class="refresh-status" [class.closed]="isMarketClosed()">
       <span class="dot" [class.pulse]="!isMarketClosed()"></span>
-      @if (isMarketClosed()) {
+      @if (isFetching()) {
+        <span class="status-text">Fetching...</span>
+      } @else if (isMarketClosed()) {
         <span class="status-text">Market Closed</span>
         @if (timeUntilOpen(); as timer) {
           <span class="timer-badge">Opens in {{ timer.formatted }}</span>

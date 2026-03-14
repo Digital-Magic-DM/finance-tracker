@@ -24,6 +24,14 @@ export interface UserProfile {
     createdAt: Date;
 }
 
+export interface AssetLocation {
+    type: 'manual' | 'map';
+    name: string;
+    lat?: number;
+    lng?: number;
+    formattedAddress?: string;
+}
+
 export interface Asset {
     id?: string;
     name: string;
@@ -36,6 +44,7 @@ export interface Asset {
     currency: string;
     purchaseDate: Date;
     notes?: string;
+    location?: AssetLocation;
 }
 
 export interface Transaction {

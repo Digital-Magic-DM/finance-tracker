@@ -1,57 +1,56 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
-<head>
-  <meta charset="utf-8">
-  <title>DM FinTracker | Precision Finance Dashboard</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="DM FinTracker helps you track expenses, monitor investments, analyze net worth, and manage your financial portfolio in one powerful dashboard.">
-  <meta name="keywords" content="personal finance tracker, expense tracker dashboard, investment tracker, net worth dashboard">
-  <meta name="theme-color" content="#0a0e1a">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="DM FinTracker">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://dmfinance.web.app/">
+  <head>
+    <meta charset="utf-8">
+    <title>FinTracker | Precision Finance Dashboard</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="FinTracker helps you track expenses, monitor investments, analyze net worth, and manage your financial portfolio in one powerful dashboard.">
+    <meta name="keywords" content="personal finance tracker, expense tracker dashboard, investment tracker, net worth dashboard">
+    <meta name="theme-color" content="#0a0e1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FinTracker">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://dmfinance.web.app/">
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="DM FinTracker | Personal Finance Dashboard">
-  <meta property="og:description" content="Track your investments, expenses, and net worth with DM FinTracker.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://dmfinance.web.app">
+    <!-- Open Graph -->
+    <meta property="og:title" content="FinTracker | Personal Finance Dashboard">
+    <meta property="og:description" content="Track your investments, expenses, and net worth with FinTracker.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dmfinance.web.app">
+    <link rel="manifest" href="manifest.webmanifest">
 
-  <link rel="icon" type="image/x-icon" href="assets/applogo.png">
-  <link rel="manifest" href="manifest.webmanifest">
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "DM FinTracker",
-    "operatingSystem": "Web",
-    "applicationCategory": "FinanceApplication",
-    "author": {
-      "@type": "Person",
-      "name": "Dinesh Murugan"
-    }
-  }
-  </script>
-  <script>
-    // Early capture of the PWA install prompt event
-    window.addEventListener('beforeinstallprompt', (e) => {
-      // e.preventDefault(); // Commented to allow native browser prompt
-      window.deferredPrompt = e;
-    });
-  </script>
-</head>
-<body>
-  <app-root></app-root>
-  <noscript>Please enable JavaScript to continue using this application.</noscript>
-</body>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "FinTracker",
+        "operatingSystem": "Web",
+        "applicationCategory": "FinanceApplication",
+        "author": {
+          "@type": "Person",
+          "name": "Dinesh Murugan"
+        }
+      }
+    </script>
+    <script>
+      // Early capture of the PWA install prompt event
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // e.preventDefault(); // Commented to allow native browser prompt
+        window.deferredPrompt = e;
+      });
+    </script>
+    <link rel="icon" type="image/png" sizes="196x196" href="icons/favicon-196.png">
+    <link rel="apple-touch-icon" href="icons/apple-icon-180.png">
+  </head>
+  <body>
+    <app-root></app-root>
+    <noscript>Please enable JavaScript to continue using this application.</noscript>
+  </body>
 </html>

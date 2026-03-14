@@ -7,6 +7,7 @@ import { SnackbarService } from '../../services/snackbar.service';
 import { Asset, AssetType, ASSET_COLORS } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportDataComponent } from '../settings/import-data/import-data.component';
+import { LocationPickerComponent } from '../../shared/location-picker/location-picker.component';
 
 interface AssetGroup {
     type: AssetType;
@@ -21,7 +22,7 @@ interface AssetGroup {
 @Component({
     selector: 'app-assets',
     standalone: true,
-    imports: [CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent],
+    imports: [CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent, LocationPickerComponent],
     templateUrl: './assets.component.html',
     styleUrl: './assets.component.scss',
 })
@@ -63,6 +64,7 @@ export class AssetsComponent {
         currency: 'INR',
         purchaseDate: new Date(),
         notes: '',
+        location: undefined
     });
 
     totalValue = computed(() =>
@@ -237,6 +239,7 @@ export class AssetsComponent {
         this.form.set({
             name: '', type: AssetType.Stock, quantity: 0, buyPrice: 0,
             currentPrice: 0, symbol: '', currency: 'INR', purchaseDate: new Date(), notes: '',
+            location: undefined
         });
         this.showModal.set(true);
     }

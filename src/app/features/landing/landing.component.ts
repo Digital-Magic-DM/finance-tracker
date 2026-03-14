@@ -72,51 +72,14 @@ export class LandingComponent {
         });
       }, 500);
 
-      this.initMomentumScroll();
+      this.initScrollTracking();
     }
   }
 
-  private targetScroll = 0;
-  private currentScroll = 0;
-
-  private initMomentumScroll() {
+  private initScrollTracking() {
     const scrollContainer = this.el.nativeElement;
-    this.targetScroll = scrollContainer.scrollTop;
-    this.currentScroll = scrollContainer.scrollTop;
-    const lerp = (start: number, end: number, amt: number) => (1 - amt) * start + amt * end;
-
-    scrollContainer.addEventListener('wheel', (e: WheelEvent) => {
-      // Only apply custom smooth scroll if not in a scrolling sub-grid
-      const isOverGrid = (e.target as HTMLElement)?.closest('.solutions-grid');
-      if (isOverGrid && window.innerWidth <= 768) return;
-
-      e.preventDefault();
-      this.targetScroll += e.deltaY;
-      const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-      this.targetScroll = Math.max(0, Math.min(this.targetScroll, maxScroll));
-    }, { passive: false });
-
-    const animate = () => {
-      this.currentScroll = lerp(this.currentScroll, this.targetScroll, 0.1);
-      scrollContainer.scrollTop = this.currentScroll;
-      
-      // If we are close to target, just snap to it
-      if (Math.abs(this.targetScroll - this.currentScroll) < 1) {
-        this.currentScroll = this.targetScroll;
-        scrollContainer.scrollTop = this.targetScroll;
-      }
-      
-      requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
-
-    // Sync target on manual scroll (e.g. scroll snap or key navigation)
+    
     scrollContainer.addEventListener('scroll', () => {
-      if (Math.abs(scrollContainer.scrollTop - this.currentScroll) > 10) {
-        this.targetScroll = scrollContainer.scrollTop;
-        this.currentScroll = scrollContainer.scrollTop;
-      }
-
       // Active link tracking
       const sections = ['about', 'solutions'];
       let activeSectionId = '';
@@ -124,7 +87,8 @@ export class LandingComponent {
         const section = document.getElementById(id);
         if (section) {
           const rect = section.getBoundingClientRect();
-          if (rect.top <= scrollContainer.clientHeight / 2) {
+          // Adjust threshold for active state
+          if (rect.top <= scrollContainer.clientHeight / 2 && rect.bottom >= 0) {
             activeSectionId = id;
           }
         }
@@ -140,12 +104,14 @@ export class LandingComponent {
     }, { passive: true });
   }
 
+  scrollToTop() {
+    this.el.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   scrollToSection(id: string) {
     const el = document.getElementById(id);
     if (el) {
-      // Update targetScroll instead of using scrollIntoView
-      // This allows the animation loop to take over smoothly
-      this.targetScroll = el.offsetTop;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 

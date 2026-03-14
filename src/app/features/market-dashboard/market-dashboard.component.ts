@@ -19,5 +19,6 @@ export class MarketDashboardComponent {
   topLosers = this.marketService.getTopLosers();
   highVolume = this.marketService.getHighVolume();
   isMarketClosed = this.marketService.isMarketClosed;
+  isFetching = this.marketService.isFetching;
   timeUntilOpen = this.marketService.timeUntilOpen;
 }

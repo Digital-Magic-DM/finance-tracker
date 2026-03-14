@@ -21,7 +21,8 @@ html {
   --accent-primary: #000000;
   --accent-secondary: #000000;
   --accent-gold: #333333;
-  --accent-danger: #000000;
+  --accent-danger: #d42222;
+  --accent-danger-rgb: 212, 34, 34;
   --accent-warning: #444444;
 
   /* Blending Financial Colors */
@@ -85,6 +86,8 @@ html {
 
   --accent-success-blend: #4ade80; /* Brighter green for dark mode */
   --accent-danger-blend: #f87171;  /* Brighter red for dark mode */
+  --accent-danger: #f87171;
+  --accent-danger-rgb: 248, 113, 113;
 
   /* Asset Type Colors - Dark Mode (Light Greys) */
   --asset-stock: #ffffff;

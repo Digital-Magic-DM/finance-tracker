@@ -35,6 +35,7 @@ export class MarketService {
         'https://thingproxy.freeboard.io/fetch/'
     ];
     private lastData: any = null;
+    isFetching = signal(false);
 
     private isMarketOpen(): boolean {
         const now = new Date();
@@ -122,11 +123,13 @@ export class MarketService {
     // Unified market summary stream
     marketSummary$ = timer(0, 60000).pipe(
         switchMap(async () => {
+            this.isFetching.set(true);
             const isOpen = this.isMarketOpen();
 
             // Only fetch if market is open OR if we don't have any data yet
             if (!isOpen && this.lastData) {
                 console.info("Market is closed, using cached data.");
+                this.isFetching.set(false);
                 return { ...this.lastData, isClosed: true };
             }
 
@@ -196,6 +199,7 @@ export class MarketService {
             };
 
             this.lastData = result;
+            this.isFetching.set(false);
             return result;
         }),
         shareReplay(1)

@@ -8,9 +8,12 @@
 }
 
 .login-page {
+  width: 100%;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 40px 20px;
   /* background-color: #ffffff; */
   /* Moved to :host */
   /* overflow: hidden; */
@@ -54,167 +57,74 @@
 
 .login-container {
   width: 100%;
-  width: 100vw;
-  border: 1px solid var(--border-light);
-  padding: 80px 60px;
-  background: var(--bg-primary);
-  backdrop-filter: blur(20px);
+  max-width: 1200px;
+  padding: 40px 20px;
+  margin: auto;
   position: relative;
   z-index: 1;
 
   @media (max-width: 768px) {
-    padding: 60px 24px;
-    border: none;
-    background: transparent;
-    backdrop-filter: none;
-  }
-
-  @media (max-width: 1024px) {
-    padding: 40px;
+    padding: 40px 20px;
   }
 }
 
 .login-split-layout {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 80px;
   width: 100%;
-
-  @media (max-width: 900px) {
-    flex-direction: column;
-    /* Keep logo at the top */
-    gap: 40px;
-    text-align: center;
-  }
-
-  @media (max-width: 1024px) and (min-width: 901px) {
-    gap: 40px;
-  }
 }
 
-.brand-section {
-  flex: 1.2;
-
-  @media (max-width: 900px) {
-    flex: none;
-    width: 100%;
-  }
+.login-content {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .brand {
-  margin-bottom: 60px;
-
-  @media (max-width: 900px) {
-    margin-bottom: 30px;
-  }
+  margin-bottom: 40px;
+  text-align: center;
 
   .logo-text {
-    font-size: 5rem;
+    font-size: 4rem;
     font-weight: 950;
     text-transform: uppercase;
-    letter-spacing: -4px;
+    letter-spacing: -3px;
     line-height: 0.85;
     margin-bottom: 16px;
     color: var(--text-primary);
 
     @media (max-width: 768px) {
-      font-size: 3.5rem;
+      font-size: 3rem;
       letter-spacing: -2px;
     }
 
     @media (max-width: 480px) {
-      font-size: 2.5rem;
+      font-size: 2.2rem;
     }
   }
 
   .brand-sub {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-muted);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 2px;
 
     @media (max-width: 768px) {
-      font-size: 12px;
+      font-size: 11px;
       letter-spacing: 1px;
     }
   }
 }
 
-.insights-list {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-
-  @media (max-width: 900px) {
-    display: none;
-    /* Hide detailed insights on mobile to focus on login */
-  }
-}
-
-.insight-item {
-  .insight-label {
-    font-family: monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-    display: block;
-
-    &::before {
-      content: '< ';
-    }
-
-    &::after {
-      content: ' >';
-    }
-  }
-
-  h3 {
-    font-size: 20px;
-    font-weight: 800;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    color: var(--text-primary);
-  }
-
-  p {
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--text-secondary);
-    max-width: 400px;
-
-    @media (max-width: 768px) {
-      margin: 0 auto;
-    }
-  }
-
-  .privacy-text,
-  .dev-text {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text-primary);
-
-    strong {
-      font-weight: 900;
-    }
-  }
-}
-
 .login-card-section {
-  flex: 1;
   width: 100%;
   max-width: 450px;
-  /* Keep card compact */
   margin: 0 auto;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-
-  @media (min-width: 1224px) {
-    max-width: 550px;
-    margin: 40px;
-  }
 }
 
 .login-card {
