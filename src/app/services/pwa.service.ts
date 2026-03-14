@@ -1,6 +1,7 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, computed } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
+import { ThemeService } from './theme.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +12,10 @@ export class PwaService {
   updateAvailable = signal(false);
   isIOS = signal(false);
   isStandalone = signal(false);
+  appName = computed(() => this.isStandalone() ? 'DM FinTracker' : 'FinTracker');
 
   private swUpdate = inject(SwUpdate);
+  public themeService = inject(ThemeService);
 
   constructor() {
     this.detectEnvironment();

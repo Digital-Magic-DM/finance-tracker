@@ -72,6 +72,8 @@ export interface MarketSummary {
   change: number;
   changePercent: number;
   volume: number;
+  exchange?: string;
+  currency?: string;
 }
 
 export interface ChartDataPoint {
@@ -81,4 +83,44 @@ export interface ChartDataPoint {
   low: number;
   close: number;
   volume: number;
+}
+
+export interface FinnhubQuote {
+  c: number; // Current price
+  d: number; // Change
+  dp: number; // Percent change
+  h: number; // High price of the day
+  l: number; // Low price of the day
+  o: number; // Open price of the day
+  pc: number; // Previous close price
+  t: number; // Timestamp
+}
+
+export interface MFNavResponse {
+  meta: {
+    fund_house: string;
+    scheme_type: string;
+    scheme_category: string;
+    scheme_code: number;
+    scheme_name: string;
+    isin?: string;
+  };
+  data: Array<{
+    date: string;
+    nav: string;
+  }>;
+  status: string;
+}
+
+export interface NormalizedQuote {
+  symbol: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  high: number;
+  low: number;
+  open: number;
+  previousClose: number;
+  timestamp: number;
+  source: 'yahoo' | 'finnhub' | 'nse' | 'mfapi';
 }

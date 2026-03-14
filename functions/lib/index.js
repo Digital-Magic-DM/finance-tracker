@@ -38,12 +38,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.api = void 0;
 const functions = __importStar(require("firebase-functions"));
+const admin = __importStar(require("firebase-admin"));
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const market_1 = __importDefault(require("./routes/market"));
+const auth_middleware_1 = require("./middleware/auth.middleware");
+const rate_limit_middleware_1 = require("./middleware/rate-limit.middleware");
+admin.initializeApp();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({ origin: true }));
 app.use(express_1.default.json());
+app.use(rate_limit_middleware_1.rateLimitMiddleware);
+app.use(auth_middleware_1.authMiddleware);
 app.use('/market', market_1.default);
-exports.api = functions.https.onRequest(app);
+app.use('/mutualfund', mutualFundRoutes);
+exports.api = functions.runWith({
+    secrets: ['FINNHUB_API_KEY'],
+    memory: '256MB',
+    timeoutSeconds: 60,
+}).https.onRequest(app);
 //# sourceMappingURL=index.js.map

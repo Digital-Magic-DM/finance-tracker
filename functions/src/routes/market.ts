@@ -1,29 +1,20 @@
 import { Router, Request, Response } from 'express';
 import { yahooFinanceService } from '../services/yahoo-finance.service';
+import { nseService } from '../services/nse.service';
+import { finnhubService } from '../services/finnhub.service';
 
 const router = Router();
 
-const NIFTY_50_SYMBOL = '^NSEI';
-const SENSEX_SYMBOL = '^BSESN';
-
-// NIFTY 50 Stocks (Expanded list)
+// NIFTY 50 Stocks
 const NIFTY_50_STOCKS = [
   'RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'BHARTIARTL.NS',
-  'SBIN.NS', 'INFY.NS', 'LICI.NS', 'ITC.NS', 'HINDUNILVR.NS',
-  'LT.NS', 'BAJFINANCE.NS', 'HCLTECH.NS', 'MARUTI.NS', 'SUNPHARMA.NS',
-  'ADANIENT.NS', 'KOTAKBANK.NS', 'TITAN.NS', 'ONGC.NS', 'TATASTEEL.NS',
-  'NTPC.NS', 'AXISBANK.NS', 'ADANIPORTS.NS', 'ASIANPAINT.NS', 'M&M.NS',
-  'ULTRACEMCO.NS', 'BAJAJFINSV.NS', 'POWERGRID.NS', 'JSWSTEEL.NS', 'COALINDIA.NS',
-  'GRASIM.NS', 'HINDALCO.NS', 'NESTLEIND.NS', 'TATACONSUM.NS', 'SBILIFE.NS',
-  'TECHM.NS', 'INDUSINDBK.NS', 'BRITANNIA.NS', 'DRREDDY.NS', 'ADANIPOWER.NS',
-  'TATAMOTORS.NS', 'CIPLA.NS', 'EICHERMOT.NS', 'BPCL.NS', 'DIVISLAB.NS',
-  'APOLLOHOSP.NS', 'HDFCLIFE.NS', 'HEROMOTOCO.NS', 'BAJAJ-AUTO.NS', 'WIPRO.NS'
+  'SBIN.NS', 'INFY.NS', 'LICI.NS', 'ITC.NS', 'HINDUNILVR.NS'
 ];
 
 router.get('/nifty', async (req: Request, res: Response) => {
   try {
-    const data = await yahooFinanceService.getQuotes([NIFTY_50_SYMBOL]);
-    res.json(data.quoteResponse.result[0]);
+    const data = await nseService.getNifty50();
+    res.json(data);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch NIFTY index' });
   }
@@ -31,8 +22,8 @@ router.get('/nifty', async (req: Request, res: Response) => {
 
 router.get('/sensex', async (req: Request, res: Response) => {
   try {
-    const data = await yahooFinanceService.getQuotes([SENSEX_SYMBOL]);
-    res.json(data.quoteResponse.result[0]);
+    const data = await nseService.getSensex();
+    res.json(data);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch SENSEX index' });
   }
@@ -45,54 +36,75 @@ router.get('/quotes', async (req: Request, res: Response) => {
   }
 
   const symbols = symbolsQuery.split(',');
-  try {
-    const results = await yahooFinanceService.getQuotesBatched(symbols);
-    const combinedResults = results.flatMap(r => r.quoteResponse.result);
-    res.json(combinedResults);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch quotes' });
-  }
-});
+  const finnhubSymbols = symbols.filter(s => !s.endsWith('.NS') && !s.endsWith('.BO'));
+  const yahooSymbols = symbols.filter(s => s.endsWith('.NS') || s.endsWith('.BO'));
 
-router.get('/top-volume', async (req: Request, res: Response) => {
   try {
-    const results = await yahooFinanceService.getQuotesBatched(NIFTY_50_STOCKS);
-    const stocks = results.flatMap(r => r.quoteResponse.result);
-    const sorted = stocks.sort((a, b) => b.regularMarketVolume - a.regularMarketVolume);
-    res.json(sorted.slice(0, 10));
+    const [finnhubResults, yahooResults] = await Promise.all([
+      finnhubSymbols.length > 0 ? finnhubService.getQuotesBatch(finnhubSymbols) : Promise.resolve([]),
+      yahooSymbols.length > 0 ? yahooFinanceService.getQuotes(yahooSymbols) : Promise.resolve({ quoteResponse: { result: [] } })
+    ]);
+
+    const normalizedYahoo = (yahooResults as any).quoteResponse.result.map((quote: any) => ({
+      symbol: quote.symbol,
+      price: quote.regularMarketPrice,
+      change: quote.regularMarketChange,
+      changePercent: quote.regularMarketChangePercent,
+      high: quote.regularMarketDayHigh,
+      low: quote.regularMarketDayLow,
+      open: quote.regularMarketOpen,
+      previousClose: quote.regularMarketPreviousClose,
+      timestamp: Date.now(),
+      source: 'yahoo'
+    }));
+
+    res.json([...finnhubResults, ...normalizedYahoo]);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch top volume stocks' });
+    console.error('Error fetching quotes:', error);
+    res.status(500).json({ error: 'Failed to fetch quotes' });
   }
 });
 
 router.get('/top-gainers', async (req: Request, res: Response) => {
   try {
-    const results = await yahooFinanceService.getQuotesBatched(NIFTY_50_STOCKS);
-    const stocks = results.flatMap(r => r.quoteResponse.result);
-    const sorted = stocks.sort((a, b) => b.regularMarketChangePercent - a.regularMarketChangePercent);
-    res.json(sorted.slice(0, 10));
+    const results = await yahooFinanceService.getTopMovers('day_gainers');
+    res.json(results);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch top gainers' });
+    // Fallback to manual Nifty 50 sorting
+    try {
+      const results = await yahooFinanceService.getQuotesBatched(NIFTY_50_STOCKS);
+      const stocks = results.flatMap(r => r.quoteResponse.result);
+      const sorted = stocks.sort((a, b) => b.regularMarketChangePercent - a.regularMarketChangePercent);
+      res.json(sorted.slice(0, 10));
+    } catch (fallbackError) {
+      res.status(500).json({ error: 'Failed to fetch top gainers' });
+    }
   }
 });
 
 router.get('/top-losers', async (req: Request, res: Response) => {
   try {
-    const results = await yahooFinanceService.getQuotesBatched(NIFTY_50_STOCKS);
-    const stocks = results.flatMap(r => r.quoteResponse.result);
-    const sorted = stocks.sort((a, b) => a.regularMarketChangePercent - b.regularMarketChangePercent);
-    res.json(sorted.slice(0, 10));
+    const results = await yahooFinanceService.getTopMovers('day_losers');
+    res.json(results);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch top losers' });
+    // Fallback to manual Nifty 50 sorting
+    try {
+      const results = await yahooFinanceService.getQuotesBatched(NIFTY_50_STOCKS);
+      const stocks = results.flatMap(r => r.quoteResponse.result);
+      const sorted = stocks.sort((a, b) => a.regularMarketChangePercent - b.regularMarketChangePercent);
+      res.json(sorted.slice(0, 10));
+    } catch (fallbackError) {
+      res.status(500).json({ error: 'Failed to fetch top losers' });
+    }
   }
 });
 
 router.get('/chart/:symbol', async (req: Request, res: Response) => {
-  const { symbol } = req.params;
+  const symbol = req.params.symbol as string;
   const range = (req.query.range as string) || '1d';
   const interval = (req.query.interval as string) || '5m';
   try {
-    const data = await (yahooFinanceService as any).getChart(symbol, range, interval);
+    const data = await yahooFinanceService.getChart(symbol, range, interval);
     res.json(data.chart.result[0]);
   } catch (error) {
     res.status(500).json({ error: `Failed to fetch chart for ${symbol}` });

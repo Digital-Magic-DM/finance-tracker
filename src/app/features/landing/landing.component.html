@@ -4,7 +4,7 @@
   <div class="blur-blob two"></div>
 
   <nav class="nav">
-    <div class="logo brand-name" (click)="scrollToTop()" style="cursor: pointer;">FinTracker</div>
+    <div class="logo brand-name" (click)="scrollToTop()" style="cursor: pointer;">{{ pwaService.appName() }}</div>
     <div class="nav-links">
       <a (click)="scrollToSection('about')" class="nav-link" style="cursor: pointer;"><span>&lbrace;</span> About Us <span>&rbrace;</span></a>
       <a (click)="scrollToSection('solutions')" class="nav-link" style="cursor: pointer;"><span><</span> Solutions <span>></span></a>
@@ -64,7 +64,7 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
             <li><span>•</span> surface performance without financial theater</li>
             <li><span>•</span> keep data structured, fast, and brutally honest</li>
         </ul>
-        <p class="about-conclusion">Because serious investors don’t need fireworks — they need control panels. <br><span class="brand-name" [routerLink]="['/']" style="cursor: pointer;">FinTracker</span> is that panel.</p>
+        <p class="about-conclusion">Because serious investors don’t need fireworks — they need control panels. <br><span class="brand-name" [routerLink]="['/']" style="cursor: pointer;">{{ pwaService.appName() }}</span> is that panel.</p>
     </div>
   </section>
 
@@ -115,7 +115,7 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
       <div class="insight-item">
         <div class="insight-label">Security</div>
         <h3>Privacy First</h3>
-        <p>Your portfolio data isn’t sold, shared, or turned into ads. It’s your data — <span class="brand-name">FinTracker</span> just organizes it.</p>
+        <p>Your portfolio data isn’t sold, shared, or turned into ads. It’s your data — <span class="brand-name">{{ pwaService.appName() }}</span> just organizes it.</p>
       </div>
 
       <div class="insight-item">
@@ -128,7 +128,7 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
 
   <footer class="footer">
     <div class="footer-left">
-        &copy; 2026 FinTracker. All rights reserved.
+        &copy; 2026 {{ pwaService.appName() }}. All rights reserved.
     </div>
     <div class="footer-right">
         Inspired by <a href="https://www.domforge.com/" target="_blank" class="footer-link">Domforge</a>
