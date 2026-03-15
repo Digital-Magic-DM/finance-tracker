@@ -27,15 +27,16 @@ export class LandingComponent {
   private charIndex = 0;
   private isDeleting = false;
 
-  constructor() {
-    this.title.setTitle('DM FinTracker | High-Precision Financial Dashboard');
-    this.meta.addTags([
-      { name: 'description', content: 'DM FinTracker is a minimalist, high-precision financial dashboard for tracking expenses, investments, and net worth with unit-level accuracy.' },
-      { name: 'keywords', content: 'DM FinTracker, finance dashboard, wealth forge, expense tracker, investment analytics, net worth tracking' },
-      { property: 'og:title', content: 'DM FinTracker | Forged for Wealth' },
-      { property: 'og:description', content: 'A high-precision financial dashboard for individuals who value mathematical clarity.' },
-      { property: 'og:type', content: 'website' }
-    ]);
+    constructor() {
+        const name = this.pwaService.appName();
+        this.title.setTitle(`${name} | High-Precision Financial Dashboard`);
+        this.meta.addTags([
+            { name: 'description', content: `${name} is a minimalist, high-precision financial dashboard for tracking expenses, investments, and net worth with unit-level accuracy.` },
+            { name: 'keywords', content: `${name}, finance dashboard, wealth forge, expense tracker, investment analytics, net worth tracking` },
+            { property: 'og:title', content: `${name} | Forged for Wealth` },
+            { property: 'og:description', content: 'A high-precision financial dashboard for individuals who value mathematical clarity.' },
+            { property: 'og:type', content: 'website' }
+        ]);
 
     // Start Typewriter
     this.type();

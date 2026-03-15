@@ -1,6 +1,6 @@
 {
-  "name": "FinTracker",
-  "short_name": "FinTracker",
+  "name": "DM FinTracker",
+  "short_name": "DM FinTracker",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",

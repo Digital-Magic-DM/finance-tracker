@@ -62,3 +62,13 @@ functions/.secret.local
 # Web Secrets
 src/environments/environment.ts
 src/environments/environment.prod.ts
+
+# Common Secrets
+*.pem
+*.key
+*.cert
+*.p12
+service-account.json
+creds.json
+*.env.*
+!.env.example

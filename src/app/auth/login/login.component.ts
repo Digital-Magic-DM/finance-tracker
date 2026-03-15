@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Meta } from '@angular/platform-browser';
 import { ThemeService } from '../../services/theme.service';
+import { PwaService } from '../../services/pwa.service';
 
 @Component({
     selector: 'app-login',
@@ -16,6 +17,7 @@ export class LoginComponent {
     private router = inject(Router);
     private meta = inject(Meta);
     public themeService = inject(ThemeService);
+    public pwaService = inject(PwaService);
 
     constructor() {
         this.meta.addTag({ name: 'robots', content: 'noindex, follow' });
