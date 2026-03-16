@@ -30,13 +30,23 @@ jobs:
 
       - name: Configure Environment Variables
         run: |
-          sed -i "s|__FIREBASE_API_KEY__|${{ secrets.FIREBASE_API_KEY }}|g" src/environments/environment.prod.ts
-          sed -i "s|__FIREBASE_AUTH_DOMAIN__|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" src/environments/environment.prod.ts
-          sed -i "s|__FIREBASE_PROJECT_ID__|${{ secrets.FIREBASE_PROJECT_ID }}|g" src/environments/environment.prod.ts
-          sed -i "s|__FIREBASE_STORAGE_BUCKET__|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" src/environments/environment.prod.ts
-          sed -i "s|__FIREBASE_MESSAGING_SENDER_ID__|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" src/environments/environment.prod.ts
-          sed -i "s|__FIREBASE_APP_ID__|${{ secrets.FIREBASE_APP_ID }}|g" src/environments/environment.prod.ts
-          sed -i "s|__FIREBASE_MEASUREMENT_ID__|${{ secrets.FIREBASE_MEASUREMENT_ID }}|g" src/environments/environment.prod.ts
+          mkdir -p src/environments
+          cat <<EOF > src/environments/environment.prod.ts
+          export const environment = {
+            production: true,
+            firebase: {
+              apiKey: "${{ secrets.FIREBASE_API_KEY }}",
+              authDomain: "${{ secrets.FIREBASE_AUTH_DOMAIN }}",
+              projectId: "${{ secrets.FIREBASE_PROJECT_ID }}",
+              storageBucket: "${{ secrets.FIREBASE_STORAGE_BUCKET }}",
+              messagingSenderId: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}",
+              appId: "${{ secrets.FIREBASE_APP_ID }}",
+              measurementId: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
+            }
+          };
+          EOF
+          cp src/environments/environment.prod.ts src/environments/environment.ts
+          sed -i "s/production: true/production: false/g" src/environments/environment.ts
           echo "FINNHUB_API_KEY=${{ secrets.FINNHUB_API_KEY }}" > functions/.env
       - name: Build Angular Application
         run: npm run build -- --configuration production
