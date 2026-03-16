@@ -13,7 +13,7 @@ router.get('/nav/:isin', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/metrics', (req: Request, res: Response) => {
+router.get('/metrics', (_req: Request, res: Response) => {
   res.json(mfapiService.getMetrics());
 });
 

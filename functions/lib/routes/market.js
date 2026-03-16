@@ -9,7 +9,7 @@ const NIFTY_50_STOCKS = [
     'RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'BHARTIARTL.NS',
     'SBIN.NS', 'INFY.NS', 'LICI.NS', 'ITC.NS', 'HINDUNILVR.NS'
 ];
-router.get('/nifty', async (req, res) => {
+router.get('/nifty', async (_req, res) => {
     try {
         const data = await nse_service_1.nseService.getNifty50();
         res.json(data);
@@ -18,7 +18,7 @@ router.get('/nifty', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch NIFTY index' });
     }
 });
-router.get('/sensex', async (req, res) => {
+router.get('/sensex', async (_req, res) => {
     try {
         const data = await nse_service_1.nseService.getSensex();
         res.json(data);
@@ -59,7 +59,7 @@ router.get('/quotes', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch quotes' });
     }
 });
-router.get('/top-gainers', async (req, res) => {
+router.get('/top-gainers', async (_req, res) => {
     try {
         const results = await yahoo_finance_service_1.yahooFinanceService.getTopMovers('day_gainers');
         res.json(results);
@@ -76,7 +76,7 @@ router.get('/top-gainers', async (req, res) => {
         }
     }
 });
-router.get('/top-losers', async (req, res) => {
+router.get('/top-losers', async (_req, res) => {
     try {
         const results = await yahoo_finance_service_1.yahooFinanceService.getTopMovers('day_losers');
         res.json(results);
@@ -97,6 +97,14 @@ router.get('/chart/:symbol', async (req, res) => {
     const symbol = req.params.symbol;
     const range = req.query.range || '1d';
     const interval = req.query.interval || '5m';
+    const validRanges = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max'];
+    const validIntervals = ['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo'];
+    if (!validRanges.includes(range)) {
+        return res.status(400).json({ error: 'Invalid range parameter' });
+    }
+    if (!validIntervals.includes(interval)) {
+        return res.status(400).json({ error: 'Invalid interval parameter' });
+    }
     try {
         const data = await yahoo_finance_service_1.yahooFinanceService.getChart(symbol, range, interval);
         res.json(data.chart.result[0]);

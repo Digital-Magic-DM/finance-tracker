@@ -13,7 +13,7 @@ import {
     deleteDoc,
 } from 'firebase/firestore';
 import { Auth } from '@angular/fire/auth';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Transaction } from '../models/finance.models';
 
 @Injectable({ providedIn: 'root' })

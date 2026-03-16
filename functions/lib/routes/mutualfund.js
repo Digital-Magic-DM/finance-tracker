@@ -13,7 +13,7 @@ router.get('/nav/:isin', async (req, res) => {
         res.status(500).json({ error: `Failed to fetch NAV for ${isin}` });
     }
 });
-router.get('/metrics', (req, res) => {
+router.get('/metrics', (_req, res) => {
     res.json(mfapi_service_1.mfapiService.getMetrics());
 });
 exports.default = router;

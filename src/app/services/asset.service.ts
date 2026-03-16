@@ -1,4 +1,4 @@
-import { Injectable, inject, Injector, runInInjectionContext, NgZone } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import {
     Firestore,
     collectionData,
@@ -13,7 +13,7 @@ import {
     deleteDoc,
 } from 'firebase/firestore';
 import { Auth } from '@angular/fire/auth';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Asset } from '../models/finance.models';
 
 @Injectable({ providedIn: 'root' })
@@ -21,7 +21,7 @@ export class AssetService {
     private firestore = inject(Firestore);
     private auth = inject(Auth);
     private injector = inject(Injector);
-    private ngZone = inject(NgZone);
+
 
     private getCollectionRef() {
         const uid = this.auth.currentUser?.uid;

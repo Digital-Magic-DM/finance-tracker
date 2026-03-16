@@ -1,5 +1,5 @@
-import { Component, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { Component, inject, signal, computed } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/transaction.service';
 import { Transaction, TransactionType, TRANSACTION_CATEGORIES } from '../../models/finance.models';
@@ -9,7 +9,7 @@ import { ImportTransactionsComponent } from './import-transactions/import-transa
 @Component({
     selector: 'app-transactions',
     standalone: true,
-    imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe, ImportTransactionsComponent],
+    imports: [CommonModule, FormsModule, DatePipe, ImportTransactionsComponent],
     templateUrl: './transactions.component.html',
     styleUrl: './transactions.component.scss',
 })

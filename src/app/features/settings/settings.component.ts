@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { AsyncPipe } from '@angular/common';
+
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { AssetService } from '../../services/asset.service';
@@ -29,6 +29,7 @@ export class SettingsComponent {
     showImport = signal(false);
 
     onImportComplete(count: number) {
+        void count;
         this.showImport.set(false);
     }
 
@@ -36,7 +37,7 @@ export class SettingsComponent {
         const txs = this.transactions();
         const rows = [
             ['Date', 'Type', 'Description', 'Category', 'Amount'],
-            ...txs.map((t) => {
+            ...txs.map((t: any) => {
                 const d = (t.date as any).seconds ? new Date((t.date as any).seconds * 1000) : new Date(t.date);
                 return [d.toLocaleDateString(), t.type, t.description, t.category, t.amount.toString()];
             }),
@@ -53,7 +54,7 @@ export class SettingsComponent {
         const asts = this.assets();
         const rows = [
             ['Name', 'Symbol', 'Type', 'Quantity', 'Buy Price', 'Current Price', 'Currency', 'Notes'],
-            ...asts.map((a) => {
+            ...asts.map((a: any) => {
                 return [
                     `"${a.name || ''}"`,
                     a.symbol || '',

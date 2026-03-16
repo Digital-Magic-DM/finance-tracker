@@ -1,12 +1,12 @@
 export const environment = {
+    production: false,
     firebase: {
-        apiKey: "YOUR_FIREBASE_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
-        messagingSenderId: "YOUR_SENDER_ID",
+        apiKey: "YOUR_KEY",
+        authDomain: "YOUR_DOMAIN",
+        projectId: "YOUR_PROJECT",
+        storageBucket: "YOUR_BUCKET",
+        messagingSenderId: "YOUR_ID",
         appId: "YOUR_APP_ID",
         measurementId: "YOUR_MEASUREMENT_ID"
-    },
-    finnhubApiKey: "YOUR_FINNHUB_API_KEY",
+    }
 };

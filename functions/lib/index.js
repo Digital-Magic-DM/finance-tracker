@@ -42,6 +42,7 @@ const admin = __importStar(require("firebase-admin"));
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const market_1 = __importDefault(require("./routes/market"));
+const mutualfund_1 = __importDefault(require("./routes/mutualfund"));
 const auth_middleware_1 = require("./middleware/auth.middleware");
 const rate_limit_middleware_1 = require("./middleware/rate-limit.middleware");
 admin.initializeApp();
@@ -51,7 +52,7 @@ app.use(express_1.default.json());
 app.use(rate_limit_middleware_1.rateLimitMiddleware);
 app.use(auth_middleware_1.authMiddleware);
 app.use('/market', market_1.default);
-app.use('/mutualfund', mutualFundRoutes);
+app.use('/mutualfund', mutualfund_1.default);
 exports.api = functions.runWith({
     secrets: ['FINNHUB_API_KEY'],
     memory: '256MB',

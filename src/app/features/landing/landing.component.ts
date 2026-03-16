@@ -1,8 +1,8 @@
-import { Component, inject, signal, effect, ElementRef } from '@angular/core';
+import { Component, inject, signal, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
-import { Auth } from '@angular/fire/auth';
+
 import { PwaService } from '../../services/pwa.service';
 import { ThemeService } from '../../services/theme.service';
 
@@ -16,7 +16,7 @@ import { ThemeService } from '../../services/theme.service';
 export class LandingComponent {
   private meta = inject(Meta);
   private title = inject(Title);
-  private router = inject(Router);
+
   private el = inject(ElementRef);
   public pwaService = inject(PwaService);
   public themeService = inject(ThemeService);
