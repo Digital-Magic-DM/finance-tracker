@@ -103,6 +103,17 @@ router.get('/chart/:symbol', async (req: Request, res: Response) => {
   const symbol = req.params.symbol as string;
   const range = (req.query.range as string) || '1d';
   const interval = (req.query.interval as string) || '5m';
+  
+  const validRanges = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max'];
+  const validIntervals = ['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo'];
+  
+  if (!validRanges.includes(range)) {
+    return res.status(400).json({ error: 'Invalid range parameter' });
+  }
+  if (!validIntervals.includes(interval)) {
+    return res.status(400).json({ error: 'Invalid interval parameter' });
+  }
+
   try {
     const data = await yahooFinanceService.getChart(symbol, range, interval);
     res.json(data.chart.result[0]);
