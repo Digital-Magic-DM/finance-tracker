@@ -1,13 +1,13 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AssetService } from '../../services/asset.service';
 import { TransactionService } from '../../services/transaction.service';
 import { SnapshotService } from '../../services/snapshot.service';
-import { AuthService } from '../../services/auth.service';
-import { ImportPlatform } from '../../services/import-data.service';
+
+
 import {
-    Asset, Transaction, TransactionType,
+    TransactionType,
     AssetType, ASSET_COLORS, AssetAllocation
 } from '../../models/finance.models';
 import { PortfolioChartComponent } from '../../shared/portfolio-chart/portfolio-chart.component';
@@ -25,7 +25,7 @@ export class DashboardComponent implements OnInit {
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
     private snapshotService = inject(SnapshotService);
-    private authService = inject(AuthService);
+
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });

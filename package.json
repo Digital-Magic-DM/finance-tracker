@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "npm run setup-env && ng serve",
     "build": "ng build",
     "preview": "npx http-server dist/finance-tracker/browser -p 8080",
     "watch": "ng build --watch --configuration development",
@@ -11,7 +11,8 @@
     "e2e": "ng e2e",
     "deploy": "npm run build && firebase deploy",
     "deploy:hosting": "npm run build && firebase deploy --only hosting",
-    "deploy:functions": "firebase deploy --only functions"
+    "deploy:functions": "firebase deploy --only functions",
+    "setup-env": "node scripts/setup-env.js"
   },
   "private": true,
   "packageManager": "npm@10.9.3",

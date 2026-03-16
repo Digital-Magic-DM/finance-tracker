@@ -1,4 +1,4 @@
-import axios from 'axios';
+
 import NodeCache from 'node-cache';
 const pLimit = require('p-limit');
 import { yahooFinanceService } from './yahoo-finance.service';

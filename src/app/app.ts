@@ -16,6 +16,7 @@ import { effect } from '@angular/core';
 export class App {
   constructor(theme: ThemeService, pwa: PwaService, title: Title) {
     // Initialize theme on startup
+    void theme;
     effect(() => {
       const name = pwa.appName();
       title.setTitle(`${name} | Precision Finance Dashboard`);

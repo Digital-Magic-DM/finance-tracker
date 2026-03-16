@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { MarketService } from '../../services/market.service';
-import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-market-dashboard',

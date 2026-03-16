@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Asset, AssetType } from '../models/finance.models';
 import { AssetService } from './asset.service';
-import { firstValueFrom, forkJoin, of } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+
 
 /**
  * Fetches live prices for stocks and mutual funds.

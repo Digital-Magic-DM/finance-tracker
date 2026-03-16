@@ -11,7 +11,7 @@ const NIFTY_50_STOCKS = [
   'SBIN.NS', 'INFY.NS', 'LICI.NS', 'ITC.NS', 'HINDUNILVR.NS'
 ];
 
-router.get('/nifty', async (req: Request, res: Response) => {
+router.get('/nifty', async (_req: Request, res: Response) => {
   try {
     const data = await nseService.getNifty50();
     res.json(data);
@@ -20,7 +20,7 @@ router.get('/nifty', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/sensex', async (req: Request, res: Response) => {
+router.get('/sensex', async (_req: Request, res: Response) => {
   try {
     const data = await nseService.getSensex();
     res.json(data);
@@ -65,7 +65,7 @@ router.get('/quotes', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/top-gainers', async (req: Request, res: Response) => {
+router.get('/top-gainers', async (_req: Request, res: Response) => {
   try {
     const results = await yahooFinanceService.getTopMovers('day_gainers');
     res.json(results);
@@ -82,7 +82,7 @@ router.get('/top-gainers', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/top-losers', async (req: Request, res: Response) => {
+router.get('/top-losers', async (_req: Request, res: Response) => {
   try {
     const results = await yahooFinanceService.getTopMovers('day_losers');
     res.json(results);

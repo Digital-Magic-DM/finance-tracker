@@ -371,6 +371,7 @@ export class AssetsComponent {
     }
 
     onImportComplete(count: number) {
+        void count;
         this.showImport.set(false);
     }
 }

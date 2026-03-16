@@ -3,7 +3,7 @@ import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { AssetService } from '../../services/asset.service';
 import { TransactionService } from '../../services/transaction.service';
 import { SnapshotService } from '../../services/snapshot.service';
-import { TransactionType, TRANSACTION_CATEGORIES } from '../../models/finance.models';
+import { TransactionType } from '../../models/finance.models';
 import { NetworthChartComponent } from '../../shared/networth-chart/networth-chart.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 

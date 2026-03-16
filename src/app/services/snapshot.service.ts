@@ -7,7 +7,7 @@ import {
 } from '@angular/fire/firestore';
 import { doc, setDoc, collection } from 'firebase/firestore';
 import { Auth } from '@angular/fire/auth';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { PortfolioSnapshot, Asset } from '../models/finance.models';
 
 @Injectable({ providedIn: 'root' })

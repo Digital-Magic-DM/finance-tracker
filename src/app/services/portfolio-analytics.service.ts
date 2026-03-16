@@ -1,10 +1,10 @@
 import { Injectable, inject, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+
 import { AssetService } from './asset.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Asset } from '../models/finance.models';
-import { environment } from '../../environments/environment';
-import { map } from 'rxjs/operators';
+
+
 
 export interface PortfolioSummary {
     totalValue: number;

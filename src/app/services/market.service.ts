@@ -1,7 +1,7 @@
 import { Injectable, signal, inject, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, timer, forkJoin, of, firstValueFrom } from 'rxjs';
-import { switchMap, shareReplay, catchError, map } from 'rxjs/operators';
+import { timer, firstValueFrom } from 'rxjs';
+import { switchMap, shareReplay, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 export interface MarketIndex {

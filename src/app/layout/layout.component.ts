@@ -12,7 +12,7 @@ import { MarketService } from '../services/market.service';
     styleUrl: './layout.component.scss',
 })
 export class LayoutComponent {
-    private marketService = inject(MarketService); // Eagerly start market data fetching
+    constructor() { inject(MarketService); } // Eagerly start market data fetching
     sidebarOpen = signal(false);
 
     toggleSidebar() {
