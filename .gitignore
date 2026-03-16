@@ -72,3 +72,6 @@ service-account.json
 creds.json
 *.env.*
 !.env.example
+
+#task
+TASKS.md
