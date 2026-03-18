@@ -9,7 +9,6 @@
     "watch": "ng build --watch --configuration development",
     "deploy": "npm run build && firebase deploy",
     "deploy:hosting": "npm run build && firebase deploy --only hosting",
-    "deploy:functions": "firebase deploy --only functions",
     "setup-env": "node scripts/setup-env.js"
   },
   "private": true,
