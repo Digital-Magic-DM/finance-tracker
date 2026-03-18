@@ -60,9 +60,8 @@ functions/.env
 functions/.secret.local
 
 # Web Secrets
+src/environments/environment.ts
 src/environments/environment.prod.ts
-dist
-node_modules
 
 # Common Secrets
 *.pem
