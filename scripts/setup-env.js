@@ -38,7 +38,8 @@ const config = {
     messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || 'local-id',
     appId: env.FIREBASE_APP_ID || 'local-app',
     measurementId: env.FIREBASE_MEASUREMENT_ID || 'local-measure'
-  }
+  },
+  finnhubApiKey: env.FINNHUB_API_KEY || 'local-key'
 };
 
 const content = `export const environment = ${JSON.stringify(config, null, 2)};
