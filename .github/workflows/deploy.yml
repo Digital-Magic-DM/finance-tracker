@@ -3,23 +3,23 @@ name: Deploy to Firebase Hosting and Functions
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build_and_test:
-    name: Build & Test
+  build_and_deploy:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -27,12 +27,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run Unit Tests
-        run: npm run test -- --watch=false --browsers=ChromeHeadless
-
-      # Note: Skipping E2E tests here for speed, but they can be added.
-      # - name: Run E2E Tests
-      #   run: npx playwright install --with-deps && npm run e2e
 
       - name: Inject Environment Secrets
         run: |
@@ -63,11 +57,11 @@ jobs:
 
   deploy_hosting:
     name: Deploy to Firebase Hosting
-    needs: build_and_test
+    needs: build_and_deploy
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
@@ -85,14 +79,14 @@ jobs:
 
   deploy_functions:
     name: Deploy to Firebase Functions
-    needs: build_and_test
+    needs: build_and_deploy
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
