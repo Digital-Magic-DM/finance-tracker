@@ -51,8 +51,6 @@ jobs:
             }
           };
           EOF
-          cp src/environments/environment.prod.ts src/environments/environment.ts
-          sed -i "s/production: true/production: false/g" src/environments/environment.ts
           echo "FINNHUB_API_KEY=${{ secrets.FINNHUB_API_KEY }}" > functions/.env
       - name: Build Application
         run: npm run build
