@@ -31,6 +31,20 @@ jobs:
       - name: Inject Environment Secrets
         run: |
           mkdir -p src/environments
+          cat <<EOF > src/environments/environment.ts
+          export const environment = {
+            production: false,
+            firebase: {
+              apiKey: "",
+              authDomain: "",
+              projectId: "",
+              storageBucket: "",
+              messagingSenderId: "",
+              appId: "",
+              measurementId: ""
+            }
+          };
+          EOF
           cat <<EOF > src/environments/environment.prod.ts
           export const environment = {
             production: true,
