@@ -8,5 +8,6 @@ export const environment = {
         messagingSenderId: "YOUR_ID",
         appId: "YOUR_APP_ID",
         measurementId: "YOUR_MEASUREMENT_ID"
-    }
+    },
+    finnhubApiKey: "YOUR_FINNHUB_KEY"
 };

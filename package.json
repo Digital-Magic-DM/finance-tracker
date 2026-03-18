@@ -7,8 +7,7 @@
     "build": "ng build",
     "preview": "npx http-server dist/finance-tracker/browser -p 8080",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "e2e": "ng e2e",
+
     "deploy": "npm run build && firebase deploy",
     "deploy:hosting": "npm run build && firebase deploy --only hosting",
     "deploy:functions": "firebase deploy --only functions",
@@ -37,11 +36,7 @@
     "@angular/build": "^20.2.0",
     "@angular/cli": "^20",
     "@angular/compiler-cli": "^20.2.0",
-    "@playwright/test": "1.58.2",
-    "jsdom": "^28.0.0",
-    "playwright-ng-schematics": "^20.0.2",
     "prettier": "^3.8.1",
-    "typescript": "~5.9.2",
-    "vitest": "^3.1.1"
+    "typescript": "~5.9.2"
   }
 }
