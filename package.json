@@ -1,13 +1,12 @@
 {
   "name": "finance-tracker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "ng": "ng",
     "start": "npm run setup-env && ng serve",
     "build": "ng build",
     "preview": "npx http-server dist/finance-tracker/browser -p 8080",
     "watch": "ng build --watch --configuration development",
-
     "deploy": "npm run build && firebase deploy",
     "deploy:hosting": "npm run build && firebase deploy --only hosting",
     "deploy:functions": "firebase deploy --only functions",
