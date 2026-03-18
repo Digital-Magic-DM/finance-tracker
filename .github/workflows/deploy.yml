@@ -82,13 +82,13 @@ jobs:
           name: dist
           path: dist/finance-tracker/browser
       
-      # We need npm install for the Firebase CLI if we don't use the action directly
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+      - name: Authenticate with Firebase
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DM_FINANCE_TRACKER }}' > sa_key.json
 
       - name: Deploy to Firebase Hosting
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS: sa_key.json
         run: firebase deploy --only hosting --non-interactive
 
   deploy_functions:
@@ -114,10 +114,11 @@ jobs:
         working-directory: ./functions
         run: npm run build
 
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+      - name: Authenticate with Firebase
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DM_FINANCE_TRACKER }}' > sa_key.json
 
       - name: Deploy to Firebase Functions
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS: sa_key.json
         run: firebase deploy --only functions --non-interactive
