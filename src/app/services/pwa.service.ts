@@ -54,6 +54,12 @@ export class PwaService {
         .subscribe(() => {
           console.log('PwaService: New version available');
           this.updateAvailable.set(true);
+          
+          // Show a native confirmation dialog to the user
+          // This ensures they get the update regardless of what page they are on
+          if (confirm('A new version of FinTracker is available! Do you want to load the latest updates now?')) {
+            this.updateApp();
+          }
         });
     }
   }
