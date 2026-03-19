@@ -85,8 +85,18 @@
         </button>
       </div>
 
-      <!-- Install App -->
-      @if (pwaService.canInstall()) {
+      <!-- Update/Install App -->
+      @if (pwaService.updateAvailable()) {
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Update App</h4>
+            <p>A new version is available! Refresh to update.</p>
+          </div>
+          <button class="btn btn-primary" (click)="pwaService.updateApp()" style="gap:4px">
+            <span class="material-icons" style="font-size:18px">update</span> Update
+          </button>
+        </div>
+      } @else if (pwaService.canInstall()) {
         <div class="setting-row">
           <div class="setting-info">
             <h4>Install App</h4>
