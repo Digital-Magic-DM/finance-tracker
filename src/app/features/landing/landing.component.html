@@ -6,43 +6,89 @@
   <nav class="nav">
     <div class="logo brand-name" (click)="scrollToTop()" style="cursor: pointer;">{{ pwaService.appName() }}</div>
     <div class="nav-links">
-      <a href="#about" (click)="scrollToSection('about')" class="nav-link"><span>{{ '{' }}</span> About Us <span>{{ '}' }}</span></a>
+      <a href="#about" (click)="scrollToSection('about')" class="nav-link hide-xs"><span>{{ '{' }}</span> About Us <span>{{ '}' }}</span></a>
       <a href="#solutions" (click)="scrollToSection('solutions')" class="nav-link"><span>&lt;</span> Solutions <span>&gt;</span></a>
       <a routerLink="/login" class="nav-link active"><span>(</span> Sign In <span>)</span></a>
-      <button 
-        class="nav-link theme-toggle-btn" 
-        (click)="themeService.toggle()" 
+      <button
+        class="nav-link theme-toggle-btn"
+        (click)="themeService.toggle()"
         [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
         style="background: none; border: none; cursor: pointer; padding: 4px 0;">
-        <span>[</span> 
+        <span>[</span>
         <i class="material-icons" style="font-size: 16px; vertical-align: middle;">
           {{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}
-        </i> 
+        </i>
         <span>]</span>
       </button>
     </div>
   </nav>
 
   <main class="hero">
+
+    <!-- Mobile-only: abstract signal line art (top dead space) -->
+    <div class="hero-mobile-top" aria-hidden="true">
+      <svg viewBox="0 0 360 80" class="hero-deco-line" preserveAspectRatio="none">
+        <!-- Faint horizontal reference lines -->
+        <line x1="0" y1="20" x2="360" y2="20" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 10"/>
+        <line x1="0" y1="45" x2="360" y2="45" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 10"/>
+        <line x1="0" y1="68" x2="360" y2="68" stroke="currentColor" stroke-width="0.5" stroke-dasharray="4 10"/>
+
+        <!-- Primary signal line — thin, ascending, abstract -->
+        <polyline
+          points="0,72 40,65 80,60 110,52 140,58 175,38 210,44 240,28 280,32 320,18 360,10"
+          fill="none" stroke="currentColor" stroke-width="1"/>
+
+        <!-- Crosshair at signal peak -->
+        <line x1="352" y1="4"  x2="352" y2="18" stroke="currentColor" stroke-width="0.8"/>
+        <line x1="345" y1="10" x2="360" y2="10" stroke="currentColor" stroke-width="0.8"/>
+
+        <!-- Subtle scatter dots along line -->
+        <circle cx="110" cy="52" r="1.5" fill="currentColor"/>
+        <circle cx="175" cy="38" r="1.5" fill="currentColor"/>
+        <circle cx="280" cy="32" r="1.5" fill="currentColor"/>
+        <circle cx="360" cy="10" r="2"   fill="currentColor"/>
+
+        <!-- Secondary ghost line — offset, quieter -->
+        <polyline
+          points="0,78 40,74 80,70 110,65 140,68 175,55 210,58 240,46 280,48 320,36 360,28"
+          fill="none" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 6"/>
+      </svg>
+    </div>
+
     <div class="hero-left">
       <div class="industrial-label">Forged in Chennai</div>
-      <h1 class="hero-title"> 
+      <h1 class="hero-title">
         Forged for <span class="typewriter">{{ currentPhrase() }}</span><span class="cursor">|</span>
       </h1>
       <p class="hero-subtext">
-       it's a high-precision (maybe) financial dashboard for people who prefer numbers over noise.
-No hype. No “get rich quick.” Just clean math, clear signals, and tools engineered for disciplined portfolio tracking.  <br>
-(Ai Generated - not Ai Powered)
+        A high-precision (maybe) financial dashboard for people who prefer numbers over noise.
+        No hype. No "get rich quick." Just clean math, clear signals, and tools engineered for disciplined portfolio tracking.<br>
+        (Ai Generated - not Ai Powered)
       </p>
       <div class="hero-actions">
         <a routerLink="/login" class="btn-main">[ Get Started ]</a>
             @if (pwaService.updateAvailable()) {
-              <button (click)="pwaService.updateApp()" class="btn-sub">< Update App ></button>
+              <button (click)="pwaService.updateApp()" class="btn-sub">&lt; Update App &gt;</button>
             } @else if (pwaService.canInstall()) {
-              <button (click)="pwaService.installApp()" class="btn-sub">< Install App ></button>
+              <button (click)="pwaService.installApp()" class="btn-sub">&lt; Install App &gt;</button>
             }
       </div>
     </div>
+
+    <!-- Mobile-only: blurred keyword atmosphere (bottom dead space) -->
+    <div class="hero-mobile-bottom" aria-hidden="true">
+      <div class="hero-blur-words">
+        <span class="bw bw-1">EQUITY</span>
+        <span class="bw bw-2">PRECISION</span>
+        <span class="bw bw-3">SIGNAL</span>
+        <span class="bw bw-4">PORTFOLIO</span>
+        <span class="bw bw-5">CLARITY</span>
+        <span class="bw bw-6">CONTROL</span>
+        <span class="bw bw-7">RETURNS</span>
+        <span class="bw bw-8">DISCIPLINE</span>
+      </div>
+    </div>
+
     <div class="hero-right">
         <div class="line-art-container">
             <svg viewBox="0 0 200 200" class="line-illustration">
@@ -55,8 +101,9 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
     </div>
   </main>
 
+  <!-- ───── About Us ───── -->
   <section class="about-us-section" id="about">
-    <div class="section-label">< Core Philosophy ></div>
+    <div class="section-label">&lt; Core Philosophy &gt;</div>
     <div class="about-content">
         <p class="about-lead">Written in anti-gravity code somewhere between midnight curiosity and early-morning caffeine, the system is designed to:</p>
         <ul class="about-list">
@@ -64,64 +111,60 @@ No hype. No “get rich quick.” Just clean math, clear signals, and tools engi
             <li><span>•</span> surface performance without financial theater</li>
             <li><span>•</span> keep data structured, fast, and brutally honest</li>
         </ul>
-        <p class="about-conclusion">Because serious investors don’t need fireworks — they need control panels. <br><span class="brand-name" [routerLink]="['/']" style="cursor: pointer;">{{ pwaService.appName() }}</span> is that panel.</p>
+        <p class="about-conclusion">Because serious investors don't need fireworks — they need control panels.<br><span class="brand-name" [routerLink]="['/']" style="cursor: pointer;">{{ pwaService.appName() }}</span> is that panel.</p>
     </div>
   </section>
 
+  <!-- ───── Solutions ───── -->
   <section class="solutions-section" id="solutions">
-    <div class="section-label">< Systems Analysis ></div>
+    <div class="section-label">&lt; Systems Analysis &gt;</div>
     <div class="solutions-intro">
         <h2>Solutions</h2>
-        <p>FinTracker is a toolkit for people who prefer organized numbers over chaotic spreadsheets.</p>
+        <p>A focused toolkit for disciplined investors. Three systems, one panel.</p>
     </div>
     <div class="solutions-grid">
         <div class="solution-card">
             <div class="card-num">01</div>
             <h3>Portfolio Tracking</h3>
-            <p>Your investments finally live in one place. Stocks, ETFs, bonds — tracked without the spreadsheet gymnastics.</p>
+            <p>Stocks, ETFs, bonds — all in one place. No more spreadsheet gymnastics.</p>
         </div>
         <div class="solution-card">
             <div class="card-num">02</div>
             <h3>Performance Analytics</h3>
-            <p>See what’s actually working. Gains, losses, trends, and patterns — no financial astrology involved.</p>
+            <p>Gains, losses, and patterns — surfaced clearly. No financial astrology involved.</p>
         </div>
         <div class="solution-card">
             <div class="card-num">03</div>
             <h3>Transaction Intelligence</h3>
-            <p>Import your transactions and let FinTracker do the sorting. Your past investment decisions finally make sense.</p>
-        </div>
-        <div class="solution-card">
-            <div class="card-num">04</div>
-            <h3>Minimal Financial Dashboard</h3>
-            <p>A clean dashboard built for speed and focus. No blinking banners, no noise — just the data that matters.</p>
-        </div>
-        <div class="solution-card">
-            <div class="card-num">05</div>
-            <h3>Personal Financial Control</h3>
-            <p>Stop juggling spreadsheets, screenshots, and memory. FinTracker turns scattered records into a single command center for your portfolio.</p>
+            <p>Import transactions. Let FinTracker do the sorting. Your history finally makes sense.</p>
         </div>
     </div>
   </section>
 
+  <!-- ───── System Insights ───── -->
   <section class="insights-section" id="insights">
-    <div class="section-label">< System Insights ></div>
+    <div class="section-label">&lt; System Insights &gt;</div>
+    <div class="insights-intro">
+        <h2>Why FinTracker</h2>
+        <p>Built on three principles that most finance tools skip entirely.</p>
+    </div>
     <div class="insights-grid">
       <div class="insight-item">
         <div class="insight-label">Performance</div>
-        <h3>Real-time Portfolio Analytics</h3>
-        <p>Track your investments across assets with clear numbers, clean charts, and zero spreadsheet chaos.</p>
+        <h3>Real-time Analytics</h3>
+        <p>Track investments across assets with clear numbers and zero spreadsheet chaos.</p>
       </div>
-      
+
       <div class="insight-item">
         <div class="insight-label">Security</div>
         <h3>Privacy First</h3>
-        <p>Your portfolio data isn’t sold, shared, or turned into ads. It’s your data — <span class="brand-name">{{ pwaService.appName() }}</span> just organizes it.</p>
+        <p>Your data is not sold or shared. <span class="brand-name">{{ pwaService.appName() }}</span> just organizes it.</p>
       </div>
 
       <div class="insight-item">
         <div class="insight-label">Craftsmanship</div>
         <h3>Built by a Developer</h3>
-        <p>Forged in Chennai by a solo builder who prefers clean code and cleaner financial dashboards.</p>
+        <p>Forged in Chennai by a solo builder who prefers clean code and cleaner dashboards.</p>
       </div>
     </div>
   </section>

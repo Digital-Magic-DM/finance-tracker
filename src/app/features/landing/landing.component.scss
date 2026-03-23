@@ -47,7 +47,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 100px;
+  height: 64px;
   padding: 0 60px;
   display: flex;
   align-items: center;
@@ -58,14 +58,11 @@
   z-index: 100;
 
   @media (max-width: 768px) {
-    height: auto;
-    min-height: 60px;
-    padding: 10px 15px;
-    flex-wrap: wrap;
-    /* allow wrap on small screens */
-    gap: 10px;
-    justify-content: center;
-    /* center items if they wrap */
+    height: 52px;
+    padding: 0 16px;
+    /* Single row — no wrapping */
+    flex-wrap: nowrap;
+    gap: 0;
   }
 }
 
@@ -74,10 +71,11 @@
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: -1px;
+  flex-shrink: 0;
 
   @media (max-width: 768px) {
-    font-size: 16px;
-    letter-spacing: -0.5px;
+    font-size: 15px;
+    letter-spacing: -0.3px;
   }
 
   span {
@@ -89,13 +87,14 @@
 .nav-links {
   display: flex;
   gap: 40px;
+  align-items: center;
 
   @media (max-width: 768px) {
-    gap: 12px;
+    gap: 16px;
   }
 
-  @media (max-width: 380px) {
-    gap: 8px;
+  @media (max-width: 360px) {
+    gap: 10px;
   }
 }
 
@@ -118,10 +117,15 @@
 
   span {
     opacity: 0.3;
-    margin: 0 4px;
+    margin: 0 3px;
     font-family: monospace;
     transition: transform 0.3s;
     display: inline-block;
+
+    /* Hide decorative brackets on smallest screens to save space */
+    @media (max-width: 380px) {
+      display: none;
+    }
   }
 
   &::after {
@@ -161,8 +165,9 @@
     }
   }
 
-  @media (max-width: 480px) {
-    span {
+  /* Hide About Us link on very small screens — keeps nav uncluttered */
+  &.hide-xs {
+    @media (max-width: 380px) {
       display: none;
     }
   }
@@ -199,6 +204,103 @@
     padding: 100px 20px 0;
     text-align: center;
   }
+
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* NO space-between — removes the 210px dead gap */
+    align-items: stretch;
+    padding: 52px 0 0;           /* account for fixed nav height */
+    height: 100vh;
+    max-height: 100dvh;
+    text-align: left;
+    gap: 0;
+  }
+}
+
+/* ── Mobile-only illustration panels ── */
+.hero-mobile-top,
+.hero-mobile-bottom {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    width: 100%;
+    color: var(--text-primary);
+  }
+}
+
+/* Top panel: abstract signal line SVG */
+.hero-mobile-top {
+  @media (max-width: 768px) {
+    /* Fixed height: fills the space that used to be dead */
+    height: 28vh;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.hero-deco-line {
+  width: 100%;
+  /* Stretch the SVG to fill the container height */
+  flex: 1;
+  height: 100%;
+  display: block;
+  opacity: 0.18;
+  /* SVG uses preserveAspectRatio="none" so it stretches to fill */
+}
+
+
+/* Bottom panel: blurred floating keyword atmosphere */
+.hero-mobile-bottom {
+  @media (max-width: 768px) {
+    border-top: 1px solid var(--border-light);
+    /* Push to the very bottom of the hero */
+    margin-top: auto;
+  }
+}
+
+.hero-blur-words {
+  position: relative;
+  width: 100%;
+  height: 120px; /* taller so words have room to breathe */
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+
+  .bw {
+    position: absolute;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  /* Varying blur + opacity — Domforge depth-of-field effect, spread over 120px */
+  .bw-1 { top: 8px;   left: 8px;   opacity: 0.12; filter: blur(2.5px); }
+  .bw-2 { top: 40px;  left: 60px;  opacity: 0.22; filter: blur(1px);   }
+  .bw-3 { top: 80px;  left: 160px; opacity: 0.08; filter: blur(4px);   }
+  .bw-4 { top: 95px;  left: 20px;  opacity: 0.18; filter: blur(2px);   }
+  .bw-5 { top: 20px;  left: 230px; opacity: 0.28; filter: blur(0.5px); }
+  .bw-6 { top: 60px;  left: 190px; opacity: 0.10; filter: blur(3px);   }
+  .bw-7 { top: 10px;  left: 110px; opacity: 0.15; filter: blur(1.5px); }
+  .bw-8 { top: 72px;  left: 290px; opacity: 0.09; filter: blur(4px);   }
+  /* Extra words to fill the taller container */
+  .bw-1::after { content: ''; } /* no pseudo needed — just span count */
+}
+
+/* Hero left content: side padding on mobile */
+.hero-left {
+  @media (max-width: 768px) {
+    padding: 20px 20px 24px;
+    /* No flex:1 or justify-content:center — content sits naturally
+       below the top illustration, no centering = no dead gap */
+  }
 }
 
 .industrial-label {
@@ -207,6 +309,12 @@
   letter-spacing: 4px;
   color: var(--text-muted);
   margin-bottom: 24px;
+
+  @media (max-width: 768px) {
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-bottom: 14px;
+  }
 }
 
 .hero-title {
@@ -218,12 +326,15 @@
   max-width: 100%;
   overflow-wrap: break-word;
 
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
+    font-size: clamp(36px, 11vw, 60px);
     letter-spacing: -2px;
+    margin-bottom: 18px;
   }
 
-  @media (max-width: 480px) {
-    letter-spacing: -1px;
+  @media (max-width: 400px) {
+    font-size: clamp(32px, 10vw, 48px);
+    letter-spacing: -1.5px;
   }
 }
 
@@ -262,11 +373,12 @@
   }
 
   @media (max-width: 768px) {
-    font-size: 13px;
-    width: 100%;
+    font-size: 14px;
+    line-height: 1.65;
     max-width: 100%;
-    margin-bottom: 24px;
-    padding: 0;
+    margin-bottom: 28px;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
@@ -278,9 +390,15 @@
     justify-content: center;
   }
 
-  @media (max-width: 450px) {
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  @media (max-width: 400px) {
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+    gap: 10px;
   }
 }
 
@@ -293,9 +411,15 @@
   text-transform: uppercase;
   font-size: 14px;
   transition: transform 0.2s;
+  display: inline-block;
 
   &:hover {
     transform: translateY(-2px);
+  }
+
+  @media (max-width: 768px) {
+    padding: 13px 28px;
+    font-size: 12px;
   }
 }
 
@@ -314,9 +438,21 @@
     background: var(--text-primary);
     color: var(--bg-primary);
   }
+
+  @media (max-width: 768px) {
+    padding: 13px 24px;
+    font-size: 12px;
+  }
 }
 
 /* Line Art */
+.line-art-container {
+  @media (max-width: 768px) {
+    /* Hide the chart SVG on mobile — it shows as dead space */
+    display: none;
+  }
+}
+
 .line-illustration {
   width: 100%;
   height: auto;
@@ -326,14 +462,6 @@
 
   @media (max-width: 1024px) {
     margin: 0 auto;
-  }
-
-  @media (max-width: 768px) {
-    max-width: 300px;
-  }
-
-  @media (max-width: 480px) {
-    max-width: 250px;
   }
 }
 
@@ -487,7 +615,7 @@
 
 .solutions-grid {
   display: grid;
-  grid-template-columns: repeat(3, 2fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 40px;
 
   @media (max-width: 1024px) {
@@ -495,11 +623,8 @@
   }
 
   @media (max-width: 768px) {
-    overflow-y: auto;
+    grid-template-columns: 1fr;
     gap: 20px;
-    display: grid;
-    justify-items: start;
-
   }
 }
 
@@ -583,11 +708,42 @@
   }
 }
 
+.insights-intro {
+  margin-bottom: 60px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: 48px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+
+    @media (max-width: 768px) {
+      font-size: 28px;
+      letter-spacing: -1px;
+      margin-bottom: 6px;
+    }
+  }
+
+  p {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 600px;
+
+    @media (max-width: 768px) {
+      font-size: 16px;
+    }
+  }
+}
+
 .insights-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 60px;
-  margin-top: 40px;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
