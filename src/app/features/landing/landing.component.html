@@ -6,8 +6,8 @@
   <nav class="nav">
     <div class="logo brand-name" (click)="scrollToTop()" style="cursor: pointer;">{{ pwaService.appName() }}</div>
     <div class="nav-links">
-      <a (click)="scrollToSection('about')" class="nav-link" style="cursor: pointer;"><span>&lbrace;</span> About Us <span>&rbrace;</span></a>
-      <a (click)="scrollToSection('solutions')" class="nav-link" style="cursor: pointer;"><span><</span> Solutions <span>></span></a>
+      <a href="#about" (click)="scrollToSection('about')" class="nav-link"><span>{{ '{' }}</span> About Us <span>{{ '}' }}</span></a>
+      <a href="#solutions" (click)="scrollToSection('solutions')" class="nav-link"><span>&lt;</span> Solutions <span>&gt;</span></a>
       <a routerLink="/login" class="nav-link active"><span>(</span> Sign In <span>)</span></a>
       <button 
         class="nav-link theme-toggle-btn" 

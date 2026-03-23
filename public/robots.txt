@@ -3,4 +3,4 @@ Allow: /
 Disallow: /login
 Disallow: /app/
 
-Sitemap: https://dmfinance.web.app/sitemap.xml
+Sitemap: https://dmfintracker.web.app/sitemap.xml
