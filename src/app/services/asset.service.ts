@@ -44,20 +44,20 @@ export class AssetService {
 
     async addAsset(asset: Omit<Asset, 'id'>): Promise<void> {
         const col = this.getCollectionRef();
-        if (!col) return;
+        if (!col) throw new Error('User not authenticated');
         await addDoc(col, asset as any);
     }
 
     async updateAsset(id: string, asset: Partial<Asset>): Promise<void> {
         const uid = this.auth.currentUser?.uid;
-        if (!uid) return;
+        if (!uid) throw new Error('User not authenticated');
         const ref = doc(this.firestore, `users/${uid}/assets/${id}`);
         await updateDoc(ref, asset as any);
     }
 
     async deleteAsset(id: string): Promise<void> {
         const uid = this.auth.currentUser?.uid;
-        if (!uid) return;
+        if (!uid) throw new Error('User not authenticated');
         const ref = doc(this.firestore, `users/${uid}/assets/${id}`);
         await deleteDoc(ref);
     }

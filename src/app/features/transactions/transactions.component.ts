@@ -65,6 +65,30 @@ export class TransactionsComponent {
             .reduce((s, t) => s + t.amount, 0)
     );
 
+    monthlyIncome = computed(() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        return this.all().filter((t) => {
+            const d = this.formatDate(t.date);
+            return (t.type === TransactionType.Income || t.type === TransactionType.Sell) &&
+                d.getMonth() === month && d.getFullYear() === year;
+        }).reduce((s, t) => s + t.amount, 0);
+    });
+
+    monthlyExpense = computed(() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        return this.all().filter((t) => {
+            const d = this.formatDate(t.date);
+            return (t.type === TransactionType.Expense || t.type === TransactionType.Buy) &&
+                d.getMonth() === month && d.getFullYear() === year;
+        }).reduce((s, t) => s + t.amount, 0);
+    });
+
+    monthlySpent = computed(() => this.monthlyExpense());
+
     openAdd() {
         this.editingId.set(null);
         this.form.set({ type: TransactionType.Expense, amount: 0, description: '', category: 'Other', date: new Date(), notes: '' });

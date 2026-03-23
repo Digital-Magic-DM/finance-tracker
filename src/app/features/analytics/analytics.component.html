@@ -45,8 +45,34 @@
     }
   </div>
 
+  <!-- Monthly Spending Trend -->
+  <div class="card monthly-trend">
+    <div class="card-header">
+      <h3>Monthly Spending Trend</h3>
+      <span class="badge badge-primary">Last 6 Months</span>
+    </div>
+    @if (monthlySpendingTrend().length > 0) {
+      <div class="trend-list">
+        @for (item of monthlySpendingTrend(); track item.month) {
+          <div class="trend-row">
+            <span class="trend-month fw-bold">{{ item.month }}</span>
+            <div class="trend-bar-wrap">
+              <div class="trend-bar" [style.width.%]="(item.amount / monthlySpendingTrend()[0].amount) * 100"></div>
+            </div>
+            <span class="trend-amount fw-bold">{{ item.amount | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <span class="material-icons empty-icon">bar_chart</span>
+        <span class="empty-title">No spending data yet</span>
+      </div>
+    }
+  </div>
+
   <!-- Category Breakdown -->
-  <div class="card">
+  <div class="card category-breakdown">
     <div class="card-header">
       <h3>Expense by Category</h3>
     </div>

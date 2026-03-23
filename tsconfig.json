@@ -14,6 +14,8 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },

@@ -2,22 +2,32 @@
   <!-- Stats Row -->
   <div class="stats-grid">
     <div class="card stat-card">
-      <div class="material-icons stat-icon">account_balance_wallet</div>
-      <p class="stat-label">Monthly Income</p>
-      <div class="stat-value text-success">₹{{ monthlyIncome() | number:'1.0-0' }}</div>
-    </div>
-    <div class="card stat-card">
-      <div class="material-icons stat-icon">money_off</div>
-      <p class="stat-label">Monthly Expense</p>
-      <div class="stat-value text-danger">₹{{ monthlyExpense() | number:'1.0-0' }}</div>
-    </div>
-
-    <!-- Total Assets -->
-    <div class="card stat-card">
       <div class="material-icons stat-icon">inventory_2</div>
       <p class="stat-label">Total Assets</p>
-      <div class="stat-value">{{ assets().length }}</div>
+      <div class="stat-value">₹{{ totalNetWorth() | number:'1.0-0' }}</div>
       <div class="stat-change positive">Across {{ allocations().length }} categories</div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">paid</div>
+      <p class="stat-label">Invested</p>
+      <div class="stat-value">₹{{ totalCost() | number:'1.0-0' }}</div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">trending_up</div>
+      <p class="stat-label">Profit/Loss</p>
+      <div class="stat-value" [class.text-success]="totalGain() >= 0" [class.text-danger]="totalGain() < 0">
+        ₹{{ totalGain() | number:'1.0-0' }}
+      </div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">percent</div>
+      <p class="stat-label">Total Gain</p>
+      <div class="stat-value" [class.text-success]="totalGainPct() >= 0" [class.text-danger]="totalGainPct() < 0">
+        {{ totalGainPct() | number:'1.1-1' }}%
+      </div>
     </div>
   </div>
 
@@ -155,6 +165,35 @@
         <div class="empty-state">
           <span class="material-icons empty-icon">apps</span>
           <span class="empty-title">No holdings recorded</span>
+        </div>
+      }
+    </div>
+    <!-- Monthly Wise Spending -->
+    <div class="card monthly-wise-spent">
+      <div class="card-header">
+        <h3>Monthly Spending Trend</h3>
+        <span class="badge badge-primary">Last 4 Months</span>
+      </div>
+      @if (monthlySpendingTrend().length > 0) {
+        <div class="alloc-list">
+          @for (item of monthlySpendingTrend(); track item.month) {
+            <div class="alloc-item">
+              <div class="alloc-info" style="width: 60px;">
+                <span class="alloc-label fw-bold">{{ item.month }}</span>
+              </div>
+              <div class="alloc-bar-wrap">
+                <div class="alloc-bar" [style.width.%]="(item.amount / monthlySpendingTrend()[0].amount) * 100" style="background: var(--accent-danger-blend) !important;"></div>
+              </div>
+              <div class="alloc-values">
+                <span class="alloc-value">{{ item.amount | currency:'INR':'symbol':'1.0-0' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span class="material-icons empty-icon">bar_chart</span>
+          <span class="empty-title">No spending data</span>
         </div>
       }
     </div>

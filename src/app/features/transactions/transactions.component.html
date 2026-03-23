@@ -21,18 +21,16 @@
   <!-- Summary -->
   <div class="tx-summary">
     <div class="card summary-item">
+      <div class="s-label">Monthly Spent</div>
+      <div class="s-value negative">{{ monthlySpent() | currency:'INR':'symbol':'1.0-0' }}</div>
+    </div>
+    <div class="card summary-item">
       <div class="s-label">Total Income</div>
       <div class="s-value positive">{{ totalIncome() | currency:'INR':'symbol':'1.0-0' }}</div>
     </div>
     <div class="card summary-item">
       <div class="s-label">Total Expense</div>
       <div class="s-value negative">{{ totalExpense() | currency:'INR':'symbol':'1.0-0' }}</div>
-    </div>
-    <div class="card summary-item">
-      <div class="s-label">Net Flow</div>
-      <div class="s-value" [class.positive]="totalIncome() >= totalExpense()" [class.negative]="totalIncome() < totalExpense()">
-        {{ (totalIncome() - totalExpense()) | currency:'INR':'symbol':'1.0-0' }}
-      </div>
     </div>
   </div>
 

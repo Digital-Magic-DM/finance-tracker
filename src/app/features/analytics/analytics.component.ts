@@ -55,4 +55,28 @@ export class AnalyticsComponent {
     savingsRate = computed(() =>
         this.totalIncome() > 0 ? ((this.totalIncome() - this.totalExpense()) / this.totalIncome()) * 100 : 0
     );
+
+    monthlySpendingTrend = computed(() => {
+        const map: Record<string, number> = {};
+        for (const tx of this.transactions()) {
+            if (tx.type === TransactionType.Expense || tx.type === TransactionType.Buy) {
+                const d = this.formatDate(tx.date);
+                if (isNaN(d.getTime())) continue;
+                const key = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+                map[key] = (map[key] || 0) + tx.amount;
+            }
+        }
+        
+        // Return last 6 months in chronological order
+        return Object.entries(map)
+            .map(([month, amount]) => ({ month, amount }))
+            .reverse() // Most recent first for the list, but we might want chronological for chart
+            .slice(0, 6);
+    });
+
+    private formatDate(date: any): Date {
+        if (date instanceof Date) return date;
+        if (date?.seconds) return new Date(date.seconds * 1000);
+        return new Date(date);
+    }
 }

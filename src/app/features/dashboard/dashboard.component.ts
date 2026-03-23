@@ -129,6 +129,24 @@ export class DashboardComponent implements OnInit {
         this.snapshots().map((s) => ({ date: s.date, value: s.netWorth }))
     );
 
+    monthlySpendingTrend = computed(() => {
+        const map: Record<string, number> = {};
+        for (const tx of this.transactions()) {
+            if (tx.type === TransactionType.Expense || tx.type === TransactionType.Buy) {
+                const d = this.formatDate(tx.date);
+                if (isNaN(d.getTime())) continue;
+                const key = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+                map[key] = (map[key] || 0) + tx.amount;
+            }
+        }
+        
+        // Return last 4 months for dashboard
+        return Object.entries(map)
+            .map(([month, amount]) => ({ month, amount }))
+            .reverse()
+            .slice(0, 4);
+    });
+
     async ngOnInit() {
         // Wait briefly for assets to load, then save a daily snapshot
         setTimeout(async () => {

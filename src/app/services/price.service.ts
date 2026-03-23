@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Asset, AssetType } from '../models/finance.models';
 import { AssetService } from './asset.service';
 import { firstValueFrom } from 'rxjs';
-
+import nseCompanies from '../features/assets/nse_companies.json';
+import bseIsins from '../features/assets/bse_isin.json';
 
 /**
  * Fetches live prices for stocks and mutual funds.
@@ -25,6 +26,34 @@ export class PriceService {
 
     // Cache ISIN → MFAPI scheme code mapping to avoid repeated lookups
     private schemeCodeCache = new Map<string, number | null>();
+
+    // ISIN → Ticker mapping from local JSON
+    private isinToTickerMap = new Map<string, string>();
+    // Plain Symbol → Suffix Symbol (e.g., ITC -> ITC.NS)
+    private symbolToTickerMap = new Map<string, string>();
+
+
+    constructor() {
+        // Initialize the maps from local JSON for O(1) lookups
+        const allData = [...(nseCompanies as any[]), ...(bseIsins as any[])];
+        
+        for (const item of allData) {
+            const isin = (item.ISIN_NUMBER || item.isin_number || '').toUpperCase();
+            const symbol = (item.symbol || '').toUpperCase();
+            
+            if (isin) {
+                this.isinToTickerMap.set(isin, symbol);
+            }
+            
+            if (symbol) {
+                const plainSymbol = symbol.split('.')[0];
+                // Prefer NSE if both exist (most common)
+                if (!this.symbolToTickerMap.has(plainSymbol) || symbol.endsWith('.NS')) {
+                    this.symbolToTickerMap.set(plainSymbol, symbol);
+                }
+            }
+        }
+    }
 
     /**
      * Fetch & update the current price for a single asset.
@@ -57,18 +86,21 @@ export class PriceService {
         // 1. Process MFs individually (MFAPI doesn't have a clean bulk list endpoint)
         for (const asset of mfs) {
             const price = await this.fetchPrice(asset);
-            if (price === null) {
-                failed++;
-            } else if (price !== asset.currentPrice && asset.id) {
+            if (price !== null && asset.id) {
                 try {
-                    await this.assetService.updateAsset(asset.id, { currentPrice: price });
-                    updated++;
+                    const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                    await this.assetService.updateAsset(asset.id, { currentPrice: price, lastUpdated: now });
+                    if (price !== asset.currentPrice) {
+                        updated++;
+                    } else {
+                        unchanged++;
+                    }
                 } catch (err) {
                     console.error(`[PriceService] Failed to save MF price for ${asset.name}:`, err);
                     failed++;
                 }
-            } else {
-                unchanged++;
+            } else if (price === null) {
+                failed++;
             }
         }
 
@@ -90,93 +122,90 @@ export class PriceService {
     private yahooSymbolCache = new Map<string, string | null>();
 
     /**
-     * Fetch all stock prices in a single batched request to avoid proxy rate-limiting.
+     * Fetch all stock prices in a single batched request.
      */
     private async fetchStockPricesBulk(stocks: Asset[]): Promise<{ updated: number; unchanged: number; failed: number }> {
         let updated = 0;
         let unchanged = 0;
         let failed = 0;
 
-        // Resolve all symbols. If an ISIN is present, we still must search it by name first.
-        const symbolMap = new Map<string, Asset>();
+        const symbolMap = new Map<string, Asset[]>();
         const symbolsToFetch: string[] = [];
 
         for (const asset of stocks) {
-             let symbol = this.resolveYahooSymbol(asset);
+            let symbol = this.resolveYahooSymbol(asset);
 
-             if (!symbol || this.isISIN(asset?.symbol || '')) {
-                 const cacheKey = asset.name || asset.symbol || '';
-                 if (this.yahooSymbolCache.has(cacheKey)) {
-                     symbol = this.yahooSymbolCache.get(cacheKey) || null;
-                 } else {
-                     symbol = await this.searchYahooSymbolByName(asset.name || '');
-                     this.yahooSymbolCache.set(cacheKey, symbol);
-                 }
-             }
+            if (!symbol) {
+                const cacheKey = asset.symbol || asset.name || '';
+                if (this.yahooSymbolCache.has(cacheKey)) {
+                    symbol = this.yahooSymbolCache.get(cacheKey) || null;
+                } else {
+                    symbol = await this.searchYahooSymbol(asset.name || '');
+                    this.yahooSymbolCache.set(cacheKey, symbol);
+                }
+            }
 
-             if (symbol) {
-                 symbolsToFetch.push(symbol);
-                 symbolMap.set(symbol, asset);
-             } else {
-                 failed++;
-             }
+            if (symbol) {
+                symbolsToFetch.push(symbol);
+                if (!symbolMap.has(symbol)) symbolMap.set(symbol, []);
+                symbolMap.get(symbol)!.push(asset);
+            } else {
+                failed++;
+            }
         }
 
         if (symbolsToFetch.length === 0) return { updated, unchanged, failed };
 
-        // Attempt bulk fetch from Yahoo with proxy failover
-        const commaSeparatedSymbols = symbolsToFetch.join(',');
-        const cb = Date.now();
-        const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${commaSeparatedSymbols}&_cb=${cb}`;
-        
-        // Try each proxy until one succeeds
-        let searchSuccess = false;
-        let proxyIndex = 0;
+        // Process in chunks of 50 to avoid URL length issues
+        const chunkSize = 50;
+        for (let i = 0; i < symbolsToFetch.length; i += chunkSize) {
+            const chunk = symbolsToFetch.slice(i, i + chunkSize);
+            const commaSeparatedSymbols = chunk.join(',');
+            const cb = Date.now();
+            const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${commaSeparatedSymbols}&_cb=${cb}`;
+            
+            let searchSuccess = false;
+            let proxyIndex = 0;
 
-        while (!searchSuccess && proxyIndex < this.PROXIES.length) {
-            const proxyUrl = `${this.PROXIES[proxyIndex]}${encodeURIComponent(yahooUrl)}`;
-            try {
-                const data: any = await firstValueFrom(this.http.get(proxyUrl));
-                const results = data?.quoteResponse?.result || [];
+            while (!searchSuccess && proxyIndex < this.PROXIES.length) {
+                const proxyUrl = `${this.PROXIES[proxyIndex]}${encodeURIComponent(yahooUrl)}`;
+                try {
+                    const data: any = await firstValueFrom(this.http.get(proxyUrl));
+                    const results = data?.quoteResponse?.result || [];
 
-                for (const quote of results) {
-                     const symbol = quote.symbol;
-                     const price = quote.regularMarketPrice;
-                     const asset = symbolMap.get(symbol);
+                    for (const quote of results) {
+                        const symbol = quote.symbol;
+                        const price = quote.regularMarketPrice;
+                        const changePct = quote.regularMarketChangePercent;
+                        const assets = symbolMap.get(symbol) || [];
 
-                     if (asset && price && typeof price === 'number' && price > 0) {
-                         if (price !== asset.currentPrice && asset.id) {
-                             try {
-                                  await this.assetService.updateAsset(asset.id, { currentPrice: price });
-                                  updated++;
-                             } catch (e) {
-                                  failed++;
-                             }
-                         } else {
-                             unchanged++;
-                         }
-                         // Remove from map to track failures
-                         symbolMap.delete(symbol);
-                     }
+                        for (const asset of assets) {
+                            if (asset.id && price && typeof price === 'number' && price > 0) {
+                                const updates: any = {};
+                                const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                                if (price !== asset.currentPrice) updates.currentPrice = price;
+                                if (changePct !== undefined) updates.dailyChange = changePct;
+                                updates.lastUpdated = now;
+
+                                if (Object.keys(updates).length > 0) {
+                                    await this.assetService.updateAsset(asset.id, updates);
+                                    updated++;
+                                } else {
+                                    unchanged++;
+                                }
+                            }
+                        }
+                        symbolMap.delete(symbol);
+                    }
+                    searchSuccess = true;
+                } catch (err: any) {
+                    console.warn(`[PriceService] Chunk failed via proxy ${proxyIndex}:`, err.message);
+                    proxyIndex++;
                 }
-                
-                searchSuccess = true; // Succeeded! Break out of the proxy loop.
-            } catch (err: any) {
-                 console.warn(`[PriceService] Bulk Yahoo fetch failed via proxy ${this.PROXIES[proxyIndex]}:`, err.message);
-                 proxyIndex++;
-                 // Wait 1 second before trying the next proxy to avoid spam blocking
-                 if (proxyIndex < this.PROXIES.length) {
-                     await new Promise(resolve => setTimeout(resolve, 1000));
-                 }
             }
         }
 
-        // Any symbols left in the map failed to fetch/parse across ALL proxies
-        if (symbolMap.size > 0) {
-             console.error(`[PriceService] Failed to fetch prices for symbols:`, Array.from(symbolMap.keys()));
-             failed += symbolMap.size;
-        }
-
+        failed += symbolMap.size;
         return { updated, unchanged, failed };
     }
 
@@ -317,11 +346,16 @@ export class PriceService {
         
         // 1. Resolve Yahoo Symbol if missing or ISIN
         if (!symbol || this.isISIN(asset?.symbol || '')) {
-             const cacheKey = asset.name || asset.symbol || '';
-             if (this.yahooSymbolCache.has(cacheKey)) {
+             const isin = this.isISIN(asset?.symbol || '') ? asset.symbol! : '';
+             const cacheKey = asset.symbol || asset.name || '';
+
+             if (isin && this.isinToTickerMap.has(isin)) {
+                 symbol = this.isinToTickerMap.get(isin)!;
+             } else if (this.yahooSymbolCache.has(cacheKey)) {
                  symbol = this.yahooSymbolCache.get(cacheKey) || null;
              } else {
-                 symbol = await this.searchYahooSymbolByName(asset.name || '');
+                 const searchQuery = isin || asset.name || '';
+                 symbol = await this.searchYahooSymbol(searchQuery);
                  this.yahooSymbolCache.set(cacheKey, symbol);
              }
         }
@@ -358,15 +392,13 @@ export class PriceService {
         return null;
     }
 
-    /**
-     * Searches Yahoo Finance by company name and returns the best matching Indian ticker.
-     */
-    private async searchYahooSymbolByName(name: string): Promise<string | null> {
-        if (!name) return null;
+    private async searchYahooSymbol(query: string): Promise<string | null> {
+        if (!query) return null;
         
         // Clean up name (e.g. remove "Ltd", "Limited" for better search hits)
-        const cleanName = String(name).replace(/ltd\.?|limited/i, '').trim();
-        const yahooSearchUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(cleanName)}&quotesCount=3`;
+        const isISIN = this.isISIN(query);
+        const cleanQuery = isISIN ? query : String(query).replace(/ltd\.?|limited/i, '').trim();
+        const yahooSearchUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(cleanQuery)}&quotesCount=3`;
 
         let proxyIndex = 0;
         while (proxyIndex < this.PROXIES.length) {
@@ -388,7 +420,7 @@ export class PriceService {
                 }
                 break; // Request succeeded but no symbols found
             } catch (e) {
-                console.warn(`[PriceService] Yahoo search failed via ${this.PROXIES[proxyIndex]} for ${cleanName}`, e);
+                console.warn(`[PriceService] Yahoo search failed via ${this.PROXIES[proxyIndex]} for ${cleanQuery}`, e);
                 proxyIndex++;
                 if (proxyIndex < this.PROXIES.length) {
                     await new Promise(resolve => setTimeout(resolve, 500));
@@ -410,12 +442,17 @@ export class PriceService {
             // Already has a suffix like .NS or .BO
             if (sym.includes('.')) return sym;
 
-            // If it's an ISIN, don't just append .NS, return null to trigger the name search fallback
-            if (this.isISIN(sym)) {
-                return null;
+            // Check ISIN map first
+            if (this.isISIN(sym) && this.isinToTickerMap.has(sym)) {
+                return this.isinToTickerMap.get(sym)!;
             }
 
-            // Regular NSE/BSE symbol
+            // Check local Symbol map (ITC -> ITC.NS)
+            if (this.symbolToTickerMap.has(sym)) {
+                return this.symbolToTickerMap.get(sym)!;
+            }
+
+            // Default to .NS for legacy or unknown plain tickers
             return `${sym}.NS`;
         }
         return null;

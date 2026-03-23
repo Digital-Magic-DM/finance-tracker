@@ -1,12 +1,24 @@
 <div class="assets-page">
   <div class="page-header">
-    <div>
+    <div class="header-left">
       <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">
         Total Portfolio Value: <strong style="color:var(--accent-primary)">{{ totalValue() | currency:'INR':'symbol':'1.0-0' }}</strong>
         @if (lastRefreshed()) {
           <span style="margin-left:12px; font-size:11px; opacity:0.6;">Updated: {{ lastRefreshed() }}</span>
         }
       </p>
+
+      @if (availableApps().length > 1) {
+        <div class="app-filter">
+          <label class="filter-label">App Filter:</label>
+          <select class="form-control filter-select" [value]="appFilter()" (change)="appFilter.set($any($event.target).value)">
+            <option value="All">All Apps</option>
+            @for (app of availableApps(); track app) {
+              <option [value]="app">{{ app }}</option>
+            }
+          </select>
+        </div>
+      }
     </div>
     <div class="header-actions">
       @if (selectMode()) {
@@ -20,13 +32,6 @@
         </button>
         <button class="btn btn-ghost btn-sm" (click)="toggleSelectMode()">Cancel</button>
       } @else {
-        <button class="btn btn-ghost" (click)="toggleViewMode()" 
-          [title]="viewMode() === 'grid' ? 'Switch to Table View' : 'Switch to Grid View'">
-          <span class="material-icons" style="font-size: 18px; vertical-align:middle;">
-            {{ viewMode() === 'grid' ? 'table_chart' : 'grid_view' }}
-          </span>
-          {{ viewMode() === 'grid' ? 'Table' : 'Grid' }}
-        </button>
 
         @if (assets().length > 0) {
           <button class="btn btn-ghost" (click)="toggleSelectMode()" title="Multi-select to delete">
@@ -45,170 +50,146 @@
     </div>
   </div>
 
-  <!-- Grouped asset sections -->
+  <!-- Grouped asset sections (Accordion) -->
   @if (assetGroups().length > 0) {
-    @for (group of assetGroups(); track group.type) {
-      <div class="asset-group">
-        <div class="group-header" (click)="toggleGroup(group.type)">
-          <div class="group-header-left">
-            <span class="group-collapse-icon material-icons">
-              {{ group.collapsed ? 'expand_more' : 'expand_less' }}
-            </span>
-            <span class="group-type-dot" [style.background]="group.color"></span>
-            <h2 class="group-title">{{ group.label }}</h2>
-            <span class="group-count">{{ group.assets.length }}</span>
-          </div>
-          <div class="group-header-right">
-            <!-- Contextual Refreshers -->
-            @if (group.type === 'MutualFund') {
-              <button class="btn-icon refresh-btn" [disabled]="refreshingMFs()" (click)="refreshMutualFunds(); $event.stopPropagation()" title="Refresh Mutual Fund prices">
-                <span class="material-icons" [class.spin]="refreshingMFs()" style="font-size: 18px;">sync</span>
-              </button>
-            } @else if (group.type === 'Stock' || group.type === 'ETF') {
-              <button class="btn-icon refresh-btn" [disabled]="refreshingStocks()" (click)="refreshStocks(); $event.stopPropagation()" title="Refresh Stock prices">
-                <span class="material-icons" [class.spin]="refreshingStocks()" style="font-size: 18px;">sync</span>
-              </button>
-            }
-
-            <span class="group-value">{{ group.totalValue | currency:'INR':'symbol':'1.0-0' }}</span>
-            <span class="group-gain" [class.positive]="group.totalGain >= 0" [class.negative]="group.totalGain < 0">
-              {{ group.totalGain >= 0 ? '▲' : '▼' }}
-              {{ group.totalGain | currency:'INR':'symbol':'1.0-0' }}
-            </span>
-          </div>
-        </div>
-
-        @if (!group.collapsed) {
-          @if (selectMode()) {
-            <div class="group-select-bar">
-              <button class="btn-ghost btn-xs" (click)="selectGroupAll(group); $event.stopPropagation()">
-                Select all {{ group.label }}
-              </button>
-            </div>
-          }
-
-          @if (viewMode() === 'grid') {
-            <div class="assets-grid">
-              @for (asset of group.assets; track asset.id) {
-                <div class="card asset-card"
-                  [class.selected]="selectMode() && isSelected(asset.id!)"
-                  (click)="selectMode() ? toggleAssetSelection(asset.id!) : null">
-
-                  @if (selectMode()) {
-                    <div class="select-checkbox" (click)="toggleAssetSelection(asset.id!); $event.stopPropagation()">
-                      <span class="material-icons">
-                        {{ isSelected(asset.id!) ? 'check_box' : 'check_box_outline_blank' }}
-                      </span>
-                    </div>
+    <div class="accordion-container">
+      @for (group of assetGroups(); track group.type) {
+        <div class="accordion-section" [class.expanded]="group.expanded">
+          <!-- Parent Row -->
+          <div class="accordion-parent" (click)="toggleGroup(group.type)">
+            <div class="col-name">
+              <span class="material-icons group-icon" [style.color]="group.color">{{ getIconForType(group.type) }}</span>
+              <div class="parent-title">
+                <h2>{{ group.label }}</h2>
+                <div class="meta-row">
+                  <span class="group-count">{{ group.assets.length }} assets</span>
+                  @if (group.lastUpdated) {
+                    <span class="group-last-updated">Updated: {{ group.lastUpdated }}</span>
                   }
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-alloc">
+              <div class="allocation-wrapper">
+                <div class="allocation-bar">
+                  <div class="allocation-fill" [style.width.%]="group.allocation" [style.background]="group.color"></div>
+                </div>
+                <span class="allocation-text">{{ group.allocation | number:'1.1-1' }}%</span>
+              </div>
+            </div>
 
-                  <div class="asset-header">
-                    <div class="asset-type-badge" [attr.data-type]="asset.type">
-                      {{ asset.type }}
-                    </div>
-                    @if (!selectMode()) {
-                      <div class="asset-actions">
-                        <button class="btn-icon" (click)="openEdit(asset); $event.stopPropagation()" title="Edit">
-                          <span class="material-icons" style="font-size: 18px;">edit</span>
-                        </button>
-                        <button class="btn-icon btn-delete" (click)="delete(asset.id!); $event.stopPropagation()" title="Delete">
-                          <span class="material-icons" style="font-size: 18px;">delete</span>
-                        </button>
-                      </div>
-                    }
-                  </div>
+            <div class="col-invested">
+              <span class="main-val">{{ group.totalInvested | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
 
-                  <div class="asset-body">
-                    <h3 class="asset-name">{{ asset.name }}</h3>
-                    @if (asset.symbol) {
-                      <span class="asset-symbol">{{ asset.symbol }}</span>
-                    }
-                    <div class="asset-value">{{ getAssetValue(asset) | currency:'INR':'symbol':'1.0-0' }}</div>
-                    <div class="asset-qty">{{ asset.quantity | number:'1.0-4' }} units · ₹{{ asset.currentPrice | number:'1.0-2' }}/unit</div>
-                    <div class="asset-gain" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
-                      {{ getGain(asset) >= 0 ? '▲' : '▼' }}
-                      {{ getGainPct(asset) | number:'1.1-1' }}%
-                      ({{ getGain(asset) | currency:'INR':'symbol':'1.0-0' }})
-                    </div>
-                  </div>
+            <div class="col-value">
+              <span class="main-val">{{ group.totalValue | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
 
-                  <div class="asset-footer">
-                    @if (asset.notes) {
-                      <span class="asset-notes" [title]="asset.notes">
-                        <span class="material-icons" style="font-size:12px; margin-right:4px; opacity:0.6;">notes</span>
-                        {{ asset.notes }}
-                      </span>
-                    }
-                    <span>Avg. cost: {{ asset.buyPrice | currency:'INR':'symbol':'1.0-2' }}</span>
-                  </div>
+            <div class="col-returns">
+              <div class="gain-box" [class.positive]="group.totalGain >= 0" [class.negative]="group.totalGain < 0">
+                <span class="gain-val">{{ group.totalGain >= 0 ? '+' : '' }}{{ group.totalGain | currency:'INR':'symbol':'1.0-0' }}</span>
+                <span class="gain-pct">({{ group.gainPct | number:'1.1-1' }}%)</span>
+              </div>
+            </div>
+
+            <div class="col-actions">
+               @if (group.type === 'MutualFund') {
+                <button class="btn-icon refresh-btn" [disabled]="refreshingMFs()" (click)="refreshMutualFunds(); $event.stopPropagation()" title="Refresh Mutual Fund prices">
+                  <span class="material-icons" [class.spin]="refreshingMFs()" style="font-size: 18px;">sync</span>
+                </button>
+              } @else if (group.type === 'Stock' || group.type === 'ETF') {
+                <button class="btn-icon refresh-btn" [disabled]="refreshingStocks()" (click)="refreshStocks(); $event.stopPropagation()" title="Refresh Stock prices">
+                  <span class="material-icons" [class.spin]="refreshingStocks()" style="font-size: 18px;">sync</span>
+                </button>
+              }
+              <span class="material-icons expand-icon">
+                {{ group.expanded ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Child Rows (Expanded) -->
+          @if (group.expanded) {
+            <div class="accordion-children">
+              @if (selectMode()) {
+                <div class="group-select-bar">
+                  <button class="btn-ghost btn-xs" (click)="selectGroupAll(group); $event.stopPropagation()">
+                    Select all {{ group.label }}
+                  </button>
                 </div>
               }
-            </div>
-          } @else {
-            <div class="assets-table-container">
-              <table class="assets-table">
-                <thead>
-                  <tr>
-                    @if (selectMode()) { <th class="col-select"></th> }
-                    <th class="col-name">Asset</th>
-                    <th class="col-qty">Quantity</th>
-                    <th class="col-buy">Avg Price</th>
-                    <th class="col-price">Curr Price</th>
-                    <th class="col-value">Value</th>
-                    <th class="col-gain">Gain/Loss</th>
-                    @if (!selectMode()) { <th class="col-actions"></th> }
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (asset of group.assets; track asset.id) {
-                    <tr [class.selected]="selectMode() && isSelected(asset.id!)"
-                      (click)="selectMode() ? toggleAssetSelection(asset.id!) : null">
+
+              <!-- Header row for children (optional, but helps context if needed, skip for now to save space, column names will align with parent headers if we imagine them) -->
+              <div class="children-list">
+                @for (asset of group.assets; track asset.id) {
+                  <div class="accordion-child" 
+                       [class.selected]="selectMode() && isSelected(asset.id!)"
+                       (click)="selectMode() ? toggleAssetSelection(asset.id!) : null">
+                    
+                    <div class="col-name child-name-col">
                       @if (selectMode()) {
-                        <td class="col-select">
-                          <span class="material-icons" (click)="toggleAssetSelection(asset.id!); $event.stopPropagation()">
+                        <div class="select-checkbox" (click)="toggleAssetSelection(asset.id!); $event.stopPropagation()">
+                          <span class="material-icons" style="font-size: 18px;">
                             {{ isSelected(asset.id!) ? 'check_box' : 'check_box_outline_blank' }}
                           </span>
-                        </td>
+                        </div>
                       }
-                      <td class="col-name">
-                        <div class="name-box">
-                          <span class="name-text">{{ asset.name }}</span>
-                          @if (asset.symbol) {
-                            <span class="symbol-text">{{ asset.symbol }}</span>
-                          }
-                        </div>
-                      </td>
-                      <td class="col-qty">{{ asset.quantity | number:'1.0-4' }}</td>
-                      <td class="col-buy">₹{{ asset.buyPrice | number:'1.0-2' }}</td>
-                      <td class="col-price">₹{{ asset.currentPrice | number:'1.0-2' }}</td>
-                      <td class="col-value">{{ getAssetValue(asset) | currency:'INR':'symbol':'1.0-0' }}</td>
-                      <td class="col-gain">
-                        <div class="gain-box" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
-                          <span class="gain-val">{{ getGain(asset) | currency:'INR':'symbol':'1.0-0' }}</span>
-                          <span class="gain-pct">({{ getGainPct(asset) | number:'1.1-1' }}%)</span>
-                        </div>
-                      </td>
+                      <div class="name-box">
+                        <span class="name-text">{{ asset.name }}</span>
+                        @if (asset.symbol) {
+                          <span class="symbol-text">{{ asset.symbol }}</span>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="col-alloc child-qty-col">
+                      <span class="qty-val">{{ asset.quantity | number:'1.0-4' }} units</span>
+                    </div>
+
+                    <div class="col-invested child-invested-col">
+                      <span class="main-val">₹{{ (asset.buyPrice * asset.quantity) | number:'1.0-2' }}</span>
+                      <span class="sub-val">@ ₹{{ asset.buyPrice | number:'1.0-2' }}</span>
+                    </div>
+
+                    <div class="col-value child-value-col">
+                      <div class="val-box">
+                        <span class="main-val">₹{{ getAssetValue(asset) | number:'1.0-2' }}</span>
+                        <span class="sub-val">@ ₹{{ asset.currentPrice | number:'1.0-2' }}</span>
+                        @if (asset.lastUpdated) {
+                          <span class="row-last-updated">{{ asset.lastUpdated }}</span>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="col-returns child-returns-col">
+                      <div class="gain-box" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
+                        <span class="gain-val">{{ getGain(asset) >= 0 ? '+' : '' }}{{ getGain(asset) | currency:'INR':'symbol':'1.0-0' }}</span>
+                        <span class="gain-pct">({{ getGainPct(asset) | number:'1.1-1' }}%)</span>
+                      </div>
+                    </div>
+
+                    <div class="col-actions child-actions-col">
                       @if (!selectMode()) {
-                        <td class="col-actions">
-                          <div class="actions-wrapper">
-                            <button class="btn-icon" (click)="openEdit(asset); $event.stopPropagation()" title="Edit">
-                              <span class="material-icons" style="font-size: 18px;">edit</span>
-                            </button>
-                            <button class="btn-icon btn-delete" (click)="delete(asset.id!); $event.stopPropagation()" title="Delete">
-                              <span class="material-icons" style="font-size: 18px;">delete</span>
-                            </button>
-                          </div>
-                        </td>
+                        <div class="actions-wrapper">
+                          <button class="btn-icon" (click)="openEdit(asset); $event.stopPropagation()" title="Edit">
+                            <span class="material-icons" style="font-size: 16px;">edit</span>
+                          </button>
+                          <button class="btn-icon btn-delete" (click)="delete(asset.id!); $event.stopPropagation()" title="Delete">
+                            <span class="material-icons" style="font-size: 16px;">delete</span>
+                          </button>
+                        </div>
                       }
-                    </tr>
-                  }
-                </tbody>
-              </table>
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
           }
-        }
-      </div>
-    }
+        </div>
+      }
+    </div>
   } @else {
     <div class="card empty-state" style="margin-top: 40px;">
       <span class="material-icons empty-icon">work</span>
@@ -231,7 +212,7 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Asset Name *</label>
-          <input class="form-control" type="text" [value]="form().name"
+          <input class="form-control" type="text" [value]="form().name" maxlength="100"
             (input)="updateForm('name', $any($event.target).value)" placeholder="e.g. Reliance Industries" />
         </div>
         <div class="form-row">
@@ -245,11 +226,50 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Symbol</label>
-            <input class="form-control" type="text" [value]="form().symbol || ''"
-              (input)="updateForm('symbol', $any($event.target).value)" placeholder="e.g. TCS" />
+            <label>Currency</label>
+            <select class="form-control" [value]="form().currency"
+              (change)="updateForm('currency', $any($event.target).value)">
+              <option value="INR">INR (₹)</option>
+              <option value="USD">USD ($)</option>
+            </select>
           </div>
         </div>
+
+        @if (form().type === 'Stock' || form().type === 'ETF' || form().type === 'MutualFund') {
+          <div class="stock-search-container">
+            <div class="search-header">
+              <label>Search Symbol</label>
+              <div class="exchange-toggle">
+                <button type="button" [class.active]="stockExchange() === 'NSE'" (click)="stockExchange.set('NSE')">NSE</button>
+                <button type="button" [class.active]="stockExchange() === 'BSE'" (click)="stockExchange.set('BSE')">BSE</button>
+              </div>
+            </div>
+            <div class="search-input-wrapper">
+              <input class="form-control" type="text" [value]="stockSearchQuery()" 
+                (input)="stockSearchQuery.set($any($event.target).value)"
+                placeholder="Search stocks (e.g. RELIANCE)..." />
+              
+              @if (stockSuggestions().length > 0) {
+                <div class="search-suggestions">
+                  @for (item of stockSuggestions(); track item.symbol) {
+                    <div class="suggestion-item" (click)="onSelectStock(item)">
+                      <span class="sugg-symbol">{{ item.symbol }}</span>
+                      <span class="sugg-isin">{{ item.ISIN_NUMBER || item.isin_number }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (form().type !== 'Cash' && form().type !== 'RealEstate') {
+          <div class="form-group">
+            <label>Symbol / ISIN</label>
+            <input class="form-control" type="text" [value]="form().symbol || ''"
+              (input)="updateForm('symbol', $any($event.target).value)" placeholder="e.g. RELIANCE.NS" />
+          </div>
+        }
 
         @if (form().type === 'RealEstate') {
           <div class="form-group">
@@ -263,20 +283,41 @@
         <div class="form-row">
           <div class="form-group">
             <label>Quantity *</label>
-            <input class="form-control" type="number" [value]="form().quantity"
+            <input class="form-control" type="number" [value]="form().quantity" min="0" max="99999999"
               (input)="updateForm('quantity', +$any($event.target).value)" />
           </div>
           <div class="form-group">
             <label>Buy Price (₹) *</label>
-            <input class="form-control" type="number" [value]="form().buyPrice"
+            <input class="form-control" type="number" [value]="form().buyPrice" min="0" max="999999999"
               (input)="updateForm('buyPrice', +$any($event.target).value)" />
           </div>
         </div>
         <div class="form-group">
           <label>Current Price (₹) *</label>
-          <input class="form-control" type="number" [value]="form().currentPrice"
+          <input class="form-control" type="number" [value]="form().currentPrice" min="0" max="999999999"
             (input)="updateForm('currentPrice', +$any($event.target).value)" />
         </div>
+        @if (form().type !== 'Cash' && form().type !== 'RealEstate') {
+          <div class="form-row">
+            <div class="form-group">
+              <label>App Source</label>
+              <select class="form-control" [value]="showCustomApp() ? 'Other' : form().appSource"
+                (change)="updateAppSource($any($event.target).value)">
+                @for (app of predefinedApps; track app) {
+                  <option [value]="app">{{ app }}</option>
+                }
+              </select>
+            </div>
+            @if (showCustomApp()) {
+              <div class="form-group">
+                <label>Custom App Name *</label>
+                <input class="form-control" type="text" [value]="form().appSource"
+                  (input)="updateForm('appSource', $any($event.target).value)" placeholder="e.g. MyInvestmentApp" />
+              </div>
+            }
+          </div>
+        }
+
         <div class="form-group">
           <label>Notes</label>
           <input class="form-control" type="text" [value]="form().notes || ''"

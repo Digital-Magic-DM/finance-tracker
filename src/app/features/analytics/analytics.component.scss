@@ -92,6 +92,49 @@
     color: var(--text-primary);
 }
 
+.trend-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.trend-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.trend-month {
+    width: 60px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    flex-shrink: 0;
+}
+
+.trend-bar-wrap {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-card-hover);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.trend-bar {
+    height: 100%;
+    background: var(--accent-danger-blend);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.trend-amount {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 100px;
+    text-align: right;
+}
+
 .cat-pct {
     font-size: 12px;
     color: var(--text-muted);

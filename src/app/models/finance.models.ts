@@ -44,7 +44,9 @@ export interface Asset {
     currency: string;
     purchaseDate: Date;
     notes?: string;
+    appSource?: string;
     location?: AssetLocation;
+    lastUpdated?: string;
 }
 
 export interface Transaction {

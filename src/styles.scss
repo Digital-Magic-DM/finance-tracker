@@ -19,6 +19,7 @@ html {
   --text-muted: #666666;
 
   --accent-primary: #000000;
+  --accent-primary-rgb: 0, 0, 0;
   --accent-secondary: #000000;
   --accent-gold: #333333;
   --accent-danger: #d42222;
@@ -54,15 +55,15 @@ html {
   --transition-normal: 0.2s ease;
   --transition-slow: 0.3s ease;
 
-  /* Asset Type Colors - Light Mode (Dark Greys) */
-  --asset-stock: #000000;
-  --asset-mf: #333333;
-  --asset-etf: #444444;
-  --asset-gold: #666666;
-  --asset-cash: #777777;
-  --asset-re: #555555;
-  --asset-crypto: #222222;
-  --asset-other: #888888;
+  /* Asset Type Colors - Vibrant Premium Palette */
+  --asset-stock: #3b82f6; /* Blue */
+  --asset-mf: #8b5cf6;    /* Violet */
+  --asset-etf: #ec4899;   /* Pink */
+  --asset-gold: #eab308;  /* Gold/Yellow */
+  --asset-cash: #10b981;  /* Emerald */
+  --asset-re: #f97316;    /* Orange */
+  --asset-crypto: #6366f1; /* Indigo */
+  --asset-other: #64748b;  /* Slate */
 }
 
 /* Minimalist Dark Mode - Inverted B&W */
@@ -82,6 +83,7 @@ html {
   --border-light: #333333;
 
   --accent-primary: #ffffff;
+  --accent-primary-rgb: 255, 255, 255;
   --accent-secondary: #ffffff;
 
   --accent-success-blend: #4ade80; /* Brighter green for dark mode */
@@ -89,15 +91,15 @@ html {
   --accent-danger: #f87171;
   --accent-danger-rgb: 248, 113, 113;
 
-  /* Asset Type Colors - Dark Mode (Light Greys) */
-  --asset-stock: #ffffff;
-  --asset-mf: #e5e5e5;
-  --asset-etf: #d4d4d4;
-  --asset-gold: #a3a3a3;
-  --asset-cash: #737373;
-  --asset-re: #525252;
-  --asset-crypto: #404040;
-  --asset-other: #94a3b8;
+  /* Asset Type Colors - Vibrant Dark Mode Palette */
+  --asset-stock: #60a5fa; /* Light Blue */
+  --asset-mf: #a78bfa;    /* Light Violet */
+  --asset-etf: #f472b6;   /* Light Pink */
+  --asset-gold: #facc15;  /* Light Gold */
+  --asset-cash: #34d399;  /* Light Emerald */
+  --asset-re: #fb923c;    /* Light Orange */
+  --asset-crypto: #818cf8; /* Light Indigo */
+  --asset-other: #94a3b8;  /* Light Slate */
 }
 
 /* ===== Global Reset ===== */
@@ -335,7 +337,7 @@ a { text-decoration: none; color: inherit; }
   }
 
   .stat-value {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 800;
     line-height: 1;
     color: var(--text-primary);

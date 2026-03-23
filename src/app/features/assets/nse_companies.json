@@ -1,0 +1,9002 @@
+[
+  {
+    "symbol": "20MICRONS.NS",
+    "ISIN_NUMBER": "INE144J01027"
+  },
+  {
+    "symbol": "21STCENMGM.NS",
+    "ISIN_NUMBER": "INE253B01015"
+  },
+  {
+    "symbol": "360ONE.NS",
+    "ISIN_NUMBER": "INE466L01038"
+  },
+  {
+    "symbol": "3IINFOLTD.NS",
+    "ISIN_NUMBER": "INE748C01038"
+  },
+  {
+    "symbol": "3MINDIA.NS",
+    "ISIN_NUMBER": "INE470A01017"
+  },
+  {
+    "symbol": "3PLAND.NS",
+    "ISIN_NUMBER": "INE105C01023"
+  },
+  {
+    "symbol": "5PAISA.NS",
+    "ISIN_NUMBER": "INE618L01018"
+  },
+  {
+    "symbol": "63MOONS.NS",
+    "ISIN_NUMBER": "INE111B01023"
+  },
+  {
+    "symbol": "A2ZINFRA.NS",
+    "ISIN_NUMBER": "INE619I01012"
+  },
+  {
+    "symbol": "AAATECH.NS",
+    "ISIN_NUMBER": "INE0D0U01013"
+  },
+  {
+    "symbol": "AADHARHFC.NS",
+    "ISIN_NUMBER": "INE883F01010"
+  },
+  {
+    "symbol": "AAKASH.NS",
+    "ISIN_NUMBER": "INE087Z01024"
+  },
+  {
+    "symbol": "AAREYDRUGS.NS",
+    "ISIN_NUMBER": "INE198H01019"
+  },
+  {
+    "symbol": "AARNAV.NS",
+    "ISIN_NUMBER": "INE750R01016"
+  },
+  {
+    "symbol": "AARON.NS",
+    "ISIN_NUMBER": "INE721Z01010"
+  },
+  {
+    "symbol": "AARTECH.NS",
+    "ISIN_NUMBER": "INE01C001026"
+  },
+  {
+    "symbol": "AARTIDRUGS.NS",
+    "ISIN_NUMBER": "INE767A01016"
+  },
+  {
+    "symbol": "AARTIIND.NS",
+    "ISIN_NUMBER": "INE769A01020"
+  },
+  {
+    "symbol": "AARTIPHARM.NS",
+    "ISIN_NUMBER": "INE0LRU01027"
+  },
+  {
+    "symbol": "AARTISURF.NS",
+    "ISIN_NUMBER": "INE09EO01013"
+  },
+  {
+    "symbol": "AARVI.NS",
+    "ISIN_NUMBER": "INE754X01016"
+  },
+  {
+    "symbol": "AAVAS.NS",
+    "ISIN_NUMBER": "INE216P01012"
+  },
+  {
+    "symbol": "ABB.NS",
+    "ISIN_NUMBER": "INE117A01022"
+  },
+  {
+    "symbol": "ABBOTINDIA.NS",
+    "ISIN_NUMBER": "INE358A01014"
+  },
+  {
+    "symbol": "ABCAPITAL.NS",
+    "ISIN_NUMBER": "INE674K01013"
+  },
+  {
+    "symbol": "ABCOTS.NS",
+    "ISIN_NUMBER": "INE08PH01015"
+  },
+  {
+    "symbol": "ABDL.NS",
+    "ISIN_NUMBER": "INE552Z01027"
+  },
+  {
+    "symbol": "ABFRL.NS",
+    "ISIN_NUMBER": "INE647O01011"
+  },
+  {
+    "symbol": "ABINFRA.NS",
+    "ISIN_NUMBER": "INE00YB01025"
+  },
+  {
+    "symbol": "ABLBL.NS",
+    "ISIN_NUMBER": "INE14LE01019"
+  },
+  {
+    "symbol": "ABMINTLLTD.NS",
+    "ISIN_NUMBER": "INE251C01025"
+  },
+  {
+    "symbol": "ABREL.NS",
+    "ISIN_NUMBER": "INE055A01016"
+  },
+  {
+    "symbol": "ABSLAMC.NS",
+    "ISIN_NUMBER": "INE404A01024"
+  },
+  {
+    "symbol": "ACC.NS",
+    "ISIN_NUMBER": "INE012A01025"
+  },
+  {
+    "symbol": "ACCELYA.NS",
+    "ISIN_NUMBER": "INE793A01012"
+  },
+  {
+    "symbol": "ACCURACY.NS",
+    "ISIN_NUMBER": "INE648Z01023"
+  },
+  {
+    "symbol": "ACE.NS",
+    "ISIN_NUMBER": "INE731H01025"
+  },
+  {
+    "symbol": "ACEINTEG.NS",
+    "ISIN_NUMBER": "INE543V01017"
+  },
+  {
+    "symbol": "ACI.NS",
+    "ISIN_NUMBER": "INE128X01021"
+  },
+  {
+    "symbol": "ACL.NS",
+    "ISIN_NUMBER": "INE666E01020"
+  },
+  {
+    "symbol": "ACMESOLAR.NS",
+    "ISIN_NUMBER": "INE622W01025"
+  },
+  {
+    "symbol": "ACUTAAS.NS",
+    "ISIN_NUMBER": "INE00FF01025"
+  },
+  {
+    "symbol": "ADANIENSOL.NS",
+    "ISIN_NUMBER": "INE931S01010"
+  },
+  {
+    "symbol": "ADANIENT.NS",
+    "ISIN_NUMBER": "INE423A01024"
+  },
+  {
+    "symbol": "ADANIGREEN.NS",
+    "ISIN_NUMBER": "INE364U01010"
+  },
+  {
+    "symbol": "ADANIPORTS.NS",
+    "ISIN_NUMBER": "INE742F01042"
+  },
+  {
+    "symbol": "ADANIPOWER.NS",
+    "ISIN_NUMBER": "INE814H01029"
+  },
+  {
+    "symbol": "ADFFOODS.NS",
+    "ISIN_NUMBER": "INE982B01027"
+  },
+  {
+    "symbol": "ADL.NS",
+    "ISIN_NUMBER": "INE0CHO01012"
+  },
+  {
+    "symbol": "ADOR.NS",
+    "ISIN_NUMBER": "INE045A01017"
+  },
+  {
+    "symbol": "ADROITINFO.NS",
+    "ISIN_NUMBER": "INE737B01033"
+  },
+  {
+    "symbol": "ADSL.NS",
+    "ISIN_NUMBER": "INE102I01027"
+  },
+  {
+    "symbol": "ADVAIT.NS",
+    "ISIN_NUMBER": "INE0ALI01010"
+  },
+  {
+    "symbol": "ADVANCE.NS",
+    "ISIN_NUMBER": "INE1B0W01010"
+  },
+  {
+    "symbol": "ADVANIHOTR.NS",
+    "ISIN_NUMBER": "INE199C01026"
+  },
+  {
+    "symbol": "ADVENTHTL.NS",
+    "ISIN_NUMBER": "INE28GN01010"
+  },
+  {
+    "symbol": "ADVENZYMES.NS",
+    "ISIN_NUMBER": "INE837H01020"
+  },
+  {
+    "symbol": "AEGISLOG.NS",
+    "ISIN_NUMBER": "INE208C01025"
+  },
+  {
+    "symbol": "AEGISVOPAK.NS",
+    "ISIN_NUMBER": "INE0INX01018"
+  },
+  {
+    "symbol": "AEPL.NS",
+    "ISIN_NUMBER": "INE757T01025"
+  },
+  {
+    "symbol": "AEQUS.NS",
+    "ISIN_NUMBER": "INE947N01017"
+  },
+  {
+    "symbol": "AEROENTER.NS",
+    "ISIN_NUMBER": "INE065D01027"
+  },
+  {
+    "symbol": "AEROFLEX.NS",
+    "ISIN_NUMBER": "INE024001021"
+  },
+  {
+    "symbol": "AERONEU.NS",
+    "ISIN_NUMBER": "INE035801013"
+  },
+  {
+    "symbol": "AETHER.NS",
+    "ISIN_NUMBER": "INE0BWX01014"
+  },
+  {
+    "symbol": "AFCONS.NS",
+    "ISIN_NUMBER": "INE101I01011"
+  },
+  {
+    "symbol": "AFFLE.NS",
+    "ISIN_NUMBER": "INE00WC01027"
+  },
+  {
+    "symbol": "AFFORDABLE.NS",
+    "ISIN_NUMBER": "INE692Z01013"
+  },
+  {
+    "symbol": "AFIL.NS",
+    "ISIN_NUMBER": "INE916Y01027"
+  },
+  {
+    "symbol": "AFSL.NS",
+    "ISIN_NUMBER": "INE00ZE01026"
+  },
+  {
+    "symbol": "AGARIND.NS",
+    "ISIN_NUMBER": "INE204E01012"
+  },
+  {
+    "symbol": "AGARWALEYE.NS",
+    "ISIN_NUMBER": "INE943P01029"
+  },
+  {
+    "symbol": "AGI.NS",
+    "ISIN_NUMBER": "INE415A01038"
+  },
+  {
+    "symbol": "AGIIL.NS",
+    "ISIN_NUMBER": "INE976R01033"
+  },
+  {
+    "symbol": "AGRITECH.NS",
+    "ISIN_NUMBER": "INE449G01018"
+  },
+  {
+    "symbol": "AGROPHOS.NS",
+    "ISIN_NUMBER": "INE740V01019"
+  },
+  {
+    "symbol": "AGSTRA.NS",
+    "ISIN_NUMBER": "INE583L01014"
+  },
+  {
+    "symbol": "AHCL.NS",
+    "ISIN_NUMBER": "INE0Y8W01017"
+  },
+  {
+    "symbol": "AHLADA.NS",
+    "ISIN_NUMBER": "INE00PV01013"
+  },
+  {
+    "symbol": "AHLEAST.NS",
+    "ISIN_NUMBER": "INE926K01017"
+  },
+  {
+    "symbol": "AHLUCONT.NS",
+    "ISIN_NUMBER": "INE758C01029"
+  },
+  {
+    "symbol": "AIAENG.NS",
+    "ISIN_NUMBER": "INE212H01026"
+  },
+  {
+    "symbol": "AIIL.NS",
+    "ISIN_NUMBER": "INE206F01022"
+  },
+  {
+    "symbol": "AIRAN.NS",
+    "ISIN_NUMBER": "INE645W01026"
+  },
+  {
+    "symbol": "AIROLAM.NS",
+    "ISIN_NUMBER": "INE801L01010"
+  },
+  {
+    "symbol": "AJANTPHARM.NS",
+    "ISIN_NUMBER": "INE031B01049"
+  },
+  {
+    "symbol": "AJAXENGG.NS",
+    "ISIN_NUMBER": "INE274Y01021"
+  },
+  {
+    "symbol": "AJMERA.NS",
+    "ISIN_NUMBER": "INE298G01035"
+  },
+  {
+    "symbol": "AJOONI.NS",
+    "ISIN_NUMBER": "INE820Y01021"
+  },
+  {
+    "symbol": "AKASH.NS",
+    "ISIN_NUMBER": "INE737W01013"
+  },
+  {
+    "symbol": "AKG.NS",
+    "ISIN_NUMBER": "INE00Y801016"
+  },
+  {
+    "symbol": "AKI.NS",
+    "ISIN_NUMBER": "INE642Z01026"
+  },
+  {
+    "symbol": "AKSHAR.NS",
+    "ISIN_NUMBER": "INE256Z01025"
+  },
+  {
+    "symbol": "AKSHARCHEM.NS",
+    "ISIN_NUMBER": "INE542B01011"
+  },
+  {
+    "symbol": "AKSHOPTFBR.NS",
+    "ISIN_NUMBER": "INE523B01011"
+  },
+  {
+    "symbol": "AKUMS.NS",
+    "ISIN_NUMBER": "INE09XN01023"
+  },
+  {
+    "symbol": "AKZOINDIA.NS",
+    "ISIN_NUMBER": "INE133A01011"
+  },
+  {
+    "symbol": "ALANKIT.NS",
+    "ISIN_NUMBER": "INE914E01040"
+  },
+  {
+    "symbol": "ALBERTDAVD.NS",
+    "ISIN_NUMBER": "INE155C01010"
+  },
+  {
+    "symbol": "ALEMBICLTD.NS",
+    "ISIN_NUMBER": "INE426A01027"
+  },
+  {
+    "symbol": "ALGOQUANT.NS",
+    "ISIN_NUMBER": "INE598D01035"
+  },
+  {
+    "symbol": "ALICON.NS",
+    "ISIN_NUMBER": "INE062D01024"
+  },
+  {
+    "symbol": "ALIVUS.NS",
+    "ISIN_NUMBER": "INE03Q201024"
+  },
+  {
+    "symbol": "ALKALI.NS",
+    "ISIN_NUMBER": "INE773I01017"
+  },
+  {
+    "symbol": "ALKEM.NS",
+    "ISIN_NUMBER": "INE540L01014"
+  },
+  {
+    "symbol": "ALKYLAMINE.NS",
+    "ISIN_NUMBER": "INE150B01039"
+  },
+  {
+    "symbol": "ALLCARGO.NS",
+    "ISIN_NUMBER": "INE418H01029"
+  },
+  {
+    "symbol": "ALLDIGI.NS",
+    "ISIN_NUMBER": "INE835G01018"
+  },
+  {
+    "symbol": "ALLTIME.NS",
+    "ISIN_NUMBER": "INE0GV601021"
+  },
+  {
+    "symbol": "ALMONDZ.NS",
+    "ISIN_NUMBER": "INE326B01035"
+  },
+  {
+    "symbol": "ALOKINDS.NS",
+    "ISIN_NUMBER": "INE270A01029"
+  },
+  {
+    "symbol": "ALPA.NS",
+    "ISIN_NUMBER": "INE385I01010"
+  },
+  {
+    "symbol": "ALPHAGEO.NS",
+    "ISIN_NUMBER": "INE137C01018"
+  },
+  {
+    "symbol": "AMAGI.NS",
+    "ISIN_NUMBER": "INE121R01077"
+  },
+  {
+    "symbol": "AMANTA.NS",
+    "ISIN_NUMBER": "INE084K01015"
+  },
+  {
+    "symbol": "AMBER.NS",
+    "ISIN_NUMBER": "INE371P01015"
+  },
+  {
+    "symbol": "AMBICAAGAR.NS",
+    "ISIN_NUMBER": "INE792B01012"
+  },
+  {
+    "symbol": "AMBIKCO.NS",
+    "ISIN_NUMBER": "INE540G01014"
+  },
+  {
+    "symbol": "AMBUJACEM.NS",
+    "ISIN_NUMBER": "INE079A01024"
+  },
+  {
+    "symbol": "AMDIND.NS",
+    "ISIN_NUMBER": "INE005I01014"
+  },
+  {
+    "symbol": "AMJLAND.NS",
+    "ISIN_NUMBER": "INE606A01024"
+  },
+  {
+    "symbol": "AMNPLST.NS",
+    "ISIN_NUMBER": "INE275D01022"
+  },
+  {
+    "symbol": "AMRUTANJAN.NS",
+    "ISIN_NUMBER": "INE098F01031"
+  },
+  {
+    "symbol": "ANANDRATHI.NS",
+    "ISIN_NUMBER": "INE463V01026"
+  },
+  {
+    "symbol": "ANANTRAJ.NS",
+    "ISIN_NUMBER": "INE242C01024"
+  },
+  {
+    "symbol": "ANDHRAPAP.NS",
+    "ISIN_NUMBER": "INE435A01051"
+  },
+  {
+    "symbol": "ANDHRSUGAR.NS",
+    "ISIN_NUMBER": "INE715B01021"
+  },
+  {
+    "symbol": "ANGELONE.NS",
+    "ISIN_NUMBER": "INE732I01021"
+  },
+  {
+    "symbol": "ANIKINDS.NS",
+    "ISIN_NUMBER": "INE087B01017"
+  },
+  {
+    "symbol": "ANKITMETAL.NS",
+    "ISIN_NUMBER": "INE106I01010"
+  },
+  {
+    "symbol": "ANMOL.NS",
+    "ISIN_NUMBER": "INE02AR01019"
+  },
+  {
+    "symbol": "ANSALAPI.NS",
+    "ISIN_NUMBER": "INE436A01026"
+  },
+  {
+    "symbol": "ANTELOPUS.NS",
+    "ISIN_NUMBER": "INE818A01017"
+  },
+  {
+    "symbol": "ANTGRAPHIC.NS",
+    "ISIN_NUMBER": "INE414B01021"
+  },
+  {
+    "symbol": "ANTHEM.NS",
+    "ISIN_NUMBER": "INE0CZ201020"
+  },
+  {
+    "symbol": "ANUHPHR.NS",
+    "ISIN_NUMBER": "INE489G01022"
+  },
+  {
+    "symbol": "ANUP.NS",
+    "ISIN_NUMBER": "INE294Z01018"
+  },
+  {
+    "symbol": "ANURAS.NS",
+    "ISIN_NUMBER": "INE930P01018"
+  },
+  {
+    "symbol": "APARINDS.NS",
+    "ISIN_NUMBER": "INE372A01015"
+  },
+  {
+    "symbol": "APCL.NS",
+    "ISIN_NUMBER": "INE071F01012"
+  },
+  {
+    "symbol": "APCOTEXIND.NS",
+    "ISIN_NUMBER": "INE116A01032"
+  },
+  {
+    "symbol": "APEX.NS",
+    "ISIN_NUMBER": "INE346W01013"
+  },
+  {
+    "symbol": "APLAPOLLO.NS",
+    "ISIN_NUMBER": "INE702C01027"
+  },
+  {
+    "symbol": "APLLTD.NS",
+    "ISIN_NUMBER": "INE901L01018"
+  },
+  {
+    "symbol": "APOLLO.NS",
+    "ISIN_NUMBER": "INE713T01028"
+  },
+  {
+    "symbol": "APOLLOHOSP.NS",
+    "ISIN_NUMBER": "INE437A01024"
+  },
+  {
+    "symbol": "APOLLOPIPE.NS",
+    "ISIN_NUMBER": "INE126J01016"
+  },
+  {
+    "symbol": "APOLLOTYRE.NS",
+    "ISIN_NUMBER": "INE438A01022"
+  },
+  {
+    "symbol": "APOLSINHOT.NS",
+    "ISIN_NUMBER": "INE451F01024"
+  },
+  {
+    "symbol": "APTECHT.NS",
+    "ISIN_NUMBER": "INE266F01018"
+  },
+  {
+    "symbol": "APTUS.NS",
+    "ISIN_NUMBER": "INE852O01025"
+  },
+  {
+    "symbol": "AQYLON.NS",
+    "ISIN_NUMBER": "INE416A01051"
+  },
+  {
+    "symbol": "ARCHIDPLY.NS",
+    "ISIN_NUMBER": "INE877I01016"
+  },
+  {
+    "symbol": "ARCHIES.NS",
+    "ISIN_NUMBER": "INE731A01020"
+  },
+  {
+    "symbol": "ARE&M.NS",
+    "ISIN_NUMBER": "INE885A01032"
+  },
+  {
+    "symbol": "ARENTERP.NS",
+    "ISIN_NUMBER": "INE610C01014"
+  },
+  {
+    "symbol": "ARFIN.NS",
+    "ISIN_NUMBER": "INE784R01023"
+  },
+  {
+    "symbol": "ARIES.NS",
+    "ISIN_NUMBER": "INE298I01015"
+  },
+  {
+    "symbol": "ARIHANTCAP.NS",
+    "ISIN_NUMBER": "INE420B01036"
+  },
+  {
+    "symbol": "ARIHANTSUP.NS",
+    "ISIN_NUMBER": "INE643K01018"
+  },
+  {
+    "symbol": "ARIS.NS",
+    "ISIN_NUMBER": "INE0H9P01028"
+  },
+  {
+    "symbol": "ARKADE.NS",
+    "ISIN_NUMBER": "INE0QRL01017"
+  },
+  {
+    "symbol": "ARMANFIN.NS",
+    "ISIN_NUMBER": "INE109C01017"
+  },
+  {
+    "symbol": "AROGRANITE.NS",
+    "ISIN_NUMBER": "INE210C01013"
+  },
+  {
+    "symbol": "ARROWGREEN.NS",
+    "ISIN_NUMBER": "INE570D01018"
+  },
+  {
+    "symbol": "ARSSBL.NS",
+    "ISIN_NUMBER": "INE549H01021"
+  },
+  {
+    "symbol": "ARTEMISMED.NS",
+    "ISIN_NUMBER": "INE025R01021"
+  },
+  {
+    "symbol": "ARTNIRMAN.NS",
+    "ISIN_NUMBER": "INE738V01013"
+  },
+  {
+    "symbol": "ARVEE.NS",
+    "ISIN_NUMBER": "INE006Z01016"
+  },
+  {
+    "symbol": "ARVIND.NS",
+    "ISIN_NUMBER": "INE034A01011"
+  },
+  {
+    "symbol": "ARVINDFASN.NS",
+    "ISIN_NUMBER": "INE955V01021"
+  },
+  {
+    "symbol": "ARVSMART.NS",
+    "ISIN_NUMBER": "INE034S01021"
+  },
+  {
+    "symbol": "ASAHIINDIA.NS",
+    "ISIN_NUMBER": "INE439A01020"
+  },
+  {
+    "symbol": "ASAHISONG.NS",
+    "ISIN_NUMBER": "INE228I01012"
+  },
+  {
+    "symbol": "ASAL.NS",
+    "ISIN_NUMBER": "INE900C01027"
+  },
+  {
+    "symbol": "ASALCBR.NS",
+    "ISIN_NUMBER": "INE073G01016"
+  },
+  {
+    "symbol": "ASHAPURMIN.NS",
+    "ISIN_NUMBER": "INE348A01023"
+  },
+  {
+    "symbol": "ASHIANA.NS",
+    "ISIN_NUMBER": "INE365D01021"
+  },
+  {
+    "symbol": "ASHIMASYN.NS",
+    "ISIN_NUMBER": "INE440A01010"
+  },
+  {
+    "symbol": "ASHOKA.NS",
+    "ISIN_NUMBER": "INE442H01029"
+  },
+  {
+    "symbol": "ASHOKAMET.NS",
+    "ISIN_NUMBER": "INE760Y01011"
+  },
+  {
+    "symbol": "ASHOKLEY.NS",
+    "ISIN_NUMBER": "INE208A01029"
+  },
+  {
+    "symbol": "ASIANENE.NS",
+    "ISIN_NUMBER": "INE276G01015"
+  },
+  {
+    "symbol": "ASIANHOTNR.NS",
+    "ISIN_NUMBER": "INE363A01022"
+  },
+  {
+    "symbol": "ASIANPAINT.NS",
+    "ISIN_NUMBER": "INE021A01026"
+  },
+  {
+    "symbol": "ASIANTILES.NS",
+    "ISIN_NUMBER": "INE022I01019"
+  },
+  {
+    "symbol": "ASKAUTOLTD.NS",
+    "ISIN_NUMBER": "INE491J01022"
+  },
+  {
+    "symbol": "ASMS.NS",
+    "ISIN_NUMBER": "INE855F01042"
+  },
+  {
+    "symbol": "ASPINWALL.NS",
+    "ISIN_NUMBER": "INE991I01015"
+  },
+  {
+    "symbol": "ASTEC.NS",
+    "ISIN_NUMBER": "INE563J01010"
+  },
+  {
+    "symbol": "ASTERDM.NS",
+    "ISIN_NUMBER": "INE914M01019"
+  },
+  {
+    "symbol": "ASTRAL.NS",
+    "ISIN_NUMBER": "INE006I01046"
+  },
+  {
+    "symbol": "ASTRAMICRO.NS",
+    "ISIN_NUMBER": "INE386C01029"
+  },
+  {
+    "symbol": "ASTRAZEN.NS",
+    "ISIN_NUMBER": "INE203A01020"
+  },
+  {
+    "symbol": "ASTRON.NS",
+    "ISIN_NUMBER": "INE646X01014"
+  },
+  {
+    "symbol": "ATALREAL.NS",
+    "ISIN_NUMBER": "INE0ALR01029"
+  },
+  {
+    "symbol": "ATAM.NS",
+    "ISIN_NUMBER": "INE09KD01013"
+  },
+  {
+    "symbol": "ATGL.NS",
+    "ISIN_NUMBER": "INE399L01023"
+  },
+  {
+    "symbol": "ATHERENERG.NS",
+    "ISIN_NUMBER": "INE0LEZ01016"
+  },
+  {
+    "symbol": "ATL.NS",
+    "ISIN_NUMBER": "INE0NN701020"
+  },
+  {
+    "symbol": "ATLANTAA.NS",
+    "ISIN_NUMBER": "INE285H01022"
+  },
+  {
+    "symbol": "ATLANTAELE.NS",
+    "ISIN_NUMBER": "INE0Z4F01028"
+  },
+  {
+    "symbol": "ATLASCYCLE.NS",
+    "ISIN_NUMBER": "INE446A01025"
+  },
+  {
+    "symbol": "ATUL.NS",
+    "ISIN_NUMBER": "INE100A01010"
+  },
+  {
+    "symbol": "ATULAUTO.NS",
+    "ISIN_NUMBER": "INE951D01028"
+  },
+  {
+    "symbol": "AUBANK.NS",
+    "ISIN_NUMBER": "INE949L01017"
+  },
+  {
+    "symbol": "AURIGROW.NS",
+    "ISIN_NUMBER": "INE925Y01036"
+  },
+  {
+    "symbol": "AURIONPRO.NS",
+    "ISIN_NUMBER": "INE132H01018"
+  },
+  {
+    "symbol": "AUROPHARMA.NS",
+    "ISIN_NUMBER": "INE406A01037"
+  },
+  {
+    "symbol": "AURUM.NS",
+    "ISIN_NUMBER": "INE898S01029"
+  },
+  {
+    "symbol": "AUSOMENT.NS",
+    "ISIN_NUMBER": "INE218C01016"
+  },
+  {
+    "symbol": "AUTOAXLES.NS",
+    "ISIN_NUMBER": "INE449A01011"
+  },
+  {
+    "symbol": "AUTOIND.NS",
+    "ISIN_NUMBER": "INE718H01014"
+  },
+  {
+    "symbol": "AVADHSUGAR.NS",
+    "ISIN_NUMBER": "INE349W01017"
+  },
+  {
+    "symbol": "AVALON.NS",
+    "ISIN_NUMBER": "INE0LCL01028"
+  },
+  {
+    "symbol": "AVANTEL.NS",
+    "ISIN_NUMBER": "INE005B01027"
+  },
+  {
+    "symbol": "AVANTIFEED.NS",
+    "ISIN_NUMBER": "INE871C01038"
+  },
+  {
+    "symbol": "AVG.NS",
+    "ISIN_NUMBER": "INE680Z01018"
+  },
+  {
+    "symbol": "AVL.NS",
+    "ISIN_NUMBER": "INE679V01027"
+  },
+  {
+    "symbol": "AVONMORE.NS",
+    "ISIN_NUMBER": "INE323B01024"
+  },
+  {
+    "symbol": "AVROIND.NS",
+    "ISIN_NUMBER": "INE652Z01017"
+  },
+  {
+    "symbol": "AVTNPL.NS",
+    "ISIN_NUMBER": "INE488D01021"
+  },
+  {
+    "symbol": "AWFIS.NS",
+    "ISIN_NUMBER": "INE108V01019"
+  },
+  {
+    "symbol": "AWHCL.NS",
+    "ISIN_NUMBER": "INE01BK01022"
+  },
+  {
+    "symbol": "AWL.NS",
+    "ISIN_NUMBER": "INE699H01024"
+  },
+  {
+    "symbol": "AXISBANK.NS",
+    "ISIN_NUMBER": "INE238A01034"
+  },
+  {
+    "symbol": "AXISCADES.NS",
+    "ISIN_NUMBER": "INE555B01013"
+  },
+  {
+    "symbol": "AXITA.NS",
+    "ISIN_NUMBER": "INE02EZ01022"
+  },
+  {
+    "symbol": "AYE.NS",
+    "ISIN_NUMBER": "INE501X01029"
+  },
+  {
+    "symbol": "AYMSYNTEX.NS",
+    "ISIN_NUMBER": "INE193B01039"
+  },
+  {
+    "symbol": "AZAD.NS",
+    "ISIN_NUMBER": "INE02IJ01035"
+  },
+  {
+    "symbol": "BAFNAPH.NS",
+    "ISIN_NUMBER": "INE878I01022"
+  },
+  {
+    "symbol": "BAGFILMS.NS",
+    "ISIN_NUMBER": "INE116D01028"
+  },
+  {
+    "symbol": "BAIDFIN.NS",
+    "ISIN_NUMBER": "INE020D01022"
+  },
+  {
+    "symbol": "BAJAJ-AUTO.NS",
+    "ISIN_NUMBER": "INE917I01010"
+  },
+  {
+    "symbol": "BAJAJCON.NS",
+    "ISIN_NUMBER": "INE933K01021"
+  },
+  {
+    "symbol": "BAJAJELEC.NS",
+    "ISIN_NUMBER": "INE193E01025"
+  },
+  {
+    "symbol": "BAJAJFINSV.NS",
+    "ISIN_NUMBER": "INE918I01026"
+  },
+  {
+    "symbol": "BAJAJHCARE.NS",
+    "ISIN_NUMBER": "INE411U01027"
+  },
+  {
+    "symbol": "BAJAJHFL.NS",
+    "ISIN_NUMBER": "INE377Y01014"
+  },
+  {
+    "symbol": "BAJAJHIND.NS",
+    "ISIN_NUMBER": "INE306A01021"
+  },
+  {
+    "symbol": "BAJAJHLDNG.NS",
+    "ISIN_NUMBER": "INE118A01012"
+  },
+  {
+    "symbol": "BAJAJINDEF.NS",
+    "ISIN_NUMBER": "INE0O9T01021"
+  },
+  {
+    "symbol": "BAJEL.NS",
+    "ISIN_NUMBER": "INE0KQN01018"
+  },
+  {
+    "symbol": "BAJFINANCE.NS",
+    "ISIN_NUMBER": "INE296A01032"
+  },
+  {
+    "symbol": "BALAJEE.NS",
+    "ISIN_NUMBER": "INE0S2G01011"
+  },
+  {
+    "symbol": "BALAJITELE.NS",
+    "ISIN_NUMBER": "INE794B01026"
+  },
+  {
+    "symbol": "BALAMINES.NS",
+    "ISIN_NUMBER": "INE050E01027"
+  },
+  {
+    "symbol": "BALAXI.NS",
+    "ISIN_NUMBER": "INE618N01022"
+  },
+  {
+    "symbol": "BALKRISHNA.NS",
+    "ISIN_NUMBER": "INE875R01011"
+  },
+  {
+    "symbol": "BALKRISIND.NS",
+    "ISIN_NUMBER": "INE787D01026"
+  },
+  {
+    "symbol": "BALMLAWRIE.NS",
+    "ISIN_NUMBER": "INE164A01016"
+  },
+  {
+    "symbol": "BALPHARMA.NS",
+    "ISIN_NUMBER": "INE083D01012"
+  },
+  {
+    "symbol": "BALRAMCHIN.NS",
+    "ISIN_NUMBER": "INE119A01028"
+  },
+  {
+    "symbol": "BALUFORGE.NS",
+    "ISIN_NUMBER": "INE011E01029"
+  },
+  {
+    "symbol": "BANARBEADS.NS",
+    "ISIN_NUMBER": "INE655B01011"
+  },
+  {
+    "symbol": "BANARISUG.NS",
+    "ISIN_NUMBER": "INE459A01010"
+  },
+  {
+    "symbol": "BANCOINDIA.NS",
+    "ISIN_NUMBER": "INE213C01025"
+  },
+  {
+    "symbol": "BANDHANBNK.NS",
+    "ISIN_NUMBER": "INE545U01014"
+  },
+  {
+    "symbol": "BANG.NS",
+    "ISIN_NUMBER": "INE863I01016"
+  },
+  {
+    "symbol": "BANKA.NS",
+    "ISIN_NUMBER": "INE862Y01015"
+  },
+  {
+    "symbol": "BANKBARODA.NS",
+    "ISIN_NUMBER": "INE028A01039"
+  },
+  {
+    "symbol": "BANKINDIA.NS",
+    "ISIN_NUMBER": "INE084A01016"
+  },
+  {
+    "symbol": "BANSALWIRE.NS",
+    "ISIN_NUMBER": "INE0B9K01025"
+  },
+  {
+    "symbol": "BANSWRAS.NS",
+    "ISIN_NUMBER": "INE629D01020"
+  },
+  {
+    "symbol": "BASF.NS",
+    "ISIN_NUMBER": "INE373A01013"
+  },
+  {
+    "symbol": "BASML.NS",
+    "ISIN_NUMBER": "INE186H01022"
+  },
+  {
+    "symbol": "BATAINDIA.NS",
+    "ISIN_NUMBER": "INE176A01028"
+  },
+  {
+    "symbol": "BAYERCROP.NS",
+    "ISIN_NUMBER": "INE462A01022"
+  },
+  {
+    "symbol": "BBL.NS",
+    "ISIN_NUMBER": "INE464A01036"
+  },
+  {
+    "symbol": "BBOX.NS",
+    "ISIN_NUMBER": "INE676A01027"
+  },
+  {
+    "symbol": "BBTC.NS",
+    "ISIN_NUMBER": "INE050A01025"
+  },
+  {
+    "symbol": "BBTCL.NS",
+    "ISIN_NUMBER": "INE01EE01011"
+  },
+  {
+    "symbol": "BCG.NS",
+    "ISIN_NUMBER": "INE425B01027"
+  },
+  {
+    "symbol": "BCLIND.NS",
+    "ISIN_NUMBER": "INE412G01024"
+  },
+  {
+    "symbol": "BCONCEPTS.NS",
+    "ISIN_NUMBER": "INE977Y01011"
+  },
+  {
+    "symbol": "BDL.NS",
+    "ISIN_NUMBER": "INE171Z01026"
+  },
+  {
+    "symbol": "BEARDSELL.NS",
+    "ISIN_NUMBER": "INE520H01022"
+  },
+  {
+    "symbol": "BECTORFOOD.NS",
+    "ISIN_NUMBER": "INE495P01020"
+  },
+  {
+    "symbol": "BEDMUTHA.NS",
+    "ISIN_NUMBER": "INE844K01012"
+  },
+  {
+    "symbol": "BEL.NS",
+    "ISIN_NUMBER": "INE263A01024"
+  },
+  {
+    "symbol": "BELLACASA.NS",
+    "ISIN_NUMBER": "INE344T01014"
+  },
+  {
+    "symbol": "BELRISE.NS",
+    "ISIN_NUMBER": "INE894V01022"
+  },
+  {
+    "symbol": "BEML.NS",
+    "ISIN_NUMBER": "INE258A01024"
+  },
+  {
+    "symbol": "BEPL.NS",
+    "ISIN_NUMBER": "INE922A01025"
+  },
+  {
+    "symbol": "BERGEPAINT.NS",
+    "ISIN_NUMBER": "INE463A01038"
+  },
+  {
+    "symbol": "BESTAGRO.NS",
+    "ISIN_NUMBER": "INE052T01021"
+  },
+  {
+    "symbol": "BETA.NS",
+    "ISIN_NUMBER": "INE351Y01019"
+  },
+  {
+    "symbol": "BFINVEST.NS",
+    "ISIN_NUMBER": "INE878K01010"
+  },
+  {
+    "symbol": "BFUTILITIE.NS",
+    "ISIN_NUMBER": "INE243D01012"
+  },
+  {
+    "symbol": "BGRENERGY.NS",
+    "ISIN_NUMBER": "INE661I01014"
+  },
+  {
+    "symbol": "BHAGCHEM.NS",
+    "ISIN_NUMBER": "INE414D01027"
+  },
+  {
+    "symbol": "BHAGERIA.NS",
+    "ISIN_NUMBER": "INE354C01027"
+  },
+  {
+    "symbol": "BHAGYANGR.NS",
+    "ISIN_NUMBER": "INE458B01036"
+  },
+  {
+    "symbol": "BHANDARI.NS",
+    "ISIN_NUMBER": "INE474E01029"
+  },
+  {
+    "symbol": "BHARATCOAL.NS",
+    "ISIN_NUMBER": "INE05XR01022"
+  },
+  {
+    "symbol": "BHARATFORG.NS",
+    "ISIN_NUMBER": "INE465A01025"
+  },
+  {
+    "symbol": "BHARATGEAR.NS",
+    "ISIN_NUMBER": "INE561C01019"
+  },
+  {
+    "symbol": "BHARATRAS.NS",
+    "ISIN_NUMBER": "INE838B01021"
+  },
+  {
+    "symbol": "BHARATSE.NS",
+    "ISIN_NUMBER": "INE415D01024"
+  },
+  {
+    "symbol": "BHARATWIRE.NS",
+    "ISIN_NUMBER": "INE316L01019"
+  },
+  {
+    "symbol": "BHARTIARTL.NS",
+    "ISIN_NUMBER": "INE397D01024"
+  },
+  {
+    "symbol": "BHARTIHEXA.NS",
+    "ISIN_NUMBER": "INE343G01021"
+  },
+  {
+    "symbol": "BHEL.NS",
+    "ISIN_NUMBER": "INE257A01026"
+  },
+  {
+    "symbol": "BIGBLOC.NS",
+    "ISIN_NUMBER": "INE412U01025"
+  },
+  {
+    "symbol": "BIKAJI.NS",
+    "ISIN_NUMBER": "INE00E101023"
+  },
+  {
+    "symbol": "BIL.NS",
+    "ISIN_NUMBER": "INE828A01016"
+  },
+  {
+    "symbol": "BILVYAPAR.NS",
+    "ISIN_NUMBER": "INE071A01013"
+  },
+  {
+    "symbol": "BIOCON.NS",
+    "ISIN_NUMBER": "INE376G01013"
+  },
+  {
+    "symbol": "BIOFILCHEM.NS",
+    "ISIN_NUMBER": "INE829A01014"
+  },
+  {
+    "symbol": "BIRLACABLE.NS",
+    "ISIN_NUMBER": "INE800A01015"
+  },
+  {
+    "symbol": "BIRLACORPN.NS",
+    "ISIN_NUMBER": "INE340A01012"
+  },
+  {
+    "symbol": "BIRLAMONEY.NS",
+    "ISIN_NUMBER": "INE865C01022"
+  },
+  {
+    "symbol": "BIRLANU.NS",
+    "ISIN_NUMBER": "INE557A01011"
+  },
+  {
+    "symbol": "BLACKBUCK.NS",
+    "ISIN_NUMBER": "INE0UIZ01018"
+  },
+  {
+    "symbol": "BLAL.NS",
+    "ISIN_NUMBER": "INE0N7W01012"
+  },
+  {
+    "symbol": "BLBLIMITED.NS",
+    "ISIN_NUMBER": "INE791A01024"
+  },
+  {
+    "symbol": "BLISSGVS.NS",
+    "ISIN_NUMBER": "INE416D01022"
+  },
+  {
+    "symbol": "BLKASHYAP.NS",
+    "ISIN_NUMBER": "INE350H01032"
+  },
+  {
+    "symbol": "BLS.NS",
+    "ISIN_NUMBER": "INE153T01027"
+  },
+  {
+    "symbol": "BLSE.NS",
+    "ISIN_NUMBER": "INE0NLT01010"
+  },
+  {
+    "symbol": "BLUECOAST.NS",
+    "ISIN_NUMBER": "INE472B01011"
+  },
+  {
+    "symbol": "BLUEDART.NS",
+    "ISIN_NUMBER": "INE233B01017"
+  },
+  {
+    "symbol": "BLUEJET.NS",
+    "ISIN_NUMBER": "INE0KBH01020"
+  },
+  {
+    "symbol": "BLUESTARCO.NS",
+    "ISIN_NUMBER": "INE472A01039"
+  },
+  {
+    "symbol": "BLUESTONE.NS",
+    "ISIN_NUMBER": "INE304W01038"
+  },
+  {
+    "symbol": "BLUSPRING.NS",
+    "ISIN_NUMBER": "INE0U4101014"
+  },
+  {
+    "symbol": "BMWVENTLTD.NS",
+    "ISIN_NUMBER": "INE965W01036"
+  },
+  {
+    "symbol": "BODALCHEM.NS",
+    "ISIN_NUMBER": "INE338D01028"
+  },
+  {
+    "symbol": "BOHRAIND.NS",
+    "ISIN_NUMBER": "INE802W01023"
+  },
+  {
+    "symbol": "BOMDYEING.NS",
+    "ISIN_NUMBER": "INE032A01023"
+  },
+  {
+    "symbol": "BONLON.NS",
+    "ISIN_NUMBER": "INE0B9A01018"
+  },
+  {
+    "symbol": "BORANA.NS",
+    "ISIN_NUMBER": "INE16SF01016"
+  },
+  {
+    "symbol": "BOROLTD.NS",
+    "ISIN_NUMBER": "INE02PY01013"
+  },
+  {
+    "symbol": "BORORENEW.NS",
+    "ISIN_NUMBER": "INE666D01022"
+  },
+  {
+    "symbol": "BOROSCI.NS",
+    "ISIN_NUMBER": "INE02L001032"
+  },
+  {
+    "symbol": "BOSCH-HCIL.NS",
+    "ISIN_NUMBER": "INE782A01015"
+  },
+  {
+    "symbol": "BOSCHLTD.NS",
+    "ISIN_NUMBER": "INE323A01026"
+  },
+  {
+    "symbol": "BPCL.NS",
+    "ISIN_NUMBER": "INE029A01011"
+  },
+  {
+    "symbol": "BPL.NS",
+    "ISIN_NUMBER": "INE110A01019"
+  },
+  {
+    "symbol": "BRIGADE.NS",
+    "ISIN_NUMBER": "INE791I01019"
+  },
+  {
+    "symbol": "BRIGHOTEL.NS",
+    "ISIN_NUMBER": "INE03NU01014"
+  },
+  {
+    "symbol": "BRITANNIA.NS",
+    "ISIN_NUMBER": "INE216A01030"
+  },
+  {
+    "symbol": "BRNL.NS",
+    "ISIN_NUMBER": "INE727S01012"
+  },
+  {
+    "symbol": "BROOKS.NS",
+    "ISIN_NUMBER": "INE650L01011"
+  },
+  {
+    "symbol": "BSE.NS",
+    "ISIN_NUMBER": "INE118H01025"
+  },
+  {
+    "symbol": "BSHSL.NS",
+    "ISIN_NUMBER": "INE032Z01020"
+  },
+  {
+    "symbol": "BSL.NS",
+    "ISIN_NUMBER": "INE594B01012"
+  },
+  {
+    "symbol": "BSOFT.NS",
+    "ISIN_NUMBER": "INE836A01035"
+  },
+  {
+    "symbol": "BTML.NS",
+    "ISIN_NUMBER": "INE0EEJ01023"
+  },
+  {
+    "symbol": "BUILDPRO.NS",
+    "ISIN_NUMBER": "INE24OJ01011"
+  },
+  {
+    "symbol": "BUTTERFLY.NS",
+    "ISIN_NUMBER": "INE295F01017"
+  },
+  {
+    "symbol": "BVCL.NS",
+    "ISIN_NUMBER": "INE139I01011"
+  },
+  {
+    "symbol": "BYKE.NS",
+    "ISIN_NUMBER": "INE319B01014"
+  },
+  {
+    "symbol": "CALSOFT.NS",
+    "ISIN_NUMBER": "INE526B01014"
+  },
+  {
+    "symbol": "CAMLINFINE.NS",
+    "ISIN_NUMBER": "INE052I01032"
+  },
+  {
+    "symbol": "CAMPUS.NS",
+    "ISIN_NUMBER": "INE278Y01022"
+  },
+  {
+    "symbol": "CAMS.NS",
+    "ISIN_NUMBER": "INE596I01020"
+  },
+  {
+    "symbol": "CANBK.NS",
+    "ISIN_NUMBER": "INE476A01022"
+  },
+  {
+    "symbol": "CANFINHOME.NS",
+    "ISIN_NUMBER": "INE477A01020"
+  },
+  {
+    "symbol": "CANHLIFE.NS",
+    "ISIN_NUMBER": "INE01TY01017"
+  },
+  {
+    "symbol": "CANTABIL.NS",
+    "ISIN_NUMBER": "INE068L01024"
+  },
+  {
+    "symbol": "CAPACITE.NS",
+    "ISIN_NUMBER": "INE264T01014"
+  },
+  {
+    "symbol": "CAPILLARY.NS",
+    "ISIN_NUMBER": "INE0ILV01024"
+  },
+  {
+    "symbol": "CAPITALSFB.NS",
+    "ISIN_NUMBER": "INE646H01017"
+  },
+  {
+    "symbol": "CAPLIPOINT.NS",
+    "ISIN_NUMBER": "INE475E01026"
+  },
+  {
+    "symbol": "CAPTRUST.NS",
+    "ISIN_NUMBER": "INE707C01018"
+  },
+  {
+    "symbol": "CARBORUNIV.NS",
+    "ISIN_NUMBER": "INE120A01034"
+  },
+  {
+    "symbol": "CARERATING.NS",
+    "ISIN_NUMBER": "INE752H01013"
+  },
+  {
+    "symbol": "CARRARO.NS",
+    "ISIN_NUMBER": "INE0V7W01012"
+  },
+  {
+    "symbol": "CARTRADE.NS",
+    "ISIN_NUMBER": "INE290S01011"
+  },
+  {
+    "symbol": "CARYSIL.NS",
+    "ISIN_NUMBER": "INE482D01024"
+  },
+  {
+    "symbol": "CASTROLIND.NS",
+    "ISIN_NUMBER": "INE172A01027"
+  },
+  {
+    "symbol": "CCAVENUE.NS",
+    "ISIN_NUMBER": "INE483S01020"
+  },
+  {
+    "symbol": "CCCL.NS",
+    "ISIN_NUMBER": "INE429I01024"
+  },
+  {
+    "symbol": "CCHHL.NS",
+    "ISIN_NUMBER": "INE652F01027"
+  },
+  {
+    "symbol": "CCL.NS",
+    "ISIN_NUMBER": "INE421D01022"
+  },
+  {
+    "symbol": "CDSL.NS",
+    "ISIN_NUMBER": "INE736A01011"
+  },
+  {
+    "symbol": "CEATLTD.NS",
+    "ISIN_NUMBER": "INE482A01020"
+  },
+  {
+    "symbol": "CEIGALL.NS",
+    "ISIN_NUMBER": "INE0AG901020"
+  },
+  {
+    "symbol": "CEINSYS.NS",
+    "ISIN_NUMBER": "INE016Q01014"
+  },
+  {
+    "symbol": "CELEBRITY.NS",
+    "ISIN_NUMBER": "INE185H01016"
+  },
+  {
+    "symbol": "CELLO.NS",
+    "ISIN_NUMBER": "INE0LMW01024"
+  },
+  {
+    "symbol": "CEMPRO.NS",
+    "ISIN_NUMBER": "INE686A01026"
+  },
+  {
+    "symbol": "CENTENKA.NS",
+    "ISIN_NUMBER": "INE485A01015"
+  },
+  {
+    "symbol": "CENTEXT.NS",
+    "ISIN_NUMBER": "INE281A01026"
+  },
+  {
+    "symbol": "CENTRALBK.NS",
+    "ISIN_NUMBER": "INE483A01010"
+  },
+  {
+    "symbol": "CENTRUM.NS",
+    "ISIN_NUMBER": "INE660C01027"
+  },
+  {
+    "symbol": "CENTUM.NS",
+    "ISIN_NUMBER": "INE320B01020"
+  },
+  {
+    "symbol": "CENTURYPLY.NS",
+    "ISIN_NUMBER": "INE348B01021"
+  },
+  {
+    "symbol": "CERA.NS",
+    "ISIN_NUMBER": "INE739E01017"
+  },
+  {
+    "symbol": "CEREBRAINT.NS",
+    "ISIN_NUMBER": "INE345B01019"
+  },
+  {
+    "symbol": "CESC.NS",
+    "ISIN_NUMBER": "INE486A01021"
+  },
+  {
+    "symbol": "CEWATER.NS",
+    "ISIN_NUMBER": "INE037Z01029"
+  },
+  {
+    "symbol": "CGCL.NS",
+    "ISIN_NUMBER": "INE180C01042"
+  },
+  {
+    "symbol": "CGPOWER.NS",
+    "ISIN_NUMBER": "INE067A01029"
+  },
+  {
+    "symbol": "CHALET.NS",
+    "ISIN_NUMBER": "INE427F01016"
+  },
+  {
+    "symbol": "CHAMBLFERT.NS",
+    "ISIN_NUMBER": "INE085A01013"
+  },
+  {
+    "symbol": "CHEMBOND.NS",
+    "ISIN_NUMBER": "INE995D01025"
+  },
+  {
+    "symbol": "CHEMBONDCH.NS",
+    "ISIN_NUMBER": "INE0TGX01019"
+  },
+  {
+    "symbol": "CHEMCON.NS",
+    "ISIN_NUMBER": "INE03YM01018"
+  },
+  {
+    "symbol": "CHEMFAB.NS",
+    "ISIN_NUMBER": "INE783X01023"
+  },
+  {
+    "symbol": "CHEMPLASTS.NS",
+    "ISIN_NUMBER": "INE488A01050"
+  },
+  {
+    "symbol": "CHENNPETRO.NS",
+    "ISIN_NUMBER": "INE178A01016"
+  },
+  {
+    "symbol": "CHEVIOT.NS",
+    "ISIN_NUMBER": "INE974B01016"
+  },
+  {
+    "symbol": "CHOICEIN.NS",
+    "ISIN_NUMBER": "INE102B01014"
+  },
+  {
+    "symbol": "CHOLAFIN.NS",
+    "ISIN_NUMBER": "INE121A01024"
+  },
+  {
+    "symbol": "CHOLAHLDNG.NS",
+    "ISIN_NUMBER": "INE149A01033"
+  },
+  {
+    "symbol": "CIEINDIA.NS",
+    "ISIN_NUMBER": "INE536H01010"
+  },
+  {
+    "symbol": "CIFL.NS",
+    "ISIN_NUMBER": "INE345H01024"
+  },
+  {
+    "symbol": "CIGNITITEC.NS",
+    "ISIN_NUMBER": "INE675C01017"
+  },
+  {
+    "symbol": "CINELINE.NS",
+    "ISIN_NUMBER": "INE704H01022"
+  },
+  {
+    "symbol": "CINEVISTA.NS",
+    "ISIN_NUMBER": "INE039B01026"
+  },
+  {
+    "symbol": "CIPLA.NS",
+    "ISIN_NUMBER": "INE059A01026"
+  },
+  {
+    "symbol": "CLEAN.NS",
+    "ISIN_NUMBER": "INE227W01023"
+  },
+  {
+    "symbol": "CLEANMAX.NS",
+    "ISIN_NUMBER": "INE647U01026"
+  },
+  {
+    "symbol": "CLEDUCATE.NS",
+    "ISIN_NUMBER": "INE201M01029"
+  },
+  {
+    "symbol": "CLSEL.NS",
+    "ISIN_NUMBER": "INE419D01026"
+  },
+  {
+    "symbol": "CMSINFO.NS",
+    "ISIN_NUMBER": "INE925R01014"
+  },
+  {
+    "symbol": "CNL.NS",
+    "ISIN_NUMBER": "INE985W01018"
+  },
+  {
+    "symbol": "COALINDIA.NS",
+    "ISIN_NUMBER": "INE522F01014"
+  },
+  {
+    "symbol": "COASTCORP.NS",
+    "ISIN_NUMBER": "INE377E01024"
+  },
+  {
+    "symbol": "COCHINSHIP.NS",
+    "ISIN_NUMBER": "INE704P01025"
+  },
+  {
+    "symbol": "COFFEEDAY.NS",
+    "ISIN_NUMBER": "INE335K01011"
+  },
+  {
+    "symbol": "COFORGE.NS",
+    "ISIN_NUMBER": "INE591G01025"
+  },
+  {
+    "symbol": "COHANCE.NS",
+    "ISIN_NUMBER": "INE03QK01018"
+  },
+  {
+    "symbol": "COLPAL.NS",
+    "ISIN_NUMBER": "INE259A01022"
+  },
+  {
+    "symbol": "COMPINFO.NS",
+    "ISIN_NUMBER": "INE070C01037"
+  },
+  {
+    "symbol": "COMPUSOFT.NS",
+    "ISIN_NUMBER": "INE453B01029"
+  },
+  {
+    "symbol": "COMSYN.NS",
+    "ISIN_NUMBER": "INE073V01015"
+  },
+  {
+    "symbol": "CONCOR.NS",
+    "ISIN_NUMBER": "INE111A01025"
+  },
+  {
+    "symbol": "CONCORDBIO.NS",
+    "ISIN_NUMBER": "INE338H01029"
+  },
+  {
+    "symbol": "CONFIPET.NS",
+    "ISIN_NUMBER": "INE552D01024"
+  },
+  {
+    "symbol": "CONSOFINVT.NS",
+    "ISIN_NUMBER": "INE025A01027"
+  },
+  {
+    "symbol": "CONTROLPR.NS",
+    "ISIN_NUMBER": "INE663B01015"
+  },
+  {
+    "symbol": "CORALFINAC.NS",
+    "ISIN_NUMBER": "INE558D01021"
+  },
+  {
+    "symbol": "CORDSCABLE.NS",
+    "ISIN_NUMBER": "INE792I01017"
+  },
+  {
+    "symbol": "COROMANDEL.NS",
+    "ISIN_NUMBER": "INE169A01031"
+  },
+  {
+    "symbol": "CORONA.NS",
+    "ISIN_NUMBER": "INE02ZQ01018"
+  },
+  {
+    "symbol": "COSMOFIRST.NS",
+    "ISIN_NUMBER": "INE757A01017"
+  },
+  {
+    "symbol": "COUNCODOS.NS",
+    "ISIN_NUMBER": "INE695B01025"
+  },
+  {
+    "symbol": "CPCAP.NS",
+    "ISIN_NUMBER": "INE521J01018"
+  },
+  {
+    "symbol": "CPEDU.NS",
+    "ISIN_NUMBER": "INE0P6P01016"
+  },
+  {
+    "symbol": "CPPLUS.NS",
+    "ISIN_NUMBER": "INE819V01029"
+  },
+  {
+    "symbol": "CRAFTSMAN.NS",
+    "ISIN_NUMBER": "INE00LO01017"
+  },
+  {
+    "symbol": "CRAMC.NS",
+    "ISIN_NUMBER": "INE218I01013"
+  },
+  {
+    "symbol": "CREATIVEYE.NS",
+    "ISIN_NUMBER": "INE230B01021"
+  },
+  {
+    "symbol": "CREDITACC.NS",
+    "ISIN_NUMBER": "INE741K01010"
+  },
+  {
+    "symbol": "CREST.NS",
+    "ISIN_NUMBER": "INE559D01011"
+  },
+  {
+    "symbol": "CRISIL.NS",
+    "ISIN_NUMBER": "INE007A01025"
+  },
+  {
+    "symbol": "CRIZAC.NS",
+    "ISIN_NUMBER": "INE0S4R01014"
+  },
+  {
+    "symbol": "CROMPTON.NS",
+    "ISIN_NUMBER": "INE299U01018"
+  },
+  {
+    "symbol": "CROWN.NS",
+    "ISIN_NUMBER": "INE491V01019"
+  },
+  {
+    "symbol": "CSBBANK.NS",
+    "ISIN_NUMBER": "INE679A01013"
+  },
+  {
+    "symbol": "CSLFINANCE.NS",
+    "ISIN_NUMBER": "INE718F01018"
+  },
+  {
+    "symbol": "CTE.NS",
+    "ISIN_NUMBER": "INE627H01017"
+  },
+  {
+    "symbol": "CUB.NS",
+    "ISIN_NUMBER": "INE491A01021"
+  },
+  {
+    "symbol": "CUBEXTUB.NS",
+    "ISIN_NUMBER": "INE144D01012"
+  },
+  {
+    "symbol": "CUMMINSIND.NS",
+    "ISIN_NUMBER": "INE298A01020"
+  },
+  {
+    "symbol": "CUPID.NS",
+    "ISIN_NUMBER": "INE509F01029"
+  },
+  {
+    "symbol": "CURAA.NS",
+    "ISIN_NUMBER": "INE117B01020"
+  },
+  {
+    "symbol": "CYBERMEDIA.NS",
+    "ISIN_NUMBER": "INE278G01037"
+  },
+  {
+    "symbol": "CYBERTECH.NS",
+    "ISIN_NUMBER": "INE214A01019"
+  },
+  {
+    "symbol": "CYIENT.NS",
+    "ISIN_NUMBER": "INE136B01020"
+  },
+  {
+    "symbol": "CYIENTDLM.NS",
+    "ISIN_NUMBER": "INE055S01018"
+  },
+  {
+    "symbol": "DABUR.NS",
+    "ISIN_NUMBER": "INE016A01026"
+  },
+  {
+    "symbol": "DALBHARAT.NS",
+    "ISIN_NUMBER": "INE00R701025"
+  },
+  {
+    "symbol": "DALMIASUG.NS",
+    "ISIN_NUMBER": "INE495A01022"
+  },
+  {
+    "symbol": "DAMCAPITAL.NS",
+    "ISIN_NUMBER": "INE284H01025"
+  },
+  {
+    "symbol": "DAMODARIND.NS",
+    "ISIN_NUMBER": "INE497D01022"
+  },
+  {
+    "symbol": "DANGEE.NS",
+    "ISIN_NUMBER": "INE688Y01022"
+  },
+  {
+    "symbol": "DATAMATICS.NS",
+    "ISIN_NUMBER": "INE365B01017"
+  },
+  {
+    "symbol": "DATAPATTNS.NS",
+    "ISIN_NUMBER": "INE0IX101010"
+  },
+  {
+    "symbol": "DAVANGERE.NS",
+    "ISIN_NUMBER": "INE179G01029"
+  },
+  {
+    "symbol": "DBCORP.NS",
+    "ISIN_NUMBER": "INE950I01011"
+  },
+  {
+    "symbol": "DBEIL.NS",
+    "ISIN_NUMBER": "INE0OPA01019"
+  },
+  {
+    "symbol": "DBL.NS",
+    "ISIN_NUMBER": "INE917M01012"
+  },
+  {
+    "symbol": "DBOL.NS",
+    "ISIN_NUMBER": "INE0I3401014"
+  },
+  {
+    "symbol": "DBREALTY.NS",
+    "ISIN_NUMBER": "INE879I01012"
+  },
+  {
+    "symbol": "DBSTOCKBRO.NS",
+    "ISIN_NUMBER": "INE921B01025"
+  },
+  {
+    "symbol": "DCAL.NS",
+    "ISIN_NUMBER": "INE385W01011"
+  },
+  {
+    "symbol": "DCBBANK.NS",
+    "ISIN_NUMBER": "INE503A01015"
+  },
+  {
+    "symbol": "DCI.NS",
+    "ISIN_NUMBER": "INE0A1101019"
+  },
+  {
+    "symbol": "DCM.NS",
+    "ISIN_NUMBER": "INE498A01018"
+  },
+  {
+    "symbol": "DCMFINSERV.NS",
+    "ISIN_NUMBER": "INE891B01012"
+  },
+  {
+    "symbol": "DCMNVL.NS",
+    "ISIN_NUMBER": "INE08KP01019"
+  },
+  {
+    "symbol": "DCMSHRIRAM.NS",
+    "ISIN_NUMBER": "INE499A01024"
+  },
+  {
+    "symbol": "DCMSIL.NS",
+    "ISIN_NUMBER": "INE0OU201013"
+  },
+  {
+    "symbol": "DCMSRIND.NS",
+    "ISIN_NUMBER": "INE843D01027"
+  },
+  {
+    "symbol": "DCW.NS",
+    "ISIN_NUMBER": "INE500A01029"
+  },
+  {
+    "symbol": "DCXINDIA.NS",
+    "ISIN_NUMBER": "INE0KL801015"
+  },
+  {
+    "symbol": "DDEVPLSTIK.NS",
+    "ISIN_NUMBER": "INE0HR601026"
+  },
+  {
+    "symbol": "DECCANCE.NS",
+    "ISIN_NUMBER": "INE583C01021"
+  },
+  {
+    "symbol": "DEEDEV.NS",
+    "ISIN_NUMBER": "INE841L01016"
+  },
+  {
+    "symbol": "DEEPAKFERT.NS",
+    "ISIN_NUMBER": "INE501A01019"
+  },
+  {
+    "symbol": "DEEPAKNTR.NS",
+    "ISIN_NUMBER": "INE288B01029"
+  },
+  {
+    "symbol": "DEEPINDS.NS",
+    "ISIN_NUMBER": "INE0FHS01024"
+  },
+  {
+    "symbol": "DELHIVERY.NS",
+    "ISIN_NUMBER": "INE148O01028"
+  },
+  {
+    "symbol": "DELPHIFX.NS",
+    "ISIN_NUMBER": "INE726L01027"
+  },
+  {
+    "symbol": "DELTACORP.NS",
+    "ISIN_NUMBER": "INE124G01033"
+  },
+  {
+    "symbol": "DELTAMAGNT.NS",
+    "ISIN_NUMBER": "INE393A01011"
+  },
+  {
+    "symbol": "DEN.NS",
+    "ISIN_NUMBER": "INE947J01015"
+  },
+  {
+    "symbol": "DENORA.NS",
+    "ISIN_NUMBER": "INE244A01016"
+  },
+  {
+    "symbol": "DENTA.NS",
+    "ISIN_NUMBER": "INE0R4L01018"
+  },
+  {
+    "symbol": "DEVIT.NS",
+    "ISIN_NUMBER": "INE060X01034"
+  },
+  {
+    "symbol": "DEVX.NS",
+    "ISIN_NUMBER": "INE0VOV01021"
+  },
+  {
+    "symbol": "DEVYANI.NS",
+    "ISIN_NUMBER": "INE872J01023"
+  },
+  {
+    "symbol": "DGCONTENT.NS",
+    "ISIN_NUMBER": "INE03JI01017"
+  },
+  {
+    "symbol": "DHAMPURSUG.NS",
+    "ISIN_NUMBER": "INE041A01016"
+  },
+  {
+    "symbol": "DHANBANK.NS",
+    "ISIN_NUMBER": "INE680A01011"
+  },
+  {
+    "symbol": "DHANUKA.NS",
+    "ISIN_NUMBER": "INE435G01025"
+  },
+  {
+    "symbol": "DHARAN.NS",
+    "ISIN_NUMBER": "INE278R01034"
+  },
+  {
+    "symbol": "DHARMAJ.NS",
+    "ISIN_NUMBER": "INE00OQ01016"
+  },
+  {
+    "symbol": "DHRUV.NS",
+    "ISIN_NUMBER": "INE506Z01015"
+  },
+  {
+    "symbol": "DHUNINV.NS",
+    "ISIN_NUMBER": "INE320L01011"
+  },
+  {
+    "symbol": "DIACABS.NS",
+    "ISIN_NUMBER": "INE989C01038"
+  },
+  {
+    "symbol": "DIAMINESQ.NS",
+    "ISIN_NUMBER": "INE591D01014"
+  },
+  {
+    "symbol": "DIAMONDYD.NS",
+    "ISIN_NUMBER": "INE393P01035"
+  },
+  {
+    "symbol": "DICIND.NS",
+    "ISIN_NUMBER": "INE303A01010"
+  },
+  {
+    "symbol": "DIFFNKG.NS",
+    "ISIN_NUMBER": "INE184O01015"
+  },
+  {
+    "symbol": "DIGIDRIVE.NS",
+    "ISIN_NUMBER": "INE0PSC01024"
+  },
+  {
+    "symbol": "DIGISPICE.NS",
+    "ISIN_NUMBER": "INE927C01020"
+  },
+  {
+    "symbol": "DIGITIDE.NS",
+    "ISIN_NUMBER": "INE0U4701011"
+  },
+  {
+    "symbol": "DIGJAMLMTD.NS",
+    "ISIN_NUMBER": "INE731U01028"
+  },
+  {
+    "symbol": "DISHTV.NS",
+    "ISIN_NUMBER": "INE836F01026"
+  },
+  {
+    "symbol": "DIVGIITTS.NS",
+    "ISIN_NUMBER": "INE753U01022"
+  },
+  {
+    "symbol": "DIVISLAB.NS",
+    "ISIN_NUMBER": "INE361B01024"
+  },
+  {
+    "symbol": "DIXON.NS",
+    "ISIN_NUMBER": "INE935N01020"
+  },
+  {
+    "symbol": "DJML.NS",
+    "ISIN_NUMBER": "INE0B1K01014"
+  },
+  {
+    "symbol": "DLF.NS",
+    "ISIN_NUMBER": "INE271C01023"
+  },
+  {
+    "symbol": "DLINKINDIA.NS",
+    "ISIN_NUMBER": "INE250K01012"
+  },
+  {
+    "symbol": "DMART.NS",
+    "ISIN_NUMBER": "INE192R01011"
+  },
+  {
+    "symbol": "DMCC.NS",
+    "ISIN_NUMBER": "INE505A01010"
+  },
+  {
+    "symbol": "DNAMEDIA.NS",
+    "ISIN_NUMBER": "INE016M01021"
+  },
+  {
+    "symbol": "DODLA.NS",
+    "ISIN_NUMBER": "INE021O01019"
+  },
+  {
+    "symbol": "DOLATALGO.NS",
+    "ISIN_NUMBER": "INE966A01022"
+  },
+  {
+    "symbol": "DOLLAR.NS",
+    "ISIN_NUMBER": "INE325C01035"
+  },
+  {
+    "symbol": "DOLPHIN.NS",
+    "ISIN_NUMBER": "INE920A01037"
+  },
+  {
+    "symbol": "DOMS.NS",
+    "ISIN_NUMBER": "INE321T01012"
+  },
+  {
+    "symbol": "DONEAR.NS",
+    "ISIN_NUMBER": "INE668D01028"
+  },
+  {
+    "symbol": "DPABHUSHAN.NS",
+    "ISIN_NUMBER": "INE266Y01019"
+  },
+  {
+    "symbol": "DPSCLTD.NS",
+    "ISIN_NUMBER": "INE360C01024"
+  },
+  {
+    "symbol": "DPWIRES.NS",
+    "ISIN_NUMBER": "INE864X01013"
+  },
+  {
+    "symbol": "DRCSYSTEMS.NS",
+    "ISIN_NUMBER": "INE03RS01027"
+  },
+  {
+    "symbol": "DREAMFOLKS.NS",
+    "ISIN_NUMBER": "INE0JS101016"
+  },
+  {
+    "symbol": "DREDGECORP.NS",
+    "ISIN_NUMBER": "INE506A01018"
+  },
+  {
+    "symbol": "DRREDDY.NS",
+    "ISIN_NUMBER": "INE089A01031"
+  },
+  {
+    "symbol": "DSFCL.NS",
+    "ISIN_NUMBER": "INE0OFM01015"
+  },
+  {
+    "symbol": "DSSL.NS",
+    "ISIN_NUMBER": "INE417B01040"
+  },
+  {
+    "symbol": "DTIL.NS",
+    "ISIN_NUMBER": "INE341R01014"
+  },
+  {
+    "symbol": "DUCON.NS",
+    "ISIN_NUMBER": "INE741L01018"
+  },
+  {
+    "symbol": "DVL.NS",
+    "ISIN_NUMBER": "INE477B01010"
+  },
+  {
+    "symbol": "DWARKESH.NS",
+    "ISIN_NUMBER": "INE366A01041"
+  },
+  {
+    "symbol": "DYCL.NS",
+    "ISIN_NUMBER": "INE600Y01019"
+  },
+  {
+    "symbol": "DYNAMATECH.NS",
+    "ISIN_NUMBER": "INE221B01012"
+  },
+  {
+    "symbol": "DYNPRO.NS",
+    "ISIN_NUMBER": "INE256H01015"
+  },
+  {
+    "symbol": "E2E.NS",
+    "ISIN_NUMBER": "INE255Z01019"
+  },
+  {
+    "symbol": "EASEMYTRIP.NS",
+    "ISIN_NUMBER": "INE07O001026"
+  },
+  {
+    "symbol": "EBGNG.NS",
+    "ISIN_NUMBER": "INE18JU01028"
+  },
+  {
+    "symbol": "ECLERX.NS",
+    "ISIN_NUMBER": "INE738I01010"
+  },
+  {
+    "symbol": "ECOSMOBLTY.NS",
+    "ISIN_NUMBER": "INE06HJ01020"
+  },
+  {
+    "symbol": "EDELWEISS.NS",
+    "ISIN_NUMBER": "INE532F01054"
+  },
+  {
+    "symbol": "EFCIL.NS",
+    "ISIN_NUMBER": "INE886D01026"
+  },
+  {
+    "symbol": "EICHERMOT.NS",
+    "ISIN_NUMBER": "INE066A01021"
+  },
+  {
+    "symbol": "EIDPARRY.NS",
+    "ISIN_NUMBER": "INE126A01031"
+  },
+  {
+    "symbol": "EIEL.NS",
+    "ISIN_NUMBER": "INE0LLY01014"
+  },
+  {
+    "symbol": "EIFFL.NS",
+    "ISIN_NUMBER": "INE546V01010"
+  },
+  {
+    "symbol": "EIHAHOTELS.NS",
+    "ISIN_NUMBER": "INE276C01014"
+  },
+  {
+    "symbol": "EIHOTEL.NS",
+    "ISIN_NUMBER": "INE230A01023"
+  },
+  {
+    "symbol": "EIMCOELECO.NS",
+    "ISIN_NUMBER": "INE158B01016"
+  },
+  {
+    "symbol": "EKC.NS",
+    "ISIN_NUMBER": "INE184H01027"
+  },
+  {
+    "symbol": "ELDEHSG.NS",
+    "ISIN_NUMBER": "INE668G01021"
+  },
+  {
+    "symbol": "ELECON.NS",
+    "ISIN_NUMBER": "INE205B01031"
+  },
+  {
+    "symbol": "ELECTCAST.NS",
+    "ISIN_NUMBER": "INE086A01029"
+  },
+  {
+    "symbol": "ELECTHERM.NS",
+    "ISIN_NUMBER": "INE822G01016"
+  },
+  {
+    "symbol": "ELGIEQUIP.NS",
+    "ISIN_NUMBER": "INE285A01027"
+  },
+  {
+    "symbol": "ELGIRUBCO.NS",
+    "ISIN_NUMBER": "INE819L01012"
+  },
+  {
+    "symbol": "ELIN.NS",
+    "ISIN_NUMBER": "INE050401020"
+  },
+  {
+    "symbol": "ELLEN.NS",
+    "ISIN_NUMBER": "INE236E01022"
+  },
+  {
+    "symbol": "EMAMILTD.NS",
+    "ISIN_NUMBER": "INE548C01032"
+  },
+  {
+    "symbol": "EMAMIPAP.NS",
+    "ISIN_NUMBER": "INE830C01026"
+  },
+  {
+    "symbol": "EMAMIREAL.NS",
+    "ISIN_NUMBER": "INE778K01012"
+  },
+  {
+    "symbol": "EMBDL.NS",
+    "ISIN_NUMBER": "INE069I01010"
+  },
+  {
+    "symbol": "EMCURE.NS",
+    "ISIN_NUMBER": "INE168P01015"
+  },
+  {
+    "symbol": "EMIL.NS",
+    "ISIN_NUMBER": "INE02YR01019"
+  },
+  {
+    "symbol": "EMKAY.NS",
+    "ISIN_NUMBER": "INE296H01011"
+  },
+  {
+    "symbol": "EMMBI.NS",
+    "ISIN_NUMBER": "INE753K01015"
+  },
+  {
+    "symbol": "EMMVEE.NS",
+    "ISIN_NUMBER": "INE1C6T01020"
+  },
+  {
+    "symbol": "EMSLIMITED.NS",
+    "ISIN_NUMBER": "INE0OV601013"
+  },
+  {
+    "symbol": "EMUDHRA.NS",
+    "ISIN_NUMBER": "INE01QM01018"
+  },
+  {
+    "symbol": "ENDURANCE.NS",
+    "ISIN_NUMBER": "INE913H01037"
+  },
+  {
+    "symbol": "ENERGYDEV.NS",
+    "ISIN_NUMBER": "INE306C01019"
+  },
+  {
+    "symbol": "ENGINERSIN.NS",
+    "ISIN_NUMBER": "INE510A01028"
+  },
+  {
+    "symbol": "ENIL.NS",
+    "ISIN_NUMBER": "INE265F01028"
+  },
+  {
+    "symbol": "ENRIN.NS",
+    "ISIN_NUMBER": "INE1NPP01017"
+  },
+  {
+    "symbol": "ENTERO.NS",
+    "ISIN_NUMBER": "INE010601016"
+  },
+  {
+    "symbol": "EPACK.NS",
+    "ISIN_NUMBER": "INE0G5901015"
+  },
+  {
+    "symbol": "EPACKPEB.NS",
+    "ISIN_NUMBER": "INE0MLS01022"
+  },
+  {
+    "symbol": "EPIGRAL.NS",
+    "ISIN_NUMBER": "INE071N01016"
+  },
+  {
+    "symbol": "EPL.NS",
+    "ISIN_NUMBER": "INE255A01020"
+  },
+  {
+    "symbol": "EQUIPPP.NS",
+    "ISIN_NUMBER": "INE217G01035"
+  },
+  {
+    "symbol": "EQUITASBNK.NS",
+    "ISIN_NUMBER": "INE063P01018"
+  },
+  {
+    "symbol": "ERIS.NS",
+    "ISIN_NUMBER": "INE406M01024"
+  },
+  {
+    "symbol": "ESABINDIA.NS",
+    "ISIN_NUMBER": "INE284A01012"
+  },
+  {
+    "symbol": "ESAFSFB.NS",
+    "ISIN_NUMBER": "INE818W01011"
+  },
+  {
+    "symbol": "ESCORTS.NS",
+    "ISIN_NUMBER": "INE042A01014"
+  },
+  {
+    "symbol": "ESSARSHPNG.NS",
+    "ISIN_NUMBER": "INE122M01019"
+  },
+  {
+    "symbol": "ESSENTIA.NS",
+    "ISIN_NUMBER": "INE418N01035"
+  },
+  {
+    "symbol": "ESTER.NS",
+    "ISIN_NUMBER": "INE778B01029"
+  },
+  {
+    "symbol": "ETERNAL.NS",
+    "ISIN_NUMBER": "INE758T01015"
+  },
+  {
+    "symbol": "ETHOSLTD.NS",
+    "ISIN_NUMBER": "INE04TZ01018"
+  },
+  {
+    "symbol": "EUREKAFORB.NS",
+    "ISIN_NUMBER": "INE0KCE01017"
+  },
+  {
+    "symbol": "EUROBOND.NS",
+    "ISIN_NUMBER": "INE505V01016"
+  },
+  {
+    "symbol": "EUROPRATIK.NS",
+    "ISIN_NUMBER": "INE198501012"
+  },
+  {
+    "symbol": "EUROTEXIND.NS",
+    "ISIN_NUMBER": "INE022C01012"
+  },
+  {
+    "symbol": "EVEREADY.NS",
+    "ISIN_NUMBER": "INE128A01029"
+  },
+  {
+    "symbol": "EVERESTIND.NS",
+    "ISIN_NUMBER": "INE295A01018"
+  },
+  {
+    "symbol": "EXCEL.NS",
+    "ISIN_NUMBER": "INE688J01023"
+  },
+  {
+    "symbol": "EXCELINDUS.NS",
+    "ISIN_NUMBER": "INE369A01029"
+  },
+  {
+    "symbol": "EXCELSOFT.NS",
+    "ISIN_NUMBER": "INE606N01019"
+  },
+  {
+    "symbol": "EXICOM.NS",
+    "ISIN_NUMBER": "INE777F01014"
+  },
+  {
+    "symbol": "EXIDEIND.NS",
+    "ISIN_NUMBER": "INE302A01020"
+  },
+  {
+    "symbol": "EXPLEOSOL.NS",
+    "ISIN_NUMBER": "INE201K01015"
+  },
+  {
+    "symbol": "EXXARO.NS",
+    "ISIN_NUMBER": "INE0GFE01026"
+  },
+  {
+    "symbol": "FABTECH.NS",
+    "ISIN_NUMBER": "INE0HF201011"
+  },
+  {
+    "symbol": "FACT.NS",
+    "ISIN_NUMBER": "INE188A01015"
+  },
+  {
+    "symbol": "FAIRCHEMOR.NS",
+    "ISIN_NUMBER": "INE0DNW01011"
+  },
+  {
+    "symbol": "FAZE3Q.NS",
+    "ISIN_NUMBER": "INE963C01033"
+  },
+  {
+    "symbol": "FCL.NS",
+    "ISIN_NUMBER": "INE045J01034"
+  },
+  {
+    "symbol": "FCSSOFT.NS",
+    "ISIN_NUMBER": "INE512B01022"
+  },
+  {
+    "symbol": "FDC.NS",
+    "ISIN_NUMBER": "INE258B01022"
+  },
+  {
+    "symbol": "FEDERALBNK.NS",
+    "ISIN_NUMBER": "INE171A01029"
+  },
+  {
+    "symbol": "FEDFINA.NS",
+    "ISIN_NUMBER": "INE007N01010"
+  },
+  {
+    "symbol": "FEL.NS",
+    "ISIN_NUMBER": "INE623B01027"
+  },
+  {
+    "symbol": "FELDVR.NS",
+    "ISIN_NUMBER": "IN9623B01058"
+  },
+  {
+    "symbol": "FIBERWEB.NS",
+    "ISIN_NUMBER": "INE296C01020"
+  },
+  {
+    "symbol": "FIEMIND.NS",
+    "ISIN_NUMBER": "INE737H01014"
+  },
+  {
+    "symbol": "FILATEX.NS",
+    "ISIN_NUMBER": "INE816B01035"
+  },
+  {
+    "symbol": "FILATFASH.NS",
+    "ISIN_NUMBER": "INE185E01021"
+  },
+  {
+    "symbol": "FINCABLES.NS",
+    "ISIN_NUMBER": "INE235A01022"
+  },
+  {
+    "symbol": "FINEORG.NS",
+    "ISIN_NUMBER": "INE686Y01026"
+  },
+  {
+    "symbol": "FINKURVE.NS",
+    "ISIN_NUMBER": "INE734I01027"
+  },
+  {
+    "symbol": "FINOPB.NS",
+    "ISIN_NUMBER": "INE02NC01014"
+  },
+  {
+    "symbol": "FINPIPE.NS",
+    "ISIN_NUMBER": "INE183A01024"
+  },
+  {
+    "symbol": "FIRSTCRY.NS",
+    "ISIN_NUMBER": "INE02RE01045"
+  },
+  {
+    "symbol": "FISCHER.NS",
+    "ISIN_NUMBER": "INE771F01041"
+  },
+  {
+    "symbol": "FIVESTAR.NS",
+    "ISIN_NUMBER": "INE128S01021"
+  },
+  {
+    "symbol": "FLAIR.NS",
+    "ISIN_NUMBER": "INE00Y201027"
+  },
+  {
+    "symbol": "FLEXITUFF.NS",
+    "ISIN_NUMBER": "INE060J01017"
+  },
+  {
+    "symbol": "FLFL.NS",
+    "ISIN_NUMBER": "INE452O01016"
+  },
+  {
+    "symbol": "FLUOROCHEM.NS",
+    "ISIN_NUMBER": "INE09N301011"
+  },
+  {
+    "symbol": "FMGOETZE.NS",
+    "ISIN_NUMBER": "INE529A01010"
+  },
+  {
+    "symbol": "FMNL.NS",
+    "ISIN_NUMBER": "INE360L01017"
+  },
+  {
+    "symbol": "FOCUS.NS",
+    "ISIN_NUMBER": "INE593W01028"
+  },
+  {
+    "symbol": "FOODSIN.NS",
+    "ISIN_NUMBER": "INE976E01023"
+  },
+  {
+    "symbol": "FORCEMOT.NS",
+    "ISIN_NUMBER": "INE451A01017"
+  },
+  {
+    "symbol": "FORTIS.NS",
+    "ISIN_NUMBER": "INE061F01013"
+  },
+  {
+    "symbol": "FOSECOIND.NS",
+    "ISIN_NUMBER": "INE519A01011"
+  },
+  {
+    "symbol": "FRACTAL.NS",
+    "ISIN_NUMBER": "INE212S01015"
+  },
+  {
+    "symbol": "FSL.NS",
+    "ISIN_NUMBER": "INE684F01012"
+  },
+  {
+    "symbol": "FUSION.NS",
+    "ISIN_NUMBER": "INE139R01012"
+  },
+  {
+    "symbol": "GABRIEL.NS",
+    "ISIN_NUMBER": "INE524A01029"
+  },
+  {
+    "symbol": "GAEL.NS",
+    "ISIN_NUMBER": "INE036B01030"
+  },
+  {
+    "symbol": "GAIL.NS",
+    "ISIN_NUMBER": "INE129A01019"
+  },
+  {
+    "symbol": "GALAPREC.NS",
+    "ISIN_NUMBER": "INE0RE001014"
+  },
+  {
+    "symbol": "GALAXYSURF.NS",
+    "ISIN_NUMBER": "INE600K01018"
+  },
+  {
+    "symbol": "GALLANTT.NS",
+    "ISIN_NUMBER": "INE297H01019"
+  },
+  {
+    "symbol": "GANDHAR.NS",
+    "ISIN_NUMBER": "INE717W01049"
+  },
+  {
+    "symbol": "GANDHITUBE.NS",
+    "ISIN_NUMBER": "INE524B01027"
+  },
+  {
+    "symbol": "GANECOS.NS",
+    "ISIN_NUMBER": "INE845D01014"
+  },
+  {
+    "symbol": "GANESHBE.NS",
+    "ISIN_NUMBER": "INE388A01029"
+  },
+  {
+    "symbol": "GANESHCP.NS",
+    "ISIN_NUMBER": "INE652V01016"
+  },
+  {
+    "symbol": "GANESHHOU.NS",
+    "ISIN_NUMBER": "INE460C01014"
+  },
+  {
+    "symbol": "GANGAFORGE.NS",
+    "ISIN_NUMBER": "INE691Z01023"
+  },
+  {
+    "symbol": "GANGESSECU.NS",
+    "ISIN_NUMBER": "INE335W01016"
+  },
+  {
+    "symbol": "GARFIBRES.NS",
+    "ISIN_NUMBER": "INE276A01018"
+  },
+  {
+    "symbol": "GARUDA.NS",
+    "ISIN_NUMBER": "INE0JVO01026"
+  },
+  {
+    "symbol": "GATECH.NS",
+    "ISIN_NUMBER": "INE224E01028"
+  },
+  {
+    "symbol": "GATECHDVR.NS",
+    "ISIN_NUMBER": "INE224E01036"
+  },
+  {
+    "symbol": "GATEWAY.NS",
+    "ISIN_NUMBER": "INE079J01017"
+  },
+  {
+    "symbol": "GAUDIUMIVF.NS",
+    "ISIN_NUMBER": "INE0P8B01020"
+  },
+  {
+    "symbol": "GAYAHWS.NS",
+    "ISIN_NUMBER": "INE287Z01012"
+  },
+  {
+    "symbol": "GCSL.NS",
+    "ISIN_NUMBER": "INE199P01028"
+  },
+  {
+    "symbol": "GEECEE.NS",
+    "ISIN_NUMBER": "INE916G01016"
+  },
+  {
+    "symbol": "GEEKAYWIRE.NS",
+    "ISIN_NUMBER": "INE669X01032"
+  },
+  {
+    "symbol": "GEMAROMA.NS",
+    "ISIN_NUMBER": "INE06XZ01023"
+  },
+  {
+    "symbol": "GENCON.NS",
+    "ISIN_NUMBER": "INE854S01022"
+  },
+  {
+    "symbol": "GENESYS.NS",
+    "ISIN_NUMBER": "INE727B01026"
+  },
+  {
+    "symbol": "GENUSPAPER.NS",
+    "ISIN_NUMBER": "INE949P01018"
+  },
+  {
+    "symbol": "GENUSPOWER.NS",
+    "ISIN_NUMBER": "INE955D01029"
+  },
+  {
+    "symbol": "GEOJITFSL.NS",
+    "ISIN_NUMBER": "INE007B01023"
+  },
+  {
+    "symbol": "GESHIP.NS",
+    "ISIN_NUMBER": "INE017A01032"
+  },
+  {
+    "symbol": "GFLLIMITED.NS",
+    "ISIN_NUMBER": "INE538A01037"
+  },
+  {
+    "symbol": "GHCL.NS",
+    "ISIN_NUMBER": "INE539A01019"
+  },
+  {
+    "symbol": "GHCLTEXTIL.NS",
+    "ISIN_NUMBER": "INE0PA801013"
+  },
+  {
+    "symbol": "GICHSGFIN.NS",
+    "ISIN_NUMBER": "INE289B01019"
+  },
+  {
+    "symbol": "GICL.NS",
+    "ISIN_NUMBER": "INE947T01022"
+  },
+  {
+    "symbol": "GICRE.NS",
+    "ISIN_NUMBER": "INE481Y01014"
+  },
+  {
+    "symbol": "GILLANDERS.NS",
+    "ISIN_NUMBER": "INE047B01011"
+  },
+  {
+    "symbol": "GILLETTE.NS",
+    "ISIN_NUMBER": "INE322A01010"
+  },
+  {
+    "symbol": "GINNIFILA.NS",
+    "ISIN_NUMBER": "INE424C01010"
+  },
+  {
+    "symbol": "GIPCL.NS",
+    "ISIN_NUMBER": "INE162A01010"
+  },
+  {
+    "symbol": "GKENERGY.NS",
+    "ISIN_NUMBER": "INE1AG301022"
+  },
+  {
+    "symbol": "GKSL.NS",
+    "ISIN_NUMBER": "INE0V0W01025"
+  },
+  {
+    "symbol": "GKWLIMITED.NS",
+    "ISIN_NUMBER": "INE528A01020"
+  },
+  {
+    "symbol": "GLAND.NS",
+    "ISIN_NUMBER": "INE068V01023"
+  },
+  {
+    "symbol": "GLAXO.NS",
+    "ISIN_NUMBER": "INE159A01016"
+  },
+  {
+    "symbol": "GLENMARK.NS",
+    "ISIN_NUMBER": "INE935A01035"
+  },
+  {
+    "symbol": "GLFL.NS",
+    "ISIN_NUMBER": "INE540A01017"
+  },
+  {
+    "symbol": "GLOBAL.NS",
+    "ISIN_NUMBER": "INE291W01037"
+  },
+  {
+    "symbol": "GLOBALE.NS",
+    "ISIN_NUMBER": "INE0URU01010"
+  },
+  {
+    "symbol": "GLOBALVECT.NS",
+    "ISIN_NUMBER": "INE792H01019"
+  },
+  {
+    "symbol": "GLOBE.NS",
+    "ISIN_NUMBER": "INE581X01021"
+  },
+  {
+    "symbol": "GLOBECIVIL.NS",
+    "ISIN_NUMBER": "INE0V3U01015"
+  },
+  {
+    "symbol": "GLOBUSSPR.NS",
+    "ISIN_NUMBER": "INE615I01010"
+  },
+  {
+    "symbol": "GLOSTERLTD.NS",
+    "ISIN_NUMBER": "INE350Z01018"
+  },
+  {
+    "symbol": "GLOTTIS.NS",
+    "ISIN_NUMBER": "INE0TQE01026"
+  },
+  {
+    "symbol": "GMBREW.NS",
+    "ISIN_NUMBER": "INE075D01018"
+  },
+  {
+    "symbol": "GMDCLTD.NS",
+    "ISIN_NUMBER": "INE131A01031"
+  },
+  {
+    "symbol": "GMMPFAUDLR.NS",
+    "ISIN_NUMBER": "INE541A01023"
+  },
+  {
+    "symbol": "GMRAIRPORT.NS",
+    "ISIN_NUMBER": "INE776C01039"
+  },
+  {
+    "symbol": "GMRP&UI.NS",
+    "ISIN_NUMBER": "INE0CU601026"
+  },
+  {
+    "symbol": "GNA.NS",
+    "ISIN_NUMBER": "INE934S01014"
+  },
+  {
+    "symbol": "GNFC.NS",
+    "ISIN_NUMBER": "INE113A01013"
+  },
+  {
+    "symbol": "GOACARBON.NS",
+    "ISIN_NUMBER": "INE426D01013"
+  },
+  {
+    "symbol": "GOCLCORP.NS",
+    "ISIN_NUMBER": "INE077F01035"
+  },
+  {
+    "symbol": "GOCOLORS.NS",
+    "ISIN_NUMBER": "INE0BJS01011"
+  },
+  {
+    "symbol": "GODAVARIB.NS",
+    "ISIN_NUMBER": "INE497S01012"
+  },
+  {
+    "symbol": "GODFRYPHLP.NS",
+    "ISIN_NUMBER": "INE260B01028"
+  },
+  {
+    "symbol": "GODIGIT.NS",
+    "ISIN_NUMBER": "INE03JT01014"
+  },
+  {
+    "symbol": "GODREJAGRO.NS",
+    "ISIN_NUMBER": "INE850D01014"
+  },
+  {
+    "symbol": "GODREJCP.NS",
+    "ISIN_NUMBER": "INE102D01028"
+  },
+  {
+    "symbol": "GODREJIND.NS",
+    "ISIN_NUMBER": "INE233A01035"
+  },
+  {
+    "symbol": "GODREJPROP.NS",
+    "ISIN_NUMBER": "INE484J01027"
+  },
+  {
+    "symbol": "GOKEX.NS",
+    "ISIN_NUMBER": "INE887G01027"
+  },
+  {
+    "symbol": "GOKUL.NS",
+    "ISIN_NUMBER": "INE020J01029"
+  },
+  {
+    "symbol": "GOKULAGRO.NS",
+    "ISIN_NUMBER": "INE314T01033"
+  },
+  {
+    "symbol": "GOLDENTOBC.NS",
+    "ISIN_NUMBER": "INE973A01010"
+  },
+  {
+    "symbol": "GOLDIAM.NS",
+    "ISIN_NUMBER": "INE025B01025"
+  },
+  {
+    "symbol": "GOLDTECH.NS",
+    "ISIN_NUMBER": "INE805A01014"
+  },
+  {
+    "symbol": "GOODLUCK.NS",
+    "ISIN_NUMBER": "INE127I01024"
+  },
+  {
+    "symbol": "GOPAL.NS",
+    "ISIN_NUMBER": "INE0L9R01028"
+  },
+  {
+    "symbol": "GOYALALUM.NS",
+    "ISIN_NUMBER": "INE705X01026"
+  },
+  {
+    "symbol": "GPIL.NS",
+    "ISIN_NUMBER": "INE177H01039"
+  },
+  {
+    "symbol": "GPPL.NS",
+    "ISIN_NUMBER": "INE517F01014"
+  },
+  {
+    "symbol": "GPTHEALTH.NS",
+    "ISIN_NUMBER": "INE486R01017"
+  },
+  {
+    "symbol": "GPTINFRA.NS",
+    "ISIN_NUMBER": "INE390G01014"
+  },
+  {
+    "symbol": "GRANULES.NS",
+    "ISIN_NUMBER": "INE101D01020"
+  },
+  {
+    "symbol": "GRAPHITE.NS",
+    "ISIN_NUMBER": "INE371A01025"
+  },
+  {
+    "symbol": "GRASIM.NS",
+    "ISIN_NUMBER": "INE047A01021"
+  },
+  {
+    "symbol": "GRAVITA.NS",
+    "ISIN_NUMBER": "INE024L01027"
+  },
+  {
+    "symbol": "GREAVESCOT.NS",
+    "ISIN_NUMBER": "INE224A01026"
+  },
+  {
+    "symbol": "GREENLAM.NS",
+    "ISIN_NUMBER": "INE544R01021"
+  },
+  {
+    "symbol": "GREENPANEL.NS",
+    "ISIN_NUMBER": "INE08ZM01014"
+  },
+  {
+    "symbol": "GREENPLY.NS",
+    "ISIN_NUMBER": "INE461C01038"
+  },
+  {
+    "symbol": "GREENPOWER.NS",
+    "ISIN_NUMBER": "INE999K01014"
+  },
+  {
+    "symbol": "GRINDWELL.NS",
+    "ISIN_NUMBER": "INE536A01023"
+  },
+  {
+    "symbol": "GRINFRA.NS",
+    "ISIN_NUMBER": "INE201P01022"
+  },
+  {
+    "symbol": "GRMOVER.NS",
+    "ISIN_NUMBER": "INE192H01020"
+  },
+  {
+    "symbol": "GROBTEA.NS",
+    "ISIN_NUMBER": "INE646C01018"
+  },
+  {
+    "symbol": "GROWW.NS",
+    "ISIN_NUMBER": "INE0HOQ01053"
+  },
+  {
+    "symbol": "GRPLTD.NS",
+    "ISIN_NUMBER": "INE137I01015"
+  },
+  {
+    "symbol": "GRSE.NS",
+    "ISIN_NUMBER": "INE382Z01011"
+  },
+  {
+    "symbol": "GRWRHITECH.NS",
+    "ISIN_NUMBER": "INE291A01017"
+  },
+  {
+    "symbol": "GSFC.NS",
+    "ISIN_NUMBER": "INE026A01025"
+  },
+  {
+    "symbol": "GSLSU.NS",
+    "ISIN_NUMBER": "INE0JSX01015"
+  },
+  {
+    "symbol": "GSPL.NS",
+    "ISIN_NUMBER": "INE246F01010"
+  },
+  {
+    "symbol": "GSS.NS",
+    "ISIN_NUMBER": "INE871H01011"
+  },
+  {
+    "symbol": "GTECJAINX.NS",
+    "ISIN_NUMBER": "INE586X01012"
+  },
+  {
+    "symbol": "GTL.NS",
+    "ISIN_NUMBER": "INE043A01012"
+  },
+  {
+    "symbol": "GTLINFRA.NS",
+    "ISIN_NUMBER": "INE221H01019"
+  },
+  {
+    "symbol": "GTPL.NS",
+    "ISIN_NUMBER": "INE869I01013"
+  },
+  {
+    "symbol": "GUFICBIO.NS",
+    "ISIN_NUMBER": "INE742B01025"
+  },
+  {
+    "symbol": "GUJALKALI.NS",
+    "ISIN_NUMBER": "INE186A01019"
+  },
+  {
+    "symbol": "GUJAPOLLO.NS",
+    "ISIN_NUMBER": "INE826C01016"
+  },
+  {
+    "symbol": "GUJGASLTD.NS",
+    "ISIN_NUMBER": "INE844O01030"
+  },
+  {
+    "symbol": "GUJRAFFIA.NS",
+    "ISIN_NUMBER": "INE610B01024"
+  },
+  {
+    "symbol": "GUJTHEM.NS",
+    "ISIN_NUMBER": "INE942C01045"
+  },
+  {
+    "symbol": "GULFOILLUB.NS",
+    "ISIN_NUMBER": "INE635Q01029"
+  },
+  {
+    "symbol": "GULFPETRO.NS",
+    "ISIN_NUMBER": "INE586G01017"
+  },
+  {
+    "symbol": "GULPOLY.NS",
+    "ISIN_NUMBER": "INE255D01024"
+  },
+  {
+    "symbol": "GVKPIL.NS",
+    "ISIN_NUMBER": "INE251H01024"
+  },
+  {
+    "symbol": "GVPIL.NS",
+    "ISIN_NUMBER": "INE878A01011"
+  },
+  {
+    "symbol": "GVPTECH.NS",
+    "ISIN_NUMBER": "INE382T01030"
+  },
+  {
+    "symbol": "GVT&D.NS",
+    "ISIN_NUMBER": "INE200A01026"
+  },
+  {
+    "symbol": "HAL.NS",
+    "ISIN_NUMBER": "INE066F01020"
+  },
+  {
+    "symbol": "HALDER.NS",
+    "ISIN_NUMBER": "INE115S01010"
+  },
+  {
+    "symbol": "HALEOSLABS.NS",
+    "ISIN_NUMBER": "INE320X01016"
+  },
+  {
+    "symbol": "HAPPSTMNDS.NS",
+    "ISIN_NUMBER": "INE419U01012"
+  },
+  {
+    "symbol": "HAPPYFORGE.NS",
+    "ISIN_NUMBER": "INE330T01021"
+  },
+  {
+    "symbol": "HARDWYN.NS",
+    "ISIN_NUMBER": "INE626Z01029"
+  },
+  {
+    "symbol": "HARIOMPIPE.NS",
+    "ISIN_NUMBER": "INE00EV01017"
+  },
+  {
+    "symbol": "HARRMALAYA.NS",
+    "ISIN_NUMBER": "INE544A01019"
+  },
+  {
+    "symbol": "HARSHA.NS",
+    "ISIN_NUMBER": "INE0JUS01029"
+  },
+  {
+    "symbol": "HATHWAY.NS",
+    "ISIN_NUMBER": "INE982F01036"
+  },
+  {
+    "symbol": "HATSUN.NS",
+    "ISIN_NUMBER": "INE473B01035"
+  },
+  {
+    "symbol": "HAVELLS.NS",
+    "ISIN_NUMBER": "INE176B01034"
+  },
+  {
+    "symbol": "HAVISHA.NS",
+    "ISIN_NUMBER": "INE293B01029"
+  },
+  {
+    "symbol": "HBLENGINE.NS",
+    "ISIN_NUMBER": "INE292B01021"
+  },
+  {
+    "symbol": "HBSL.NS",
+    "ISIN_NUMBER": "INE550B01022"
+  },
+  {
+    "symbol": "HCC.NS",
+    "ISIN_NUMBER": "INE549A01026"
+  },
+  {
+    "symbol": "HCG.NS",
+    "ISIN_NUMBER": "INE075I01017"
+  },
+  {
+    "symbol": "HCG-RE.NS",
+    "ISIN_NUMBER": "INE075I20017"
+  },
+  {
+    "symbol": "HCL-INSYS.NS",
+    "ISIN_NUMBER": "INE236A01020"
+  },
+  {
+    "symbol": "HCLTECH.NS",
+    "ISIN_NUMBER": "INE860A01027"
+  },
+  {
+    "symbol": "HDBFS.NS",
+    "ISIN_NUMBER": "INE756I01012"
+  },
+  {
+    "symbol": "HDFCAMC.NS",
+    "ISIN_NUMBER": "INE127D01025"
+  },
+  {
+    "symbol": "HDFCBANK.NS",
+    "ISIN_NUMBER": "INE040A01034"
+  },
+  {
+    "symbol": "HDFCLIFE.NS",
+    "ISIN_NUMBER": "INE795G01014"
+  },
+  {
+    "symbol": "HEADSUP.NS",
+    "ISIN_NUMBER": "INE759V01019"
+  },
+  {
+    "symbol": "HECPROJECT.NS",
+    "ISIN_NUMBER": "INE558R01013"
+  },
+  {
+    "symbol": "HEG.NS",
+    "ISIN_NUMBER": "INE545A01024"
+  },
+  {
+    "symbol": "HEIDELBERG.NS",
+    "ISIN_NUMBER": "INE578A01017"
+  },
+  {
+    "symbol": "HEMIPROP.NS",
+    "ISIN_NUMBER": "INE0AJG01018"
+  },
+  {
+    "symbol": "HERANBA.NS",
+    "ISIN_NUMBER": "INE694N01015"
+  },
+  {
+    "symbol": "HERITGFOOD.NS",
+    "ISIN_NUMBER": "INE978A01027"
+  },
+  {
+    "symbol": "HEROMOTOCO.NS",
+    "ISIN_NUMBER": "INE158A01026"
+  },
+  {
+    "symbol": "HESTERBIO.NS",
+    "ISIN_NUMBER": "INE782E01017"
+  },
+  {
+    "symbol": "HEXATRADEX.NS",
+    "ISIN_NUMBER": "INE750M01017"
+  },
+  {
+    "symbol": "HEXT.NS",
+    "ISIN_NUMBER": "INE093A01041"
+  },
+  {
+    "symbol": "HFCL.NS",
+    "ISIN_NUMBER": "INE548A01028"
+  },
+  {
+    "symbol": "HGINFRA.NS",
+    "ISIN_NUMBER": "INE926X01010"
+  },
+  {
+    "symbol": "HGM.NS",
+    "ISIN_NUMBER": "INE596H01014"
+  },
+  {
+    "symbol": "HGS.NS",
+    "ISIN_NUMBER": "INE170I01016"
+  },
+  {
+    "symbol": "HIKAL.NS",
+    "ISIN_NUMBER": "INE475B01022"
+  },
+  {
+    "symbol": "HILINFRA.NS",
+    "ISIN_NUMBER": "INE00RL01028"
+  },
+  {
+    "symbol": "HILTON.NS",
+    "ISIN_NUMBER": "INE788H01017"
+  },
+  {
+    "symbol": "HIMATSEIDE.NS",
+    "ISIN_NUMBER": "INE049A01027"
+  },
+  {
+    "symbol": "HINDALCO.NS",
+    "ISIN_NUMBER": "INE038A01020"
+  },
+  {
+    "symbol": "HINDCOMPOS.NS",
+    "ISIN_NUMBER": "INE310C01029"
+  },
+  {
+    "symbol": "HINDCON.NS",
+    "ISIN_NUMBER": "INE642Y01029"
+  },
+  {
+    "symbol": "HINDCOPPER.NS",
+    "ISIN_NUMBER": "INE531E01026"
+  },
+  {
+    "symbol": "HINDOILEXP.NS",
+    "ISIN_NUMBER": "INE345A01011"
+  },
+  {
+    "symbol": "HINDPETRO.NS",
+    "ISIN_NUMBER": "INE094A01015"
+  },
+  {
+    "symbol": "HINDUNILVR.NS",
+    "ISIN_NUMBER": "INE030A01027"
+  },
+  {
+    "symbol": "HINDWAREAP.NS",
+    "ISIN_NUMBER": "INE05AN01011"
+  },
+  {
+    "symbol": "HINDZINC.NS",
+    "ISIN_NUMBER": "INE267A01025"
+  },
+  {
+    "symbol": "HIRECT.NS",
+    "ISIN_NUMBER": "INE835D01023"
+  },
+  {
+    "symbol": "HISARMETAL.NS",
+    "ISIN_NUMBER": "INE598C01011"
+  },
+  {
+    "symbol": "HITECH.NS",
+    "ISIN_NUMBER": "INE106T01025"
+  },
+  {
+    "symbol": "HITECHCORP.NS",
+    "ISIN_NUMBER": "INE120D01012"
+  },
+  {
+    "symbol": "HITECHGEAR.NS",
+    "ISIN_NUMBER": "INE127B01011"
+  },
+  {
+    "symbol": "HLEGLAS.NS",
+    "ISIN_NUMBER": "INE461D01028"
+  },
+  {
+    "symbol": "HLVLTD.NS",
+    "ISIN_NUMBER": "INE102A01024"
+  },
+  {
+    "symbol": "HMAAGRO.NS",
+    "ISIN_NUMBER": "INE0ECP01024"
+  },
+  {
+    "symbol": "HMT.NS",
+    "ISIN_NUMBER": "INE262A01018"
+  },
+  {
+    "symbol": "HMVL.NS",
+    "ISIN_NUMBER": "INE871K01015"
+  },
+  {
+    "symbol": "HNDFDS.NS",
+    "ISIN_NUMBER": "INE254N01026"
+  },
+  {
+    "symbol": "HOMEFIRST.NS",
+    "ISIN_NUMBER": "INE481N01025"
+  },
+  {
+    "symbol": "HONASA.NS",
+    "ISIN_NUMBER": "INE0J5401028"
+  },
+  {
+    "symbol": "HONAUT.NS",
+    "ISIN_NUMBER": "INE671A01010"
+  },
+  {
+    "symbol": "HONDAPOWER.NS",
+    "ISIN_NUMBER": "INE634A01018"
+  },
+  {
+    "symbol": "HPAL.NS",
+    "ISIN_NUMBER": "INE0GSL01024"
+  },
+  {
+    "symbol": "HPIL.NS",
+    "ISIN_NUMBER": "INE05X901010"
+  },
+  {
+    "symbol": "HPL.NS",
+    "ISIN_NUMBER": "INE495S01016"
+  },
+  {
+    "symbol": "HSCL.NS",
+    "ISIN_NUMBER": "INE019C01026"
+  },
+  {
+    "symbol": "HTMEDIA.NS",
+    "ISIN_NUMBER": "INE501G01024"
+  },
+  {
+    "symbol": "HUBTOWN.NS",
+    "ISIN_NUMBER": "INE703H01016"
+  },
+  {
+    "symbol": "HUDCO.NS",
+    "ISIN_NUMBER": "INE031A01017"
+  },
+  {
+    "symbol": "HUHTAMAKI.NS",
+    "ISIN_NUMBER": "INE275B01026"
+  },
+  {
+    "symbol": "HYBRIDFIN.NS",
+    "ISIN_NUMBER": "INE965B01022"
+  },
+  {
+    "symbol": "HYUNDAI.NS",
+    "ISIN_NUMBER": "INE0V6F01027"
+  },
+  {
+    "symbol": "IBULLSLTD.NS",
+    "ISIN_NUMBER": "INE126M01010"
+  },
+  {
+    "symbol": "ICDSLTD.NS",
+    "ISIN_NUMBER": "INE613B01010"
+  },
+  {
+    "symbol": "ICEMAKE.NS",
+    "ISIN_NUMBER": "INE520Y01019"
+  },
+  {
+    "symbol": "ICICIAMC.NS",
+    "ISIN_NUMBER": "INE346A01027"
+  },
+  {
+    "symbol": "ICICIBANK.NS",
+    "ISIN_NUMBER": "INE090A01021"
+  },
+  {
+    "symbol": "ICICIGI.NS",
+    "ISIN_NUMBER": "INE765G01017"
+  },
+  {
+    "symbol": "ICICIPRULI.NS",
+    "ISIN_NUMBER": "INE726G01019"
+  },
+  {
+    "symbol": "ICIL.NS",
+    "ISIN_NUMBER": "INE483B01026"
+  },
+  {
+    "symbol": "ICRA.NS",
+    "ISIN_NUMBER": "INE725G01011"
+  },
+  {
+    "symbol": "IDBI.NS",
+    "ISIN_NUMBER": "INE008A01015"
+  },
+  {
+    "symbol": "IDEA.NS",
+    "ISIN_NUMBER": "INE669E01016"
+  },
+  {
+    "symbol": "IDEAFORGE.NS",
+    "ISIN_NUMBER": "INE349Y01013"
+  },
+  {
+    "symbol": "IDFCFIRSTB.NS",
+    "ISIN_NUMBER": "INE092T01019"
+  },
+  {
+    "symbol": "IEX.NS",
+    "ISIN_NUMBER": "INE022Q01020"
+  },
+  {
+    "symbol": "IFBAGRO.NS",
+    "ISIN_NUMBER": "INE076C01018"
+  },
+  {
+    "symbol": "IFBIND.NS",
+    "ISIN_NUMBER": "INE559A01017"
+  },
+  {
+    "symbol": "IFCI.NS",
+    "ISIN_NUMBER": "INE039A01010"
+  },
+  {
+    "symbol": "IFGLEXPOR.NS",
+    "ISIN_NUMBER": "INE133Y01011"
+  },
+  {
+    "symbol": "IGARASHI.NS",
+    "ISIN_NUMBER": "INE188B01013"
+  },
+  {
+    "symbol": "IGCL.NS",
+    "ISIN_NUMBER": "INE05J901018"
+  },
+  {
+    "symbol": "IGIL.NS",
+    "ISIN_NUMBER": "INE0Q9301021"
+  },
+  {
+    "symbol": "IGL.NS",
+    "ISIN_NUMBER": "INE203G01027"
+  },
+  {
+    "symbol": "IGPL.NS",
+    "ISIN_NUMBER": "INE204A01010"
+  },
+  {
+    "symbol": "IIFL.NS",
+    "ISIN_NUMBER": "INE530B01024"
+  },
+  {
+    "symbol": "IIFLCAPS.NS",
+    "ISIN_NUMBER": "INE489L01022"
+  },
+  {
+    "symbol": "IITL.NS",
+    "ISIN_NUMBER": "INE886A01014"
+  },
+  {
+    "symbol": "IKIO.NS",
+    "ISIN_NUMBER": "INE0LOJ01019"
+  },
+  {
+    "symbol": "IKS.NS",
+    "ISIN_NUMBER": "INE115Q01022"
+  },
+  {
+    "symbol": "IL&FSENGG.NS",
+    "ISIN_NUMBER": "INE369I01014"
+  },
+  {
+    "symbol": "IL&FSTRANS.NS",
+    "ISIN_NUMBER": "INE975G01012"
+  },
+  {
+    "symbol": "IMAGICAA.NS",
+    "ISIN_NUMBER": "INE172N01012"
+  },
+  {
+    "symbol": "IMFA.NS",
+    "ISIN_NUMBER": "INE919H01018"
+  },
+  {
+    "symbol": "IMPAL.NS",
+    "ISIN_NUMBER": "INE547E01014"
+  },
+  {
+    "symbol": "IMPEXFERRO.NS",
+    "ISIN_NUMBER": "INE691G01015"
+  },
+  {
+    "symbol": "INA.NS",
+    "ISIN_NUMBER": "INE0LGX01024"
+  },
+  {
+    "symbol": "INCREDIBLE.NS",
+    "ISIN_NUMBER": "INE452L01012"
+  },
+  {
+    "symbol": "INDBANK.NS",
+    "ISIN_NUMBER": "INE841B01017"
+  },
+  {
+    "symbol": "INDGN.NS",
+    "ISIN_NUMBER": "INE065X01017"
+  },
+  {
+    "symbol": "INDHOTEL.NS",
+    "ISIN_NUMBER": "INE053A01029"
+  },
+  {
+    "symbol": "INDIACEM.NS",
+    "ISIN_NUMBER": "INE383A01012"
+  },
+  {
+    "symbol": "INDIAGLYCO.NS",
+    "ISIN_NUMBER": "INE560A01023"
+  },
+  {
+    "symbol": "INDIAMART.NS",
+    "ISIN_NUMBER": "INE933S01016"
+  },
+  {
+    "symbol": "INDIANB.NS",
+    "ISIN_NUMBER": "INE562A01011"
+  },
+  {
+    "symbol": "INDIANCARD.NS",
+    "ISIN_NUMBER": "INE061A01014"
+  },
+  {
+    "symbol": "INDIANHUME.NS",
+    "ISIN_NUMBER": "INE323C01030"
+  },
+  {
+    "symbol": "INDIASHLTR.NS",
+    "ISIN_NUMBER": "INE922K01024"
+  },
+  {
+    "symbol": "INDIGO.NS",
+    "ISIN_NUMBER": "INE646L01027"
+  },
+  {
+    "symbol": "INDIGOPNTS.NS",
+    "ISIN_NUMBER": "INE09VQ01012"
+  },
+  {
+    "symbol": "INDIQUBE.NS",
+    "ISIN_NUMBER": "INE06ST01018"
+  },
+  {
+    "symbol": "INDNIPPON.NS",
+    "ISIN_NUMBER": "INE092B01025"
+  },
+  {
+    "symbol": "INDOAMIN.NS",
+    "ISIN_NUMBER": "INE760F01028"
+  },
+  {
+    "symbol": "INDOBORAX.NS",
+    "ISIN_NUMBER": "INE803D01021"
+  },
+  {
+    "symbol": "INDOCO.NS",
+    "ISIN_NUMBER": "INE873D01024"
+  },
+  {
+    "symbol": "INDOFARM.NS",
+    "ISIN_NUMBER": "INE622H01018"
+  },
+  {
+    "symbol": "INDORAMA.NS",
+    "ISIN_NUMBER": "INE156A01020"
+  },
+  {
+    "symbol": "INDOSTAR.NS",
+    "ISIN_NUMBER": "INE896L01010"
+  },
+  {
+    "symbol": "INDOTECH.NS",
+    "ISIN_NUMBER": "INE332H01014"
+  },
+  {
+    "symbol": "INDOTHAI.NS",
+    "ISIN_NUMBER": "INE337M01021"
+  },
+  {
+    "symbol": "INDOUS.NS",
+    "ISIN_NUMBER": "INE250Z01010"
+  },
+  {
+    "symbol": "INDOWIND.NS",
+    "ISIN_NUMBER": "INE227G01018"
+  },
+  {
+    "symbol": "INDRAMEDCO.NS",
+    "ISIN_NUMBER": "INE681B01017"
+  },
+  {
+    "symbol": "INDSWFTLAB.NS",
+    "ISIN_NUMBER": "INE915B01019"
+  },
+  {
+    "symbol": "INDTERRAIN.NS",
+    "ISIN_NUMBER": "INE611L01021"
+  },
+  {
+    "symbol": "INDUSINDBK.NS",
+    "ISIN_NUMBER": "INE095A01012"
+  },
+  {
+    "symbol": "INDUSTOWER.NS",
+    "ISIN_NUMBER": "INE121J01017"
+  },
+  {
+    "symbol": "INFOBEAN.NS",
+    "ISIN_NUMBER": "INE344S01016"
+  },
+  {
+    "symbol": "INFOMEDIA.NS",
+    "ISIN_NUMBER": "INE669A01022"
+  },
+  {
+    "symbol": "INFY.NS",
+    "ISIN_NUMBER": "INE009A01021"
+  },
+  {
+    "symbol": "INGERRAND.NS",
+    "ISIN_NUMBER": "INE177A01018"
+  },
+  {
+    "symbol": "INNOVACAP.NS",
+    "ISIN_NUMBER": "INE0DUT01020"
+  },
+  {
+    "symbol": "INNOVANA.NS",
+    "ISIN_NUMBER": "INE403Y01018"
+  },
+  {
+    "symbol": "INOXGREEN.NS",
+    "ISIN_NUMBER": "INE510W01014"
+  },
+  {
+    "symbol": "INOXINDIA.NS",
+    "ISIN_NUMBER": "INE616N01034"
+  },
+  {
+    "symbol": "INOXWIND.NS",
+    "ISIN_NUMBER": "INE066P01011"
+  },
+  {
+    "symbol": "INSECTICID.NS",
+    "ISIN_NUMBER": "INE070I01018"
+  },
+  {
+    "symbol": "INSPIRISYS.NS",
+    "ISIN_NUMBER": "INE020G01017"
+  },
+  {
+    "symbol": "INTELLECT.NS",
+    "ISIN_NUMBER": "INE306R01017"
+  },
+  {
+    "symbol": "INTENTECH.NS",
+    "ISIN_NUMBER": "INE781A01025"
+  },
+  {
+    "symbol": "INTERARCH.NS",
+    "ISIN_NUMBER": "INE00M901018"
+  },
+  {
+    "symbol": "INTLCONV.NS",
+    "ISIN_NUMBER": "INE575C01027"
+  },
+  {
+    "symbol": "INVENTURE.NS",
+    "ISIN_NUMBER": "INE878H01024"
+  },
+  {
+    "symbol": "IOB.NS",
+    "ISIN_NUMBER": "INE565A01014"
+  },
+  {
+    "symbol": "IOC.NS",
+    "ISIN_NUMBER": "INE242A01010"
+  },
+  {
+    "symbol": "IOLCP.NS",
+    "ISIN_NUMBER": "INE485C01029"
+  },
+  {
+    "symbol": "IONEXCHANG.NS",
+    "ISIN_NUMBER": "INE570A01022"
+  },
+  {
+    "symbol": "IPCALAB.NS",
+    "ISIN_NUMBER": "INE571A01038"
+  },
+  {
+    "symbol": "IPL.NS",
+    "ISIN_NUMBER": "INE0D6701023"
+  },
+  {
+    "symbol": "IRB.NS",
+    "ISIN_NUMBER": "INE821I01022"
+  },
+  {
+    "symbol": "IRCON.NS",
+    "ISIN_NUMBER": "INE962Y01021"
+  },
+  {
+    "symbol": "IRCTC.NS",
+    "ISIN_NUMBER": "INE335Y01020"
+  },
+  {
+    "symbol": "IREDA.NS",
+    "ISIN_NUMBER": "INE202E01016"
+  },
+  {
+    "symbol": "IRFC.NS",
+    "ISIN_NUMBER": "INE053F01010"
+  },
+  {
+    "symbol": "IRIS.NS",
+    "ISIN_NUMBER": "INE864K01010"
+  },
+  {
+    "symbol": "IRISDOREME.NS",
+    "ISIN_NUMBER": "INE01GN01025"
+  },
+  {
+    "symbol": "IRMENERGY.NS",
+    "ISIN_NUMBER": "INE07U701015"
+  },
+  {
+    "symbol": "ISFT.NS",
+    "ISIN_NUMBER": "INE566K01011"
+  },
+  {
+    "symbol": "ISGEC.NS",
+    "ISIN_NUMBER": "INE858B01029"
+  },
+  {
+    "symbol": "ISHANCH.NS",
+    "ISIN_NUMBER": "INE561M01018"
+  },
+  {
+    "symbol": "ITC.NS",
+    "ISIN_NUMBER": "INE154A01025"
+  },
+  {
+    "symbol": "ITCHOTELS.NS",
+    "ISIN_NUMBER": "INE379A01028"
+  },
+  {
+    "symbol": "ITDC.NS",
+    "ISIN_NUMBER": "INE353K01014"
+  },
+  {
+    "symbol": "ITI.NS",
+    "ISIN_NUMBER": "INE248A01017"
+  },
+  {
+    "symbol": "IVALUE.NS",
+    "ISIN_NUMBER": "INE056801025"
+  },
+  {
+    "symbol": "IVC.NS",
+    "ISIN_NUMBER": "INE050B01023"
+  },
+  {
+    "symbol": "IVP.NS",
+    "ISIN_NUMBER": "INE043C01018"
+  },
+  {
+    "symbol": "IXIGO.NS",
+    "ISIN_NUMBER": "INE0HV901016"
+  },
+  {
+    "symbol": "IZMO.NS",
+    "ISIN_NUMBER": "INE848A01014"
+  },
+  {
+    "symbol": "J&KBANK.NS",
+    "ISIN_NUMBER": "INE168A01041"
+  },
+  {
+    "symbol": "JAGRAN.NS",
+    "ISIN_NUMBER": "INE199G01027"
+  },
+  {
+    "symbol": "JAGSNPHARM.NS",
+    "ISIN_NUMBER": "INE048B01035"
+  },
+  {
+    "symbol": "JAIBALAJI.NS",
+    "ISIN_NUMBER": "INE091G01026"
+  },
+  {
+    "symbol": "JAICORPLTD.NS",
+    "ISIN_NUMBER": "INE070D01027"
+  },
+  {
+    "symbol": "JAINREC.NS",
+    "ISIN_NUMBER": "INE0YD401026"
+  },
+  {
+    "symbol": "JAIPURKURT.NS",
+    "ISIN_NUMBER": "INE696V01013"
+  },
+  {
+    "symbol": "JAMNAAUTO.NS",
+    "ISIN_NUMBER": "INE039C01032"
+  },
+  {
+    "symbol": "JARO.NS",
+    "ISIN_NUMBER": "INE00YJ01010"
+  },
+  {
+    "symbol": "JASH.NS",
+    "ISIN_NUMBER": "INE039O01029"
+  },
+  {
+    "symbol": "JAYAGROGN.NS",
+    "ISIN_NUMBER": "INE785A01026"
+  },
+  {
+    "symbol": "JAYBARMARU.NS",
+    "ISIN_NUMBER": "INE571B01036"
+  },
+  {
+    "symbol": "JAYKAY.NS",
+    "ISIN_NUMBER": "INE903A01025"
+  },
+  {
+    "symbol": "JAYNECOIND.NS",
+    "ISIN_NUMBER": "INE854B01010"
+  },
+  {
+    "symbol": "JAYSREETEA.NS",
+    "ISIN_NUMBER": "INE364A01020"
+  },
+  {
+    "symbol": "JBCHEPHARM.NS",
+    "ISIN_NUMBER": "INE572A01036"
+  },
+  {
+    "symbol": "JBMA.NS",
+    "ISIN_NUMBER": "INE927D01051"
+  },
+  {
+    "symbol": "JETFREIGHT.NS",
+    "ISIN_NUMBER": "INE982V01025"
+  },
+  {
+    "symbol": "JGCHEM.NS",
+    "ISIN_NUMBER": "INE0MB501011"
+  },
+  {
+    "symbol": "JHS.NS",
+    "ISIN_NUMBER": "INE544H01014"
+  },
+  {
+    "symbol": "JINDALPHOT.NS",
+    "ISIN_NUMBER": "INE796G01012"
+  },
+  {
+    "symbol": "JINDALPOLY.NS",
+    "ISIN_NUMBER": "INE197D01010"
+  },
+  {
+    "symbol": "JINDALSAW.NS",
+    "ISIN_NUMBER": "INE324A01032"
+  },
+  {
+    "symbol": "JINDALSTEL.NS",
+    "ISIN_NUMBER": "INE749A01030"
+  },
+  {
+    "symbol": "JINDRILL.NS",
+    "ISIN_NUMBER": "INE742C01031"
+  },
+  {
+    "symbol": "JINDWORLD.NS",
+    "ISIN_NUMBER": "INE247D01039"
+  },
+  {
+    "symbol": "JIOFIN.NS",
+    "ISIN_NUMBER": "INE758E01017"
+  },
+  {
+    "symbol": "JISLDVREQS.NS",
+    "ISIN_NUMBER": "IN9175A01010"
+  },
+  {
+    "symbol": "JISLJALEQS.NS",
+    "ISIN_NUMBER": "INE175A01038"
+  },
+  {
+    "symbol": "JITFINFRA.NS",
+    "ISIN_NUMBER": "INE863T01013"
+  },
+  {
+    "symbol": "JKCEMENT.NS",
+    "ISIN_NUMBER": "INE823G01014"
+  },
+  {
+    "symbol": "JKIL.NS",
+    "ISIN_NUMBER": "INE576I01022"
+  },
+  {
+    "symbol": "JKIPL.NS",
+    "ISIN_NUMBER": "INE1FF001016"
+  },
+  {
+    "symbol": "JKLAKSHMI.NS",
+    "ISIN_NUMBER": "INE786A01032"
+  },
+  {
+    "symbol": "JKPAPER.NS",
+    "ISIN_NUMBER": "INE789E01012"
+  },
+  {
+    "symbol": "JKTYRE.NS",
+    "ISIN_NUMBER": "INE573A01042"
+  },
+  {
+    "symbol": "JLHL.NS",
+    "ISIN_NUMBER": "INE682M01012"
+  },
+  {
+    "symbol": "JMA.NS",
+    "ISIN_NUMBER": "INE412C01023"
+  },
+  {
+    "symbol": "JMFINANCIL.NS",
+    "ISIN_NUMBER": "INE780C01023"
+  },
+  {
+    "symbol": "JNKINDIA.NS",
+    "ISIN_NUMBER": "INE0OAF01028"
+  },
+  {
+    "symbol": "JOCIL.NS",
+    "ISIN_NUMBER": "INE839G01010"
+  },
+  {
+    "symbol": "JPOLYINVST.NS",
+    "ISIN_NUMBER": "INE147P01019"
+  },
+  {
+    "symbol": "JPPOWER.NS",
+    "ISIN_NUMBER": "INE351F01018"
+  },
+  {
+    "symbol": "JSFB.NS",
+    "ISIN_NUMBER": "INE953L01027"
+  },
+  {
+    "symbol": "JSL.NS",
+    "ISIN_NUMBER": "INE220G01021"
+  },
+  {
+    "symbol": "JSLL.NS",
+    "ISIN_NUMBER": "INE0J5801029"
+  },
+  {
+    "symbol": "JSWCEMENT.NS",
+    "ISIN_NUMBER": "INE718I01012"
+  },
+  {
+    "symbol": "JSWENERGY.NS",
+    "ISIN_NUMBER": "INE121E01018"
+  },
+  {
+    "symbol": "JSWHL.NS",
+    "ISIN_NUMBER": "INE824G01012"
+  },
+  {
+    "symbol": "JSWINFRA.NS",
+    "ISIN_NUMBER": "INE880J01026"
+  },
+  {
+    "symbol": "JSWSTEEL.NS",
+    "ISIN_NUMBER": "INE019A01038"
+  },
+  {
+    "symbol": "JTEKTINDIA.NS",
+    "ISIN_NUMBER": "INE643A01035"
+  },
+  {
+    "symbol": "JTLIND.NS",
+    "ISIN_NUMBER": "INE391J01032"
+  },
+  {
+    "symbol": "JUBLCPL.NS",
+    "ISIN_NUMBER": "INE03CC01015"
+  },
+  {
+    "symbol": "JUBLFOOD.NS",
+    "ISIN_NUMBER": "INE797F01020"
+  },
+  {
+    "symbol": "JUBLINGREA.NS",
+    "ISIN_NUMBER": "INE0BY001018"
+  },
+  {
+    "symbol": "JUBLPHARMA.NS",
+    "ISIN_NUMBER": "INE700A01033"
+  },
+  {
+    "symbol": "JUNIPER.NS",
+    "ISIN_NUMBER": "INE696F01016"
+  },
+  {
+    "symbol": "JUSTDIAL.NS",
+    "ISIN_NUMBER": "INE599M01018"
+  },
+  {
+    "symbol": "JWL.NS",
+    "ISIN_NUMBER": "INE209L01016"
+  },
+  {
+    "symbol": "JYOTHYLAB.NS",
+    "ISIN_NUMBER": "INE668F01031"
+  },
+  {
+    "symbol": "JYOTICNC.NS",
+    "ISIN_NUMBER": "INE980O01024"
+  },
+  {
+    "symbol": "JYOTISTRUC.NS",
+    "ISIN_NUMBER": "INE197A01024"
+  },
+  {
+    "symbol": "KABRAEXTRU.NS",
+    "ISIN_NUMBER": "INE900B01029"
+  },
+  {
+    "symbol": "KAJARIACER.NS",
+    "ISIN_NUMBER": "INE217B01036"
+  },
+  {
+    "symbol": "KAKATCEM.NS",
+    "ISIN_NUMBER": "INE437B01014"
+  },
+  {
+    "symbol": "KALAMANDIR.NS",
+    "ISIN_NUMBER": "INE438K01021"
+  },
+  {
+    "symbol": "KALPATARU.NS",
+    "ISIN_NUMBER": "INE227J01012"
+  },
+  {
+    "symbol": "KALYANI.NS",
+    "ISIN_NUMBER": "INE610E01010"
+  },
+  {
+    "symbol": "KALYANIFRG.NS",
+    "ISIN_NUMBER": "INE314G01014"
+  },
+  {
+    "symbol": "KALYANKJIL.NS",
+    "ISIN_NUMBER": "INE303R01014"
+  },
+  {
+    "symbol": "KAMATHOTEL.NS",
+    "ISIN_NUMBER": "INE967C01018"
+  },
+  {
+    "symbol": "KAMDHENU.NS",
+    "ISIN_NUMBER": "INE390H01020"
+  },
+  {
+    "symbol": "KAMOPAINTS.NS",
+    "ISIN_NUMBER": "INE0BTI01037"
+  },
+  {
+    "symbol": "KANANIIND.NS",
+    "ISIN_NUMBER": "INE879E01037"
+  },
+  {
+    "symbol": "KANORICHEM.NS",
+    "ISIN_NUMBER": "INE138C01024"
+  },
+  {
+    "symbol": "KANPRPLA.NS",
+    "ISIN_NUMBER": "INE694E01014"
+  },
+  {
+    "symbol": "KANSAINER.NS",
+    "ISIN_NUMBER": "INE531A01024"
+  },
+  {
+    "symbol": "KAPSTON.NS",
+    "ISIN_NUMBER": "INE542Z01028"
+  },
+  {
+    "symbol": "KARMAENG.NS",
+    "ISIN_NUMBER": "INE725L01011"
+  },
+  {
+    "symbol": "KARURVYSYA.NS",
+    "ISIN_NUMBER": "INE036D01028"
+  },
+  {
+    "symbol": "KAUSHALYA.NS",
+    "ISIN_NUMBER": "INE234I01028"
+  },
+  {
+    "symbol": "KAVDEFENCE.NS",
+    "ISIN_NUMBER": "INE641C01019"
+  },
+  {
+    "symbol": "KAYA.NS",
+    "ISIN_NUMBER": "INE587G01015"
+  },
+  {
+    "symbol": "KAYNES.NS",
+    "ISIN_NUMBER": "INE918Z01012"
+  },
+  {
+    "symbol": "KCP.NS",
+    "ISIN_NUMBER": "INE805C01028"
+  },
+  {
+    "symbol": "KCPSUGIND.NS",
+    "ISIN_NUMBER": "INE790B01024"
+  },
+  {
+    "symbol": "KDDL.NS",
+    "ISIN_NUMBER": "INE291D01011"
+  },
+  {
+    "symbol": "KEC.NS",
+    "ISIN_NUMBER": "INE389H01022"
+  },
+  {
+    "symbol": "KECL.NS",
+    "ISIN_NUMBER": "INE134B01017"
+  },
+  {
+    "symbol": "KEEPLEARN.NS",
+    "ISIN_NUMBER": "INE055C01020"
+  },
+  {
+    "symbol": "KEI.NS",
+    "ISIN_NUMBER": "INE878B01027"
+  },
+  {
+    "symbol": "KELLTONTEC.NS",
+    "ISIN_NUMBER": "INE164B01030"
+  },
+  {
+    "symbol": "KERNEX.NS",
+    "ISIN_NUMBER": "INE202H01019"
+  },
+  {
+    "symbol": "KESORAMIND.NS",
+    "ISIN_NUMBER": "INE087A01019"
+  },
+  {
+    "symbol": "KEYFINSERV.NS",
+    "ISIN_NUMBER": "INE681C01015"
+  },
+  {
+    "symbol": "KFINTECH.NS",
+    "ISIN_NUMBER": "INE138Y01010"
+  },
+  {
+    "symbol": "KHADIM.NS",
+    "ISIN_NUMBER": "INE834I01025"
+  },
+  {
+    "symbol": "KHAICHEM.NS",
+    "ISIN_NUMBER": "INE745B01028"
+  },
+  {
+    "symbol": "KHAITANLTD.NS",
+    "ISIN_NUMBER": "INE731C01018"
+  },
+  {
+    "symbol": "KHANDSE.NS",
+    "ISIN_NUMBER": "INE060B01014"
+  },
+  {
+    "symbol": "KICL.NS",
+    "ISIN_NUMBER": "INE029L01018"
+  },
+  {
+    "symbol": "KILITCH.NS",
+    "ISIN_NUMBER": "INE729D01010"
+  },
+  {
+    "symbol": "KIMS.NS",
+    "ISIN_NUMBER": "INE967H01025"
+  },
+  {
+    "symbol": "KINGFA.NS",
+    "ISIN_NUMBER": "INE473D01015"
+  },
+  {
+    "symbol": "KIOCL.NS",
+    "ISIN_NUMBER": "INE880L01014"
+  },
+  {
+    "symbol": "KIRIINDUS.NS",
+    "ISIN_NUMBER": "INE415I01015"
+  },
+  {
+    "symbol": "KIRLOSBROS.NS",
+    "ISIN_NUMBER": "INE732A01036"
+  },
+  {
+    "symbol": "KIRLOSENG.NS",
+    "ISIN_NUMBER": "INE146L01010"
+  },
+  {
+    "symbol": "KIRLOSIND.NS",
+    "ISIN_NUMBER": "INE250A01039"
+  },
+  {
+    "symbol": "KIRLPNU.NS",
+    "ISIN_NUMBER": "INE811A01020"
+  },
+  {
+    "symbol": "KITEX.NS",
+    "ISIN_NUMBER": "INE602G01020"
+  },
+  {
+    "symbol": "KKCL.NS",
+    "ISIN_NUMBER": "INE401H01017"
+  },
+  {
+    "symbol": "KMEW.NS",
+    "ISIN_NUMBER": "INE0CJD01029"
+  },
+  {
+    "symbol": "KMSUGAR.NS",
+    "ISIN_NUMBER": "INE157H01023"
+  },
+  {
+    "symbol": "KNAGRI.NS",
+    "ISIN_NUMBER": "INE0KNW01016"
+  },
+  {
+    "symbol": "KNRCON.NS",
+    "ISIN_NUMBER": "INE634I01029"
+  },
+  {
+    "symbol": "KOHINOOR.NS",
+    "ISIN_NUMBER": "INE080B01012"
+  },
+  {
+    "symbol": "KOKUYOCMLN.NS",
+    "ISIN_NUMBER": "INE760A01029"
+  },
+  {
+    "symbol": "KOLTEPATIL.NS",
+    "ISIN_NUMBER": "INE094I01018"
+  },
+  {
+    "symbol": "KOPRAN.NS",
+    "ISIN_NUMBER": "INE082A01010"
+  },
+  {
+    "symbol": "KOTAKBANK.NS",
+    "ISIN_NUMBER": "INE237A01036"
+  },
+  {
+    "symbol": "KOTARISUG.NS",
+    "ISIN_NUMBER": "INE419A01022"
+  },
+  {
+    "symbol": "KOTHARIPET.NS",
+    "ISIN_NUMBER": "INE720A01015"
+  },
+  {
+    "symbol": "KOTHARIPRO.NS",
+    "ISIN_NUMBER": "INE823A01017"
+  },
+  {
+    "symbol": "KOTYARK.NS",
+    "ISIN_NUMBER": "INE0J0B01017"
+  },
+  {
+    "symbol": "KPEL.NS",
+    "ISIN_NUMBER": "INE127T01021"
+  },
+  {
+    "symbol": "KPIGREEN.NS",
+    "ISIN_NUMBER": "INE542W01025"
+  },
+  {
+    "symbol": "KPIL.NS",
+    "ISIN_NUMBER": "INE220B01022"
+  },
+  {
+    "symbol": "KPITTECH.NS",
+    "ISIN_NUMBER": "INE04I401011"
+  },
+  {
+    "symbol": "KPRMILL.NS",
+    "ISIN_NUMBER": "INE930H01031"
+  },
+  {
+    "symbol": "KRBL.NS",
+    "ISIN_NUMBER": "INE001B01026"
+  },
+  {
+    "symbol": "KREBSBIO.NS",
+    "ISIN_NUMBER": "INE268B01013"
+  },
+  {
+    "symbol": "KRIDHANINF.NS",
+    "ISIN_NUMBER": "INE524L01026"
+  },
+  {
+    "symbol": "KRISHANA.NS",
+    "ISIN_NUMBER": "INE506W01012"
+  },
+  {
+    "symbol": "KRISHIVAL.NS",
+    "ISIN_NUMBER": "INE0GGO01015"
+  },
+  {
+    "symbol": "KRISHNADEF.NS",
+    "ISIN_NUMBER": "INE0J5601015"
+  },
+  {
+    "symbol": "KRITI.NS",
+    "ISIN_NUMBER": "INE479D01038"
+  },
+  {
+    "symbol": "KRITIKA.NS",
+    "ISIN_NUMBER": "INE00Z501029"
+  },
+  {
+    "symbol": "KRITINUT.NS",
+    "ISIN_NUMBER": "INE798K01010"
+  },
+  {
+    "symbol": "KRN.NS",
+    "ISIN_NUMBER": "INE0Q3J01015"
+  },
+  {
+    "symbol": "KRONOX.NS",
+    "ISIN_NUMBER": "INE0ATZ01017"
+  },
+  {
+    "symbol": "KROSS.NS",
+    "ISIN_NUMBER": "INE0O6601022"
+  },
+  {
+    "symbol": "KRSNAA.NS",
+    "ISIN_NUMBER": "INE08LI01020"
+  },
+  {
+    "symbol": "KRYSTAL.NS",
+    "ISIN_NUMBER": "INE0QN801017"
+  },
+  {
+    "symbol": "KSB.NS",
+    "ISIN_NUMBER": "INE999A01023"
+  },
+  {
+    "symbol": "KSCL.NS",
+    "ISIN_NUMBER": "INE455I01029"
+  },
+  {
+    "symbol": "KSHINTL.NS",
+    "ISIN_NUMBER": "INE987S01020"
+  },
+  {
+    "symbol": "KSHITIJPOL.NS",
+    "ISIN_NUMBER": "INE013801027"
+  },
+  {
+    "symbol": "KSL.NS",
+    "ISIN_NUMBER": "INE907A01026"
+  },
+  {
+    "symbol": "KSOLVES.NS",
+    "ISIN_NUMBER": "INE0D6I01023"
+  },
+  {
+    "symbol": "KSR.NS",
+    "ISIN_NUMBER": "INE1SPP01016"
+  },
+  {
+    "symbol": "KTKBANK.NS",
+    "ISIN_NUMBER": "INE614B01018"
+  },
+  {
+    "symbol": "KUANTUM.NS",
+    "ISIN_NUMBER": "INE529I01021"
+  },
+  {
+    "symbol": "KWIL.NS",
+    "ISIN_NUMBER": "INE2KCE01013"
+  },
+  {
+    "symbol": "LAGNAM.NS",
+    "ISIN_NUMBER": "INE548Z01017"
+  },
+  {
+    "symbol": "LAKPRE.NS",
+    "ISIN_NUMBER": "INE651C01018"
+  },
+  {
+    "symbol": "LAL.NS",
+    "ISIN_NUMBER": "INE740X01023"
+  },
+  {
+    "symbol": "LALPATHLAB.NS",
+    "ISIN_NUMBER": "INE600L01024"
+  },
+  {
+    "symbol": "LAMBODHARA.NS",
+    "ISIN_NUMBER": "INE112F01022"
+  },
+  {
+    "symbol": "LANCORHOL.NS",
+    "ISIN_NUMBER": "INE572G01025"
+  },
+  {
+    "symbol": "LANDMARK.NS",
+    "ISIN_NUMBER": "INE559R01029"
+  },
+  {
+    "symbol": "LAOPALA.NS",
+    "ISIN_NUMBER": "INE059D01020"
+  },
+  {
+    "symbol": "LASA.NS",
+    "ISIN_NUMBER": "INE670X01014"
+  },
+  {
+    "symbol": "LATENTVIEW.NS",
+    "ISIN_NUMBER": "INE0I7C01011"
+  },
+  {
+    "symbol": "LATTEYS.NS",
+    "ISIN_NUMBER": "INE262Z01023"
+  },
+  {
+    "symbol": "LAURUSLABS.NS",
+    "ISIN_NUMBER": "INE947Q01028"
+  },
+  {
+    "symbol": "LAXMICOT.NS",
+    "ISIN_NUMBER": "INE801V01019"
+  },
+  {
+    "symbol": "LAXMIDENTL.NS",
+    "ISIN_NUMBER": "INE0WO601020"
+  },
+  {
+    "symbol": "LAXMIINDIA.NS",
+    "ISIN_NUMBER": "INE06WU01026"
+  },
+  {
+    "symbol": "LCCINFOTEC.NS",
+    "ISIN_NUMBER": "INE938A01021"
+  },
+  {
+    "symbol": "LEMERITE.NS",
+    "ISIN_NUMBER": "INE0G1L01017"
+  },
+  {
+    "symbol": "LEMONTREE.NS",
+    "ISIN_NUMBER": "INE970X01018"
+  },
+  {
+    "symbol": "LENSKART.NS",
+    "ISIN_NUMBER": "INE956O01016"
+  },
+  {
+    "symbol": "LEXUS.NS",
+    "ISIN_NUMBER": "INE500X01013"
+  },
+  {
+    "symbol": "LFIC.NS",
+    "ISIN_NUMBER": "INE850E01012"
+  },
+  {
+    "symbol": "LGBBROSLTD.NS",
+    "ISIN_NUMBER": "INE337A01034"
+  },
+  {
+    "symbol": "LGEINDIA.NS",
+    "ISIN_NUMBER": "INE324D01010"
+  },
+  {
+    "symbol": "LGHL.NS",
+    "ISIN_NUMBER": "INE258Y01016"
+  },
+  {
+    "symbol": "LIBAS.NS",
+    "ISIN_NUMBER": "INE908V01012"
+  },
+  {
+    "symbol": "LIBERTSHOE.NS",
+    "ISIN_NUMBER": "INE557B01019"
+  },
+  {
+    "symbol": "LICHSGFIN.NS",
+    "ISIN_NUMBER": "INE115A01026"
+  },
+  {
+    "symbol": "LICI.NS",
+    "ISIN_NUMBER": "INE0J1Y01017"
+  },
+  {
+    "symbol": "LIKHITHA.NS",
+    "ISIN_NUMBER": "INE060901027"
+  },
+  {
+    "symbol": "LINC.NS",
+    "ISIN_NUMBER": "INE802B01027"
+  },
+  {
+    "symbol": "LINCOLN.NS",
+    "ISIN_NUMBER": "INE405C01035"
+  },
+  {
+    "symbol": "LINDEINDIA.NS",
+    "ISIN_NUMBER": "INE473A01011"
+  },
+  {
+    "symbol": "LLOYDSENGG.NS",
+    "ISIN_NUMBER": "INE093R01011"
+  },
+  {
+    "symbol": "LLOYDSENT.NS",
+    "ISIN_NUMBER": "INE080I01025"
+  },
+  {
+    "symbol": "LLOYDSME.NS",
+    "ISIN_NUMBER": "INE281B01032"
+  },
+  {
+    "symbol": "LMW.NS",
+    "ISIN_NUMBER": "INE269B01029"
+  },
+  {
+    "symbol": "LODHA.NS",
+    "ISIN_NUMBER": "INE670K01029"
+  },
+  {
+    "symbol": "LOKESHMACH.NS",
+    "ISIN_NUMBER": "INE397H01017"
+  },
+  {
+    "symbol": "LORDSCHLO.NS",
+    "ISIN_NUMBER": "INE846D01012"
+  },
+  {
+    "symbol": "LOTUSDEV.NS",
+    "ISIN_NUMBER": "INE0V9Q01010"
+  },
+  {
+    "symbol": "LOTUSEYE.NS",
+    "ISIN_NUMBER": "INE947I01017"
+  },
+  {
+    "symbol": "LOVABLE.NS",
+    "ISIN_NUMBER": "INE597L01014"
+  },
+  {
+    "symbol": "LOYALTEX.NS",
+    "ISIN_NUMBER": "INE970D01010"
+  },
+  {
+    "symbol": "LPDC.NS",
+    "ISIN_NUMBER": "INE197J01017"
+  },
+  {
+    "symbol": "LT.NS",
+    "ISIN_NUMBER": "INE018A01030"
+  },
+  {
+    "symbol": "LTF.NS",
+    "ISIN_NUMBER": "INE498L01015"
+  },
+  {
+    "symbol": "LTFOODS.NS",
+    "ISIN_NUMBER": "INE818H01020"
+  },
+  {
+    "symbol": "LTM.NS",
+    "ISIN_NUMBER": "INE214T01019"
+  },
+  {
+    "symbol": "LTTS.NS",
+    "ISIN_NUMBER": "INE010V01017"
+  },
+  {
+    "symbol": "LUMAXIND.NS",
+    "ISIN_NUMBER": "INE162B01018"
+  },
+  {
+    "symbol": "LUMAXTECH.NS",
+    "ISIN_NUMBER": "INE872H01027"
+  },
+  {
+    "symbol": "LUPIN.NS",
+    "ISIN_NUMBER": "INE326A01037"
+  },
+  {
+    "symbol": "LUXIND.NS",
+    "ISIN_NUMBER": "INE150G01020"
+  },
+  {
+    "symbol": "LXCHEM.NS",
+    "ISIN_NUMBER": "INE576O01020"
+  },
+  {
+    "symbol": "LYKALABS.NS",
+    "ISIN_NUMBER": "INE933A01014"
+  },
+  {
+    "symbol": "LYPSAGEMS.NS",
+    "ISIN_NUMBER": "INE142K01011"
+  },
+  {
+    "symbol": "M&M.NS",
+    "ISIN_NUMBER": "INE101A01026"
+  },
+  {
+    "symbol": "M&MFIN.NS",
+    "ISIN_NUMBER": "INE774D01024"
+  },
+  {
+    "symbol": "MAANALU.NS",
+    "ISIN_NUMBER": "INE215I01027"
+  },
+  {
+    "symbol": "MACPOWER.NS",
+    "ISIN_NUMBER": "INE155Z01011"
+  },
+  {
+    "symbol": "MADHAV.NS",
+    "ISIN_NUMBER": "INE925C01016"
+  },
+  {
+    "symbol": "MADHUCON.NS",
+    "ISIN_NUMBER": "INE378D01032"
+  },
+  {
+    "symbol": "MADRASFERT.NS",
+    "ISIN_NUMBER": "INE414A01015"
+  },
+  {
+    "symbol": "MAGADSUGAR.NS",
+    "ISIN_NUMBER": "INE347W01011"
+  },
+  {
+    "symbol": "MAGNUM.NS",
+    "ISIN_NUMBER": "INE387I01016"
+  },
+  {
+    "symbol": "MAHABANK.NS",
+    "ISIN_NUMBER": "INE457A01014"
+  },
+  {
+    "symbol": "MAHAPEXLTD.NS",
+    "ISIN_NUMBER": "INE843B01013"
+  },
+  {
+    "symbol": "MAHASTEEL.NS",
+    "ISIN_NUMBER": "INE451L01014"
+  },
+  {
+    "symbol": "MAHEPC.NS",
+    "ISIN_NUMBER": "INE215D01010"
+  },
+  {
+    "symbol": "MAHESHWARI.NS",
+    "ISIN_NUMBER": "INE263W01010"
+  },
+  {
+    "symbol": "MAHLIFE.NS",
+    "ISIN_NUMBER": "INE813A01018"
+  },
+  {
+    "symbol": "MAHLOG.NS",
+    "ISIN_NUMBER": "INE766P01016"
+  },
+  {
+    "symbol": "MAHSCOOTER.NS",
+    "ISIN_NUMBER": "INE288A01013"
+  },
+  {
+    "symbol": "MAHSEAMLES.NS",
+    "ISIN_NUMBER": "INE271B01025"
+  },
+  {
+    "symbol": "MAITHANALL.NS",
+    "ISIN_NUMBER": "INE683C01011"
+  },
+  {
+    "symbol": "MALLCOM.NS",
+    "ISIN_NUMBER": "INE389C01015"
+  },
+  {
+    "symbol": "MALUPAPER.NS",
+    "ISIN_NUMBER": "INE383H01017"
+  },
+  {
+    "symbol": "MAMATA.NS",
+    "ISIN_NUMBER": "INE0TO701015"
+  },
+  {
+    "symbol": "MANAKALUCO.NS",
+    "ISIN_NUMBER": "INE859Q01017"
+  },
+  {
+    "symbol": "MANAKCOAT.NS",
+    "ISIN_NUMBER": "INE830Q01018"
+  },
+  {
+    "symbol": "MANAKSIA.NS",
+    "ISIN_NUMBER": "INE015D01022"
+  },
+  {
+    "symbol": "MANAKSTEEL.NS",
+    "ISIN_NUMBER": "INE824Q01011"
+  },
+  {
+    "symbol": "MANALIPETC.NS",
+    "ISIN_NUMBER": "INE201A01024"
+  },
+  {
+    "symbol": "MANAPPURAM.NS",
+    "ISIN_NUMBER": "INE522D01027"
+  },
+  {
+    "symbol": "MANBA.NS",
+    "ISIN_NUMBER": "INE939X01013"
+  },
+  {
+    "symbol": "MANCREDIT.NS",
+    "ISIN_NUMBER": "INE545L01039"
+  },
+  {
+    "symbol": "MANGALAM.NS",
+    "ISIN_NUMBER": "INE584F01014"
+  },
+  {
+    "symbol": "MANGLMCEM.NS",
+    "ISIN_NUMBER": "INE347A01017"
+  },
+  {
+    "symbol": "MANINDS.NS",
+    "ISIN_NUMBER": "INE993A01026"
+  },
+  {
+    "symbol": "MANINFRA.NS",
+    "ISIN_NUMBER": "INE949H01023"
+  },
+  {
+    "symbol": "MANKIND.NS",
+    "ISIN_NUMBER": "INE634S01028"
+  },
+  {
+    "symbol": "MANOMAY.NS",
+    "ISIN_NUMBER": "INE784W01015"
+  },
+  {
+    "symbol": "MANORAMA.NS",
+    "ISIN_NUMBER": "INE00VM01036"
+  },
+  {
+    "symbol": "MANORG.NS",
+    "ISIN_NUMBER": "INE370D01013"
+  },
+  {
+    "symbol": "MANUGRAPH.NS",
+    "ISIN_NUMBER": "INE867A01022"
+  },
+  {
+    "symbol": "MANYAVAR.NS",
+    "ISIN_NUMBER": "INE825V01034"
+  },
+  {
+    "symbol": "MAPMYINDIA.NS",
+    "ISIN_NUMBER": "INE0BV301023"
+  },
+  {
+    "symbol": "MARALOVER.NS",
+    "ISIN_NUMBER": "INE882A01013"
+  },
+  {
+    "symbol": "MARATHON.NS",
+    "ISIN_NUMBER": "INE182D01020"
+  },
+  {
+    "symbol": "MARICO.NS",
+    "ISIN_NUMBER": "INE196A01026"
+  },
+  {
+    "symbol": "MARINE.NS",
+    "ISIN_NUMBER": "INE01JE01028"
+  },
+  {
+    "symbol": "MARKOLINES.NS",
+    "ISIN_NUMBER": "INE0FW001016"
+  },
+  {
+    "symbol": "MARKSANS.NS",
+    "ISIN_NUMBER": "INE750C01026"
+  },
+  {
+    "symbol": "MARSONS.NS",
+    "ISIN_NUMBER": "INE415B01044"
+  },
+  {
+    "symbol": "MARUTI.NS",
+    "ISIN_NUMBER": "INE585B01010"
+  },
+  {
+    "symbol": "MASFIN.NS",
+    "ISIN_NUMBER": "INE348L01012"
+  },
+  {
+    "symbol": "MASKINVEST.NS",
+    "ISIN_NUMBER": "INE885F01015"
+  },
+  {
+    "symbol": "MASTEK.NS",
+    "ISIN_NUMBER": "INE759A01021"
+  },
+  {
+    "symbol": "MASTERTR.NS",
+    "ISIN_NUMBER": "INE677D01037"
+  },
+  {
+    "symbol": "MATRIMONY.NS",
+    "ISIN_NUMBER": "INE866R01028"
+  },
+  {
+    "symbol": "MAWANASUG.NS",
+    "ISIN_NUMBER": "INE636A01039"
+  },
+  {
+    "symbol": "MAXESTATES.NS",
+    "ISIN_NUMBER": "INE03EI01018"
+  },
+  {
+    "symbol": "MAXHEALTH.NS",
+    "ISIN_NUMBER": "INE027H01010"
+  },
+  {
+    "symbol": "MAXIND.NS",
+    "ISIN_NUMBER": "INE0CG601016"
+  },
+  {
+    "symbol": "MAYURUNIQ.NS",
+    "ISIN_NUMBER": "INE040D01038"
+  },
+  {
+    "symbol": "MAZDA.NS",
+    "ISIN_NUMBER": "INE885E01042"
+  },
+  {
+    "symbol": "MAZDOCK.NS",
+    "ISIN_NUMBER": "INE249Z01020"
+  },
+  {
+    "symbol": "MBAPL.NS",
+    "ISIN_NUMBER": "INE900L01010"
+  },
+  {
+    "symbol": "MBEL.NS",
+    "ISIN_NUMBER": "INE08N601015"
+  },
+  {
+    "symbol": "MBLINFRA.NS",
+    "ISIN_NUMBER": "INE912H01013"
+  },
+  {
+    "symbol": "MCL.NS",
+    "ISIN_NUMBER": "INE813V01022"
+  },
+  {
+    "symbol": "MCLEODRUSS.NS",
+    "ISIN_NUMBER": "INE942G01012"
+  },
+  {
+    "symbol": "MCLOUD.NS",
+    "ISIN_NUMBER": "INE613C01026"
+  },
+  {
+    "symbol": "MCX.NS",
+    "ISIN_NUMBER": "INE745G01043"
+  },
+  {
+    "symbol": "MEDANTA.NS",
+    "ISIN_NUMBER": "INE474Q01031"
+  },
+  {
+    "symbol": "MEDIASSIST.NS",
+    "ISIN_NUMBER": "INE456Z01021"
+  },
+  {
+    "symbol": "MEDICAMEQ.NS",
+    "ISIN_NUMBER": "INE646B01010"
+  },
+  {
+    "symbol": "MEDICO.NS",
+    "ISIN_NUMBER": "INE630Y01024"
+  },
+  {
+    "symbol": "MEDPLUS.NS",
+    "ISIN_NUMBER": "INE804L01022"
+  },
+  {
+    "symbol": "MEESHO.NS",
+    "ISIN_NUMBER": "INE0VDM01015"
+  },
+  {
+    "symbol": "MEGASTAR.NS",
+    "ISIN_NUMBER": "INE00EM01016"
+  },
+  {
+    "symbol": "MEIL.NS",
+    "ISIN_NUMBER": "INE0PKD01011"
+  },
+  {
+    "symbol": "MENONBE.NS",
+    "ISIN_NUMBER": "INE071D01033"
+  },
+  {
+    "symbol": "MEP.NS",
+    "ISIN_NUMBER": "INE776I01010"
+  },
+  {
+    "symbol": "METROBRAND.NS",
+    "ISIN_NUMBER": "INE317I01021"
+  },
+  {
+    "symbol": "METROPOLIS.NS",
+    "ISIN_NUMBER": "INE112L01020"
+  },
+  {
+    "symbol": "MFML.NS",
+    "ISIN_NUMBER": "INE0US801024"
+  },
+  {
+    "symbol": "MFSL.NS",
+    "ISIN_NUMBER": "INE180A01020"
+  },
+  {
+    "symbol": "MGEL.NS",
+    "ISIN_NUMBER": "INE0APB01032"
+  },
+  {
+    "symbol": "MGL.NS",
+    "ISIN_NUMBER": "INE002S01010"
+  },
+  {
+    "symbol": "MHLXMIRU.NS",
+    "ISIN_NUMBER": "INE112D01035"
+  },
+  {
+    "symbol": "MHRIL.NS",
+    "ISIN_NUMBER": "INE998I01010"
+  },
+  {
+    "symbol": "MICEL.NS",
+    "ISIN_NUMBER": "INE287C01037"
+  },
+  {
+    "symbol": "MIDHANI.NS",
+    "ISIN_NUMBER": "INE099Z01011"
+  },
+  {
+    "symbol": "MIDWESTLTD.NS",
+    "ISIN_NUMBER": "INE0XAD01024"
+  },
+  {
+    "symbol": "MINDACORP.NS",
+    "ISIN_NUMBER": "INE842C01021"
+  },
+  {
+    "symbol": "MINDTECK.NS",
+    "ISIN_NUMBER": "INE110B01017"
+  },
+  {
+    "symbol": "MIRCELECTR.NS",
+    "ISIN_NUMBER": "INE831A01028"
+  },
+  {
+    "symbol": "MIRZAINT.NS",
+    "ISIN_NUMBER": "INE771A01026"
+  },
+  {
+    "symbol": "MITCON.NS",
+    "ISIN_NUMBER": "INE828O01033"
+  },
+  {
+    "symbol": "MITTAL.NS",
+    "ISIN_NUMBER": "INE997Y01027"
+  },
+  {
+    "symbol": "MKPL.NS",
+    "ISIN_NUMBER": "INE964W01021"
+  },
+  {
+    "symbol": "MMFL.NS",
+    "ISIN_NUMBER": "INE227C01017"
+  },
+  {
+    "symbol": "MMP.NS",
+    "ISIN_NUMBER": "INE511Y01018"
+  },
+  {
+    "symbol": "MMTC.NS",
+    "ISIN_NUMBER": "INE123F01029"
+  },
+  {
+    "symbol": "MOBIKWIK.NS",
+    "ISIN_NUMBER": "INE0HLU01028"
+  },
+  {
+    "symbol": "MODINATUR.NS",
+    "ISIN_NUMBER": "INE537F01012"
+  },
+  {
+    "symbol": "MODIRUBBER.NS",
+    "ISIN_NUMBER": "INE832A01018"
+  },
+  {
+    "symbol": "MODIS.NS",
+    "ISIN_NUMBER": "INE0L0L01012"
+  },
+  {
+    "symbol": "MODISONLTD.NS",
+    "ISIN_NUMBER": "INE737D01021"
+  },
+  {
+    "symbol": "MODTHREAD.NS",
+    "ISIN_NUMBER": "INE794W01014"
+  },
+  {
+    "symbol": "MOHITIND.NS",
+    "ISIN_NUMBER": "INE954E01012"
+  },
+  {
+    "symbol": "MOIL.NS",
+    "ISIN_NUMBER": "INE490G01020"
+  },
+  {
+    "symbol": "MOKSH.NS",
+    "ISIN_NUMBER": "INE514Y01020"
+  },
+  {
+    "symbol": "MOL.NS",
+    "ISIN_NUMBER": "INE0CT101020"
+  },
+  {
+    "symbol": "MOLDTECH.NS",
+    "ISIN_NUMBER": "INE835B01035"
+  },
+  {
+    "symbol": "MOLDTKPAC.NS",
+    "ISIN_NUMBER": "INE893J01029"
+  },
+  {
+    "symbol": "MONARCH.NS",
+    "ISIN_NUMBER": "INE903D01011"
+  },
+  {
+    "symbol": "MONEYBOXX.NS",
+    "ISIN_NUMBER": "INE296Q01012"
+  },
+  {
+    "symbol": "MONTECARLO.NS",
+    "ISIN_NUMBER": "INE950M01013"
+  },
+  {
+    "symbol": "MORARJEE.NS",
+    "ISIN_NUMBER": "INE161G01027"
+  },
+  {
+    "symbol": "MOREPENLAB.NS",
+    "ISIN_NUMBER": "INE083A01026"
+  },
+  {
+    "symbol": "MOSCHIP.NS",
+    "ISIN_NUMBER": "INE935B01025"
+  },
+  {
+    "symbol": "MOTHERSON.NS",
+    "ISIN_NUMBER": "INE775A01035"
+  },
+  {
+    "symbol": "MOTILALOFS.NS",
+    "ISIN_NUMBER": "INE338I01027"
+  },
+  {
+    "symbol": "MOTISONS.NS",
+    "ISIN_NUMBER": "INE0FRK01020"
+  },
+  {
+    "symbol": "MOTOGENFIN.NS",
+    "ISIN_NUMBER": "INE861B01023"
+  },
+  {
+    "symbol": "MPHASIS.NS",
+    "ISIN_NUMBER": "INE356A01018"
+  },
+  {
+    "symbol": "MPSLTD.NS",
+    "ISIN_NUMBER": "INE943D01017"
+  },
+  {
+    "symbol": "MRF.NS",
+    "ISIN_NUMBER": "INE883A01011"
+  },
+  {
+    "symbol": "MRPL.NS",
+    "ISIN_NUMBER": "INE103A01014"
+  },
+  {
+    "symbol": "MSPL.NS",
+    "ISIN_NUMBER": "INE752G01015"
+  },
+  {
+    "symbol": "MSTCLTD.NS",
+    "ISIN_NUMBER": "INE255X01014"
+  },
+  {
+    "symbol": "MSUMI.NS",
+    "ISIN_NUMBER": "INE0FS801015"
+  },
+  {
+    "symbol": "MTARTECH.NS",
+    "ISIN_NUMBER": "INE864I01014"
+  },
+  {
+    "symbol": "MTEDUCARE.NS",
+    "ISIN_NUMBER": "INE472M01018"
+  },
+  {
+    "symbol": "MTNL.NS",
+    "ISIN_NUMBER": "INE153A01019"
+  },
+  {
+    "symbol": "MUFIN.NS",
+    "ISIN_NUMBER": "INE08KJ01020"
+  },
+  {
+    "symbol": "MUFTI.NS",
+    "ISIN_NUMBER": "INE220Q01020"
+  },
+  {
+    "symbol": "MUKANDLTD.NS",
+    "ISIN_NUMBER": "INE304A01026"
+  },
+  {
+    "symbol": "MUKKA.NS",
+    "ISIN_NUMBER": "INE0CG401037"
+  },
+  {
+    "symbol": "MUKTAARTS.NS",
+    "ISIN_NUMBER": "INE374B01019"
+  },
+  {
+    "symbol": "MUNJALAU.NS",
+    "ISIN_NUMBER": "INE672B01032"
+  },
+  {
+    "symbol": "MUNJALSHOW.NS",
+    "ISIN_NUMBER": "INE577A01027"
+  },
+  {
+    "symbol": "MURUDCERA.NS",
+    "ISIN_NUMBER": "INE692B01014"
+  },
+  {
+    "symbol": "MUTHOOTCAP.NS",
+    "ISIN_NUMBER": "INE296G01013"
+  },
+  {
+    "symbol": "MUTHOOTFIN.NS",
+    "ISIN_NUMBER": "INE414G01012"
+  },
+  {
+    "symbol": "MUTHOOTMF.NS",
+    "ISIN_NUMBER": "INE046W01019"
+  },
+  {
+    "symbol": "MVGJL.NS",
+    "ISIN_NUMBER": "INE0KNT01012"
+  },
+  {
+    "symbol": "MWL.NS",
+    "ISIN_NUMBER": "INE0JYY01011"
+  },
+  {
+    "symbol": "NACLIND.NS",
+    "ISIN_NUMBER": "INE295D01020"
+  },
+  {
+    "symbol": "NAGAFERT.NS",
+    "ISIN_NUMBER": "INE454M01024"
+  },
+  {
+    "symbol": "NAGREEKCAP.NS",
+    "ISIN_NUMBER": "INE245I01016"
+  },
+  {
+    "symbol": "NAGREEKEXP.NS",
+    "ISIN_NUMBER": "INE123B01028"
+  },
+  {
+    "symbol": "NAHARCAP.NS",
+    "ISIN_NUMBER": "INE049I01012"
+  },
+  {
+    "symbol": "NAHARINDUS.NS",
+    "ISIN_NUMBER": "INE289A01011"
+  },
+  {
+    "symbol": "NAHARPOLY.NS",
+    "ISIN_NUMBER": "INE308A01027"
+  },
+  {
+    "symbol": "NAHARSPING.NS",
+    "ISIN_NUMBER": "INE290A01027"
+  },
+  {
+    "symbol": "NAM-INDIA.NS",
+    "ISIN_NUMBER": "INE298J01013"
+  },
+  {
+    "symbol": "NARMADA.NS",
+    "ISIN_NUMBER": "INE117Z01011"
+  },
+  {
+    "symbol": "NATCAPSUQ.NS",
+    "ISIN_NUMBER": "INE936B01015"
+  },
+  {
+    "symbol": "NATCOPHARM.NS",
+    "ISIN_NUMBER": "INE987B01026"
+  },
+  {
+    "symbol": "NATHBIOGEN.NS",
+    "ISIN_NUMBER": "INE448G01010"
+  },
+  {
+    "symbol": "NATIONALUM.NS",
+    "ISIN_NUMBER": "INE139A01034"
+  },
+  {
+    "symbol": "NAUKRI.NS",
+    "ISIN_NUMBER": "INE663F01032"
+  },
+  {
+    "symbol": "NAVA.NS",
+    "ISIN_NUMBER": "INE725A01030"
+  },
+  {
+    "symbol": "NAVINFLUOR.NS",
+    "ISIN_NUMBER": "INE048G01026"
+  },
+  {
+    "symbol": "NAVKARCORP.NS",
+    "ISIN_NUMBER": "INE278M01019"
+  },
+  {
+    "symbol": "NAVKARURB.NS",
+    "ISIN_NUMBER": "INE268H01044"
+  },
+  {
+    "symbol": "NAVNETEDUL.NS",
+    "ISIN_NUMBER": "INE060A01024"
+  },
+  {
+    "symbol": "NAZARA.NS",
+    "ISIN_NUMBER": "INE418L01047"
+  },
+  {
+    "symbol": "NBCC.NS",
+    "ISIN_NUMBER": "INE095N01031"
+  },
+  {
+    "symbol": "NBIFIN.NS",
+    "ISIN_NUMBER": "INE365I01020"
+  },
+  {
+    "symbol": "NCC.NS",
+    "ISIN_NUMBER": "INE868B01028"
+  },
+  {
+    "symbol": "NCLIND.NS",
+    "ISIN_NUMBER": "INE732C01016"
+  },
+  {
+    "symbol": "NDGL.NS",
+    "ISIN_NUMBER": "INE756C01015"
+  },
+  {
+    "symbol": "NDL.NS",
+    "ISIN_NUMBER": "INE875G01048"
+  },
+  {
+    "symbol": "NDLVENTURE.NS",
+    "ISIN_NUMBER": "INE353A01023"
+  },
+  {
+    "symbol": "NDRAUTO.NS",
+    "ISIN_NUMBER": "INE07OG01012"
+  },
+  {
+    "symbol": "NDTV.NS",
+    "ISIN_NUMBER": "INE155G01029"
+  },
+  {
+    "symbol": "NECCLTD.NS",
+    "ISIN_NUMBER": "INE553C01016"
+  },
+  {
+    "symbol": "NECLIFE.NS",
+    "ISIN_NUMBER": "INE023H01027"
+  },
+  {
+    "symbol": "NELCAST.NS",
+    "ISIN_NUMBER": "INE189I01024"
+  },
+  {
+    "symbol": "NELCO.NS",
+    "ISIN_NUMBER": "INE045B01015"
+  },
+  {
+    "symbol": "NEOGEN.NS",
+    "ISIN_NUMBER": "INE136S01016"
+  },
+  {
+    "symbol": "NEPHROPLUS.NS",
+    "ISIN_NUMBER": "INE428V01029"
+  },
+  {
+    "symbol": "NESCO.NS",
+    "ISIN_NUMBER": "INE317F01035"
+  },
+  {
+    "symbol": "NESTLEIND.NS",
+    "ISIN_NUMBER": "INE239A01024"
+  },
+  {
+    "symbol": "NETWEB.NS",
+    "ISIN_NUMBER": "INE0NT901020"
+  },
+  {
+    "symbol": "NETWORK18.NS",
+    "ISIN_NUMBER": "INE870H01013"
+  },
+  {
+    "symbol": "NEULANDLAB.NS",
+    "ISIN_NUMBER": "INE794A01010"
+  },
+  {
+    "symbol": "NEWGEN.NS",
+    "ISIN_NUMBER": "INE619B01017"
+  },
+  {
+    "symbol": "NEXTMEDIA.NS",
+    "ISIN_NUMBER": "INE747B01016"
+  },
+  {
+    "symbol": "NFL.NS",
+    "ISIN_NUMBER": "INE870D01012"
+  },
+  {
+    "symbol": "NGIL.NS",
+    "ISIN_NUMBER": "INE236Y01012"
+  },
+  {
+    "symbol": "NGLFINE.NS",
+    "ISIN_NUMBER": "INE887E01022"
+  },
+  {
+    "symbol": "NH.NS",
+    "ISIN_NUMBER": "INE410P01011"
+  },
+  {
+    "symbol": "NHPC.NS",
+    "ISIN_NUMBER": "INE848E01016"
+  },
+  {
+    "symbol": "NIACL.NS",
+    "ISIN_NUMBER": "INE470Y01017"
+  },
+  {
+    "symbol": "NIBE.NS",
+    "ISIN_NUMBER": "INE149O01018"
+  },
+  {
+    "symbol": "NIBL.NS",
+    "ISIN_NUMBER": "INE047O01014"
+  },
+  {
+    "symbol": "NIITLTD.NS",
+    "ISIN_NUMBER": "INE161A01038"
+  },
+  {
+    "symbol": "NIITMTS.NS",
+    "ISIN_NUMBER": "INE342G01023"
+  },
+  {
+    "symbol": "NILAINFRA.NS",
+    "ISIN_NUMBER": "INE937C01029"
+  },
+  {
+    "symbol": "NILASPACES.NS",
+    "ISIN_NUMBER": "INE00S901012"
+  },
+  {
+    "symbol": "NILKAMAL.NS",
+    "ISIN_NUMBER": "INE310A01015"
+  },
+  {
+    "symbol": "NINSYS.NS",
+    "ISIN_NUMBER": "INE395U01014"
+  },
+  {
+    "symbol": "NIPPOBATRY.NS",
+    "ISIN_NUMBER": "INE567A01028"
+  },
+  {
+    "symbol": "NIRAJ.NS",
+    "ISIN_NUMBER": "INE368I01016"
+  },
+  {
+    "symbol": "NIRAJISPAT.NS",
+    "ISIN_NUMBER": "INE326T01011"
+  },
+  {
+    "symbol": "NITCO.NS",
+    "ISIN_NUMBER": "INE858F01012"
+  },
+  {
+    "symbol": "NITINSPIN.NS",
+    "ISIN_NUMBER": "INE229H01012"
+  },
+  {
+    "symbol": "NITIRAJ.NS",
+    "ISIN_NUMBER": "INE439T01012"
+  },
+  {
+    "symbol": "NIVABUPA.NS",
+    "ISIN_NUMBER": "INE995S01015"
+  },
+  {
+    "symbol": "NKIND.NS",
+    "ISIN_NUMBER": "INE542C01019"
+  },
+  {
+    "symbol": "NLCINDIA.NS",
+    "ISIN_NUMBER": "INE589A01014"
+  },
+  {
+    "symbol": "NMDC.NS",
+    "ISIN_NUMBER": "INE584A01023"
+  },
+  {
+    "symbol": "NOCIL.NS",
+    "ISIN_NUMBER": "INE163A01018"
+  },
+  {
+    "symbol": "NOIDATOLL.NS",
+    "ISIN_NUMBER": "INE781B01015"
+  },
+  {
+    "symbol": "NORBTEAEXP.NS",
+    "ISIN_NUMBER": "INE369C01017"
+  },
+  {
+    "symbol": "NORTHARC.NS",
+    "ISIN_NUMBER": "INE850M01015"
+  },
+  {
+    "symbol": "NOVAAGRI.NS",
+    "ISIN_NUMBER": "INE02H701025"
+  },
+  {
+    "symbol": "NPST.NS",
+    "ISIN_NUMBER": "INE0FFK01017"
+  },
+  {
+    "symbol": "NRAIL.NS",
+    "ISIN_NUMBER": "INE740D01017"
+  },
+  {
+    "symbol": "NRBBEARING.NS",
+    "ISIN_NUMBER": "INE349A01021"
+  },
+  {
+    "symbol": "NRL.NS",
+    "ISIN_NUMBER": "INE0JM501013"
+  },
+  {
+    "symbol": "NSIL.NS",
+    "ISIN_NUMBER": "INE023A01030"
+  },
+  {
+    "symbol": "NSLNISP.NS",
+    "ISIN_NUMBER": "INE0NNS01018"
+  },
+  {
+    "symbol": "NTPC.NS",
+    "ISIN_NUMBER": "INE733E01010"
+  },
+  {
+    "symbol": "NTPCGREEN.NS",
+    "ISIN_NUMBER": "INE0ONG01011"
+  },
+  {
+    "symbol": "NUCLEUS.NS",
+    "ISIN_NUMBER": "INE096B01018"
+  },
+  {
+    "symbol": "NURECA.NS",
+    "ISIN_NUMBER": "INE0DSF01015"
+  },
+  {
+    "symbol": "NUVAMA.NS",
+    "ISIN_NUMBER": "INE531F01023"
+  },
+  {
+    "symbol": "NUVOCO.NS",
+    "ISIN_NUMBER": "INE118D01016"
+  },
+  {
+    "symbol": "NYKAA.NS",
+    "ISIN_NUMBER": "INE388Y01029"
+  },
+  {
+    "symbol": "OAL.NS",
+    "ISIN_NUMBER": "INE959C01023"
+  },
+  {
+    "symbol": "OBCL.NS",
+    "ISIN_NUMBER": "INE426Z01016"
+  },
+  {
+    "symbol": "OBEROIRLTY.NS",
+    "ISIN_NUMBER": "INE093I01010"
+  },
+  {
+    "symbol": "OCCLLTD.NS",
+    "ISIN_NUMBER": "INE0PK601023"
+  },
+  {
+    "symbol": "ODIGMA.NS",
+    "ISIN_NUMBER": "INE054301028"
+  },
+  {
+    "symbol": "OFSS.NS",
+    "ISIN_NUMBER": "INE881D01027"
+  },
+  {
+    "symbol": "OIL.NS",
+    "ISIN_NUMBER": "INE274J01014"
+  },
+  {
+    "symbol": "OILCOUNTUB.NS",
+    "ISIN_NUMBER": "INE591A01010"
+  },
+  {
+    "symbol": "OLAELEC.NS",
+    "ISIN_NUMBER": "INE0LXG01040"
+  },
+  {
+    "symbol": "OLECTRA.NS",
+    "ISIN_NUMBER": "INE260D01016"
+  },
+  {
+    "symbol": "OMAXAUTO.NS",
+    "ISIN_NUMBER": "INE090B01011"
+  },
+  {
+    "symbol": "OMAXE.NS",
+    "ISIN_NUMBER": "INE800H01010"
+  },
+  {
+    "symbol": "OMFREIGHT.NS",
+    "ISIN_NUMBER": "INE1BZC01019"
+  },
+  {
+    "symbol": "OMINFRAL.NS",
+    "ISIN_NUMBER": "INE239D01028"
+  },
+  {
+    "symbol": "OMKARCHEM.NS",
+    "ISIN_NUMBER": "INE474L01016"
+  },
+  {
+    "symbol": "OMNI.NS",
+    "ISIN_NUMBER": "INE0UH301010"
+  },
+  {
+    "symbol": "ONELIFECAP.NS",
+    "ISIN_NUMBER": "INE912L01015"
+  },
+  {
+    "symbol": "ONEPOINT.NS",
+    "ISIN_NUMBER": "INE840Y01029"
+  },
+  {
+    "symbol": "ONESOURCE.NS",
+    "ISIN_NUMBER": "INE013P01021"
+  },
+  {
+    "symbol": "ONGC.NS",
+    "ISIN_NUMBER": "INE213A01029"
+  },
+  {
+    "symbol": "ONMOBILE.NS",
+    "ISIN_NUMBER": "INE809I01019"
+  },
+  {
+    "symbol": "ONWARDTEC.NS",
+    "ISIN_NUMBER": "INE229A01017"
+  },
+  {
+    "symbol": "OPTIEMUS.NS",
+    "ISIN_NUMBER": "INE350C01017"
+  },
+  {
+    "symbol": "ORBTEXP.NS",
+    "ISIN_NUMBER": "INE231G01010"
+  },
+  {
+    "symbol": "ORCHASP.NS",
+    "ISIN_NUMBER": "INE215B01022"
+  },
+  {
+    "symbol": "ORCHPHARMA.NS",
+    "ISIN_NUMBER": "INE191A01027"
+  },
+  {
+    "symbol": "ORICONENT.NS",
+    "ISIN_NUMBER": "INE730A01022"
+  },
+  {
+    "symbol": "ORIENTALTL.NS",
+    "ISIN_NUMBER": "INE998H01012"
+  },
+  {
+    "symbol": "ORIENTBELL.NS",
+    "ISIN_NUMBER": "INE607D01018"
+  },
+  {
+    "symbol": "ORIENTCEM.NS",
+    "ISIN_NUMBER": "INE876N01018"
+  },
+  {
+    "symbol": "ORIENTCER.NS",
+    "ISIN_NUMBER": "INE569C01020"
+  },
+  {
+    "symbol": "ORIENTELEC.NS",
+    "ISIN_NUMBER": "INE142Z01019"
+  },
+  {
+    "symbol": "ORIENTHOT.NS",
+    "ISIN_NUMBER": "INE750A01020"
+  },
+  {
+    "symbol": "ORIENTLTD.NS",
+    "ISIN_NUMBER": "INE609C01024"
+  },
+  {
+    "symbol": "ORIENTPPR.NS",
+    "ISIN_NUMBER": "INE592A01026"
+  },
+  {
+    "symbol": "ORIENTTECH.NS",
+    "ISIN_NUMBER": "INE0PPK01015"
+  },
+  {
+    "symbol": "ORISSAMINE.NS",
+    "ISIN_NUMBER": "INE725E01024"
+  },
+  {
+    "symbol": "ORKLAINDIA.NS",
+    "ISIN_NUMBER": "INE16NZ01023"
+  },
+  {
+    "symbol": "ORTEL.NS",
+    "ISIN_NUMBER": "INE849L01019"
+  },
+  {
+    "symbol": "ORTINGLOBE.NS",
+    "ISIN_NUMBER": "INE749B01020"
+  },
+  {
+    "symbol": "OSIAHYPER.NS",
+    "ISIN_NUMBER": "INE06IR01021"
+  },
+  {
+    "symbol": "OSWALAGRO.NS",
+    "ISIN_NUMBER": "INE142A01012"
+  },
+  {
+    "symbol": "OSWALGREEN.NS",
+    "ISIN_NUMBER": "INE143A01010"
+  },
+  {
+    "symbol": "OSWALPUMPS.NS",
+    "ISIN_NUMBER": "INE0BYP01024"
+  },
+  {
+    "symbol": "OSWALSEEDS.NS",
+    "ISIN_NUMBER": "INE00IK01029"
+  },
+  {
+    "symbol": "PACEDIGITK.NS",
+    "ISIN_NUMBER": "INE0S3G01027"
+  },
+  {
+    "symbol": "PAGEIND.NS",
+    "ISIN_NUMBER": "INE761H01022"
+  },
+  {
+    "symbol": "PAISALO.NS",
+    "ISIN_NUMBER": "INE420C01059"
+  },
+  {
+    "symbol": "PAKKA.NS",
+    "ISIN_NUMBER": "INE551D01018"
+  },
+  {
+    "symbol": "PALASHSECU.NS",
+    "ISIN_NUMBER": "INE471W01019"
+  },
+  {
+    "symbol": "PALREDTEC.NS",
+    "ISIN_NUMBER": "INE218G01033"
+  },
+  {
+    "symbol": "PANACEABIO.NS",
+    "ISIN_NUMBER": "INE922B01023"
+  },
+  {
+    "symbol": "PANACHE.NS",
+    "ISIN_NUMBER": "INE895W01019"
+  },
+  {
+    "symbol": "PANAMAPET.NS",
+    "ISIN_NUMBER": "INE305C01029"
+  },
+  {
+    "symbol": "PANSARI.NS",
+    "ISIN_NUMBER": "INE697V01011"
+  },
+  {
+    "symbol": "PAR.NS",
+    "ISIN_NUMBER": "INE04LG01015"
+  },
+  {
+    "symbol": "PARACABLES.NS",
+    "ISIN_NUMBER": "INE074B01023"
+  },
+  {
+    "symbol": "PARADEEP.NS",
+    "ISIN_NUMBER": "INE088F01024"
+  },
+  {
+    "symbol": "PARAGMILK.NS",
+    "ISIN_NUMBER": "INE883N01014"
+  },
+  {
+    "symbol": "PARAS.NS",
+    "ISIN_NUMBER": "INE045601023"
+  },
+  {
+    "symbol": "PARASPETRO.NS",
+    "ISIN_NUMBER": "INE162C01024"
+  },
+  {
+    "symbol": "PARKHOSPS.NS",
+    "ISIN_NUMBER": "INE119201023"
+  },
+  {
+    "symbol": "PARKHOTELS.NS",
+    "ISIN_NUMBER": "INE988S01028"
+  },
+  {
+    "symbol": "PARSVNATH.NS",
+    "ISIN_NUMBER": "INE561H01026"
+  },
+  {
+    "symbol": "PASHUPATI.NS",
+    "ISIN_NUMBER": "INE124Y01010"
+  },
+  {
+    "symbol": "PASUPTAC.NS",
+    "ISIN_NUMBER": "INE818B01023"
+  },
+  {
+    "symbol": "PATANJALI.NS",
+    "ISIN_NUMBER": "INE619A01035"
+  },
+  {
+    "symbol": "PATELENG.NS",
+    "ISIN_NUMBER": "INE244B01030"
+  },
+  {
+    "symbol": "PATELRMART.NS",
+    "ISIN_NUMBER": "INE0R8B01010"
+  },
+  {
+    "symbol": "PATINTLOG.NS",
+    "ISIN_NUMBER": "INE529D01014"
+  },
+  {
+    "symbol": "PAUSHAKLTD.NS",
+    "ISIN_NUMBER": "INE111F01024"
+  },
+  {
+    "symbol": "PAVNAIND.NS",
+    "ISIN_NUMBER": "INE07S101038"
+  },
+  {
+    "symbol": "PAYTM.NS",
+    "ISIN_NUMBER": "INE982J01020"
+  },
+  {
+    "symbol": "PCBL.NS",
+    "ISIN_NUMBER": "INE602A01031"
+  },
+  {
+    "symbol": "PCJEWELLER.NS",
+    "ISIN_NUMBER": "INE785M01021"
+  },
+  {
+    "symbol": "PDMJEPAPER.NS",
+    "ISIN_NUMBER": "INE865T01018"
+  },
+  {
+    "symbol": "PDSL.NS",
+    "ISIN_NUMBER": "INE111Q01021"
+  },
+  {
+    "symbol": "PEARLPOLY.NS",
+    "ISIN_NUMBER": "INE844A01013"
+  },
+  {
+    "symbol": "PENIND.NS",
+    "ISIN_NUMBER": "INE932A01024"
+  },
+  {
+    "symbol": "PENINLAND.NS",
+    "ISIN_NUMBER": "INE138A01028"
+  },
+  {
+    "symbol": "PERSISTENT.NS",
+    "ISIN_NUMBER": "INE262H01021"
+  },
+  {
+    "symbol": "PETRONET.NS",
+    "ISIN_NUMBER": "INE347G01014"
+  },
+  {
+    "symbol": "PFC.NS",
+    "ISIN_NUMBER": "INE134E01011"
+  },
+  {
+    "symbol": "PFIZER.NS",
+    "ISIN_NUMBER": "INE182A01018"
+  },
+  {
+    "symbol": "PFOCUS.NS",
+    "ISIN_NUMBER": "INE367G01038"
+  },
+  {
+    "symbol": "PFS.NS",
+    "ISIN_NUMBER": "INE560K01014"
+  },
+  {
+    "symbol": "PGEL.NS",
+    "ISIN_NUMBER": "INE457L01029"
+  },
+  {
+    "symbol": "PGHH.NS",
+    "ISIN_NUMBER": "INE179A01014"
+  },
+  {
+    "symbol": "PGHL.NS",
+    "ISIN_NUMBER": "INE199A01012"
+  },
+  {
+    "symbol": "PGIL.NS",
+    "ISIN_NUMBER": "INE940H01022"
+  },
+  {
+    "symbol": "PHOENIXLTD.NS",
+    "ISIN_NUMBER": "INE211B01039"
+  },
+  {
+    "symbol": "PICCADIL.NS",
+    "ISIN_NUMBER": "INE546C01010"
+  },
+  {
+    "symbol": "PIDILITIND.NS",
+    "ISIN_NUMBER": "INE318A01026"
+  },
+  {
+    "symbol": "PIGL.NS",
+    "ISIN_NUMBER": "INE557Z01018"
+  },
+  {
+    "symbol": "PIIND.NS",
+    "ISIN_NUMBER": "INE603J01030"
+  },
+  {
+    "symbol": "PILANIINVS.NS",
+    "ISIN_NUMBER": "INE417C01014"
+  },
+  {
+    "symbol": "PILITA.NS",
+    "ISIN_NUMBER": "INE600A01035"
+  },
+  {
+    "symbol": "PINELABS.NS",
+    "ISIN_NUMBER": "INE15B701018"
+  },
+  {
+    "symbol": "PIONEEREMB.NS",
+    "ISIN_NUMBER": "INE156C01018"
+  },
+  {
+    "symbol": "PIRAMALFIN.NS",
+    "ISIN_NUMBER": "INE202B01038"
+  },
+  {
+    "symbol": "PITTIENG.NS",
+    "ISIN_NUMBER": "INE450D01021"
+  },
+  {
+    "symbol": "PIXTRANS.NS",
+    "ISIN_NUMBER": "INE751B01018"
+  },
+  {
+    "symbol": "PKTEA.NS",
+    "ISIN_NUMBER": "INE431F01018"
+  },
+  {
+    "symbol": "PLASTIBLEN.NS",
+    "ISIN_NUMBER": "INE083C01022"
+  },
+  {
+    "symbol": "PLATIND.NS",
+    "ISIN_NUMBER": "INE0PT501018"
+  },
+  {
+    "symbol": "PLAZACABLE.NS",
+    "ISIN_NUMBER": "INE0INJ01017"
+  },
+  {
+    "symbol": "PNB.NS",
+    "ISIN_NUMBER": "INE160A01022"
+  },
+  {
+    "symbol": "PNBGILTS.NS",
+    "ISIN_NUMBER": "INE859A01011"
+  },
+  {
+    "symbol": "PNBHOUSING.NS",
+    "ISIN_NUMBER": "INE572E01012"
+  },
+  {
+    "symbol": "PNC.NS",
+    "ISIN_NUMBER": "INE392B01011"
+  },
+  {
+    "symbol": "PNCINFRA.NS",
+    "ISIN_NUMBER": "INE195J01029"
+  },
+  {
+    "symbol": "PNGJL.NS",
+    "ISIN_NUMBER": "INE953R01016"
+  },
+  {
+    "symbol": "PNGSREVA.NS",
+    "ISIN_NUMBER": "INE1RDG01013"
+  },
+  {
+    "symbol": "POCL.NS",
+    "ISIN_NUMBER": "INE063E01053"
+  },
+  {
+    "symbol": "PODDARMENT.NS",
+    "ISIN_NUMBER": "INE371C01013"
+  },
+  {
+    "symbol": "POKARNA.NS",
+    "ISIN_NUMBER": "INE637C01025"
+  },
+  {
+    "symbol": "POLICYBZR.NS",
+    "ISIN_NUMBER": "INE417T01026"
+  },
+  {
+    "symbol": "POLYCAB.NS",
+    "ISIN_NUMBER": "INE455K01017"
+  },
+  {
+    "symbol": "POLYMED.NS",
+    "ISIN_NUMBER": "INE205C01021"
+  },
+  {
+    "symbol": "POLYPLEX.NS",
+    "ISIN_NUMBER": "INE633B01018"
+  },
+  {
+    "symbol": "PONNIERODE.NS",
+    "ISIN_NUMBER": "INE838E01017"
+  },
+  {
+    "symbol": "POONAWALLA.NS",
+    "ISIN_NUMBER": "INE511C01022"
+  },
+  {
+    "symbol": "POWERGRID.NS",
+    "ISIN_NUMBER": "INE752E01010"
+  },
+  {
+    "symbol": "POWERINDIA.NS",
+    "ISIN_NUMBER": "INE07Y701011"
+  },
+  {
+    "symbol": "POWERMECH.NS",
+    "ISIN_NUMBER": "INE211R01019"
+  },
+  {
+    "symbol": "PPAP.NS",
+    "ISIN_NUMBER": "INE095I01015"
+  },
+  {
+    "symbol": "PPL.NS",
+    "ISIN_NUMBER": "INE050001010"
+  },
+  {
+    "symbol": "PPLPHARMA.NS",
+    "ISIN_NUMBER": "INE0DK501011"
+  },
+  {
+    "symbol": "PRABHA.NS",
+    "ISIN_NUMBER": "INE0I0M01023"
+  },
+  {
+    "symbol": "PRABHA-RE.NS",
+    "ISIN_NUMBER": "INE0I0M20015"
+  },
+  {
+    "symbol": "PRAENG.NS",
+    "ISIN_NUMBER": "INE505C01016"
+  },
+  {
+    "symbol": "PRAJIND.NS",
+    "ISIN_NUMBER": "INE074A01025"
+  },
+  {
+    "symbol": "PRAKASH.NS",
+    "ISIN_NUMBER": "INE603A01013"
+  },
+  {
+    "symbol": "PRAKASHSTL.NS",
+    "ISIN_NUMBER": "INE696K01024"
+  },
+  {
+    "symbol": "PRAXIS.NS",
+    "ISIN_NUMBER": "INE546Y01022"
+  },
+  {
+    "symbol": "PRECAM.NS",
+    "ISIN_NUMBER": "INE484I01029"
+  },
+  {
+    "symbol": "PRECOT.NS",
+    "ISIN_NUMBER": "INE283A01014"
+  },
+  {
+    "symbol": "PRECWIRE.NS",
+    "ISIN_NUMBER": "INE372C01037"
+  },
+  {
+    "symbol": "PREMEXPLN.NS",
+    "ISIN_NUMBER": "INE863B01029"
+  },
+  {
+    "symbol": "PREMIER.NS",
+    "ISIN_NUMBER": "INE342A01018"
+  },
+  {
+    "symbol": "PREMIERENE.NS",
+    "ISIN_NUMBER": "INE0BS701011"
+  },
+  {
+    "symbol": "PREMIERPOL.NS",
+    "ISIN_NUMBER": "INE309M01020"
+  },
+  {
+    "symbol": "PRESTIGE.NS",
+    "ISIN_NUMBER": "INE811K01011"
+  },
+  {
+    "symbol": "PRICOLLTD.NS",
+    "ISIN_NUMBER": "INE726V01018"
+  },
+  {
+    "symbol": "PRIMESECU.NS",
+    "ISIN_NUMBER": "INE032B01021"
+  },
+  {
+    "symbol": "PRIMO.NS",
+    "ISIN_NUMBER": "INE607A01022"
+  },
+  {
+    "symbol": "PRINCEPIPE.NS",
+    "ISIN_NUMBER": "INE689W01016"
+  },
+  {
+    "symbol": "PRITI.NS",
+    "ISIN_NUMBER": "INE974Z01015"
+  },
+  {
+    "symbol": "PRITIKAUTO.NS",
+    "ISIN_NUMBER": "INE583R01029"
+  },
+  {
+    "symbol": "PRIVISCL.NS",
+    "ISIN_NUMBER": "INE959A01019"
+  },
+  {
+    "symbol": "PROSTARM.NS",
+    "ISIN_NUMBER": "INE0BX301013"
+  },
+  {
+    "symbol": "PROTEAN.NS",
+    "ISIN_NUMBER": "INE004A01022"
+  },
+  {
+    "symbol": "PROZONER.NS",
+    "ISIN_NUMBER": "INE195N01013"
+  },
+  {
+    "symbol": "PRSMJOHNSN.NS",
+    "ISIN_NUMBER": "INE010A01011"
+  },
+  {
+    "symbol": "PRUDENT.NS",
+    "ISIN_NUMBER": "INE00F201020"
+  },
+  {
+    "symbol": "PRUDMOULI.NS",
+    "ISIN_NUMBER": "INE024D01016"
+  },
+  {
+    "symbol": "PSB.NS",
+    "ISIN_NUMBER": "INE608A01012"
+  },
+  {
+    "symbol": "PSPPROJECT.NS",
+    "ISIN_NUMBER": "INE488V01015"
+  },
+  {
+    "symbol": "PTC.NS",
+    "ISIN_NUMBER": "INE877F01012"
+  },
+  {
+    "symbol": "PTCIL.NS",
+    "ISIN_NUMBER": "INE596F01018"
+  },
+  {
+    "symbol": "PTL.NS",
+    "ISIN_NUMBER": "INE034D01049"
+  },
+  {
+    "symbol": "PUNJABCHEM.NS",
+    "ISIN_NUMBER": "INE277B01014"
+  },
+  {
+    "symbol": "PURVA.NS",
+    "ISIN_NUMBER": "INE323I01011"
+  },
+  {
+    "symbol": "PVP.NS",
+    "ISIN_NUMBER": "INE362A01016"
+  },
+  {
+    "symbol": "PVRINOX.NS",
+    "ISIN_NUMBER": "INE191H01014"
+  },
+  {
+    "symbol": "PVSL.NS",
+    "ISIN_NUMBER": "INE772T01024"
+  },
+  {
+    "symbol": "PWL.NS",
+    "ISIN_NUMBER": "INE0LP301011"
+  },
+  {
+    "symbol": "PYRAMID.NS",
+    "ISIN_NUMBER": "INE0MIS01010"
+  },
+  {
+    "symbol": "QPOWER.NS",
+    "ISIN_NUMBER": "INE0SII01026"
+  },
+  {
+    "symbol": "QUADFUTURE.NS",
+    "ISIN_NUMBER": "INE0LRY01011"
+  },
+  {
+    "symbol": "QUESS.NS",
+    "ISIN_NUMBER": "INE615P01015"
+  },
+  {
+    "symbol": "QUICKHEAL.NS",
+    "ISIN_NUMBER": "INE306L01010"
+  },
+  {
+    "symbol": "RACE.NS",
+    "ISIN_NUMBER": "INE084Q01012"
+  },
+  {
+    "symbol": "RACLGEAR.NS",
+    "ISIN_NUMBER": "INE704B01017"
+  },
+  {
+    "symbol": "RADAAN.NS",
+    "ISIN_NUMBER": "INE874F01027"
+  },
+  {
+    "symbol": "RADHIKAJWE.NS",
+    "ISIN_NUMBER": "INE583V01021"
+  },
+  {
+    "symbol": "RADIANTCMS.NS",
+    "ISIN_NUMBER": "INE855R01021"
+  },
+  {
+    "symbol": "RADICO.NS",
+    "ISIN_NUMBER": "INE944F01028"
+  },
+  {
+    "symbol": "RADIOCITY.NS",
+    "ISIN_NUMBER": "INE919I01024"
+  },
+  {
+    "symbol": "RAILTEL.NS",
+    "ISIN_NUMBER": "INE0DD101019"
+  },
+  {
+    "symbol": "RAIN.NS",
+    "ISIN_NUMBER": "INE855B01025"
+  },
+  {
+    "symbol": "RAINBOW.NS",
+    "ISIN_NUMBER": "INE961O01016"
+  },
+  {
+    "symbol": "RAJESHEXPO.NS",
+    "ISIN_NUMBER": "INE343B01030"
+  },
+  {
+    "symbol": "RAJMET.NS",
+    "ISIN_NUMBER": "INE00KV01022"
+  },
+  {
+    "symbol": "RAJOOENG.NS",
+    "ISIN_NUMBER": "INE535F01024"
+  },
+  {
+    "symbol": "RAJRATAN.NS",
+    "ISIN_NUMBER": "INE451D01029"
+  },
+  {
+    "symbol": "RAJRILTD.NS",
+    "ISIN_NUMBER": "INE533D01032"
+  },
+  {
+    "symbol": "RAJSREESUG.NS",
+    "ISIN_NUMBER": "INE562B01019"
+  },
+  {
+    "symbol": "RAJTV.NS",
+    "ISIN_NUMBER": "INE952H01027"
+  },
+  {
+    "symbol": "RALLIS.NS",
+    "ISIN_NUMBER": "INE613A01020"
+  },
+  {
+    "symbol": "RAMANEWS.NS",
+    "ISIN_NUMBER": "INE278B01020"
+  },
+  {
+    "symbol": "RAMAPHO.NS",
+    "ISIN_NUMBER": "INE809A01032"
+  },
+  {
+    "symbol": "RAMASTEEL.NS",
+    "ISIN_NUMBER": "INE230R01035"
+  },
+  {
+    "symbol": "RAMCOCEM.NS",
+    "ISIN_NUMBER": "INE331A01037"
+  },
+  {
+    "symbol": "RAMCOIND.NS",
+    "ISIN_NUMBER": "INE614A01028"
+  },
+  {
+    "symbol": "RAMCOSYS.NS",
+    "ISIN_NUMBER": "INE246B01019"
+  },
+  {
+    "symbol": "RAMKY.NS",
+    "ISIN_NUMBER": "INE874I01013"
+  },
+  {
+    "symbol": "RAMRAT.NS",
+    "ISIN_NUMBER": "INE207E01023"
+  },
+  {
+    "symbol": "RANASUG.NS",
+    "ISIN_NUMBER": "INE625B01014"
+  },
+  {
+    "symbol": "RANEHOLDIN.NS",
+    "ISIN_NUMBER": "INE384A01010"
+  },
+  {
+    "symbol": "RATEGAIN.NS",
+    "ISIN_NUMBER": "INE0CLI01024"
+  },
+  {
+    "symbol": "RATNAMANI.NS",
+    "ISIN_NUMBER": "INE703B01027"
+  },
+  {
+    "symbol": "RATNAVEER.NS",
+    "ISIN_NUMBER": "INE05CZ01011"
+  },
+  {
+    "symbol": "RAYMOND.NS",
+    "ISIN_NUMBER": "INE301A01014"
+  },
+  {
+    "symbol": "RAYMONDLSL.NS",
+    "ISIN_NUMBER": "INE02ID01020"
+  },
+  {
+    "symbol": "RAYMONDREL.NS",
+    "ISIN_NUMBER": "INE1SY401010"
+  },
+  {
+    "symbol": "RBA.NS",
+    "ISIN_NUMBER": "INE07T201019"
+  },
+  {
+    "symbol": "RBLBANK.NS",
+    "ISIN_NUMBER": "INE976G01028"
+  },
+  {
+    "symbol": "RBZJEWEL.NS",
+    "ISIN_NUMBER": "INE0PEQ01016"
+  },
+  {
+    "symbol": "RCF.NS",
+    "ISIN_NUMBER": "INE027A01015"
+  },
+  {
+    "symbol": "RCOM.NS",
+    "ISIN_NUMBER": "INE330H01018"
+  },
+  {
+    "symbol": "RECLTD.NS",
+    "ISIN_NUMBER": "INE020B01018"
+  },
+  {
+    "symbol": "REDINGTON.NS",
+    "ISIN_NUMBER": "INE891D01026"
+  },
+  {
+    "symbol": "REDTAPE.NS",
+    "ISIN_NUMBER": "INE0LXT01019"
+  },
+  {
+    "symbol": "REFEX.NS",
+    "ISIN_NUMBER": "INE056I01025"
+  },
+  {
+    "symbol": "REGAAL.NS",
+    "ISIN_NUMBER": "INE0MHO01029"
+  },
+  {
+    "symbol": "REGENCERAM.NS",
+    "ISIN_NUMBER": "INE277C01012"
+  },
+  {
+    "symbol": "RELAXO.NS",
+    "ISIN_NUMBER": "INE131B01039"
+  },
+  {
+    "symbol": "RELCHEMQ.NS",
+    "ISIN_NUMBER": "INE750D01016"
+  },
+  {
+    "symbol": "RELIABLE.NS",
+    "ISIN_NUMBER": "INE375Y01018"
+  },
+  {
+    "symbol": "RELIANCE.NS",
+    "ISIN_NUMBER": "INE002A01018"
+  },
+  {
+    "symbol": "RELIGARE.NS",
+    "ISIN_NUMBER": "INE621H01010"
+  },
+  {
+    "symbol": "RELINFRA.NS",
+    "ISIN_NUMBER": "INE036A01016"
+  },
+  {
+    "symbol": "RELTD.NS",
+    "ISIN_NUMBER": "INE206N01018"
+  },
+  {
+    "symbol": "REMSONSIND.NS",
+    "ISIN_NUMBER": "INE474C01023"
+  },
+  {
+    "symbol": "RENUKA.NS",
+    "ISIN_NUMBER": "INE087H01022"
+  },
+  {
+    "symbol": "REPCOHOME.NS",
+    "ISIN_NUMBER": "INE612J01015"
+  },
+  {
+    "symbol": "REPL.NS",
+    "ISIN_NUMBER": "INE364Z01019"
+  },
+  {
+    "symbol": "REPRO.NS",
+    "ISIN_NUMBER": "INE461B01014"
+  },
+  {
+    "symbol": "RESPONIND.NS",
+    "ISIN_NUMBER": "INE688D01026"
+  },
+  {
+    "symbol": "RETAIL.NS",
+    "ISIN_NUMBER": "INE03DD01011"
+  },
+  {
+    "symbol": "RGL.NS",
+    "ISIN_NUMBER": "INE722H01024"
+  },
+  {
+    "symbol": "RHETAN.NS",
+    "ISIN_NUMBER": "INE0KKN01029"
+  },
+  {
+    "symbol": "RHIM.NS",
+    "ISIN_NUMBER": "INE743M01012"
+  },
+  {
+    "symbol": "RHL.NS",
+    "ISIN_NUMBER": "INE508K01013"
+  },
+  {
+    "symbol": "RICOAUTO.NS",
+    "ISIN_NUMBER": "INE209B01025"
+  },
+  {
+    "symbol": "RIIL.NS",
+    "ISIN_NUMBER": "INE046A01015"
+  },
+  {
+    "symbol": "RISHABH.NS",
+    "ISIN_NUMBER": "INE0N2P01017"
+  },
+  {
+    "symbol": "RITCO.NS",
+    "ISIN_NUMBER": "INE01EG01016"
+  },
+  {
+    "symbol": "RITES.NS",
+    "ISIN_NUMBER": "INE320J01015"
+  },
+  {
+    "symbol": "RKDL.NS",
+    "ISIN_NUMBER": "INE722J01012"
+  },
+  {
+    "symbol": "RKEC.NS",
+    "ISIN_NUMBER": "INE786W01010"
+  },
+  {
+    "symbol": "RKFORGE.NS",
+    "ISIN_NUMBER": "INE399G01023"
+  },
+  {
+    "symbol": "RKSWAMY.NS",
+    "ISIN_NUMBER": "INE0NQ801033"
+  },
+  {
+    "symbol": "RMDRIP.NS",
+    "ISIN_NUMBER": "INE219Y01026"
+  },
+  {
+    "symbol": "RML.NS",
+    "ISIN_NUMBER": "INE050H01012"
+  },
+  {
+    "symbol": "RNBDENIMS.NS",
+    "ISIN_NUMBER": "INE012Q01021"
+  },
+  {
+    "symbol": "ROHLTD.NS",
+    "ISIN_NUMBER": "INE283H01019"
+  },
+  {
+    "symbol": "ROLEXRINGS.NS",
+    "ISIN_NUMBER": "INE645S01024"
+  },
+  {
+    "symbol": "ROLLT.NS",
+    "ISIN_NUMBER": "INE927A01040"
+  },
+  {
+    "symbol": "ROML.NS",
+    "ISIN_NUMBER": "INE294G01026"
+  },
+  {
+    "symbol": "ROSSARI.NS",
+    "ISIN_NUMBER": "INE02A801020"
+  },
+  {
+    "symbol": "ROSSELLIND.NS",
+    "ISIN_NUMBER": "INE847C01020"
+  },
+  {
+    "symbol": "ROSSTECH.NS",
+    "ISIN_NUMBER": "INE0OJW01016"
+  },
+  {
+    "symbol": "ROTO.NS",
+    "ISIN_NUMBER": "INE535D01037"
+  },
+  {
+    "symbol": "ROUTE.NS",
+    "ISIN_NUMBER": "INE450U01017"
+  },
+  {
+    "symbol": "RPEL.NS",
+    "ISIN_NUMBER": "INE912T01018"
+  },
+  {
+    "symbol": "RPGLIFE.NS",
+    "ISIN_NUMBER": "INE105J01010"
+  },
+  {
+    "symbol": "RPOWER.NS",
+    "ISIN_NUMBER": "INE614G01033"
+  },
+  {
+    "symbol": "RPPINFRA.NS",
+    "ISIN_NUMBER": "INE324L01013"
+  },
+  {
+    "symbol": "RPPL.NS",
+    "ISIN_NUMBER": "INE760W01023"
+  },
+  {
+    "symbol": "RPSGVENT.NS",
+    "ISIN_NUMBER": "INE425Y01011"
+  },
+  {
+    "symbol": "RPTECH.NS",
+    "ISIN_NUMBER": "INE0J1F01024"
+  },
+  {
+    "symbol": "RRKABEL.NS",
+    "ISIN_NUMBER": "INE777K01022"
+  },
+  {
+    "symbol": "RSL.NS",
+    "ISIN_NUMBER": "INE313L01016"
+  },
+  {
+    "symbol": "RSSOFTWARE.NS",
+    "ISIN_NUMBER": "INE165B01029"
+  },
+  {
+    "symbol": "RSWM.NS",
+    "ISIN_NUMBER": "INE611A01016"
+  },
+  {
+    "symbol": "RSYSTEMS.NS",
+    "ISIN_NUMBER": "INE411H01032"
+  },
+  {
+    "symbol": "RTNINDIA.NS",
+    "ISIN_NUMBER": "INE834M01019"
+  },
+  {
+    "symbol": "RTNPOWER.NS",
+    "ISIN_NUMBER": "INE399K01017"
+  },
+  {
+    "symbol": "RUBFILA.NS",
+    "ISIN_NUMBER": "INE642C01025"
+  },
+  {
+    "symbol": "RUBICON.NS",
+    "ISIN_NUMBER": "INE506V01022"
+  },
+  {
+    "symbol": "RUBYMILLS.NS",
+    "ISIN_NUMBER": "INE301D01026"
+  },
+  {
+    "symbol": "RUCHINFRA.NS",
+    "ISIN_NUMBER": "INE413B01023"
+  },
+  {
+    "symbol": "RUCHIRA.NS",
+    "ISIN_NUMBER": "INE803H01014"
+  },
+  {
+    "symbol": "RUDRA.NS",
+    "ISIN_NUMBER": "INE027T01023"
+  },
+  {
+    "symbol": "RUPA.NS",
+    "ISIN_NUMBER": "INE895B01021"
+  },
+  {
+    "symbol": "RUSHIL.NS",
+    "ISIN_NUMBER": "INE573K01025"
+  },
+  {
+    "symbol": "RUSTOMJEE.NS",
+    "ISIN_NUMBER": "INE263M01029"
+  },
+  {
+    "symbol": "RVHL.NS",
+    "ISIN_NUMBER": "INE09E501017"
+  },
+  {
+    "symbol": "RVNL.NS",
+    "ISIN_NUMBER": "INE415G01027"
+  },
+  {
+    "symbol": "RVTH.NS",
+    "ISIN_NUMBER": "INE0DAB01012"
+  },
+  {
+    "symbol": "S&SPOWER.NS",
+    "ISIN_NUMBER": "INE902B01017"
+  },
+  {
+    "symbol": "SAATVIKGL.NS",
+    "ISIN_NUMBER": "INE13B501022"
+  },
+  {
+    "symbol": "SABEVENTS.NS",
+    "ISIN_NUMBER": "INE860T01019"
+  },
+  {
+    "symbol": "SADBHAV.NS",
+    "ISIN_NUMBER": "INE226H01026"
+  },
+  {
+    "symbol": "SADBHIN.NS",
+    "ISIN_NUMBER": "INE764L01010"
+  },
+  {
+    "symbol": "SADHNANIQ.NS",
+    "ISIN_NUMBER": "INE888C01040"
+  },
+  {
+    "symbol": "SAFARI.NS",
+    "ISIN_NUMBER": "INE429E01023"
+  },
+  {
+    "symbol": "SAGARDEEP.NS",
+    "ISIN_NUMBER": "INE976T01013"
+  },
+  {
+    "symbol": "SAGCEM.NS",
+    "ISIN_NUMBER": "INE229C01021"
+  },
+  {
+    "symbol": "SAGILITY.NS",
+    "ISIN_NUMBER": "INE0W2G01015"
+  },
+  {
+    "symbol": "SAHYADRI.NS",
+    "ISIN_NUMBER": "INE280H01015"
+  },
+  {
+    "symbol": "SAIL.NS",
+    "ISIN_NUMBER": "INE114A01011"
+  },
+  {
+    "symbol": "SAILIFE.NS",
+    "ISIN_NUMBER": "INE570L01029"
+  },
+  {
+    "symbol": "SAKAR.NS",
+    "ISIN_NUMBER": "INE732S01012"
+  },
+  {
+    "symbol": "SAKHTISUG.NS",
+    "ISIN_NUMBER": "INE623A01011"
+  },
+  {
+    "symbol": "SAKSOFT.NS",
+    "ISIN_NUMBER": "INE667G01023"
+  },
+  {
+    "symbol": "SAKUMA.NS",
+    "ISIN_NUMBER": "INE190H01024"
+  },
+  {
+    "symbol": "SALASAR.NS",
+    "ISIN_NUMBER": "INE170V01027"
+  },
+  {
+    "symbol": "SALONA.NS",
+    "ISIN_NUMBER": "INE498E01010"
+  },
+  {
+    "symbol": "SALSTEEL.NS",
+    "ISIN_NUMBER": "INE658G01014"
+  },
+  {
+    "symbol": "SALZERELEC.NS",
+    "ISIN_NUMBER": "INE457F01013"
+  },
+  {
+    "symbol": "SAMBHAAV.NS",
+    "ISIN_NUMBER": "INE699B01027"
+  },
+  {
+    "symbol": "SAMBHV.NS",
+    "ISIN_NUMBER": "INE12NJ01018"
+  },
+  {
+    "symbol": "SAMHI.NS",
+    "ISIN_NUMBER": "INE08U801020"
+  },
+  {
+    "symbol": "SAMMAANCAP.NS",
+    "ISIN_NUMBER": "INE148I01020"
+  },
+  {
+    "symbol": "SAMPANN.NS",
+    "ISIN_NUMBER": "INE735M01018"
+  },
+  {
+    "symbol": "SANATHAN.NS",
+    "ISIN_NUMBER": "INE0JPD01013"
+  },
+  {
+    "symbol": "SANCO.NS",
+    "ISIN_NUMBER": "INE782L01012"
+  },
+  {
+    "symbol": "SANDESH.NS",
+    "ISIN_NUMBER": "INE583B01015"
+  },
+  {
+    "symbol": "SANDHAR.NS",
+    "ISIN_NUMBER": "INE278H01035"
+  },
+  {
+    "symbol": "SANDUMA.NS",
+    "ISIN_NUMBER": "INE149K01016"
+  },
+  {
+    "symbol": "SANGAMIND.NS",
+    "ISIN_NUMBER": "INE495C01010"
+  },
+  {
+    "symbol": "SANGHIIND.NS",
+    "ISIN_NUMBER": "INE999B01013"
+  },
+  {
+    "symbol": "SANGHVIMOV.NS",
+    "ISIN_NUMBER": "INE989A01032"
+  },
+  {
+    "symbol": "SANGINITA.NS",
+    "ISIN_NUMBER": "INE753W01010"
+  },
+  {
+    "symbol": "SANOFI.NS",
+    "ISIN_NUMBER": "INE058A01010"
+  },
+  {
+    "symbol": "SANOFICONR.NS",
+    "ISIN_NUMBER": "INE0UOS01011"
+  },
+  {
+    "symbol": "SANSERA.NS",
+    "ISIN_NUMBER": "INE953O01021"
+  },
+  {
+    "symbol": "SANSTAR.NS",
+    "ISIN_NUMBER": "INE08NE01025"
+  },
+  {
+    "symbol": "SAPPHIRE.NS",
+    "ISIN_NUMBER": "INE806T01020"
+  },
+  {
+    "symbol": "SARDAEN.NS",
+    "ISIN_NUMBER": "INE385C01021"
+  },
+  {
+    "symbol": "SAREGAMA.NS",
+    "ISIN_NUMBER": "INE979A01025"
+  },
+  {
+    "symbol": "SARLAPOLY.NS",
+    "ISIN_NUMBER": "INE453D01025"
+  },
+  {
+    "symbol": "SARVESHWAR.NS",
+    "ISIN_NUMBER": "INE324X01026"
+  },
+  {
+    "symbol": "SASKEN.NS",
+    "ISIN_NUMBER": "INE231F01020"
+  },
+  {
+    "symbol": "SASTASUNDR.NS",
+    "ISIN_NUMBER": "INE019J01013"
+  },
+  {
+    "symbol": "SATIA.NS",
+    "ISIN_NUMBER": "INE170E01023"
+  },
+  {
+    "symbol": "SATIN.NS",
+    "ISIN_NUMBER": "INE836B01017"
+  },
+  {
+    "symbol": "SAURASHCEM.NS",
+    "ISIN_NUMBER": "INE626A01014"
+  },
+  {
+    "symbol": "SBC.NS",
+    "ISIN_NUMBER": "INE04AK01028"
+  },
+  {
+    "symbol": "SBCL.NS",
+    "ISIN_NUMBER": "INE386D01027"
+  },
+  {
+    "symbol": "SBFC.NS",
+    "ISIN_NUMBER": "INE423Y01016"
+  },
+  {
+    "symbol": "SBGLP.NS",
+    "ISIN_NUMBER": "INE05ST01028"
+  },
+  {
+    "symbol": "SBICARD.NS",
+    "ISIN_NUMBER": "INE018E01016"
+  },
+  {
+    "symbol": "SBILIFE.NS",
+    "ISIN_NUMBER": "INE123W01016"
+  },
+  {
+    "symbol": "SBIN.NS",
+    "ISIN_NUMBER": "INE062A01020"
+  },
+  {
+    "symbol": "SCHAEFFLER.NS",
+    "ISIN_NUMBER": "INE513A01022"
+  },
+  {
+    "symbol": "SCHAND.NS",
+    "ISIN_NUMBER": "INE807K01035"
+  },
+  {
+    "symbol": "SCHNEIDER.NS",
+    "ISIN_NUMBER": "INE839M01018"
+  },
+  {
+    "symbol": "SCI.NS",
+    "ISIN_NUMBER": "INE109A01011"
+  },
+  {
+    "symbol": "SCILAL.NS",
+    "ISIN_NUMBER": "INE0PB301013"
+  },
+  {
+    "symbol": "SCODATUBES.NS",
+    "ISIN_NUMBER": "INE090501011"
+  },
+  {
+    "symbol": "SCPL.NS",
+    "ISIN_NUMBER": "INE501Y01019"
+  },
+  {
+    "symbol": "SDBL.NS",
+    "ISIN_NUMBER": "INE480C01038"
+  },
+  {
+    "symbol": "SEAMECLTD.NS",
+    "ISIN_NUMBER": "INE497B01018"
+  },
+  {
+    "symbol": "SECMARK.NS",
+    "ISIN_NUMBER": "INE0BTM01013"
+  },
+  {
+    "symbol": "SECURKLOUD.NS",
+    "ISIN_NUMBER": "INE650K01021"
+  },
+  {
+    "symbol": "SEDEMAC.NS",
+    "ISIN_NUMBER": "INE00XB01019"
+  },
+  {
+    "symbol": "SEJALLTD.NS",
+    "ISIN_NUMBER": "INE955I01044"
+  },
+  {
+    "symbol": "SELMC.NS",
+    "ISIN_NUMBER": "INE105I01020"
+  },
+  {
+    "symbol": "SEMAC.NS",
+    "ISIN_NUMBER": "INE617A01013"
+  },
+  {
+    "symbol": "SENCO.NS",
+    "ISIN_NUMBER": "INE602W01027"
+  },
+  {
+    "symbol": "SENORES.NS",
+    "ISIN_NUMBER": "INE0RB801010"
+  },
+  {
+    "symbol": "SEPC.NS",
+    "ISIN_NUMBER": "INE964H01014"
+  },
+  {
+    "symbol": "SERVOTECH.NS",
+    "ISIN_NUMBER": "INE782X01033"
+  },
+  {
+    "symbol": "SESHAPAPER.NS",
+    "ISIN_NUMBER": "INE630A01024"
+  },
+  {
+    "symbol": "SETCO.NS",
+    "ISIN_NUMBER": "INE878E01021"
+  },
+  {
+    "symbol": "SETL.NS",
+    "ISIN_NUMBER": "INE0M4D01010"
+  },
+  {
+    "symbol": "SETUINFRA.NS",
+    "ISIN_NUMBER": "INE023M01027"
+  },
+  {
+    "symbol": "SEYAIND.NS",
+    "ISIN_NUMBER": "INE573R01012"
+  },
+  {
+    "symbol": "SFL.NS",
+    "ISIN_NUMBER": "INE916U01025"
+  },
+  {
+    "symbol": "SGFIN.NS",
+    "ISIN_NUMBER": "INE618R01015"
+  },
+  {
+    "symbol": "SGIL.NS",
+    "ISIN_NUMBER": "INE00QT01015"
+  },
+  {
+    "symbol": "SGL.NS",
+    "ISIN_NUMBER": "INE353H01010"
+  },
+  {
+    "symbol": "SGMART.NS",
+    "ISIN_NUMBER": "INE385F01024"
+  },
+  {
+    "symbol": "SHADOWFAX.NS",
+    "ISIN_NUMBER": "INE12UN01015"
+  },
+  {
+    "symbol": "SHAH.NS",
+    "ISIN_NUMBER": "INE482J01021"
+  },
+  {
+    "symbol": "SHAHALLOYS.NS",
+    "ISIN_NUMBER": "INE640C01011"
+  },
+  {
+    "symbol": "SHAILY.NS",
+    "ISIN_NUMBER": "INE151G01028"
+  },
+  {
+    "symbol": "SHAKTIPUMP.NS",
+    "ISIN_NUMBER": "INE908D01010"
+  },
+  {
+    "symbol": "SHALBY.NS",
+    "ISIN_NUMBER": "INE597J01018"
+  },
+  {
+    "symbol": "SHALPAINTS.NS",
+    "ISIN_NUMBER": "INE849C01026"
+  },
+  {
+    "symbol": "SHANKARA.NS",
+    "ISIN_NUMBER": "INE274V01019"
+  },
+  {
+    "symbol": "SHANTI.NS",
+    "ISIN_NUMBER": "INE933X01016"
+  },
+  {
+    "symbol": "SHANTIGEAR.NS",
+    "ISIN_NUMBER": "INE631A01022"
+  },
+  {
+    "symbol": "SHANTIGOLD.NS",
+    "ISIN_NUMBER": "INE06ZD01017"
+  },
+  {
+    "symbol": "SHARDACROP.NS",
+    "ISIN_NUMBER": "INE221J01015"
+  },
+  {
+    "symbol": "SHARDAMOTR.NS",
+    "ISIN_NUMBER": "INE597I01028"
+  },
+  {
+    "symbol": "SHAREINDIA.NS",
+    "ISIN_NUMBER": "INE932X01026"
+  },
+  {
+    "symbol": "SHEKHAWATI.NS",
+    "ISIN_NUMBER": "INE268L01046"
+  },
+  {
+    "symbol": "SHEMAROO.NS",
+    "ISIN_NUMBER": "INE363M01019"
+  },
+  {
+    "symbol": "SHILCTECH.NS",
+    "ISIN_NUMBER": "INE024F01011"
+  },
+  {
+    "symbol": "SHILPAMED.NS",
+    "ISIN_NUMBER": "INE790G01031"
+  },
+  {
+    "symbol": "SHIVALIK.NS",
+    "ISIN_NUMBER": "INE788J01021"
+  },
+  {
+    "symbol": "SHIVAMAUTO.NS",
+    "ISIN_NUMBER": "INE637H01024"
+  },
+  {
+    "symbol": "SHIVAMILLS.NS",
+    "ISIN_NUMBER": "INE644Y01017"
+  },
+  {
+    "symbol": "SHIVATEX.NS",
+    "ISIN_NUMBER": "INE705C01020"
+  },
+  {
+    "symbol": "SHIVAUM.NS",
+    "ISIN_NUMBER": "INE719F01016"
+  },
+  {
+    "symbol": "SHK.NS",
+    "ISIN_NUMBER": "INE500L01026"
+  },
+  {
+    "symbol": "SHOPERSTOP.NS",
+    "ISIN_NUMBER": "INE498B01024"
+  },
+  {
+    "symbol": "SHRADHA.NS",
+    "ISIN_NUMBER": "INE715Y01031"
+  },
+  {
+    "symbol": "SHREDIGCEM.NS",
+    "ISIN_NUMBER": "INE232A01011"
+  },
+  {
+    "symbol": "SHREECEM.NS",
+    "ISIN_NUMBER": "INE070A01015"
+  },
+  {
+    "symbol": "SHREEJISPG.NS",
+    "ISIN_NUMBER": "INE1B6101010"
+  },
+  {
+    "symbol": "SHREEPUSHK.NS",
+    "ISIN_NUMBER": "INE712K01011"
+  },
+  {
+    "symbol": "SHREERAMA.NS",
+    "ISIN_NUMBER": "INE879A01019"
+  },
+  {
+    "symbol": "SHRENIK.NS",
+    "ISIN_NUMBER": "INE632X01030"
+  },
+  {
+    "symbol": "SHREYANIND.NS",
+    "ISIN_NUMBER": "INE231C01019"
+  },
+  {
+    "symbol": "SHRINGARMS.NS",
+    "ISIN_NUMBER": "INE1B3L01017"
+  },
+  {
+    "symbol": "SHRIPISTON.NS",
+    "ISIN_NUMBER": "INE526E01018"
+  },
+  {
+    "symbol": "SHRIRAMFIN.NS",
+    "ISIN_NUMBER": "INE721A01047"
+  },
+  {
+    "symbol": "SHRIRAMPPS.NS",
+    "ISIN_NUMBER": "INE217L01019"
+  },
+  {
+    "symbol": "SHYAMCENT.NS",
+    "ISIN_NUMBER": "INE979R01011"
+  },
+  {
+    "symbol": "SHYAMMETL.NS",
+    "ISIN_NUMBER": "INE810G01011"
+  },
+  {
+    "symbol": "SHYAMTEL.NS",
+    "ISIN_NUMBER": "INE635A01023"
+  },
+  {
+    "symbol": "SICALLOG.NS",
+    "ISIN_NUMBER": "INE075B01020"
+  },
+  {
+    "symbol": "SIEMENS.NS",
+    "ISIN_NUMBER": "INE003A01024"
+  },
+  {
+    "symbol": "SIGACHI.NS",
+    "ISIN_NUMBER": "INE0D0K01022"
+  },
+  {
+    "symbol": "SIGIND.NS",
+    "ISIN_NUMBER": "INE529F01035"
+  },
+  {
+    "symbol": "SIGMA.NS",
+    "ISIN_NUMBER": "INE0A0S01028"
+  },
+  {
+    "symbol": "SIGMAADV.NS",
+    "ISIN_NUMBER": "INE933B01012"
+  },
+  {
+    "symbol": "SIGNATURE.NS",
+    "ISIN_NUMBER": "INE903U01023"
+  },
+  {
+    "symbol": "SIGNPOST.NS",
+    "ISIN_NUMBER": "INE0KGZ01021"
+  },
+  {
+    "symbol": "SIKKO.NS",
+    "ISIN_NUMBER": "INE112X01025"
+  },
+  {
+    "symbol": "SIL.NS",
+    "ISIN_NUMBER": "INE173A01025"
+  },
+  {
+    "symbol": "SILGO.NS",
+    "ISIN_NUMBER": "INE01II01013"
+  },
+  {
+    "symbol": "SILINV.NS",
+    "ISIN_NUMBER": "INE923A01015"
+  },
+  {
+    "symbol": "SILLYMONKS.NS",
+    "ISIN_NUMBER": "INE203Y01012"
+  },
+  {
+    "symbol": "SILVERTUC.NS",
+    "ISIN_NUMBER": "INE625X01026"
+  },
+  {
+    "symbol": "SIMBHALS.NS",
+    "ISIN_NUMBER": "INE748T01016"
+  },
+  {
+    "symbol": "SIMPLEXINF.NS",
+    "ISIN_NUMBER": "INE059B01024"
+  },
+  {
+    "symbol": "SINCLAIR.NS",
+    "ISIN_NUMBER": "INE985A01022"
+  },
+  {
+    "symbol": "SINDHUTRAD.NS",
+    "ISIN_NUMBER": "INE325D01025"
+  },
+  {
+    "symbol": "SINGERIND.NS",
+    "ISIN_NUMBER": "INE638A01035"
+  },
+  {
+    "symbol": "SINTERCOM.NS",
+    "ISIN_NUMBER": "INE129Z01016"
+  },
+  {
+    "symbol": "SIRCA.NS",
+    "ISIN_NUMBER": "INE792Z01011"
+  },
+  {
+    "symbol": "SIS.NS",
+    "ISIN_NUMBER": "INE285J01028"
+  },
+  {
+    "symbol": "SITINET.NS",
+    "ISIN_NUMBER": "INE965H01011"
+  },
+  {
+    "symbol": "SIYSIL.NS",
+    "ISIN_NUMBER": "INE076B01028"
+  },
+  {
+    "symbol": "SJS.NS",
+    "ISIN_NUMBER": "INE284S01014"
+  },
+  {
+    "symbol": "SJVN.NS",
+    "ISIN_NUMBER": "INE002L01015"
+  },
+  {
+    "symbol": "SKFINDIA.NS",
+    "ISIN_NUMBER": "INE640A01023"
+  },
+  {
+    "symbol": "SKFINDUS.NS",
+    "ISIN_NUMBER": "INE2J8701016"
+  },
+  {
+    "symbol": "SKIPPER.NS",
+    "ISIN_NUMBER": "INE439E01022"
+  },
+  {
+    "symbol": "SKMEGGPROD.NS",
+    "ISIN_NUMBER": "INE411D01023"
+  },
+  {
+    "symbol": "SKYGOLD.NS",
+    "ISIN_NUMBER": "INE01IU01018"
+  },
+  {
+    "symbol": "SMARTLINK.NS",
+    "ISIN_NUMBER": "INE178C01020"
+  },
+  {
+    "symbol": "SMARTWORKS.NS",
+    "ISIN_NUMBER": "INE0NAZ01010"
+  },
+  {
+    "symbol": "SMCGLOBAL.NS",
+    "ISIN_NUMBER": "INE103C01036"
+  },
+  {
+    "symbol": "SMLMAH.NS",
+    "ISIN_NUMBER": "INE294B01019"
+  },
+  {
+    "symbol": "SMLT.NS",
+    "ISIN_NUMBER": "INE017W01010"
+  },
+  {
+    "symbol": "SMSPHARMA.NS",
+    "ISIN_NUMBER": "INE812G01025"
+  },
+  {
+    "symbol": "SNOWMAN.NS",
+    "ISIN_NUMBER": "INE734N01019"
+  },
+  {
+    "symbol": "SOBHA.NS",
+    "ISIN_NUMBER": "INE671H01015"
+  },
+  {
+    "symbol": "SOFTTECH.NS",
+    "ISIN_NUMBER": "INE728Z01015"
+  },
+  {
+    "symbol": "SOLARA.NS",
+    "ISIN_NUMBER": "INE624Z01016"
+  },
+  {
+    "symbol": "SOLARINDS.NS",
+    "ISIN_NUMBER": "INE343H01029"
+  },
+  {
+    "symbol": "SOLARWORLD.NS",
+    "ISIN_NUMBER": "INE0TY101024"
+  },
+  {
+    "symbol": "SOLEX.NS",
+    "ISIN_NUMBER": "INE880Y01017"
+  },
+  {
+    "symbol": "SOMANYCERA.NS",
+    "ISIN_NUMBER": "INE355A01028"
+  },
+  {
+    "symbol": "SOMATEX.NS",
+    "ISIN_NUMBER": "INE314C01013"
+  },
+  {
+    "symbol": "SOMICONVEY.NS",
+    "ISIN_NUMBER": "INE323J01019"
+  },
+  {
+    "symbol": "SONACOMS.NS",
+    "ISIN_NUMBER": "INE073K01018"
+  },
+  {
+    "symbol": "SONAMLTD.NS",
+    "ISIN_NUMBER": "INE00LM01029"
+  },
+  {
+    "symbol": "SONATSOFTW.NS",
+    "ISIN_NUMBER": "INE269A01021"
+  },
+  {
+    "symbol": "SOTL.NS",
+    "ISIN_NUMBER": "INE035D01020"
+  },
+  {
+    "symbol": "SOUTHBANK.NS",
+    "ISIN_NUMBER": "INE683A01023"
+  },
+  {
+    "symbol": "SOUTHWEST.NS",
+    "ISIN_NUMBER": "INE980Y01015"
+  },
+  {
+    "symbol": "SPAL.NS",
+    "ISIN_NUMBER": "INE212I01016"
+  },
+  {
+    "symbol": "SPANDANA.NS",
+    "ISIN_NUMBER": "INE572J01011"
+  },
+  {
+    "symbol": "SPARC.NS",
+    "ISIN_NUMBER": "INE232I01014"
+  },
+  {
+    "symbol": "SPCENET.NS",
+    "ISIN_NUMBER": "INE970N01027"
+  },
+  {
+    "symbol": "SPECIALITY.NS",
+    "ISIN_NUMBER": "INE247M01014"
+  },
+  {
+    "symbol": "SPECTRUM.NS",
+    "ISIN_NUMBER": "INE01EO01010"
+  },
+  {
+    "symbol": "SPENCERS.NS",
+    "ISIN_NUMBER": "INE020801028"
+  },
+  {
+    "symbol": "SPIC.NS",
+    "ISIN_NUMBER": "INE147A01011"
+  },
+  {
+    "symbol": "SPLIL.NS",
+    "ISIN_NUMBER": "INE978G01016"
+  },
+  {
+    "symbol": "SPLPETRO.NS",
+    "ISIN_NUMBER": "INE663A01033"
+  },
+  {
+    "symbol": "SPMLINFRA.NS",
+    "ISIN_NUMBER": "INE937A01023"
+  },
+  {
+    "symbol": "SPORTKING.NS",
+    "ISIN_NUMBER": "INE885H01029"
+  },
+  {
+    "symbol": "SRD.NS",
+    "ISIN_NUMBER": "INE01NE01012"
+  },
+  {
+    "symbol": "SREEL.NS",
+    "ISIN_NUMBER": "INE099F01013"
+  },
+  {
+    "symbol": "SRF.NS",
+    "ISIN_NUMBER": "INE647A01010"
+  },
+  {
+    "symbol": "SRGHFL.NS",
+    "ISIN_NUMBER": "INE559N01010"
+  },
+  {
+    "symbol": "SRHHYPOLTD.NS",
+    "ISIN_NUMBER": "INE917H01012"
+  },
+  {
+    "symbol": "SRM.NS",
+    "ISIN_NUMBER": "INE0R6Z01013"
+  },
+  {
+    "symbol": "SRTL.NS",
+    "ISIN_NUMBER": "INE19GK01015"
+  },
+  {
+    "symbol": "SSDL.NS",
+    "ISIN_NUMBER": "INE0PQ101010"
+  },
+  {
+    "symbol": "SSWL.NS",
+    "ISIN_NUMBER": "INE802C01033"
+  },
+  {
+    "symbol": "STALLION.NS",
+    "ISIN_NUMBER": "INE0RYC01010"
+  },
+  {
+    "symbol": "STANLEY.NS",
+    "ISIN_NUMBER": "INE01A001028"
+  },
+  {
+    "symbol": "STAR.NS",
+    "ISIN_NUMBER": "INE939A01011"
+  },
+  {
+    "symbol": "STARCEMENT.NS",
+    "ISIN_NUMBER": "INE460H01021"
+  },
+  {
+    "symbol": "STARHEALTH.NS",
+    "ISIN_NUMBER": "INE575P01011"
+  },
+  {
+    "symbol": "STARPAPER.NS",
+    "ISIN_NUMBER": "INE733A01018"
+  },
+  {
+    "symbol": "STARTECK.NS",
+    "ISIN_NUMBER": "INE992I01013"
+  },
+  {
+    "symbol": "STCINDIA.NS",
+    "ISIN_NUMBER": "INE655A01013"
+  },
+  {
+    "symbol": "STEELCAS.NS",
+    "ISIN_NUMBER": "INE124E01038"
+  },
+  {
+    "symbol": "STEELCITY.NS",
+    "ISIN_NUMBER": "INE395H01011"
+  },
+  {
+    "symbol": "STEELXIND.NS",
+    "ISIN_NUMBER": "INE503B01021"
+  },
+  {
+    "symbol": "STEL.NS",
+    "ISIN_NUMBER": "INE577L01016"
+  },
+  {
+    "symbol": "STERTOOLS.NS",
+    "ISIN_NUMBER": "INE334A01023"
+  },
+  {
+    "symbol": "STLNETWORK.NS",
+    "ISIN_NUMBER": "INE1VXE01018"
+  },
+  {
+    "symbol": "STLTECH.NS",
+    "ISIN_NUMBER": "INE089C01029"
+  },
+  {
+    "symbol": "STOVEKRAFT.NS",
+    "ISIN_NUMBER": "INE00IN01015"
+  },
+  {
+    "symbol": "STUDDS.NS",
+    "ISIN_NUMBER": "INE00Q601028"
+  },
+  {
+    "symbol": "STYL.NS",
+    "ISIN_NUMBER": "INE04VU01023"
+  },
+  {
+    "symbol": "STYLAMIND.NS",
+    "ISIN_NUMBER": "INE239C01020"
+  },
+  {
+    "symbol": "STYLEBAAZA.NS",
+    "ISIN_NUMBER": "INE01FR01028"
+  },
+  {
+    "symbol": "STYRENIX.NS",
+    "ISIN_NUMBER": "INE189B01011"
+  },
+  {
+    "symbol": "SUBEXLTD.NS",
+    "ISIN_NUMBER": "INE754A01055"
+  },
+  {
+    "symbol": "SUBROS.NS",
+    "ISIN_NUMBER": "INE287B01021"
+  },
+  {
+    "symbol": "SUDARCOLOR.NS",
+    "ISIN_NUMBER": "INE492A01029"
+  },
+  {
+    "symbol": "SUDARSCHEM.NS",
+    "ISIN_NUMBER": "INE659A01023"
+  },
+  {
+    "symbol": "SUDEEPPHRM.NS",
+    "ISIN_NUMBER": "INE0QPI01025"
+  },
+  {
+    "symbol": "SUKHJITS.NS",
+    "ISIN_NUMBER": "INE450E01029"
+  },
+  {
+    "symbol": "SULA.NS",
+    "ISIN_NUMBER": "INE142Q01026"
+  },
+  {
+    "symbol": "SUMEETINDS.NS",
+    "ISIN_NUMBER": "INE235C01036"
+  },
+  {
+    "symbol": "SUMICHEM.NS",
+    "ISIN_NUMBER": "INE258G01013"
+  },
+  {
+    "symbol": "SUMIT.NS",
+    "ISIN_NUMBER": "INE748Z01013"
+  },
+  {
+    "symbol": "SUMMITSEC.NS",
+    "ISIN_NUMBER": "INE519C01017"
+  },
+  {
+    "symbol": "SUNCLAY.NS",
+    "ISIN_NUMBER": "INE0Q3R01026"
+  },
+  {
+    "symbol": "SUNDARAM.NS",
+    "ISIN_NUMBER": "INE108E01023"
+  },
+  {
+    "symbol": "SUNDARMFIN.NS",
+    "ISIN_NUMBER": "INE660A01013"
+  },
+  {
+    "symbol": "SUNDRMBRAK.NS",
+    "ISIN_NUMBER": "INE073D01013"
+  },
+  {
+    "symbol": "SUNDRMFAST.NS",
+    "ISIN_NUMBER": "INE387A01021"
+  },
+  {
+    "symbol": "SUNDROP.NS",
+    "ISIN_NUMBER": "INE209A01019"
+  },
+  {
+    "symbol": "SUNFLAG.NS",
+    "ISIN_NUMBER": "INE947A01014"
+  },
+  {
+    "symbol": "SUNPHARMA.NS",
+    "ISIN_NUMBER": "INE044A01036"
+  },
+  {
+    "symbol": "SUNTECK.NS",
+    "ISIN_NUMBER": "INE805D01034"
+  },
+  {
+    "symbol": "SUNTV.NS",
+    "ISIN_NUMBER": "INE424H01027"
+  },
+  {
+    "symbol": "SUPERHOUSE.NS",
+    "ISIN_NUMBER": "INE712B01010"
+  },
+  {
+    "symbol": "SUPERSPIN.NS",
+    "ISIN_NUMBER": "INE662A01027"
+  },
+  {
+    "symbol": "SUPRAJIT.NS",
+    "ISIN_NUMBER": "INE399C01030"
+  },
+  {
+    "symbol": "SUPREME.NS",
+    "ISIN_NUMBER": "INE822E01011"
+  },
+  {
+    "symbol": "SUPREMEENG.NS",
+    "ISIN_NUMBER": "INE319Z01021"
+  },
+  {
+    "symbol": "SUPREMEIND.NS",
+    "ISIN_NUMBER": "INE195A01028"
+  },
+  {
+    "symbol": "SUPREMEINF.NS",
+    "ISIN_NUMBER": "INE550H01011"
+  },
+  {
+    "symbol": "SUPRIYA.NS",
+    "ISIN_NUMBER": "INE07RO01027"
+  },
+  {
+    "symbol": "SURAJEST.NS",
+    "ISIN_NUMBER": "INE843S01025"
+  },
+  {
+    "symbol": "SURAJLTD.NS",
+    "ISIN_NUMBER": "INE713C01016"
+  },
+  {
+    "symbol": "SURAKSHA.NS",
+    "ISIN_NUMBER": "INE877V01027"
+  },
+  {
+    "symbol": "SURANASOL.NS",
+    "ISIN_NUMBER": "INE272L01022"
+  },
+  {
+    "symbol": "SURANAT&P.NS",
+    "ISIN_NUMBER": "INE130B01031"
+  },
+  {
+    "symbol": "SURYALAXMI.NS",
+    "ISIN_NUMBER": "INE713B01026"
+  },
+  {
+    "symbol": "SURYAROSNI.NS",
+    "ISIN_NUMBER": "INE335A01020"
+  },
+  {
+    "symbol": "SURYODAY.NS",
+    "ISIN_NUMBER": "INE428Q01011"
+  },
+  {
+    "symbol": "SUTLEJTEX.NS",
+    "ISIN_NUMBER": "INE645H01027"
+  },
+  {
+    "symbol": "SUVEN.NS",
+    "ISIN_NUMBER": "INE495B01038"
+  },
+  {
+    "symbol": "SUVIDHAA.NS",
+    "ISIN_NUMBER": "INE018401013"
+  },
+  {
+    "symbol": "SUYOG.NS",
+    "ISIN_NUMBER": "INE442P01014"
+  },
+  {
+    "symbol": "SUZLON.NS",
+    "ISIN_NUMBER": "INE040H01021"
+  },
+  {
+    "symbol": "SVLL.NS",
+    "ISIN_NUMBER": "INE00CE01017"
+  },
+  {
+    "symbol": "SVPGLOB.NS",
+    "ISIN_NUMBER": "INE308E01029"
+  },
+  {
+    "symbol": "SWANCORP.NS",
+    "ISIN_NUMBER": "INE665A01038"
+  },
+  {
+    "symbol": "SWANDEF.NS",
+    "ISIN_NUMBER": "INE542F01020"
+  },
+  {
+    "symbol": "SWARAJENG.NS",
+    "ISIN_NUMBER": "INE277A01016"
+  },
+  {
+    "symbol": "SWELECTES.NS",
+    "ISIN_NUMBER": "INE409B01013"
+  },
+  {
+    "symbol": "SWIGGY.NS",
+    "ISIN_NUMBER": "INE00H001014"
+  },
+  {
+    "symbol": "SWSOLAR.NS",
+    "ISIN_NUMBER": "INE00M201021"
+  },
+  {
+    "symbol": "SYMPHONY.NS",
+    "ISIN_NUMBER": "INE225D01027"
+  },
+  {
+    "symbol": "SYNCOMF.NS",
+    "ISIN_NUMBER": "INE312C01025"
+  },
+  {
+    "symbol": "SYNGENE.NS",
+    "ISIN_NUMBER": "INE398R01022"
+  },
+  {
+    "symbol": "SYRMA.NS",
+    "ISIN_NUMBER": "INE0DYJ01015"
+  },
+  {
+    "symbol": "SYSTMTXC.NS",
+    "ISIN_NUMBER": "INE356B01024"
+  },
+  {
+    "symbol": "TAINWALCHM.NS",
+    "ISIN_NUMBER": "INE123C01018"
+  },
+  {
+    "symbol": "TAJGVK.NS",
+    "ISIN_NUMBER": "INE586B01026"
+  },
+  {
+    "symbol": "TAKE.NS",
+    "ISIN_NUMBER": "INE142I01023"
+  },
+  {
+    "symbol": "TALBROAUTO.NS",
+    "ISIN_NUMBER": "INE187D01029"
+  },
+  {
+    "symbol": "TANLA.NS",
+    "ISIN_NUMBER": "INE483C01032"
+  },
+  {
+    "symbol": "TARACHAND.NS",
+    "ISIN_NUMBER": "INE555Z01020"
+  },
+  {
+    "symbol": "TARAPUR.NS",
+    "ISIN_NUMBER": "INE747K01017"
+  },
+  {
+    "symbol": "TARC.NS",
+    "ISIN_NUMBER": "INE0EK901012"
+  },
+  {
+    "symbol": "TARIL.NS",
+    "ISIN_NUMBER": "INE763I01026"
+  },
+  {
+    "symbol": "TARMAT.NS",
+    "ISIN_NUMBER": "INE924H01018"
+  },
+  {
+    "symbol": "TARSONS.NS",
+    "ISIN_NUMBER": "INE144Z01023"
+  },
+  {
+    "symbol": "TASTYBITE.NS",
+    "ISIN_NUMBER": "INE488B01017"
+  },
+  {
+    "symbol": "TATACAP.NS",
+    "ISIN_NUMBER": "INE976I01016"
+  },
+  {
+    "symbol": "TATACHEM.NS",
+    "ISIN_NUMBER": "INE092A01019"
+  },
+  {
+    "symbol": "TATACOMM.NS",
+    "ISIN_NUMBER": "INE151A01013"
+  },
+  {
+    "symbol": "TATACONSUM.NS",
+    "ISIN_NUMBER": "INE192A01025"
+  },
+  {
+    "symbol": "TATAELXSI.NS",
+    "ISIN_NUMBER": "INE670A01012"
+  },
+  {
+    "symbol": "TATAINVEST.NS",
+    "ISIN_NUMBER": "INE672A01026"
+  },
+  {
+    "symbol": "TATAPOWER.NS",
+    "ISIN_NUMBER": "INE245A01021"
+  },
+  {
+    "symbol": "TATASTEEL.NS",
+    "ISIN_NUMBER": "INE081A01020"
+  },
+  {
+    "symbol": "TATATECH.NS",
+    "ISIN_NUMBER": "INE142M01025"
+  },
+  {
+    "symbol": "TATVA.NS",
+    "ISIN_NUMBER": "INE0GK401011"
+  },
+  {
+    "symbol": "TBOTEK.NS",
+    "ISIN_NUMBER": "INE673O01025"
+  },
+  {
+    "symbol": "TBZ.NS",
+    "ISIN_NUMBER": "INE760L01018"
+  },
+  {
+    "symbol": "TCC.NS",
+    "ISIN_NUMBER": "INE887D01016"
+  },
+  {
+    "symbol": "TCI.NS",
+    "ISIN_NUMBER": "INE688A01022"
+  },
+  {
+    "symbol": "TCIEXP.NS",
+    "ISIN_NUMBER": "INE586V01016"
+  },
+  {
+    "symbol": "TCIFINANCE.NS",
+    "ISIN_NUMBER": "INE911B01018"
+  },
+  {
+    "symbol": "TCPLPACK.NS",
+    "ISIN_NUMBER": "INE822C01015"
+  },
+  {
+    "symbol": "TCS.NS",
+    "ISIN_NUMBER": "INE467B01029"
+  },
+  {
+    "symbol": "TDPOWERSYS.NS",
+    "ISIN_NUMBER": "INE419M01027"
+  },
+  {
+    "symbol": "TEAMGTY.NS",
+    "ISIN_NUMBER": "INE289C01025"
+  },
+  {
+    "symbol": "TEAMLEASE.NS",
+    "ISIN_NUMBER": "INE985S01024"
+  },
+  {
+    "symbol": "TECHM.NS",
+    "ISIN_NUMBER": "INE669C01036"
+  },
+  {
+    "symbol": "TECHNOE.NS",
+    "ISIN_NUMBER": "INE285K01026"
+  },
+  {
+    "symbol": "TECILCHEM.NS",
+    "ISIN_NUMBER": "INE014B01011"
+  },
+  {
+    "symbol": "TEGA.NS",
+    "ISIN_NUMBER": "INE011K01018"
+  },
+  {
+    "symbol": "TEJASNET.NS",
+    "ISIN_NUMBER": "INE010J01012"
+  },
+  {
+    "symbol": "TEMBO.NS",
+    "ISIN_NUMBER": "INE869Y01010"
+  },
+  {
+    "symbol": "TENNIND.NS",
+    "ISIN_NUMBER": "INE19RI01016"
+  },
+  {
+    "symbol": "TERASOFT.NS",
+    "ISIN_NUMBER": "INE482B01010"
+  },
+  {
+    "symbol": "TEXINFRA.NS",
+    "ISIN_NUMBER": "INE435C01024"
+  },
+  {
+    "symbol": "TEXMOPIPES.NS",
+    "ISIN_NUMBER": "INE141K01013"
+  },
+  {
+    "symbol": "TEXRAIL.NS",
+    "ISIN_NUMBER": "INE621L01012"
+  },
+  {
+    "symbol": "TFCILTD.NS",
+    "ISIN_NUMBER": "INE305A01023"
+  },
+  {
+    "symbol": "TFL.NS",
+    "ISIN_NUMBER": "INE804H01012"
+  },
+  {
+    "symbol": "TGBHOTELS.NS",
+    "ISIN_NUMBER": "INE797H01018"
+  },
+  {
+    "symbol": "THANGAMAYL.NS",
+    "ISIN_NUMBER": "INE085J01014"
+  },
+  {
+    "symbol": "THEINVEST.NS",
+    "ISIN_NUMBER": "INE924D01017"
+  },
+  {
+    "symbol": "THEJO.NS",
+    "ISIN_NUMBER": "INE121N01019"
+  },
+  {
+    "symbol": "THELEELA.NS",
+    "ISIN_NUMBER": "INE0AQ201015"
+  },
+  {
+    "symbol": "THEMISMED.NS",
+    "ISIN_NUMBER": "INE083B01024"
+  },
+  {
+    "symbol": "THERMAX.NS",
+    "ISIN_NUMBER": "INE152A01029"
+  },
+  {
+    "symbol": "THOMASCOOK.NS",
+    "ISIN_NUMBER": "INE332A01027"
+  },
+  {
+    "symbol": "THOMASCOTT.NS",
+    "ISIN_NUMBER": "INE480M01011"
+  },
+  {
+    "symbol": "THYROCARE.NS",
+    "ISIN_NUMBER": "INE594H01019"
+  },
+  {
+    "symbol": "TI.NS",
+    "ISIN_NUMBER": "INE133E01013"
+  },
+  {
+    "symbol": "TICL.NS",
+    "ISIN_NUMBER": "INE388G01026"
+  },
+  {
+    "symbol": "TIGERLOGS.NS",
+    "ISIN_NUMBER": "INE906O01029"
+  },
+  {
+    "symbol": "TIIL.NS",
+    "ISIN_NUMBER": "INE545H01011"
+  },
+  {
+    "symbol": "TIINDIA.NS",
+    "ISIN_NUMBER": "INE974X01010"
+  },
+  {
+    "symbol": "TIJARIA.NS",
+    "ISIN_NUMBER": "INE440L01017"
+  },
+  {
+    "symbol": "TIL.NS",
+    "ISIN_NUMBER": "INE806C01018"
+  },
+  {
+    "symbol": "TIMETECHNO.NS",
+    "ISIN_NUMBER": "INE508G01029"
+  },
+  {
+    "symbol": "TIMKEN.NS",
+    "ISIN_NUMBER": "INE325A01013"
+  },
+  {
+    "symbol": "TINNARUBR.NS",
+    "ISIN_NUMBER": "INE015C01016"
+  },
+  {
+    "symbol": "TIPSFILMS.NS",
+    "ISIN_NUMBER": "INE0LQS01015"
+  },
+  {
+    "symbol": "TIPSMUSIC.NS",
+    "ISIN_NUMBER": "INE716B01029"
+  },
+  {
+    "symbol": "TIRUMALCHM.NS",
+    "ISIN_NUMBER": "INE338A01024"
+  },
+  {
+    "symbol": "TIRUPATIFL.NS",
+    "ISIN_NUMBER": "INE319Y01024"
+  },
+  {
+    "symbol": "TITAGARH.NS",
+    "ISIN_NUMBER": "INE615H01020"
+  },
+  {
+    "symbol": "TITAN.NS",
+    "ISIN_NUMBER": "INE280A01028"
+  },
+  {
+    "symbol": "TMB.NS",
+    "ISIN_NUMBER": "INE668A01016"
+  },
+  {
+    "symbol": "TMCV.NS",
+    "ISIN_NUMBER": "INE1TAE01010"
+  },
+  {
+    "symbol": "TMPV.NS",
+    "ISIN_NUMBER": "INE155A01022"
+  },
+  {
+    "symbol": "TNPETRO.NS",
+    "ISIN_NUMBER": "INE148A01019"
+  },
+  {
+    "symbol": "TNPL.NS",
+    "ISIN_NUMBER": "INE107A01015"
+  },
+  {
+    "symbol": "TNTELE.NS",
+    "ISIN_NUMBER": "INE141D01018"
+  },
+  {
+    "symbol": "TOKYOPLAST.NS",
+    "ISIN_NUMBER": "INE932C01012"
+  },
+  {
+    "symbol": "TOLINS.NS",
+    "ISIN_NUMBER": "INE0RWQ01014"
+  },
+  {
+    "symbol": "TORNTPHARM.NS",
+    "ISIN_NUMBER": "INE685A01028"
+  },
+  {
+    "symbol": "TORNTPOWER.NS",
+    "ISIN_NUMBER": "INE813H01021"
+  },
+  {
+    "symbol": "TOTAL.NS",
+    "ISIN_NUMBER": "INE336X01012"
+  },
+  {
+    "symbol": "TOUCHWOOD.NS",
+    "ISIN_NUMBER": "INE486Y01013"
+  },
+  {
+    "symbol": "TPHQ.NS",
+    "ISIN_NUMBER": "INE065J01024"
+  },
+  {
+    "symbol": "TPLPLASTEH.NS",
+    "ISIN_NUMBER": "INE413G01022"
+  },
+  {
+    "symbol": "TRACXN.NS",
+    "ISIN_NUMBER": "INE0HMF01019"
+  },
+  {
+    "symbol": "TRANSRAILL.NS",
+    "ISIN_NUMBER": "INE454P01035"
+  },
+  {
+    "symbol": "TRANSWORLD.NS",
+    "ISIN_NUMBER": "INE757B01015"
+  },
+  {
+    "symbol": "TRAVELFOOD.NS",
+    "ISIN_NUMBER": "INE103V01028"
+  },
+  {
+    "symbol": "TREEHOUSE.NS",
+    "ISIN_NUMBER": "INE040M01013"
+  },
+  {
+    "symbol": "TREJHARA.NS",
+    "ISIN_NUMBER": "INE00CA01015"
+  },
+  {
+    "symbol": "TREL.NS",
+    "ISIN_NUMBER": "INE0O3901029"
+  },
+  {
+    "symbol": "TRENT.NS",
+    "ISIN_NUMBER": "INE849A01020"
+  },
+  {
+    "symbol": "TRF.NS",
+    "ISIN_NUMBER": "INE391D01019"
+  },
+  {
+    "symbol": "TRIDENT.NS",
+    "ISIN_NUMBER": "INE064C01022"
+  },
+  {
+    "symbol": "TRIGYN.NS",
+    "ISIN_NUMBER": "INE948A01012"
+  },
+  {
+    "symbol": "TRITURBINE.NS",
+    "ISIN_NUMBER": "INE152M01016"
+  },
+  {
+    "symbol": "TRIVENI.NS",
+    "ISIN_NUMBER": "INE256C01024"
+  },
+  {
+    "symbol": "TRU.NS",
+    "ISIN_NUMBER": "INE615R01029"
+  },
+  {
+    "symbol": "TRUALT.NS",
+    "ISIN_NUMBER": "INE0MWH01014"
+  },
+  {
+    "symbol": "TSFINV.NS",
+    "ISIN_NUMBER": "INE202Z01029"
+  },
+  {
+    "symbol": "TTKHLTCARE.NS",
+    "ISIN_NUMBER": "INE910C01018"
+  },
+  {
+    "symbol": "TTKPRESTIG.NS",
+    "ISIN_NUMBER": "INE690A01028"
+  },
+  {
+    "symbol": "TTL.NS",
+    "ISIN_NUMBER": "INE592B01024"
+  },
+  {
+    "symbol": "TTML.NS",
+    "ISIN_NUMBER": "INE517B01013"
+  },
+  {
+    "symbol": "TVSELECT.NS",
+    "ISIN_NUMBER": "INE236G01019"
+  },
+  {
+    "symbol": "TVSHLTD.NS",
+    "ISIN_NUMBER": "INE105A01035"
+  },
+  {
+    "symbol": "TVSMOTOR.NS",
+    "ISIN_NUMBER": "INE494B01023"
+  },
+  {
+    "symbol": "TVSSCS.NS",
+    "ISIN_NUMBER": "INE395N01027"
+  },
+  {
+    "symbol": "TVSSRICHAK.NS",
+    "ISIN_NUMBER": "INE421C01016"
+  },
+  {
+    "symbol": "TVTODAY.NS",
+    "ISIN_NUMBER": "INE038F01029"
+  },
+  {
+    "symbol": "TVVISION.NS",
+    "ISIN_NUMBER": "INE871L01013"
+  },
+  {
+    "symbol": "UBL.NS",
+    "ISIN_NUMBER": "INE686F01025"
+  },
+  {
+    "symbol": "UCAL.NS",
+    "ISIN_NUMBER": "INE139B01016"
+  },
+  {
+    "symbol": "UCOBANK.NS",
+    "ISIN_NUMBER": "INE691A01018"
+  },
+  {
+    "symbol": "UDS.NS",
+    "ISIN_NUMBER": "INE851I01011"
+  },
+  {
+    "symbol": "UEL.NS",
+    "ISIN_NUMBER": "INE899L01030"
+  },
+  {
+    "symbol": "UFBL.NS",
+    "ISIN_NUMBER": "INE382M01027"
+  },
+  {
+    "symbol": "UFLEX.NS",
+    "ISIN_NUMBER": "INE516A01017"
+  },
+  {
+    "symbol": "UFO.NS",
+    "ISIN_NUMBER": "INE527H01019"
+  },
+  {
+    "symbol": "UGARSUGAR.NS",
+    "ISIN_NUMBER": "INE071E01023"
+  },
+  {
+    "symbol": "UGROCAP.NS",
+    "ISIN_NUMBER": "INE583D01011"
+  },
+  {
+    "symbol": "UJJIVANSFB.NS",
+    "ISIN_NUMBER": "INE551W01018"
+  },
+  {
+    "symbol": "ULTRACEMCO.NS",
+    "ISIN_NUMBER": "INE481G01011"
+  },
+  {
+    "symbol": "UMAEXPORTS.NS",
+    "ISIN_NUMBER": "INE0GIU01018"
+  },
+  {
+    "symbol": "UMESLTD.NS",
+    "ISIN_NUMBER": "INE240C01028"
+  },
+  {
+    "symbol": "UMIYA-MRO.NS",
+    "ISIN_NUMBER": "INE398B01018"
+  },
+  {
+    "symbol": "UNICHEMLAB.NS",
+    "ISIN_NUMBER": "INE351A01035"
+  },
+  {
+    "symbol": "UNIDT.NS",
+    "ISIN_NUMBER": "INE961D01019"
+  },
+  {
+    "symbol": "UNIECOM.NS",
+    "ISIN_NUMBER": "INE00U401027"
+  },
+  {
+    "symbol": "UNIENTER.NS",
+    "ISIN_NUMBER": "INE037A01022"
+  },
+  {
+    "symbol": "UNIINFO.NS",
+    "ISIN_NUMBER": "INE481Z01011"
+  },
+  {
+    "symbol": "UNIMECH.NS",
+    "ISIN_NUMBER": "INE0U3I01011"
+  },
+  {
+    "symbol": "UNIONBANK.NS",
+    "ISIN_NUMBER": "INE692A01016"
+  },
+  {
+    "symbol": "UNIPARTS.NS",
+    "ISIN_NUMBER": "INE244O01017"
+  },
+  {
+    "symbol": "UNITDSPR.NS",
+    "ISIN_NUMBER": "INE854D01024"
+  },
+  {
+    "symbol": "UNITECH.NS",
+    "ISIN_NUMBER": "INE694A01020"
+  },
+  {
+    "symbol": "UNITEDPOLY.NS",
+    "ISIN_NUMBER": "INE368U01029"
+  },
+  {
+    "symbol": "UNITEDTEA.NS",
+    "ISIN_NUMBER": "INE458F01011"
+  },
+  {
+    "symbol": "UNIVASTU.NS",
+    "ISIN_NUMBER": "INE562X01013"
+  },
+  {
+    "symbol": "UNIVCABLES.NS",
+    "ISIN_NUMBER": "INE279A01012"
+  },
+  {
+    "symbol": "UNIVPHOTO.NS",
+    "ISIN_NUMBER": "INE03V001013"
+  },
+  {
+    "symbol": "UNOMINDA.NS",
+    "ISIN_NUMBER": "INE405E01023"
+  },
+  {
+    "symbol": "UPL.NS",
+    "ISIN_NUMBER": "INE628A01036"
+  },
+  {
+    "symbol": "URAVIDEF.NS",
+    "ISIN_NUMBER": "INE568Z01015"
+  },
+  {
+    "symbol": "URBANCO.NS",
+    "ISIN_NUMBER": "INE0CAZ01013"
+  },
+  {
+    "symbol": "URJA.NS",
+    "ISIN_NUMBER": "INE550C01020"
+  },
+  {
+    "symbol": "USHAMART.NS",
+    "ISIN_NUMBER": "INE228A01035"
+  },
+  {
+    "symbol": "USK.NS",
+    "ISIN_NUMBER": "INE0N0Y01013"
+  },
+  {
+    "symbol": "UTIAMC.NS",
+    "ISIN_NUMBER": "INE094J01016"
+  },
+  {
+    "symbol": "UTKARSHBNK.NS",
+    "ISIN_NUMBER": "INE735W01017"
+  },
+  {
+    "symbol": "UTLSOLAR.NS",
+    "ISIN_NUMBER": "INE12UR01024"
+  },
+  {
+    "symbol": "UTTAMSUGAR.NS",
+    "ISIN_NUMBER": "INE786F01031"
+  },
+  {
+    "symbol": "UYFINCORP.NS",
+    "ISIN_NUMBER": "INE152C01025"
+  },
+  {
+    "symbol": "V2RETAIL.NS",
+    "ISIN_NUMBER": "INE945H01013"
+  },
+  {
+    "symbol": "VADILALIND.NS",
+    "ISIN_NUMBER": "INE694D01016"
+  },
+  {
+    "symbol": "VAIBHAVGBL.NS",
+    "ISIN_NUMBER": "INE884A01027"
+  },
+  {
+    "symbol": "VAISHALI.NS",
+    "ISIN_NUMBER": "INE972X01022"
+  },
+  {
+    "symbol": "VAKRANGEE.NS",
+    "ISIN_NUMBER": "INE051B01021"
+  },
+  {
+    "symbol": "VALIANTLAB.NS",
+    "ISIN_NUMBER": "INE0JWS01017"
+  },
+  {
+    "symbol": "VALIANTORG.NS",
+    "ISIN_NUMBER": "INE565V01010"
+  },
+  {
+    "symbol": "VARDHACRLC.NS",
+    "ISIN_NUMBER": "INE116G01013"
+  },
+  {
+    "symbol": "VARDMNPOLY.NS",
+    "ISIN_NUMBER": "INE835A01029"
+  },
+  {
+    "symbol": "VARROC.NS",
+    "ISIN_NUMBER": "INE665L01035"
+  },
+  {
+    "symbol": "VASCONEQ.NS",
+    "ISIN_NUMBER": "INE893I01013"
+  },
+  {
+    "symbol": "VASWANI.NS",
+    "ISIN_NUMBER": "INE590L01019"
+  },
+  {
+    "symbol": "VBL.NS",
+    "ISIN_NUMBER": "INE200M01039"
+  },
+  {
+    "symbol": "VCL.NS",
+    "ISIN_NUMBER": "INE098201036"
+  },
+  {
+    "symbol": "VEDL.NS",
+    "ISIN_NUMBER": "INE205A01025"
+  },
+  {
+    "symbol": "VEEDOL.NS",
+    "ISIN_NUMBER": "INE484C01030"
+  },
+  {
+    "symbol": "VENKEYS.NS",
+    "ISIN_NUMBER": "INE398A01010"
+  },
+  {
+    "symbol": "VENTIVE.NS",
+    "ISIN_NUMBER": "INE781S01027"
+  },
+  {
+    "symbol": "VENUSPIPES.NS",
+    "ISIN_NUMBER": "INE0JA001018"
+  },
+  {
+    "symbol": "VENUSREM.NS",
+    "ISIN_NUMBER": "INE411B01019"
+  },
+  {
+    "symbol": "VERANDA.NS",
+    "ISIN_NUMBER": "INE0IQ001011"
+  },
+  {
+    "symbol": "VERTOZ.NS",
+    "ISIN_NUMBER": "INE188Y01031"
+  },
+  {
+    "symbol": "VESUVIUS.NS",
+    "ISIN_NUMBER": "INE386A01023"
+  },
+  {
+    "symbol": "VETO.NS",
+    "ISIN_NUMBER": "INE918N01018"
+  },
+  {
+    "symbol": "VGL.NS",
+    "ISIN_NUMBER": "INE273D01027"
+  },
+  {
+    "symbol": "VGUARD.NS",
+    "ISIN_NUMBER": "INE951I01027"
+  },
+  {
+    "symbol": "VHL.NS",
+    "ISIN_NUMBER": "INE701A01023"
+  },
+  {
+    "symbol": "VHLTD.NS",
+    "ISIN_NUMBER": "INE048C01025"
+  },
+  {
+    "symbol": "VIDHIING.NS",
+    "ISIN_NUMBER": "INE632C01026"
+  },
+  {
+    "symbol": "VIDYAWIRES.NS",
+    "ISIN_NUMBER": "INE14UN01029"
+  },
+  {
+    "symbol": "VIJAYA.NS",
+    "ISIN_NUMBER": "INE043W01024"
+  },
+  {
+    "symbol": "VIJIFIN.NS",
+    "ISIN_NUMBER": "INE159N01027"
+  },
+  {
+    "symbol": "VIKASECO.NS",
+    "ISIN_NUMBER": "INE806A01020"
+  },
+  {
+    "symbol": "VIKASLIFE.NS",
+    "ISIN_NUMBER": "INE161L01027"
+  },
+  {
+    "symbol": "VIKRAMSOLR.NS",
+    "ISIN_NUMBER": "INE078V01014"
+  },
+  {
+    "symbol": "VIKRAN.NS",
+    "ISIN_NUMBER": "INE01R501028"
+  },
+  {
+    "symbol": "VIMTALABS.NS",
+    "ISIN_NUMBER": "INE579C01029"
+  },
+  {
+    "symbol": "VINATIORGA.NS",
+    "ISIN_NUMBER": "INE410B01037"
+  },
+  {
+    "symbol": "VINCOFE.NS",
+    "ISIN_NUMBER": "INE498Q01014"
+  },
+  {
+    "symbol": "VINDHYATEL.NS",
+    "ISIN_NUMBER": "INE707A01012"
+  },
+  {
+    "symbol": "VINEETLAB.NS",
+    "ISIN_NUMBER": "INE505Y01010"
+  },
+  {
+    "symbol": "VINNY.NS",
+    "ISIN_NUMBER": "INE01KI01027"
+  },
+  {
+    "symbol": "VINYLINDIA.NS",
+    "ISIN_NUMBER": "INE250B01029"
+  },
+  {
+    "symbol": "VIPCLOTHNG.NS",
+    "ISIN_NUMBER": "INE450G01024"
+  },
+  {
+    "symbol": "VIPIND.NS",
+    "ISIN_NUMBER": "INE054A01027"
+  },
+  {
+    "symbol": "VIPULLTD.NS",
+    "ISIN_NUMBER": "INE946H01037"
+  },
+  {
+    "symbol": "VIRINCHI.NS",
+    "ISIN_NUMBER": "INE539B01017"
+  },
+  {
+    "symbol": "VISAKAIND.NS",
+    "ISIN_NUMBER": "INE392A01021"
+  },
+  {
+    "symbol": "VISASTEEL.NS",
+    "ISIN_NUMBER": "INE286H01012"
+  },
+  {
+    "symbol": "VISHNU.NS",
+    "ISIN_NUMBER": "INE270I01022"
+  },
+  {
+    "symbol": "VISHWARAJ.NS",
+    "ISIN_NUMBER": "INE430N01022"
+  },
+  {
+    "symbol": "VITAL.NS",
+    "ISIN_NUMBER": "INE0L4K01016"
+  },
+  {
+    "symbol": "VIVIDHA.NS",
+    "ISIN_NUMBER": "INE370E01029"
+  },
+  {
+    "symbol": "VIVIMEDLAB.NS",
+    "ISIN_NUMBER": "INE526G01021"
+  },
+  {
+    "symbol": "VIYASH.NS",
+    "ISIN_NUMBER": "INE807F01027"
+  },
+  {
+    "symbol": "VLEGOV.NS",
+    "ISIN_NUMBER": "INE03HW01020"
+  },
+  {
+    "symbol": "VLSFINANCE.NS",
+    "ISIN_NUMBER": "INE709A01018"
+  },
+  {
+    "symbol": "VMART.NS",
+    "ISIN_NUMBER": "INE665J01013"
+  },
+  {
+    "symbol": "VMM.NS",
+    "ISIN_NUMBER": "INE01EA01019"
+  },
+  {
+    "symbol": "VMSTMT.NS",
+    "ISIN_NUMBER": "INE0SJA01013"
+  },
+  {
+    "symbol": "VOLTAMP.NS",
+    "ISIN_NUMBER": "INE540H01012"
+  },
+  {
+    "symbol": "VOLTAS.NS",
+    "ISIN_NUMBER": "INE226A01021"
+  },
+  {
+    "symbol": "VPRPL.NS",
+    "ISIN_NUMBER": "INE0AE001013"
+  },
+  {
+    "symbol": "VRAJ.NS",
+    "ISIN_NUMBER": "INE0S2V01010"
+  },
+  {
+    "symbol": "VRLLOG.NS",
+    "ISIN_NUMBER": "INE366I01010"
+  },
+  {
+    "symbol": "VSSL.NS",
+    "ISIN_NUMBER": "INE050M01012"
+  },
+  {
+    "symbol": "VSTIND.NS",
+    "ISIN_NUMBER": "INE710A01016"
+  },
+  {
+    "symbol": "VSTL.NS",
+    "ISIN_NUMBER": "INE0QTF01015"
+  },
+  {
+    "symbol": "VSTTILLERS.NS",
+    "ISIN_NUMBER": "INE764D01017"
+  },
+  {
+    "symbol": "VTL.NS",
+    "ISIN_NUMBER": "INE825A01020"
+  },
+  {
+    "symbol": "WAAREEENER.NS",
+    "ISIN_NUMBER": "INE377N01017"
+  },
+  {
+    "symbol": "WAAREEINDO.NS",
+    "ISIN_NUMBER": "INE866K01023"
+  },
+  {
+    "symbol": "WAAREERTL.NS",
+    "ISIN_NUMBER": "INE299N01021"
+  },
+  {
+    "symbol": "WABAG.NS",
+    "ISIN_NUMBER": "INE956G01038"
+  },
+  {
+    "symbol": "WAKEFIT.NS",
+    "ISIN_NUMBER": "INE0E7301029"
+  },
+  {
+    "symbol": "WALCHANNAG.NS",
+    "ISIN_NUMBER": "INE711A01022"
+  },
+  {
+    "symbol": "WANBURY.NS",
+    "ISIN_NUMBER": "INE107F01022"
+  },
+  {
+    "symbol": "WCIL.NS",
+    "ISIN_NUMBER": "INE0CJF01024"
+  },
+  {
+    "symbol": "WEALTH.NS",
+    "ISIN_NUMBER": "INE658T01017"
+  },
+  {
+    "symbol": "WEBELSOLAR.NS",
+    "ISIN_NUMBER": "INE855C01023"
+  },
+  {
+    "symbol": "WEIZMANIND.NS",
+    "ISIN_NUMBER": "INE080A01014"
+  },
+  {
+    "symbol": "WEL.NS",
+    "ISIN_NUMBER": "INE02WG01024"
+  },
+  {
+    "symbol": "WELCORP.NS",
+    "ISIN_NUMBER": "INE191B01025"
+  },
+  {
+    "symbol": "WELENT.NS",
+    "ISIN_NUMBER": "INE625G01013"
+  },
+  {
+    "symbol": "WELINV.NS",
+    "ISIN_NUMBER": "INE389K01018"
+  },
+  {
+    "symbol": "WELSPUNLIV.NS",
+    "ISIN_NUMBER": "INE192B01031"
+  },
+  {
+    "symbol": "WENDT.NS",
+    "ISIN_NUMBER": "INE274C01019"
+  },
+  {
+    "symbol": "WESTLIFE.NS",
+    "ISIN_NUMBER": "INE274F01020"
+  },
+  {
+    "symbol": "WEWIN.NS",
+    "ISIN_NUMBER": "INE082W01014"
+  },
+  {
+    "symbol": "WEWORK.NS",
+    "ISIN_NUMBER": "INE085001019"
+  },
+  {
+    "symbol": "WHEELS.NS",
+    "ISIN_NUMBER": "INE715A01015"
+  },
+  {
+    "symbol": "WHIRLPOOL.NS",
+    "ISIN_NUMBER": "INE716A01013"
+  },
+  {
+    "symbol": "WILLAMAGOR.NS",
+    "ISIN_NUMBER": "INE210A01017"
+  },
+  {
+    "symbol": "WINDLAS.NS",
+    "ISIN_NUMBER": "INE0H5O01029"
+  },
+  {
+    "symbol": "WINDMACHIN.NS",
+    "ISIN_NUMBER": "INE052A01021"
+  },
+  {
+    "symbol": "WINSOME.NS",
+    "ISIN_NUMBER": "INE784B01035"
+  },
+  {
+    "symbol": "WIPL.NS",
+    "ISIN_NUMBER": "INE215F01023"
+  },
+  {
+    "symbol": "WIPRO.NS",
+    "ISIN_NUMBER": "INE075A01022"
+  },
+  {
+    "symbol": "WOCKPHARMA.NS",
+    "ISIN_NUMBER": "INE049B01025"
+  },
+  {
+    "symbol": "WONDERLA.NS",
+    "ISIN_NUMBER": "INE066O01014"
+  },
+  {
+    "symbol": "WORTHPERI.NS",
+    "ISIN_NUMBER": "INE196Y01018"
+  },
+  {
+    "symbol": "WSI.NS",
+    "ISIN_NUMBER": "INE100D01014"
+  },
+  {
+    "symbol": "WSTCSTPAPR.NS",
+    "ISIN_NUMBER": "INE976A01021"
+  },
+  {
+    "symbol": "XCHANGING.NS",
+    "ISIN_NUMBER": "INE692G01013"
+  },
+  {
+    "symbol": "XELPMOC.NS",
+    "ISIN_NUMBER": "INE01P501012"
+  },
+  {
+    "symbol": "XPROINDIA.NS",
+    "ISIN_NUMBER": "INE445C01015"
+  },
+  {
+    "symbol": "XTGLOBAL.NS",
+    "ISIN_NUMBER": "INE547B01028"
+  },
+  {
+    "symbol": "YASHO.NS",
+    "ISIN_NUMBER": "INE616Z01012"
+  },
+  {
+    "symbol": "YATHARTH.NS",
+    "ISIN_NUMBER": "INE0JO301016"
+  },
+  {
+    "symbol": "YATRA.NS",
+    "ISIN_NUMBER": "INE0JR601024"
+  },
+  {
+    "symbol": "YESBANK.NS",
+    "ISIN_NUMBER": "INE528G01035"
+  },
+  {
+    "symbol": "YUKEN.NS",
+    "ISIN_NUMBER": "INE384C01016"
+  },
+  {
+    "symbol": "ZAGGLE.NS",
+    "ISIN_NUMBER": "INE07K301024"
+  },
+  {
+    "symbol": "ZEEL.NS",
+    "ISIN_NUMBER": "INE256A01028"
+  },
+  {
+    "symbol": "ZEELEARN.NS",
+    "ISIN_NUMBER": "INE565L01011"
+  },
+  {
+    "symbol": "ZEEMEDIA.NS",
+    "ISIN_NUMBER": "INE966H01019"
+  },
+  {
+    "symbol": "ZENITHEXPO.NS",
+    "ISIN_NUMBER": "INE058B01018"
+  },
+  {
+    "symbol": "ZENITHSTL.NS",
+    "ISIN_NUMBER": "INE318D01020"
+  },
+  {
+    "symbol": "ZENSARTECH.NS",
+    "ISIN_NUMBER": "INE520A01027"
+  },
+  {
+    "symbol": "ZENTEC.NS",
+    "ISIN_NUMBER": "INE251B01027"
+  },
+  {
+    "symbol": "ZFCVINDIA.NS",
+    "ISIN_NUMBER": "INE342J01019"
+  },
+  {
+    "symbol": "ZIMLAB.NS",
+    "ISIN_NUMBER": "INE518E01015"
+  },
+  {
+    "symbol": "ZODIAC.NS",
+    "ISIN_NUMBER": "INE761Y01019"
+  },
+  {
+    "symbol": "ZODIACLOTH.NS",
+    "ISIN_NUMBER": "INE206B01013"
+  },
+  {
+    "symbol": "ZOTA.NS",
+    "ISIN_NUMBER": "INE358U01012"
+  },
+  {
+    "symbol": "ZUARI.NS",
+    "ISIN_NUMBER": "INE840M01016"
+  },
+  {
+    "symbol": "ZUARIIND.NS",
+    "ISIN_NUMBER": "INE217A01012"
+  },
+  {
+    "symbol": "ZYDUSLIFE.NS",
+    "ISIN_NUMBER": "INE010B01027"
+  },
+  {
+    "symbol": "ZYDUSWELL.NS",
+    "ISIN_NUMBER": "INE768C01028"
+  }
+]
