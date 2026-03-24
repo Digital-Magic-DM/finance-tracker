@@ -106,12 +106,7 @@ export class DashboardComponent implements OnInit {
         const grouped: { [key: string]: number } = {};
         for (const a of this.assets()) {
             const val = a.quantity * a.currentPrice;
-            let source = 'Manual';
-            
-            // Parse source from notes: "Imported from Groww" -> "Groww"
-            if (a.notes?.includes('Imported from')) {
-                source = a.notes.replace('Imported from', '').trim();
-            }
+            const source = a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace('Imported from', '').trim() : 'Manual');
             
             grouped[source] = (grouped[source] || 0) + val;
         }

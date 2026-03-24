@@ -35,7 +35,8 @@ export class PriceService {
 
     constructor() {
         // Initialize the maps from local JSON for O(1) lookups
-        const allData = [...(nseCompanies as any[]), ...(bseIsins as any[])];
+        // We put bseIsins first so that nseCompanies (which come later) overwrite BSE entries for overlapping ISINs
+        const allData = [...(bseIsins as any[]), ...(nseCompanies as any[])];
         
         for (const item of allData) {
             const isin = (item.ISIN_NUMBER || item.isin_number || '').toUpperCase();
@@ -189,36 +190,42 @@ export class PriceService {
 
         // 2a. PRIMARY — Yahoo v8/chart
         const cb = Date.now();
-        const primaryUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1d&_cb=${cb}`;
-        for (let pi = 0; pi < this.PROXIES.length; pi++) {
-            try {
-                const data: any = await firstValueFrom(
-                    this.http.get(`${this.PROXIES[pi]}${encodeURIComponent(primaryUrl)}`)
-                );
-                const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-                if (typeof price === 'number' && price > 0) {
-                    console.log(`[PriceService] ✓ ${asset.name} → ₹${price} (v8/chart, proxy ${pi})`);
-                    return price;
+        const yahooHosts = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com'];
+
+        for (const host of yahooHosts) {
+            const primaryUrl = `https://${host}/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1d&_cb=${cb}`;
+            for (let pi = 0; pi < this.PROXIES.length; pi++) {
+                try {
+                    const data: any = await firstValueFrom(
+                        this.http.get(`${this.PROXIES[pi]}${encodeURIComponent(primaryUrl)}`)
+                    );
+                    const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+                    if (typeof price === 'number' && price > 0) {
+                        console.log(`[PriceService] ✓ ${asset.name} → ₹${price} (v8/chart, ${host}, proxy ${pi})`);
+                        return price;
+                    }
+                } catch (e: any) {
+                    console.warn(`[PriceService] Primary v8/chart proxy ${pi} failed for ${symbol} on ${host}:`, e.message);
                 }
-            } catch (e: any) {
-                console.warn(`[PriceService] Primary v8/chart proxy ${pi} failed for ${symbol}:`, e.message);
             }
         }
 
         // 2b. FALLBACK — Yahoo v7/quote
-        const fallbackUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbol)}&_cb=${cb}`;
-        for (let pi = 0; pi < this.PROXIES.length; pi++) {
-            try {
-                const data: any = await firstValueFrom(
-                    this.http.get(`${this.PROXIES[pi]}${encodeURIComponent(fallbackUrl)}`)
-                );
-                const price = data?.quoteResponse?.result?.[0]?.regularMarketPrice;
-                if (typeof price === 'number' && price > 0) {
-                    console.log(`[PriceService] ✓ ${asset.name} → ₹${price} (v7/quote fallback, proxy ${pi})`);
-                    return price;
+        for (const host of yahooHosts) {
+            const fallbackUrl = `https://${host}/v7/finance/quote?symbols=${encodeURIComponent(symbol)}&_cb=${cb}`;
+            for (let pi = 0; pi < this.PROXIES.length; pi++) {
+                try {
+                    const data: any = await firstValueFrom(
+                        this.http.get(`${this.PROXIES[pi]}${encodeURIComponent(fallbackUrl)}`)
+                    );
+                    const price = data?.quoteResponse?.result?.[0]?.regularMarketPrice;
+                    if (typeof price === 'number' && price > 0) {
+                        console.log(`[PriceService] ✓ ${asset.name} → ₹${price} (v7/quote fallback, ${host}, proxy ${pi})`);
+                        return price;
+                    }
+                } catch (e: any) {
+                    console.warn(`[PriceService] Fallback v7/quote proxy ${pi} failed for ${symbol} on ${host}:`, e.message);
                 }
-            } catch (e: any) {
-                console.warn(`[PriceService] Fallback v7/quote proxy ${pi} failed for ${symbol}:`, e.message);
             }
         }
 

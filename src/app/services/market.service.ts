@@ -60,25 +60,28 @@ export class MarketService {
 
     private async fetchFromYahoo(symbol: string): Promise<any> {
         // Yahoo Chart endpoint is much more lenient than Quote for keyless/proxy access
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`;
+        const yahooHosts = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com'];
+        for (const host of yahooHosts) {
+            const url = `https://${host}/v8/finance/chart/${symbol}?interval=1d&range=1d`;
 
-        for (const proxy of this.PROXIES) {
-            try {
-                const proxyUrl = `${proxy}${encodeURIComponent(url)}`;
-                const response: any = await firstValueFrom(this.http.get(proxyUrl));
-                const meta = response?.chart?.result?.[0]?.meta;
-                if (meta) {
-                    return {
-                        symbol: meta.symbol,
-                        price: meta.regularMarketPrice,
-                        prevClose: meta.previousClose,
-                        change: meta.regularMarketPrice - meta.previousClose,
-                        changePercent: ((meta.regularMarketPrice - meta.previousClose) / meta.previousClose) * 100,
-                        volume: 0 // Deep volume not available in meta
-                    };
+            for (const proxy of this.PROXIES) {
+                try {
+                    const proxyUrl = `${proxy}${encodeURIComponent(url)}`;
+                    const response: any = await firstValueFrom(this.http.get(proxyUrl));
+                    const meta = response?.chart?.result?.[0]?.meta;
+                    if (meta) {
+                        return {
+                            symbol: meta.symbol,
+                            price: meta.regularMarketPrice,
+                            prevClose: meta.previousClose,
+                            change: meta.regularMarketPrice - meta.previousClose,
+                            changePercent: ((meta.regularMarketPrice - meta.previousClose) / meta.previousClose) * 100,
+                            volume: 0 // Deep volume not available in meta
+                        };
+                    }
+                } catch (err) {
+                    console.warn(`Proxy ${proxy} failed for ${symbol} on ${host}, trying next...`);
                 }
-            } catch (err) {
-                console.warn(`Proxy ${proxy} failed for ${symbol}, trying next...`);
             }
         }
         return null;
