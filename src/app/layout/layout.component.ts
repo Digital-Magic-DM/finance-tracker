@@ -2,7 +2,7 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
-import { MarketService } from '../services/market.service';
+// import { MarketService } from '../services/market.service';
 import { Meta } from '@angular/platform-browser';
 
 @Component({
@@ -14,7 +14,7 @@ import { Meta } from '@angular/platform-browser';
 })
 export class LayoutComponent implements OnInit {
     private meta = inject(Meta);
-    constructor() { inject(MarketService); } // Eagerly start market data fetching
+    // constructor() { inject(MarketService); } // Eagerly start market data fetching
     sidebarOpen = signal(false);
 
     ngOnInit() {

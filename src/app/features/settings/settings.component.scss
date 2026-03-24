@@ -133,33 +133,47 @@
 
 /* Toggle */
 .toggle-btn {
-    width: 48px;
-    height: 26px;
-    border-radius: 13px;
+    width: 60px;
+    height: 32px;
+    border-radius: 16px;
     border: none;
-    background: var(--border-color);
+    background: #111111;
     cursor: pointer;
     position: relative;
     transition: background var(--transition-fast);
     flex-shrink: 0;
 
     &.on {
-        background: var(--accent-primary);
+        background: #f4f4f5;
     }
-}
 
-.toggle-knob {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: white;
-    top: 3px;
-    left: 3px;
-    transition: transform var(--transition-fast);
+    .toggle-knob {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #ffffff;
+        top: 3px;
+        left: 4px;
+        transition: transform var(--transition-fast), background var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-    .on & {
-        transform: translateX(22px);
+        .knob-icon {
+            font-size: 16px;
+            color: #111111;
+            transition: color var(--transition-fast);
+        }
+    }
+
+    &.on .toggle-knob {
+        transform: translateX(26px);
+        background: #111111;
+        
+        .knob-icon {
+            color: #ffffff;
+        }
     }
 }
 

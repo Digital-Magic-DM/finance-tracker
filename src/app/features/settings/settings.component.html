@@ -35,7 +35,10 @@
       </div>
       <div class="card setting-stat">
         <div class="ss-label">Theme</div>
-        <div class="ss-value">{{ themeService.isDark() ? '🌙 Dark' : '☀️ Light' }}</div>
+        <div class="ss-value" style="display: flex; align-items: center; gap: 6px;">
+          <span class="material-icons" style="font-size: 22px;">{{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}</span>
+          {{ themeService.isDark() ? 'Dark' : 'Light' }}
+        </div>
       </div>
     </div>
 
@@ -48,7 +51,9 @@
           <p>Toggle between dark and light theme</p>
         </div>
         <button class="toggle-btn" [class.on]="themeService.isDark()" (click)="themeService.toggle()">
-          <span class="toggle-knob"></span>
+          <span class="toggle-knob">
+            <span class="material-icons knob-icon">{{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}</span>
+          </span>
         </button>
       </div>
 

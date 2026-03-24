@@ -25,7 +25,7 @@ export class SidebarComponent {
     appVersion = VERSION;
 
     navItems: NavItem[] = [
-        { label: 'Live Market', icon: 'bolt', route: '/app/market' },
+        // { label: 'Live Market', icon: 'bolt', route: '/app/market' },
         { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard' },
         { label: 'Assets', icon: 'account_balance_wallet', route: '/app/assets' },
         { label: 'Transactions', icon: 'receipt_long', route: '/app/transactions' },

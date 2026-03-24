@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
 import { authRedirectGuard } from './auth/auth-redirect.guard';
-import { MarketDashboardComponent } from './features/market-dashboard/market-dashboard.component';
+// import { MarketDashboardComponent } from './features/market-dashboard/market-dashboard.component';
 
 export const routes: Routes = [
     {
@@ -48,10 +48,10 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('./features/settings/settings.component').then((m) => m.SettingsComponent),
             },
-            {
+            /* {
                 path: 'market',
                 component: MarketDashboardComponent,
-            },
+            }, */
         ],
     },
     { path: '**', redirectTo: '' },
