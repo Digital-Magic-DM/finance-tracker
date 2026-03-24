@@ -44,13 +44,14 @@ export class AssetsComponent {
     saving = signal(false);
     refreshingMFs = signal(false);
     refreshingStocks = signal(false);
+    refreshingAssetId = signal<Set<string>>(new Set());
     lastRefreshed = signal<string>('');
 
     // Multi-select state
     selectMode = signal(false);
     selectedIds = signal<Set<string>>(new Set());
     deleting = signal(false);
-    
+
     viewMode = signal<'grid' | 'table'>((localStorage.getItem('assetsViewMode') as 'grid' | 'table') || 'grid');
 
     // Single expanded group tracking
@@ -176,7 +177,7 @@ export class AssetsComponent {
             AssetType.Other,
         ];
 
-                const groups: AssetGroup[] = [];
+        const groups: AssetGroup[] = [];
         for (const type of typeOrder) {
             const typeAssets = groupMap.get(type);
             if (typeAssets && typeAssets.length > 0) {
@@ -185,7 +186,7 @@ export class AssetsComponent {
                 const tGain = tValue - tInvested;
                 const gPct = tInvested > 0 ? (tGain / tInvested) * 100 : 0;
                 const allocation = totalPortfolioValue > 0 ? (tValue / totalPortfolioValue) * 100 : 0;
-                
+
                 // Find latest update time in group
                 const latestUpdate = typeAssets
                     .filter(a => !!a.lastUpdated)
@@ -270,7 +271,7 @@ export class AssetsComponent {
         this.viewMode.set(next);
         localStorage.setItem('assetsViewMode', next);
     }
-   // ─── Multi-select ────────────────────────────
+    // ─── Multi-select ────────────────────────────
     toggleSelectMode() {
         if (this.selectMode()) {
             // Exiting select mode — clear selections
@@ -364,7 +365,7 @@ export class AssetsComponent {
     updateForm(field: keyof Omit<Asset, 'id'>, value: any) {
         this.form.update((f) => {
             const next = { ...f, [field]: value };
-            
+
             // Clear irrelevant fields when type changes
             if (field === 'type') {
                 const type = value as AssetType;
@@ -392,7 +393,7 @@ export class AssetsComponent {
 
     async save() {
         if (this.saving()) return;
-        
+
         const data = this.form();
         // Validation
         if (!data.name.trim()) {
@@ -408,10 +409,10 @@ export class AssetsComponent {
             return;
         }
 
-            this.saving.set(true);
+        this.saving.set(true);
         try {
             const id = this.editingId();
-            
+
             // Clean data: Firestore doesn't like 'undefined' values
             const cleanData: any = { ...data };
             if (cleanData.location === undefined) delete cleanData.location;
@@ -476,7 +477,7 @@ export class AssetsComponent {
                 this.cdr.markForCheck();
             });
         } catch (err) {
-            console.error('[Assets] ML Price refresh failed:', err);
+            console.error('[Assets] MF Price refresh failed:', err);
             this.ngZone.run(() => {
                 this.snackbar.show('Failed to refresh Mutual Funds. Please try again later.', 'error');
                 this.refreshingMFs.set(false);
@@ -485,16 +486,16 @@ export class AssetsComponent {
         }
     }
 
-    async refreshStocks() {
+    async refreshStocks(groupAssets: Asset[]) {
         if (this.refreshingStocks()) return;
         this.refreshingStocks.set(true);
         try {
-            // Only refresh Stocks and ETFs
-            const stockAssets = this.assets().filter(a => [AssetType.Stock, AssetType.ETF].includes(a.type as AssetType));
+            // Only refresh the assets passed in (the specific group's assets)
+            const stockAssets = groupAssets.filter(a => !!a.id);
 
             if (stockAssets.length === 0) {
                 this.ngZone.run(() => {
-                    this.snackbar.show('No Stocks/ETFs to refresh.', 'info');
+                    this.snackbar.show('No assets to refresh in this group.', 'info');
                     this.refreshingStocks.set(false);
                 });
                 return;
@@ -526,6 +527,29 @@ export class AssetsComponent {
                 this.refreshingStocks.set(false);
                 this.cdr.markForCheck();
             });
+        }
+    }
+
+    async refreshSingleAsset(asset: Asset) {
+        if (!asset.id || this.refreshingAssetId().has(asset.id)) return;
+        this.refreshingAssetId.update(s => new Set(s).add(asset.id!));
+        try {
+            const price = await this.priceService.fetchPrice(asset);
+            if (price !== null) {
+                const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                await this.assetService.updateAsset(asset.id, { currentPrice: price, lastUpdated: now });
+                this.ngZone.run(() => {
+                    this.snackbar.show(`${asset.name} updated to ₹${price.toLocaleString('en-IN')}`, 'success');
+                    this.cdr.markForCheck();
+                });
+            } else {
+                this.ngZone.run(() => this.snackbar.show(`Could not fetch price for ${asset.name}`, 'error'));
+            }
+        } catch (err) {
+            console.error('[Assets] Single asset refresh failed:', err);
+            this.ngZone.run(() => this.snackbar.show('Refresh failed. Try again.', 'error'));
+        } finally {
+            this.refreshingAssetId.update(s => { const n = new Set(s); n.delete(asset.id!); return n; });
         }
     }
 

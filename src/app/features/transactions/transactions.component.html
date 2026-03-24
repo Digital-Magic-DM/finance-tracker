@@ -36,16 +36,36 @@
 
   <!-- Filters -->
   <div class="card filters-bar">
-    <div class="filter-group">
-      @for (type of txTypes; track type) {
-        <button class="filter-btn" [class.active]="filterType() === type"
-          (click)="filterType.set(type)">{{ type }}</button>
-      }
+    <div class="top-row">
+      <div class="filter-group">
+        @for (type of txTypes; track type) {
+          <button class="filter-btn" [class.active]="filterType() === type"
+            (click)="filterType.set(type)">{{ type }}</button>
+        }
+      </div>
+      <div class="search-box">
+        <span class="material-icons search-icon">search</span>
+        <input class="form-control search-input" type="text" placeholder="Search..."
+          [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" />
+      </div>
     </div>
-    <div class="search-box">
-      <span class="material-icons search-icon">search</span>
-      <input class="form-control search-input" type="text" placeholder="Search..."
-        [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" />
+    <div class="date-filter-row">
+      <div class="date-filter-field">
+        <span class="material-icons date-icon">calendar_today</span>
+        <input class="form-control date-input" type="date" id="filter-from-date"
+          [value]="fromDate()" (change)="fromDate.set($any($event.target).value)" />
+      </div>
+      <span class="date-sep">→</span>
+      <div class="date-filter-field">
+        <span class="material-icons date-icon">event</span>
+        <input class="form-control date-input" type="date" id="filter-to-date"
+          [value]="toDate()" (change)="toDate.set($any($event.target).value)" />
+      </div>
+      @if (hasDateFilter()) {
+        <button class="btn btn-ghost clear-date-btn" (click)="fromDate.set(''); toDate.set('')" title="Clear date filter">
+          <span class="material-icons" style="font-size:16px">close</span> Clear
+        </button>
+      }
     </div>
   </div>
 

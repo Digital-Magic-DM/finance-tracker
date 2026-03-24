@@ -23,6 +23,8 @@ export class TransactionsComponent {
     saving = signal(false);
     filterType = signal<string>('All');
     searchQuery = signal('');
+    fromDate = signal<string>('');
+    toDate = signal<string>('');
 
     // Multi-select state
     selectMode = signal(false);
@@ -41,6 +43,8 @@ export class TransactionsComponent {
         notes: '',
     });
 
+    hasDateFilter = computed(() => !!(this.fromDate() || this.toDate()));
+
     filtered = computed(() => {
         let list = this.all();
         if (this.filterType() !== 'All') {
@@ -52,7 +56,17 @@ export class TransactionsComponent {
                 (t) => t.description.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
             );
         }
-        return list;
+        const from = this.fromDate();
+        const to = this.toDate();
+        if (from) {
+            const fromMs = new Date(from).setHours(0, 0, 0, 0);
+            list = list.filter((t) => this.formatDate(t.date).getTime() >= fromMs);
+        }
+        if (to) {
+            const toMs = new Date(to).setHours(23, 59, 59, 999);
+            list = list.filter((t) => this.formatDate(t.date).getTime() <= toMs);
+        }
+        return list.sort((a, b) => this.formatDate(b.date).getTime() - this.formatDate(a.date).getTime());
     });
 
     totalIncome = computed(() =>

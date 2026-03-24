@@ -133,7 +133,7 @@ export class TransactionImportService {
             if (!desc) continue;
 
             let amount = 0;
-            let type: TransactionType = TransactionType.Expense;
+            let type: TransactionType;
 
             if (debitIdx >= 0 || creditIdx >= 0) {
                 const debit = this.num(row[debitIdx]);

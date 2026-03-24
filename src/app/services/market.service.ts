@@ -30,9 +30,9 @@ const STOCK_UNIVERSE = [
 export class MarketService {
     private http = inject(HttpClient);
     private readonly PROXIES = [
-        'https://api.allorigins.win/raw?url=',
         'https://corsproxy.io/?url=',
-        'https://thingproxy.freeboard.io/fetch/'
+        'https://api.codetabs.com/v1/proxy?quest=',
+        'https://api.allorigins.win/raw?url=',
     ];
     private lastData: any = null;
     isFetching = signal(false);
@@ -120,19 +120,16 @@ export class MarketService {
         return null;
     }
 
-    // Unified market summary stream
-    marketSummary$ = timer(0, 60000).pipe(
-        switchMap(async () => {
-            this.isFetching.set(true);
+    // Poll every 60s when market is open, every 5 min when closed
+    marketSummary$ = timer(0, 15000).pipe(
+        switchMap(async (tick) => {
             const isOpen = this.isMarketOpen();
-
-            // Only fetch if market is open OR if we don't have any data yet
-            if (!isOpen && this.lastData) {
-                console.info("Market is closed, using cached data.");
-                this.isFetching.set(false);
+            // When market is closed, only refetch every 5 min (every 20th tick at 15s)
+            if (!isOpen && this.lastData && tick % 20 !== 0) {
                 return { ...this.lastData, isClosed: true };
             }
 
+            this.isFetching.set(true);
             let nifty, sensex, processed;
 
             try {

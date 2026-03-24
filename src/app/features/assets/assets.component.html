@@ -100,7 +100,7 @@
                   <span class="material-icons" [class.spin]="refreshingMFs()" style="font-size: 18px;">sync</span>
                 </button>
               } @else if (group.type === 'Stock' || group.type === 'ETF') {
-                <button class="btn-icon refresh-btn" [disabled]="refreshingStocks()" (click)="refreshStocks(); $event.stopPropagation()" title="Refresh Stock prices">
+                <button class="btn-icon refresh-btn" [disabled]="refreshingStocks()" (click)="refreshStocks(group.assets); $event.stopPropagation()" title="Refresh Stock prices">
                   <span class="material-icons" [class.spin]="refreshingStocks()" style="font-size: 18px;">sync</span>
                 </button>
               }
@@ -173,6 +173,16 @@
                     <div class="col-actions child-actions-col">
                       @if (!selectMode()) {
                         <div class="actions-wrapper">
+                          @if (asset.type === 'Stock' || asset.type === 'ETF') {
+                            <button class="btn-icon" 
+                              [disabled]="refreshingAssetId().has(asset.id!)"
+                              (click)="refreshSingleAsset(asset); $event.stopPropagation()" 
+                              title="Refresh price">
+                              <span class="material-icons" 
+                                [class.spin]="refreshingAssetId().has(asset.id!)"
+                                style="font-size: 15px;">sync</span>
+                            </button>
+                          }
                           <button class="btn-icon" (click)="openEdit(asset); $event.stopPropagation()" title="Edit">
                             <span class="material-icons" style="font-size: 16px;">edit</span>
                           </button>
