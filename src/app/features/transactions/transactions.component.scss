@@ -6,11 +6,31 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-wrap: wrap;
 
     .selected-count {
         font-size: 14px;
         font-weight: 500;
         color: var(--text-secondary);
+    }
+    
+    @media (max-width: 600px) {
+        width: 100%;
+        gap: 8px;
+        justify-content: flex-start;
+        align-items: stretch;
+        
+        .btn {
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+        }
+        
+        .selected-count {
+            width: 100%;
+            text-align: center;
+            padding-bottom: 4px;
+        }
     }
 }
 
@@ -69,7 +89,7 @@ tr.selected {
 .top-row {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
@@ -81,6 +101,13 @@ tr.selected {
 
     @media (max-width: 600px) {
         gap: 8px;
+        flex-direction: column;
+        align-items: stretch;
+        
+        .date-sep { display: none; }
+        .date-filter-field { width: 100%; }
+        .date-input { width: 100%; padding: 12px 12px 12px 36px; height: 42px; }
+        .clear-date-btn { align-self: center; width: 100%; justify-content: center; border: 1px solid var(--border-color); }
     }
 }
 
@@ -102,7 +129,7 @@ tr.selected {
         width: 170px;
 
         @media (max-width: 600px) {
-            width: 140px;
+            width: 100%;
         }
     }
 }
@@ -125,7 +152,8 @@ tr.selected {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    flex: 1;
+    flex: 1 1 100%;
+    justify-content: flex-start;
 }
 
 .filter-btn {
@@ -152,6 +180,7 @@ tr.selected {
 .search-box {
     position: relative;
     width: 220px;
+    flex: 1 1 100%;
 
     @media (max-width: 600px) {
         width: 100%;
@@ -210,7 +239,7 @@ tr.selected {
 
 .form-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 12px;
 }
-@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; gap: 0; } }
+@media (max-width: 768px) { .form-row { grid-template-columns: 1fr; gap: 0; } }

@@ -33,12 +33,14 @@ export class TransactionsComponent {
 
     txTypes = ['All', ...Object.values(TransactionType)];
     categories = TRANSACTION_CATEGORIES;
+    banks = ['HDFC', 'SBI', 'ICICI', 'Axis', 'Kotak', 'CBP', 'Cash', 'Other'];
 
     form = signal<Omit<Transaction, 'id'>>({
         type: TransactionType.Expense,
         amount: 0,
         description: '',
         category: 'Other',
+        bank: '',
         date: new Date(),
         notes: '',
     });
@@ -105,7 +107,7 @@ export class TransactionsComponent {
 
     openAdd() {
         this.editingId.set(null);
-        this.form.set({ type: TransactionType.Expense, amount: 0, description: '', category: 'Other', date: new Date(), notes: '' });
+        this.form.set({ type: TransactionType.Expense, amount: 0, description: '', category: 'Other', bank: '', date: new Date(), notes: '' });
         this.showModal.set(true);
     }
 

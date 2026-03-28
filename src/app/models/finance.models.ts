@@ -55,6 +55,7 @@ export interface Transaction {
     amount: number;
     description: string;
     category: string;
+    bank?: string;
     date: Date;
     assetId?: string;
     assetName?: string;
