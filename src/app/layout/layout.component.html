@@ -5,12 +5,12 @@
   }
 
   <!-- Sidebar -->
-  <div class="sidebar-wrapper" [class.open]="sidebarOpen()">
-    <app-sidebar (closeSidebar)="closeSidebar()" />
+  <div class="sidebar-wrapper" [class.open]="sidebarOpen()" [class.collapsed]="sidebarCollapsed()">
+    <app-sidebar [collapsed]="sidebarCollapsed()" (closeSidebar)="closeSidebar()" (toggleCollapse)="toggleSidebarCollapse()" />
   </div>
 
   <!-- Main content -->
-  <div class="main-wrapper">
+  <div class="main-wrapper" [class.sidebar-collapsed]="sidebarCollapsed()">
     <app-toolbar (sidebarToggle)="toggleSidebar()" />
     <main class="content-area">
       <router-outlet />

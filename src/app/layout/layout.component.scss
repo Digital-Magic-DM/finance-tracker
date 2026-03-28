@@ -10,11 +10,18 @@
     flex-shrink: 0;
     height: 100%;
     z-index: 200;
+    width: 250px;
+    transition: width var(--transition-normal);
+
+    &.collapsed {
+        width: 80px;
+    }
 
     @media (max-width: 768px) {
         position: fixed;
         left: 0;
         top: 0;
+        width: 250px !important;
         transform: translateX(-100%);
         transition: transform var(--transition-normal);
 

@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { AssetService } from '../../services/asset.service';
 import { TransactionService } from '../../services/transaction.service';
@@ -6,22 +6,55 @@ import { SnapshotService } from '../../services/snapshot.service';
 import { TransactionType } from '../../models/finance.models';
 import { NetworthChartComponent } from '../../shared/networth-chart/networth-chart.component';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { AnalyticsBuilderService } from '../../services/analytics-builder.service';
+import { CustomAnalyticsBuilderComponent } from './custom-analytics-builder/custom-analytics-builder.component';
+import { DynamicChartComponent } from '../../shared/dynamic-chart/dynamic-chart.component';
 
 @Component({
     selector: 'app-analytics',
     standalone: true,
-    imports: [CurrencyPipe, DecimalPipe, NetworthChartComponent],
+    imports: [CurrencyPipe, DecimalPipe, NetworthChartComponent, CustomAnalyticsBuilderComponent, DynamicChartComponent],
     templateUrl: './analytics.component.html',
     styleUrl: './analytics.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnalyticsComponent {
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
     private snapshotService = inject(SnapshotService);
+    private analyticsBuilder = inject(AnalyticsBuilderService);
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });
     snapshots = toSignal(this.snapshotService.getSnapshots(), { initialValue: [] });
+
+    isBuildingCustomChart = signal(false);
+
+    customWidgets = computed(() => {
+        return this.analyticsBuilder.savedConfigs()
+            .filter(c => c.displayType === 'widget')
+            .map(config => {
+                return {
+                    config,
+                    dataSignal: this.analyticsBuilder.buildChartData(config)
+                };
+            });
+    });
+
+    customCharts = computed(() => {
+        return this.analyticsBuilder.savedConfigs()
+            .filter(c => c.displayType !== 'widget')
+            .map(config => {
+                return {
+                    config,
+                    dataSignal: this.analyticsBuilder.buildChartData(config)
+                };
+            });
+    });
+
+    deleteCustomChart(id: string) {
+        this.analyticsBuilder.deleteConfig(id);
+    }
 
     networthHistory = computed(() =>
         this.snapshots().map((s) => ({ date: s.date, value: s.netWorth }))

@@ -31,6 +31,22 @@
     </div>
   </div>
 
+  <!-- Brutalist Quote Row -->
+  @if (dailyQuote(); as quote) {
+    <div class="card brutal-quote-card">
+      <div class="quote-header">
+        <div class="quote-header-title">
+            <span class="quote-icon">{{ quote.icon }}</span>
+            <span class="quote-title">REALITY CHECK</span>
+        </div>
+        <button class="btn-refresh" (click)="refreshQuote()" aria-label="Refresh Quote" title="Next reality check">
+            <span class="material-icons">refresh</span>
+        </button>
+      </div>
+      <p class="quote-text">"{{ quote.text }}"</p>
+    </div>
+  }
+
   <!-- Charts Row -->
   <div class="charts-grid">
     <!-- Portfolio Allocation -->

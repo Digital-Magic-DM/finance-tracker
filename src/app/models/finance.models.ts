@@ -97,3 +97,32 @@ export const TRANSACTION_CATEGORIES = [
     'Salary', 'Investment', 'Food', 'Transport', 'Utilities',
     'Entertainment', 'Healthcare', 'Shopping', 'Education', 'Rent', 'Other'
 ];
+
+export type ChartDataSource = 'Income' | 'Expense' | 'Assets';
+export type ChartMetric = 'Sum' | 'Count';
+export type ChartDimension = 'Category' | 'Type' | 'Time' | 'AppSource' | 'None';
+export type ChartType = 'bar' | 'line' | 'pie' | 'doughnut';
+
+export interface ChartDateRange {
+    startDate?: string; // ISO
+    endDate?: string; // ISO
+}
+
+export interface ChartFilter {
+    dateRange?: ChartDateRange;
+    categories?: string[];
+    assetTypes?: AssetType[];
+}
+
+export interface CustomChartConfig {
+    id: string;
+    title: string;
+    displayType?: 'chart' | 'widget';
+    dataSource: ChartDataSource;
+    metric: ChartMetric;
+    dimension: ChartDimension;
+    filters: ChartFilter;
+    chartType: ChartType;
+    sortBy: 'value_asc' | 'value_desc' | 'label_asc' | 'label_desc' | 'time_asc';
+    limit?: number; // top N
+}

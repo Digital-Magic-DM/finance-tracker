@@ -1,0 +1,11 @@
+@if (labels.length > 0) {
+    <div class="chart-wrap" [style.height.px]="height">
+        <canvas #canvas></canvas>
+    </div>
+} @else {
+    <div class="empty-state" [style.height.px]="height">
+        <span class="material-icons empty-icon">analytics</span>
+        <span class="empty-title">Not Enough Data</span>
+        <span class="empty-text">There is no data matching your current configuration.</span>
+    </div>
+}

@@ -16,6 +16,7 @@ export class LayoutComponent implements OnInit {
     private meta = inject(Meta);
     // constructor() { inject(MarketService); } // Eagerly start market data fetching
     sidebarOpen = signal(false);
+    sidebarCollapsed = signal(false);
 
     ngOnInit() {
         // Prevent all /app/* routes from being indexed by search engines.
@@ -28,5 +29,9 @@ export class LayoutComponent implements OnInit {
 
     closeSidebar() {
         this.sidebarOpen.set(false);
+    }
+
+    toggleSidebarCollapse() {
+        this.sidebarCollapsed.update(v => !v);
     }
 }

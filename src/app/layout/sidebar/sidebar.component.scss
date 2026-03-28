@@ -1,13 +1,25 @@
 .sidebar {
-    width: var(--sidebar-width);
+    width: 100%;
     height: 100%;
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    overflow: hidden;
-    transition: width var(--transition-normal);
+    @media (min-width: 769px) {
+        &.collapsed {
+            .brand-name, .nav-text, .nav-arrow, .version, .sidebar-pwa-promo, .footer-pwa, .sign-out-text, .nav-label {
+                display: none !important;
+            }
+            .sidebar-header { justify-content: center; padding: 24px 0; }
+            .logo { justify-content: center; gap: 0; }
+            .nav-item { justify-content: center; padding: 12px 0; }
+            .sidebar-footer { padding: 16px 0; border-top: 1px solid var(--border-color); }
+            .footer-btn { border: none; padding: 12px 0; border-top: 1px solid var(--border-color); justify-content: center; }
+            .close-btn { display: none !important; }
+            .collapse-toggle-wrapper button { transform: scale(1.1); }
+        }
+    }
 }
 
 /* Header */
@@ -236,4 +248,15 @@
     color: var(--text-muted);
     text-align: center;
     margin: 0;
+}
+
+.desktop-only {
+    display: flex;
+    justify-content: center;
+    padding: 8px;
+    border-top: 1px solid var(--border-color);
+
+    @media (max-width: 768px) {
+        display: none;
+    }
 }

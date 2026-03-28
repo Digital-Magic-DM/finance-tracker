@@ -1,6 +1,62 @@
 <div class="analytics-page">
   <div class="page-header">
+    <button class="btn btn-primary" (click)="isBuildingCustomChart.set(true)">
+      <span class="material-icons">add_chart</span> Build Custom Analytics
+    </button>
   </div>
+
+  @if (isBuildingCustomChart()) {
+      <app-custom-analytics-builder (close)="isBuildingCustomChart.set(false)"></app-custom-analytics-builder>
+  }
+
+  <!-- Custom Widgets Section -->
+  @if (customWidgets().length > 0) {
+      <div class="summary-row custom-widgets-row">
+          @for (widget of customWidgets(); track widget.config.id) {
+              <div class="card stat-card">
+                  <div class="card-header" style="padding: 0; border: none; margin-bottom: 8px;">
+                      <p class="stat-label">{{ widget.config.title }}</p>
+                      <button class="btn btn-ghost btn-sm btn-delete" (click)="deleteCustomChart(widget.config.id)" title="Delete Widget">
+                          <span class="material-icons" style="font-size: 16px;">close</span>
+                      </button>
+                  </div>
+                  @if (widget.dataSignal(); as data) {
+                      <div class="stat-value">
+                          @if (widget.config.metric === 'Count') {
+                              {{ data.data[0] || 0 | number }}
+                          } @else {
+                              {{ data.data[0] || 0 | currency:'INR':'symbol':'1.0-0' }}
+                          }
+                      </div>
+                  }
+              </div>
+          }
+      </div>
+  }
+
+  <!-- Custom Charts Section -->
+  @if (customCharts().length > 0) {
+      <div class="custom-charts-grid">
+          @for (chart of customCharts(); track chart.config.id) {
+              <div class="card chart-section custom-chart-card">
+                  <div class="card-header">
+                      <h3>{{ chart.config.title }}</h3>
+                      <button class="btn btn-ghost btn-sm btn-delete" (click)="deleteCustomChart(chart.config.id)" title="Delete Chart">
+                          <span class="material-icons">delete_outline</span>
+                      </button>
+                  </div>
+                  @if (chart.dataSignal(); as data) {
+                      <app-dynamic-chart 
+                          [chartType]="chart.config.chartType"
+                          [labels]="data.labels"
+                          [dataset]="data.data"
+                          [height]="300">
+                      </app-dynamic-chart>
+                  }
+              </div>
+          }
+      </div>
+  }
 
   <!-- Summary Cards -->
   <div class="summary-row">

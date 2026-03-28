@@ -1,4 +1,4 @@
-import { Component, inject, signal, output } from '@angular/core';
+import { Component, inject, output, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { PwaService } from '../../services/pwa.service';
@@ -20,8 +20,9 @@ interface NavItem {
 export class SidebarComponent {
     private authService = inject(AuthService);
     public pwaService = inject(PwaService);
-    collapsed = signal(false);
+    collapsed = input(false);
     closeSidebar = output<void>();
+    toggleCollapse = output<void>();
     appVersion = VERSION;
 
     navItems: NavItem[] = [

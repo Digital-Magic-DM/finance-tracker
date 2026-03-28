@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { Component, OnInit, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AssetService } from '../../services/asset.service';
@@ -13,6 +13,7 @@ import {
 import { PortfolioChartComponent } from '../../shared/portfolio-chart/portfolio-chart.component';
 import { NetworthChartComponent } from '../../shared/networth-chart/networth-chart.component';
 import { toSignal } from '@angular/core/rxjs-interop';
+import quotesDataFile from '../../../assets/quotes.json';
 
 @Component({
     selector: 'app-dashboard',
@@ -20,6 +21,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
     imports: [CurrencyPipe, DatePipe, DecimalPipe, RouterLink, PortfolioChartComponent, NetworthChartComponent],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit {
     private assetService = inject(AssetService);
@@ -30,6 +32,56 @@ export class DashboardComponent implements OnInit {
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });
     snapshots = toSignal(this.snapshotService.getSnapshots(), { initialValue: [] });
+
+    quoteOffset = signal(0);
+
+    dailyQuote = computed(() => {
+        const data: any = quotesDataFile;
+
+        const val = this.totalGainPct();
+        let currentLevel: any = null;
+        let quotesArr: string[] = [];
+        let icon = '';
+
+        if (val < 0) {
+            currentLevel = data['negative_small_-1_to_-5_extra'];
+        } else if (val >= 0 && val <= 3) {
+            currentLevel = data['one_to_three_extra'];
+        } else if (val > 3 && val <= 7) {
+            currentLevel = data['three_to_seven_extra'];
+        } else if (val > 7 && val <= 12) {
+            currentLevel = data['seven_to_twelve_extra'];
+        } else if (val > 12 && val < 50) {
+            currentLevel = data['above_twelve_extra'];
+        } else {
+            const ext = data['extreme_winners_extra'];
+            if (ext) {
+                icon = ext.icon || '☠️';
+                if (val >= 200) quotesArr = ext.levels['200+'];
+                else if (val >= 100) quotesArr = ext.levels['100'];
+                else if (val >= 90) quotesArr = ext.levels['90'];
+                else quotesArr = ext.levels['50'];
+            }
+        }
+
+        if (currentLevel) {
+            icon = currentLevel.icon;
+            quotesArr = currentLevel.quotes;
+        }
+
+        if (quotesArr && quotesArr.length > 0) {
+            const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+            const seed = dayOfYear + Math.floor(this.totalCost() / 1000) + this.quoteOffset();
+            const index = seed % quotesArr.length;
+            return { icon, text: quotesArr[index] };
+        }
+
+        return null;
+    });
+
+    refreshQuote() {
+        this.quoteOffset.update(v => v + 1);
+    }
 
     totalNetWorth = computed(() =>
         this.assets().reduce((sum, a) => sum + a.quantity * a.currentPrice, 0)

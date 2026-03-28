@@ -1,4 +1,4 @@
-<aside class="sidebar">
+<aside class="sidebar" [class.collapsed]="collapsed()">
   <!-- Brand Header -->
   <div class="sidebar-header">
     <div class="logo" [routerLink]="['/app/dashboard']" style="cursor: pointer;">
@@ -20,12 +20,18 @@
         [routerLink]="item.route"
         routerLinkActive="active"
         (click)="closeSidebar.emit()">
-        <span class="nav-icon material-icons">{{ item.icon }}</span>
+        <span class="nav-icon material-icons" [title]="collapsed() ? item.label : ''">{{ item.icon }}</span>
         <span class="nav-text">{{ item.label }}</span>
         <span class="nav-arrow material-icons">chevron_right</span>
       </a>
     }
   </nav>
+
+  <div class="collapse-toggle-wrapper desktop-only">
+      <button class="btn btn-ghost btn-icon" (click)="toggleCollapse.emit()" style="width: 100%; display: flex; justify-content: center;" [attr.aria-label]="collapsed() ? 'Expand Sidebar' : 'Collapse Sidebar'" title="Toggle Sidebar">
+          <span class="material-icons">{{ collapsed() ? 'chevron_right' : 'chevron_left' }}</span>
+      </button>
+  </div>
 
   <!-- Footer -->
   <div class="sidebar-footer">
@@ -48,9 +54,9 @@
       </div>
     }
 
-    <button class="footer-btn sign-out-btn" (click)="signOut()">
+    <button class="footer-btn sign-out-btn" (click)="signOut()" [title]="collapsed() ? 'Sign Out' : ''">
       <span class="material-icons">logout</span>
-      <span>Sign Out</span>
+      <span class="sign-out-text">Sign Out</span>
     </button>
     <p class="version">v{{ appVersion }} · FinTracker</p>
   </div>
