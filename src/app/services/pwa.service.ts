@@ -1,7 +1,9 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, ApplicationRef } from '@angular/core';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
-import { filter } from 'rxjs/operators';
+import { filter, first } from 'rxjs/operators';
+import { interval, concat } from 'rxjs';
 import { ThemeService } from './theme.service';
+import { SnackbarService } from './snackbar.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +17,8 @@ export class PwaService {
   appName = signal('FinTracker');
 
   private swUpdate = inject(SwUpdate);
+  private appRef = inject(ApplicationRef);
+  private snackbar = inject(SnackbarService);
   public themeService = inject(ThemeService);
 
   constructor() {
@@ -24,44 +28,60 @@ export class PwaService {
     if ((window as any).deferredPrompt) {
       this.deferredPrompt = (window as any).deferredPrompt;
       this.updateCanInstall();
-      console.log('PwaService: Captured early install prompt');
     }
 
     window.addEventListener('beforeinstallprompt', (e: any) => {
-      // e.preventDefault(); // Commented to allow native browser prompt
       this.deferredPrompt = e;
       (window as any).deferredPrompt = e;
       this.updateCanInstall();
-      console.log('PwaService: beforeinstallprompt received');
     });
 
     window.addEventListener('appinstalled', () => {
       this.deferredPrompt = null;
       this.canInstall.set(false);
       this.isStandalone.set(true);
-      console.log('PWA was installed');
     });
 
-    this.checkUpdates();
+    this.initUpdateLogic();
   }
 
-  private checkUpdates() {
-    if (this.swUpdate.isEnabled) {
-      this.swUpdate.versionUpdates
-        .pipe(
-          filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
-        )
-        .subscribe(() => {
-          console.log('PwaService: New version available');
-          this.updateAvailable.set(true);
-          
-          // Show a native confirmation dialog to the user
-          // This ensures they get the update regardless of what page they are on
-          if (confirm('A new version of FinTracker is available! Do you want to load the latest updates now?')) {
-            this.updateApp();
-          }
-        });
-    }
+  private initUpdateLogic() {
+    if (!this.swUpdate.isEnabled) return;
+
+    // 1. Listen for ready updates
+    this.swUpdate.versionUpdates
+      .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
+      .subscribe(() => {
+        this.updateAvailable.set(true);
+        this.showUpdateNotification();
+      });
+
+    // 2. Periodically check for updates (every 15 mins)
+    // Wait for the app to stabilize first to avoid slowing down initial load
+    const appIsStable$ = this.appRef.isStable.pipe(first(isStable => isStable === true));
+    const every15Mins$ = interval(15 * 60 * 1000);
+    const updateCheck$ = concat(appIsStable$, every15Mins$);
+
+    updateCheck$.subscribe(async () => {
+      try {
+        console.log('PwaService: Checking for updates in background...');
+        await this.swUpdate.checkForUpdate();
+      } catch (err) {
+        console.error('Update check failed', err);
+      }
+    });
+  }
+
+  private showUpdateNotification() {
+    this.snackbar.show(
+      'New version of FinTracker is ready!',
+      'info',
+      0, // Don't auto-dismiss for updates
+      {
+        label: 'Reload Now',
+        callback: () => this.updateApp()
+      }
+    );
   }
 
   private detectEnvironment() {

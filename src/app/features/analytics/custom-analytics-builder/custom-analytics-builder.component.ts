@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CustomChartConfig } from '../../../models/finance.models';
+import { CustomChartConfig, AssetType } from '../../../models/finance.models';
 import { AnalyticsBuilderService } from '../../../services/analytics-builder.service';
 import { DynamicChartComponent } from '../../../shared/dynamic-chart/dynamic-chart.component';
 
@@ -29,6 +29,18 @@ export class CustomAnalyticsBuilderComponent {
         sortBy: 'value_desc',
         limit: 10
     });
+    
+    availableAssetTypes = Object.values(AssetType);
+    
+    availableAppSources = computed(() => {
+        const assets = this.analyticsBuilder.assets() || [];
+        const sources = new Set<string>();
+        assets.forEach(item => {
+            const source = item.appSource || (item.notes?.includes('Imported from') ? item.notes.replace('Imported from', '').trim() : 'Manual');
+            sources.add(source);
+        });
+        return Array.from(sources).sort();
+    });
 
     validationError = computed(() => {
         const c = this.config();
@@ -55,6 +67,28 @@ export class CustomAnalyticsBuilderComponent {
         if (this.validationError()) return;
         this.analyticsBuilder.saveConfig(this.config());
         this.close.emit();
+    }
+
+    toggleAssetType(type: AssetType) {
+        this.config.update(c => {
+            const current = c.filters.assetTypes || [];
+            const next = current.includes(type) ? current.filter(t => t !== type) : [...current, type];
+            return {
+                ...c,
+                filters: { ...c.filters, assetTypes: next.length ? next : undefined }
+            };
+        });
+    }
+
+    toggleAppSource(source: string) {
+        this.config.update(c => {
+            const current = c.filters.appSources || [];
+            const next = current.includes(source) ? current.filter(s => s !== source) : [...current, source];
+            return {
+                ...c,
+                filters: { ...c.filters, appSources: next.length ? next : undefined }
+            };
+        });
     }
 
     cancel() {

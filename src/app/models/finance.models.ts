@@ -113,6 +113,7 @@ export interface ChartFilter {
     dateRange?: ChartDateRange;
     categories?: string[];
     assetTypes?: AssetType[];
+    appSources?: string[];
 }
 
 export interface CustomChartConfig {

@@ -6,6 +6,7 @@ export interface SnackbarState {
     visible: boolean;
     message: string;
     type: SnackbarType;
+    action?: { label: string; callback: () => void };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -14,10 +15,14 @@ export class SnackbarService {
 
     private timeout: any;
 
-    show(message: string, type: SnackbarType = 'info', duration = 4000) {
+    show(message: string, type: SnackbarType = 'info', duration = 4000, action?: { label: string; callback: () => void }) {
         clearTimeout(this.timeout);
-        this.state.set({ visible: true, message, type });
-        this.timeout = setTimeout(() => this.dismiss(), duration);
+        this.state.set({ visible: true, message, type, action });
+        
+        // If there's an action, we might want to keep it visible longer or until dismissed
+        if (duration > 0) {
+            this.timeout = setTimeout(() => this.dismiss(), duration);
+        }
     }
 
     dismiss() {

@@ -96,6 +96,12 @@ export class AnalyticsBuilderService {
             if (filters.assetTypes?.length && config.dataSource === 'Assets') {
                 filtered = filtered.filter(item => filters.assetTypes!.includes(item.type));
             }
+            if (filters.appSources?.length && config.dataSource === 'Assets') {
+                filtered = filtered.filter(item => {
+                    const itemAppSource = item.appSource || (item.notes?.includes('Imported from') ? item.notes.replace('Imported from', '').trim() : 'Manual');
+                    return filters.appSources!.includes(itemAppSource);
+                });
+            }
 
             // 3. Group
             const grouped: Record<string, number> = {};

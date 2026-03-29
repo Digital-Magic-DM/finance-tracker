@@ -66,6 +66,38 @@
                         </div>
                     </div>
 
+                    @if (config().dataSource === 'Assets') {
+                        <div class="form-group mb-12">
+                            <label>Filter By Asset Type</label>
+                            <div class="filter-pills">
+                                @for (type of availableAssetTypes; track type) {
+                                    <button 
+                                        type="button"
+                                        class="filter-pill" 
+                                        [class.active]="config().filters.assetTypes?.includes(type)"
+                                        (click)="toggleAssetType(type)">
+                                        {{ type }}
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-12">
+                            <label>Filter By App/Source</label>
+                            <div class="filter-pills">
+                                @for (source of availableAppSources(); track source) {
+                                    <button 
+                                        type="button"
+                                        class="filter-pill" 
+                                        [class.active]="config().filters.appSources?.includes(source)"
+                                        (click)="toggleAppSource(source)">
+                                        {{ source }}
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+
                     <div class="form-row">
                         <div class="form-group">
                             <label>Sort By</label>
@@ -74,6 +106,7 @@
                                 <option value="value_asc">Value (Lowest First)</option>
                                 <option value="time_asc">Chronological</option>
                                 <option value="label_asc">Alphabetical</option>
+                                <option value="label_desc">Alphabetical (Z-A)</option>
                             </select>
                         </div>
                         
