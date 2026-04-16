@@ -5,6 +5,7 @@ import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 
 import { toSignal } from '@angular/core/rxjs-interop';
+import { AiService } from '../../services/ai.service';
 
 @Component({
     selector: 'app-toolbar',
@@ -16,6 +17,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 export class ToolbarComponent {
     authService = inject(AuthService);
     themeService = inject(ThemeService);
+    aiService = inject(AiService);
     private router = inject(Router);
     private el = inject(ElementRef);
 

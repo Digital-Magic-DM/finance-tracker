@@ -13,6 +13,16 @@
 
   <!-- Right actions -->
   <div class="toolbar-actions">
+    <!-- AI Chat Toggle -->
+    <button
+      class="btn-icon"
+      aria-label="Open AI Assistant"
+      (click)="aiService.toggleChat()"
+      [class.active]="aiService.isChatOpen()"
+      title="Ask FinTracker AI">
+      <span class="material-icons" style="font-size: 20px;">auto_awesome</span>
+    </button>
+
     <!-- Theme toggle -->
     <button
       class="btn-icon theme-btn"

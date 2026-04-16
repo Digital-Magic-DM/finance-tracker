@@ -4,11 +4,12 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
 // import { MarketService } from '../services/market.service';
 import { Meta } from '@angular/platform-browser';
+import { AiChatComponent } from '../shared/ai-chat/ai-chat.component';
 
 @Component({
     selector: 'app-layout',
     standalone: true,
-    imports: [RouterOutlet, SidebarComponent, ToolbarComponent],
+    imports: [RouterOutlet, SidebarComponent, ToolbarComponent, AiChatComponent],
     templateUrl: './layout.component.html',
     styleUrl: './layout.component.scss',
 })

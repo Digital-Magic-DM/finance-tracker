@@ -42,6 +42,27 @@
       </div>
     </div>
 
+    <!-- AI Settings Configuration -->
+    <div class="card ai-settings-card" style="margin-bottom: 24px;">
+      <h3 style="margin-bottom: 8px;">🤖 Gemini AI Integration</h3>
+      <p style="margin-bottom: 16px; color: var(--text-muted); font-size: 13px;">
+        Connect your own free API key to enable the FinTracker AI Assistant. Your key is stored purely locally and never leaves your browser.
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--text-primary); text-decoration: underline; font-weight: bold;">Get a free API Key here.</a>
+      </p>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <input type="password" [(ngModel)]="geminiKey" placeholder="Paste your Gemini API Key..." 
+               style="flex: 2; padding: 12px; border: 2px solid var(--border-color); background: transparent; color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none; min-width: 200px;" />
+        <select [(ngModel)]="geminiModel" style="flex: 1; min-width: 150px; padding: 12px; border: 2px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none; cursor: pointer;">
+          <option value="auto">Auto (Gemini 3.1+)</option>
+          <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Latest)</option>
+          <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash-Lite</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+        </select>
+        <button class="btn btn-primary" (click)="saveApiKey()">Save</button>
+      </div>
+    </div>
+
     <!-- Settings Options -->
     <div class="card settings-list">
       <!-- Theme Toggle -->

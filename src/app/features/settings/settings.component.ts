@@ -1,18 +1,21 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { AssetService } from '../../services/asset.service';
 import { TransactionService } from '../../services/transaction.service';
 import { PwaService } from '../../services/pwa.service';
+import { AiService } from '../../services/ai.service';
+import { SnackbarService } from '../../services/snackbar.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportDataComponent } from './import-data/import-data.component';
 
 @Component({
     selector: 'app-settings',
     standalone: true,
-    imports: [ImportDataComponent, RouterLink],
+    imports: [ImportDataComponent, RouterLink, FormsModule],
     templateUrl: './settings.component.html',
     styleUrl: './settings.component.scss',
 })
@@ -20,6 +23,8 @@ export class SettingsComponent {
     authService = inject(AuthService);
     themeService = inject(ThemeService);
     pwaService = inject(PwaService);
+    aiService = inject(AiService);
+    snackbar = inject(SnackbarService);
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
     
@@ -27,6 +32,20 @@ export class SettingsComponent {
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });
     showImport = signal(false);
+
+    // AI Settings
+    geminiKey = signal(this.aiService.getApiKey() || '');
+    geminiModel = signal(this.aiService.getSavedModel() || 'auto');
+
+    saveApiKey() {
+        this.aiService.setApiKey(this.geminiKey());
+        this.aiService.setSavedModel(this.geminiModel());
+        if (this.geminiKey()) {
+            this.snackbar.show(`Gemini settings saved successfully.`);
+        } else {
+            this.snackbar.show('Gemini API Key removed.');
+        }
+    }
 
     onImportComplete(count: number) {
         void count;
