@@ -1,39 +1,90 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="light">
   <head>
-    <meta charset="utf-8">
-    <title>FinTracker | Precision Finance Dashboard</title>
-    <base href="/">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="FinTracker helps you track expenses, monitor investments, analyze net worth, and manage your financial portfolio in one powerful dashboard.">
-    <meta name="keywords" content="personal finance tracker, expense tracker dashboard, investment tracker, net worth dashboard">
-    <meta name="theme-color" content="#0a0e1a">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FinTracker">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://dmfintracker.web.app/">
+    <meta charset="utf-8" />
+    <title>FinTracker | Personal Finance, Portfolio & Net Worth Tracker</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="FinTracker is a secure personal finance dashboard for tracking expenses, investments, portfolio performance, and net worth with real-time insights."
+    />
+    <meta
+      name="keywords"
+      content="personal finance tracker, budget planner, expense tracker, investment tracker, portfolio analytics, net worth dashboard, financial dashboard, stock tracking, asset allocation, wealth management, dividend tracker"
+    />
+    <meta name="author" content="Dinesh Murugan" />
+    <meta name="theme-color" content="#0a0e1a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="FinTracker" />
+    <meta
+      name="robots"
+      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+    />
+    <link rel="canonical" href="https://dmfintracker.web.app/" />
+    <link rel="alternate" href="https://dmfintracker.web.app/" hreflang="en" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="FinTracker | Personal Finance Dashboard">
-    <meta property="og:description" content="Track your investments, expenses, and net worth with FinTracker.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dmfintracker.web.app">
-    <link rel="manifest" href="manifest.webmanifest">
-<!-- search console -->
- <meta name="google-site-verification" content="n7CD4BcPG82pCauuyT_1imad4fyR7GCFJsw89dPl0V4" />
+    <meta
+      property="og:title"
+      content="FinTracker | Personal Finance, Portfolio & Net Worth Tracker"
+    />
+    <meta
+      property="og:description"
+      content="FinTracker is a secure financial dashboard for tracking spending, investing, and net worth from one central portal."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dmfintracker.web.app/" />
+    <meta property="og:site_name" content="FinTracker" />
+    <meta property="og:image" content="https://dmfintracker.web.app/icons/apple-icon-180.png" />
+    <meta property="og:image:alt" content="FinTracker financial dashboard preview" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="FinTracker | Personal Finance, Portfolio & Net Worth Tracker"
+    />
+    <meta
+      name="twitter:description"
+      content="Track expenses, investments, and portfolio performance with FinTracker's secure personal finance dashboard."
+    />
+    <meta name="twitter:image" content="https://dmfintracker.web.app/icons/apple-icon-180.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <!-- search console -->
+    <meta name="google-site-verification" content="n7CD4BcPG82pCauuyT_1imad4fyR7GCFJsw89dPl0V4" />
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8L6M4J69J4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-8L6M4J69J4', { send_page_view: false });
+    </script>
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": "FinTracker",
+        "url": "https://dmfintracker.web.app/",
+        "description": "A high-precision personal finance dashboard for tracking expenses, investments, portfolio performance, and net worth.",
         "operatingSystem": "Web",
         "applicationCategory": "FinanceApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
         "author": {
           "@type": "Person",
           "name": "Dinesh Murugan"
@@ -47,8 +98,8 @@
         window.deferredPrompt = e;
       });
     </script>
-    <link rel="icon" type="image/png" sizes="196x196" href="icons/favicon-196.png">
-    <link rel="apple-touch-icon" href="icons/apple-icon-180.png">
+    <link rel="icon" type="image/png" sizes="196x196" href="icons/favicon-196.png" />
+    <link rel="apple-touch-icon" href="icons/apple-icon-180.png" />
   </head>
   <body>
     <app-root></app-root>

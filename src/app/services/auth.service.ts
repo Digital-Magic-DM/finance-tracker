@@ -5,6 +5,9 @@ import {
     signInWithPopup,
     signOut,
     user,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile
 } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { from, Observable } from 'rxjs';
@@ -27,6 +30,21 @@ export class AuthService {
         });
     }
 
+    signInWithEmail(email: string, password: string): Observable<any> {
+        return runInInjectionContext(this.injector, () => {
+            return from(signInWithEmailAndPassword(this.auth, email, password));
+        });
+    }
+
+    signUpWithEmail(email: string, password: string, displayName: string): Observable<any> {
+        return runInInjectionContext(this.injector, () => {
+            return from(
+                createUserWithEmailAndPassword(this.auth, email, password).then((credential) => {
+                    return updateProfile(credential.user, { displayName }).then(() => credential);
+                })
+            );
+        });
+    }
 
     signOut(): Observable<void> {
         return runInInjectionContext(this.injector, () => {

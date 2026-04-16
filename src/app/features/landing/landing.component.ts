@@ -31,10 +31,10 @@ export class LandingComponent {
         const name = this.pwaService.appName();
         this.title.setTitle(`${name} | High-Precision Financial Dashboard`);
         this.meta.addTags([
-            { name: 'description', content: `${name} is a minimalist, high-precision financial dashboard for tracking expenses, investments, and net worth with unit-level accuracy.` },
-            { name: 'keywords', content: `${name}, finance dashboard, wealth forge, expense tracker, investment analytics, net worth tracking` },
-            { property: 'og:title', content: `${name} | Forged for Wealth` },
-            { property: 'og:description', content: 'A high-precision financial dashboard for individuals who value mathematical clarity.' },
+            { name: 'description', content: `${name} is a minimalist, high-precision financial dashboard for tracking expenses, investments, and net worth with secure portfolio analytics and budget planning.` },
+            { name: 'keywords', content: `${name}, personal finance tracker, expense tracker, net worth dashboard, portfolio management, budget planning, investment analytics` },
+            { property: 'og:title', content: `${name} | Financial Dashboard & Portfolio Tracker` },
+            { property: 'og:description', content: 'A high-precision financial dashboard for tracking spending, investments, and net worth with secure analytics.' },
             { property: 'og:type', content: 'website' }
         ]);
 

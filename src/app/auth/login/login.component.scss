@@ -14,12 +14,10 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  /* background-color: #ffffff; */
-  /* Moved to :host */
-  /* overflow: hidden; */
-  /* Moved to :host */
-  /* position: relative; */
-  /* Moved to :host */
+
+  @media (max-width: 480px) {
+    padding: 0;
+  }
 
   .ash {
     color: var(--text-muted);
@@ -130,6 +128,10 @@
 .login-card {
   border: 2px solid var(--border-color);
   padding: 40px;
+
+  @media (max-width: 480px) {
+    padding: 10px;
+  }
 }
 
 .card-header {
@@ -196,6 +198,110 @@
 .card-glass {
   border: 1px solid var(--border-light);
   background: var(--bg-card);
+}
+
+.auth-tabs {
+  display: flex;
+  margin-bottom: 24px;
+  border: 2px solid var(--border-color);
+
+  button {
+    flex: 1;
+    padding: 12px 4px;
+    background: transparent;
+    border: none;
+    border-right: 2px solid var(--border-color);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &.active {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+  }
+}
+
+.auth-forms-container {
+  margin-bottom: 24px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+
+  input {
+    width: 100%;
+    padding: 16px;
+    background: transparent;
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    transition: border-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--text-primary);
+    }
+  }
+}
+
+.submit-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: 2px solid var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.1s;
+
+  &:hover {
+    background: transparent;
+    color: var(--text-primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.toggle-link {
+  margin-top: 16px;
+  text-align: center;
+
+  a {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+}
+
+#recaptcha-container {
+  margin-top: 16px;
 }
 
 /* Animations */

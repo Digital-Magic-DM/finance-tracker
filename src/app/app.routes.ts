@@ -44,6 +44,11 @@ export const routes: Routes = [
                     import('./features/analytics/analytics.component').then((m) => m.AnalyticsComponent),
             },
             {
+                path: 'essentials',
+                loadComponent: () =>
+                    import('./features/essentials/essentials.component').then((m) => m.EssentialsComponent),
+            },
+            {
                 path: 'settings',
                 loadComponent: () =>
                     import('./features/settings/settings.component').then((m) => m.SettingsComponent),

@@ -1,0 +1,356 @@
+<div class="essentials-container animate-fade-in">
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1 class="brutal-title">Essentials</h1>
+        <p class="brutal-subtitle">Precision Financial Health Audit</p>
+    </div>
+
+    <!-- Health Score Hero -->
+    <div class="health-hero brutal-card" [style.color]="healthStatus().color">
+        <div class="hero-content">
+            <div class="status-header">
+                <div class="status-badge-container">
+                    <span class="material-icons">{{ healthStatus().icon }}</span>
+                    <h2 class="status-label">{{ healthStatus().label }}</h2>
+                </div>
+                <div class="hero-actions">
+                    <div class="score-text">
+                        {{ essentialsService.healthScore() }} <small>/ 10</small>
+                    </div>
+                    <button class="brutal-btn-config" (click)="startEdit()">
+                        <span class="material-icons">settings</span>
+                        CONFIG
+                    </button>
+                </div>
+            </div>
+            
+            <div class="health-score-container">
+                <div class="score-fill" 
+                     [style.width.%]="essentialsService.healthScore() * 10"
+                     [style.background-color]="healthStatus().color"></div>
+            </div>
+            
+            <p class="status-desc">
+                Your overall stability is calculated based on savings velocity, liquid buffer (runway), and asset protection (insurance). 
+                <span class="fw-black" *ngIf="essentialsService.healthScore() >= 9">You're in the top 1% of financial discipline.</span>
+                <span class="fw-black" *ngIf="essentialsService.healthScore() < 5">Critical gaps identified in your protection layer.</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="essentials-grid">
+        <!-- Emergency Runway -->
+        <div class="brutal-card runway-card">
+            <div class="card-header">
+                <span class="material-icons card-icon">bolt</span>
+                <h3>Emergency Runway</h3>
+            </div>
+            <div class="card-value">
+                {{ essentialsService.runwayMonths() | number:'1.1-1' }}
+                <small>MONTHS</small>
+            </div>
+            
+            <div class="runway-progress-container">
+                <div class="runway-progress">
+                    <div class="progress-bar" [style.width.%]="(essentialsService.runwayMonths() / 12) * 100" 
+                         [class.risky]="essentialsService.runwayMonths() < 3"
+                         [class.safe]="essentialsService.runwayMonths() >= 6"
+                         [class.ideal]="essentialsService.runwayMonths() >= 12"></div>
+                    
+                    <div class="threshold-markers">
+                        <div class="marker" style="left: 25%" data-label="3M"></div>
+                        <div class="marker" style="left: 50%" data-label="6M"></div>
+                        <div class="marker" style="left: 100%" data-label="12M"></div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="card-footer" *ngIf="essentialsService.runwayMonths() >= 12">Status: Bulletproof</p>
+            <p class="card-footer" *ngIf="essentialsService.runwayMonths() < 3">Status: Extreme Risk</p>
+
+            <button class="btn-toggle-info" (click)="toggleRunwayInfo()">
+                {{ showRunwayInfo() ? 'Collapse Analysis' : 'Deep Dive Analysis' }}
+            </button>
+
+            <!-- Runway Deep Dive -->
+            <div class="calc-breakdown runway-detail animate-fade-in" *ngIf="showRunwayInfo()">
+                <div class="budget-breakdown">
+                    <div class="breakdown-row"><span>Liquid Assets (Cash/FD)</span> <span>{{ essentialsService.liquidAssetsTotal() | currency:'INR':'symbol':'1.0-0' }}</span></div>
+                    <div class="breakdown-row"><span>Monthly Burn Rate</span> <span>{{ essentialsService.avgMonthlyExpense() | currency:'INR':'symbol':'1.0-0' }}</span></div>
+                    <div class="breakdown-row total"><span>Current Runway</span> <span>{{ essentialsService.runwayMonths() | number:'1.1-1' }} Months</span></div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4 class="sub-title">Runway Targets</h4>
+                    <table class="brutal-table">
+                        <thead>
+                            <tr>
+                                <th>Tier</th>
+                                <th>Duration</th>
+                                <th>Target Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr [class.highlight]="essentialsService.runwayMonths() < 3">
+                                <td>Risky</td>
+                                <td>3 Months</td>
+                                <td>{{ essentialsService.runwayTargets().risky | currency:'INR':'symbol':'1.0-0' }}</td>
+                            </tr>
+                            <tr [class.highlight]="essentialsService.runwayMonths() >= 3 && essentialsService.runwayMonths() < 12">
+                                <td>Safe</td>
+                                <td>6 Months</td>
+                                <td>{{ essentialsService.runwayTargets().safe | currency:'INR':'symbol':'1.0-0' }}</td>
+                            </tr>
+                            <tr [class.highlight]="essentialsService.runwayMonths() >= 12">
+                                <td>Ideal</td>
+                                <td>12 Months</td>
+                                <td>{{ essentialsService.runwayTargets().ideal | currency:'INR':'symbol':'1.0-0' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="detail-section">
+                    <h4 class="sub-title">Liquidity Checklist</h4>
+                    <ul class="checklist">
+                        <li><span class="material-icons">check_circle</span> Savings Account & Cash</li>
+                        <li><span class="material-icons">check_circle</span> Instant-Redeem Fixed Deposits</li>
+                        <li><span class="material-icons">check_circle</span> Low-Duration Liquid Funds</li>
+                    </ul>
+                </div>
+
+                <div class="advice-section">
+                    <ul>
+                        <li>Keep your runway accessible within 24 hours (No Lock-ins).</li>
+                        <li>Do NOT expose this capital to market volatility (No Equity).</li>
+                        <li>If runway is &lt; 3m, halt all aggressive investments immediately.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- FIRE Progress -->
+        <div class="brutal-card fire-card">
+            <div class="card-header">
+                <span class="material-icons card-icon">hourglass_top</span>
+                <h3>Savings & FIRE</h3>
+            </div>
+            <div class="card-value">
+                {{ essentialsService.savingsRate() | number:'1.0-0' }}%
+                <small>SAVED</small>
+            </div>
+            <p class="card-footer">Time to Freedom: {{ essentialsService.yearsToFI() | number:'1.1-1' }} years</p>
+            
+            <button class="btn-toggle-info" (click)="toggleFireInfo()">
+                {{ showFireInfo() ? 'Collapse Analysis' : 'Deep Dive Analysis' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Savings & FI Matrix Card -->
+    <div class="brutal-card fi-matrix-card animate-fade-in" *ngIf="showFireInfo()">
+        <div class="matrix-header">
+            <div class="savings-summary">
+                <span class="icon">💰</span>
+                <div class="summary-text">
+                    <h3 class="section-title">Savings Velocity</h3>
+                    <p class="summary-meta">Based on current transaction trends</p>
+                </div>
+                <div class="score-text" *ngIf="essentialsService.savingsRate() >= 60">PERFECT</div>
+            </div>
+            
+            <div class="main-rate">
+                <div class="rate-value">{{ essentialsService.savingsRate() | number:'1.0-0' }}%</div>
+                <div class="rate-sub">of income saved</div>
+            </div>
+
+            <div class="simple-bar-container">
+                <div class="simple-bar">
+                    <div class="fill" [style.width.%]="essentialsService.savingsRate()"></div>
+                    <div class="marker" style="left: 0%">0%</div>
+                    <div class="marker" style="left: 20%">20%</div>
+                    <div class="marker" style="left: 50%">50%</div>
+                    <div class="marker" style="left: 80%">80%+</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fi-projection">
+            <div class="projection-label">Projected Path to Independence</div>
+            <div class="projection-value">approx. {{ essentialsService.yearsToFI() | number:'1.1-1' }} Years</div>
+        </div>
+
+        <div class="matrix-body">
+            <h4 class="sub-title">FI Timeline Matrix</h4>
+            <table class="brutal-table">
+                <thead>
+                    <tr>
+                        <th>Savings Rate</th>
+                        <th>Years to FI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of fiMatrix" [class.highlight]="essentialsService.savingsRate() >= item.rate && essentialsService.savingsRate() < (item.rate + 10)">
+                        <td>{{ item.rate }}% <span *ngIf="essentialsService.savingsRate() >= item.rate && essentialsService.savingsRate() < (item.rate + 10)">◀ CURRENT</span></td>
+                        <td>{{ item.years }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="budget-breakdown">
+            <h4 class="sub-title">Monthly Flow Breakdown</h4>
+            <div class="breakdown-row"><span>Estimated Income</span> <span>{{ essentialsService.estimatedMonthlyIncome() | currency:'INR':'symbol':'1.0-0' }}</span></div>
+            <div class="breakdown-row"><span>Reported Expense</span> <span>{{ essentialsService.avgMonthlyExpense() | currency:'INR':'symbol':'1.0-0' }}</span></div>
+            <div class="breakdown-row total"><span>Net Progress</span> <span>{{ essentialsService.estimatedMonthlySavings() | currency:'INR':'symbol':'1.0-0' }} / Mo</span></div>
+        </div>
+
+        <div class="advice-section">
+            <ul>
+                <li>Aim for a 50%+ savings rate to achieve independence in under 15 years.</li>
+                <li>Automate investments on income day to avoid lifestyle creep.</li>
+                <li>Every 1% cut in lifestyle expenses accelerates your FI date by months.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Insurance & Protection -->
+    <div class="brutal-card insurance-section">
+        <h3 class="section-title">Insurance & Protection</h3>
+        <div class="insurance-grid">
+            <!-- Term Insurance Detail -->
+            <div class="insurance-item-card">
+                <label class="fw-black text-muted text-sm">TERM INSURANCE COVER</label>
+                <div class="value-row">
+                    <span class="card-value">{{ (essentialsService.profile()?.insurance?.termCover || 0) | currency:'INR':'symbol':'1.0-0' }}</span>
+                    <span class="badge" [class.risky]="(essentialsService.profile()?.insurance?.termCover || 0) < essentialsService.idealTermCover()">
+                        {{ (essentialsService.profile()?.insurance?.termCover || 0) >= essentialsService.idealTermCover() ? 'PROTECTED' : 'GAP' }}
+                    </span>
+                </div>
+                <div class="card-footer mt-2">Recommended: {{ essentialsService.idealTermCover() | currency:'INR':'symbol':'1.0-0' }}</div>
+                
+                <button class="btn-toggle-info" (click)="toggleTermInfo()">
+                    {{ showTermInfo() ? 'Collapse Analysis' : 'Deep Dive' }}
+                </button>
+
+                <!-- Term Detail -->
+                <div class="insurance-detail animate-fade-in" *ngIf="showTermInfo()">
+                    <div class="fi-projection">
+                        <div class="projection-label">Term Requirement Formula</div>
+                        <div class="projection-value">25x Annual Burn - Net Worth</div>
+                    </div>
+                    
+                    <div class="budget-breakdown">
+                         <div class="breakdown-row"><span>25x Annual Burn</span> <span>{{ (essentialsService.avgMonthlyExpense() * 12 * 25) | currency:'INR':'symbol':'1.0-0' }}</span></div>
+                         <div class="breakdown-row"><span>Reported Net Worth</span> <span>- {{ essentialsService.currentNetWorth() | currency:'INR':'symbol':'1.0-0' }}</span></div>
+                         <div class="breakdown-row total"><span>Required Protection</span> <span>{{ essentialsService.idealTermCover() | currency:'INR':'symbol':'1.0-0' }}</span></div>
+                    </div>
+
+                    <div class="advice-section">
+                        <ul>
+                            <li>Buy **Pure Term Insurance** only. Do not mix insurance with investments (No ULIPs).</li>
+                            <li>Lock in your premiums early — they increase significantly every year you wait.</li>
+                            <li>Coverage should last until your youngest dependent is financially independent.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Insurance Detail -->
+            <div class="insurance-item-card">
+                <label class="fw-black text-muted text-sm">HEALTH INSURANCE COVER</label>
+                <div class="value-row">
+                    <span class="card-value">{{ (essentialsService.profile()?.insurance?.healthCover || 0) | currency:'INR':'symbol':'1.0-0' }}</span>
+                    <span class="badge" [class.risky]="(essentialsService.profile()?.insurance?.healthCover || 0) < essentialsService.idealHealthCover()">
+                        {{ (essentialsService.profile()?.insurance?.healthCover || 0) >= essentialsService.idealHealthCover() ? 'PROTECTED' : 'GAP' }}
+                    </span>
+                </div>
+                <div class="card-footer mt-2">Recommended: {{ essentialsService.idealHealthCover() | currency:'INR':'symbol':'1.0-0' }}</div>
+                
+                <button class="btn-toggle-info" (click)="toggleHealthInfo()">
+                    {{ showHealthInfo() ? 'Collapse Analysis' : 'Deep Dive' }}
+                </button>
+
+                <!-- Health Detail -->
+                <div class="insurance-detail animate-fade-in" *ngIf="showHealthInfo()">
+                    <div class="detail-section">
+                        <h4 class="sub-title">Coverage Quality Guide</h4>
+                        <table class="brutal-table">
+                            <thead>
+                                <tr>
+                                    <th>Quality Tier</th>
+                                    <th>Coverage Amount</th>
+                                    <th>Applicability</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Basic</td>
+                                    <td>₹5.0 Lakhs</td>
+                                    <td>Entry-level hospitalisation</td>
+                                </tr>
+                                <tr [class.highlight]="essentialsService.idealHealthCover() === 1000000">
+                                    <td>Gold Standard</td>
+                                    <td>₹10.0 Lakhs</td>
+                                    <td>Major surgeries & multi-day stay</td>
+                                </tr>
+                                <tr [class.highlight]="essentialsService.idealHealthCover() === 2500000">
+                                    <td>Elite (Super Top-up)</td>
+                                    <td>₹25+ Lakhs</td>
+                                    <td>Zero out-of-pocket for critical illness</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="advice-section">
+                        <ul>
+                            <li>Corporate policies lapse the day you resign. **Always own a personal policy.**</li>
+                            <li>Prioritize plans with **No Room Rent Cap** and **Zero Copay**.</li>
+                            <li>Use a base plan (₹5-10L) with a **Super Top-up** (₹15-20L) to drastically reduce costs.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="brutal-overlay" *ngIf="isEditing()">
+        <div class="brutal-modal animate-fade-in">
+            <div class="modal-header">
+                <h3>PROFILE CONFIGURATION</h3>
+                <button class="btn-icon-close" (click)="cancelEdit()">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="fw-black text-sm">CURRENT AGE</label>
+                    <input type="number" [(ngModel)]="editData().age" placeholder="30" />
+                </div>
+                <div class="form-group">
+                    <label class="fw-black text-sm">DEPENDENTS COUNT (Incl. Spouse/Children)</label>
+                    <input type="number" [(ngModel)]="editData().dependents" placeholder="0" />
+                </div>
+                <div class="form-group">
+                    <label class="fw-black text-sm">EXISTING TERM COVER (₹)</label>
+                    <input type="number" [(ngModel)]="editData().insurance.termCover" />
+                </div>
+                <div class="form-group">
+                    <label class="fw-black text-sm">EXISTING HEALTH COVER (₹)</label>
+                    <input type="number" [(ngModel)]="editData().insurance.healthCover" />
+                </div>
+                <div class="form-group">
+                    <label class="fw-black text-sm">RETIREMENT MULTIPLIER (Standard: 25x)</label>
+                    <input type="number" [(ngModel)]="editData().annualExpenseMultiplier" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="brutal-btn secondary w-full" (click)="cancelEdit()">CANCEL</button>
+                <button class="brutal-btn primary w-full" (click)="saveEdit()">SAVE CONFIG</button>
+            </div>
+        </div>
+    </div>
+</div>

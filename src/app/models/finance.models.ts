@@ -9,6 +9,20 @@ export enum AssetType {
     Other = 'Other',
 }
 
+export interface InsuranceInfo {
+    termCover: number;
+    healthCover: number;
+    lastUpdated?: string;
+}
+
+export interface EssentialsProfile {
+    age: number;
+    targetRetirementAge: number;
+    annualExpenseMultiplier: number; // usually 25 for 4% rule
+    dependents: number; // New: for health insurance logic
+    insurance: InsuranceInfo;
+}
+
 export enum TransactionType {
     Buy = 'Buy',
     Sell = 'Sell',
@@ -47,6 +61,7 @@ export interface Asset {
     appSource?: string;
     location?: AssetLocation;
     lastUpdated?: string;
+    isLiquid?: boolean; // New: for Emergency Runway calculation
 }
 
 export interface Transaction {

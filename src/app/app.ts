@@ -4,6 +4,7 @@ import { ThemeService } from './services/theme.service';
 import { PwaService } from './services/pwa.service';
 import { Title } from '@angular/platform-browser';
 import { SnackbarComponent } from './shared/snackbar/snackbar.component';
+import { GoogleAnalyticsService } from './services/google-analytics.service';
 import { effect } from '@angular/core';
 
 @Component({
@@ -14,9 +15,10 @@ import { effect } from '@angular/core';
   styles: [`:host { display: block; height: 100dvh; }`],
 })
 export class App {
-  constructor(theme: ThemeService, pwa: PwaService, title: Title) {
+  constructor(theme: ThemeService, pwa: PwaService, title: Title, analytics: GoogleAnalyticsService) {
     // Initialize theme on startup
     void theme;
+    void analytics;
     effect(() => {
       const name = pwa.appName();
       title.setTitle(`${name} | Precision Finance Dashboard`);

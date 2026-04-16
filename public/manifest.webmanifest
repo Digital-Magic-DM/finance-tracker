@@ -1,9 +1,10 @@
 {
-  "name": "DM FinTracker",
-  "short_name": "DM FinTracker",
+  "name": "FinTracker",
+  "short_name": "FinTracker",
+  "description": "FinTracker is a secure personal finance dashboard for tracking expenses, investments, portfolio performance, and net worth with real-time insights.",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
   "scope": "./",
   "start_url": "./",
   "icons": [
