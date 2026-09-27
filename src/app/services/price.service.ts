@@ -2,40 +2,52 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Asset, AssetType } from '../models/finance.models';
 import { AssetService } from './asset.service';
+import { GoogleFinanceService } from './google-finance.service';
 import { firstValueFrom } from 'rxjs';
 import nseCompanies from '../features/assets/nse_companies.json';
 import bseIsins from '../features/assets/bse_isin.json';
 
+export interface PriceQuoteResult {
+    price: number;
+    dailyChange?: number;
+    navDate?: string;
+}
+
 /**
- * Fetches live prices for stocks and mutual funds.
- * - Stocks / ETFs: Yahoo Finance via allorigins CORS proxy
- * - Mutual Funds: MFAPI (https://api.mfapi.in) — free Indian MF NAV API
- *   Yahoo Finance does NOT support Indian mutual fund ISIN codes.
+ * Fetches live prices for stocks, ETFs, and mutual funds.
+ * - Stocks / ETFs: Google Finance (via Google Sheets Bridge) with Yahoo Finance CORS fallback
+ * - US Stocks: Smart exchange resolution (NASDAQ, NYSE, NYSEARCA) on Google Finance
+ * - Mutual Funds: MFAPI (https://api.mfapi.in) — smart search matching Direct/Regular and Growth/IDCW
  */
 @Injectable({ providedIn: 'root' })
 export class PriceService {
     private http = inject(HttpClient);
     private assetService = inject(AssetService);
+    public googleFinance = inject(GoogleFinanceService);
 
+    // Working CORS proxies
     private PROXIES = [
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?url=',
-        'https://thingproxy.freeboard.io/fetch/'
+        'https://api.allorigins.win/raw?url='
     ];
     private MFAPI_BASE = 'https://api.mfapi.in/mf';
 
-    // Cache ISIN → MFAPI scheme code mapping to avoid repeated lookups
+    // Cache ISIN/symbol/name → MFAPI scheme code mapping to avoid repeated lookups
     private schemeCodeCache = new Map<string, number | null>();
+
+    // Cache US symbol -> working exchange (e.g. AAPL -> NASDAQ, IBM -> NYSE, SPY -> NYSEARCA)
+    private usExchangeCache = new Map<string, string>();
 
     // ISIN → Ticker mapping from local JSON
     private isinToTickerMap = new Map<string, string>();
     // Plain Symbol → Suffix Symbol (e.g., ITC -> ITC.NS)
     private symbolToTickerMap = new Map<string, string>();
 
+    private static KNOWN_ARCA_ETFS = new Set([
+        'SPY', 'VOO', 'IVV', 'VTI', 'DIA', 'IWM', 'VT', 'VEA', 'VWO',
+        'XLK', 'XLF', 'XLE', 'XLV', 'XLI', 'XLP', 'XLY', 'SCHD', 'SOXX', 'SMH', 'ARKK'
+    ]);
 
     constructor() {
-        // Initialize the maps from local JSON for O(1) lookups
-        // We put bseIsins first so that nseCompanies (which come later) overwrite BSE entries for overlapping ISINs
         const allData = [...(bseIsins as any[]), ...(nseCompanies as any[])];
         
         for (const item of allData) {
@@ -48,7 +60,6 @@ export class PriceService {
             
             if (symbol) {
                 const plainSymbol = symbol.split('.')[0];
-                // Prefer NSE if both exist (most common)
                 if (!this.symbolToTickerMap.has(plainSymbol) || symbol.endsWith('.NS')) {
                     this.symbolToTickerMap.set(plainSymbol, symbol);
                 }
@@ -56,16 +67,132 @@ export class PriceService {
         }
     }
 
+    public static readonly POPULAR_US_SYMBOLS = new Set([
+        'AAPL', 'MSFT', 'GOOGL', 'GOOG', 'AMZN', 'NVDA', 'META', 'TSLA', 'BLK', 'IBM',
+        'BRK.A', 'BRK.B', 'BRK_A', 'BRK_B', 'JNJ', 'V', 'MA', 'PG', 'JPM', 'UNH', 'HD',
+        'CVX', 'XOM', 'ABBV', 'LLY', 'KO', 'PEP', 'COST', 'AVGO', 'WMT', 'MCD', 'CSCO',
+        'TMO', 'ABT', 'DIS', 'NFLX', 'AMD', 'INTC', 'QCOM', 'TXN', 'CRM', 'ORCL', 'ADBE',
+        'PYPL', 'COIN', 'UBER', 'ABNB', 'PLTR', 'SNOW', 'SQ', 'SHOP', 'BABA', 'NKE', 'SBUX',
+        'BA', 'GE', 'CAT', 'GS', 'MS', 'BAC', 'C', 'WFC',
+        'SPY', 'VOO', 'IVV', 'QQQ', 'VTI', 'DIA', 'IWM', 'VT', 'VEA', 'VWO',
+        'XLK', 'XLF', 'XLV', 'XLE', 'XLI', 'XLP', 'XLY', 'SCHD', 'JEPI', 'ARKK', 'SOXX', 'SMH'
+    ]);
+
+    /**
+     * Check if an asset is a US holding.
+     */
+    public isUSAsset(asset: Asset): boolean {
+        if (!asset) return false;
+        if (asset.currency === 'USD') return true;
+        if (asset.notes && /us stock|alpaca|nasdaq|nyse|vested|indmoney \(us/i.test(asset.notes)) return true;
+        if (asset.appSource && /alpaca|vested|drivewealth/i.test(asset.appSource)) return true;
+        const sym = (asset.symbol || '').toUpperCase().trim();
+        if (sym.startsWith('NASDAQ:') || sym.startsWith('NYSE:') || sym.startsWith('NYSEARCA:') || sym.endsWith('.US')) return true;
+        const cleanSym = sym.replace(/^(NASDAQ:|NYSE:|NYSEARCA:)/, '').replace(/\.(US|O|N)$/, '');
+        if (cleanSym && PriceService.POPULAR_US_SYMBOLS.has(cleanSym)) return true;
+        return false;
+    }
+
+    /**
+     * Resolve Google Finance candidate tickers for an asset.
+     * US stocks generate [NASDAQ:..., NYSE:..., NYSEARCA:...] candidates so Google Finance always finds them.
+     */
+    public getGoogleFinanceTickerCandidates(asset: Asset): string[] {
+        let sym = (asset.symbol || '').trim().toUpperCase();
+
+        // 1. If sym is an ISIN, look up in local isinToTickerMap
+        if (this.isISIN(sym)) {
+            sym = (this.isinToTickerMap.get(sym) || '').toUpperCase();
+        }
+
+        // 2. If sym is empty, check if asset.name matches any ticker
+        if (!sym && asset.name) {
+            const clean = asset.name.toUpperCase().trim();
+            if (this.symbolToTickerMap.has(clean)) {
+                sym = this.symbolToTickerMap.get(clean)!;
+            }
+        }
+
+        if (!sym) {
+            const cleanName = (asset.name || '').trim().toUpperCase();
+            if (!cleanName.includes(' ')) {
+                sym = cleanName;
+            }
+        }
+
+        if (!sym) return [];
+
+        // 3. If ticker already has explicit exchange prefix e.g. "NASDAQ:AAPL" or "NSE:RELIANCE"
+        if (sym.includes(':')) {
+            return [sym];
+        }
+
+        // 4. US stocks / ETFs
+        if (this.isUSAsset(asset)) {
+            const cleanSym = sym.replace(/\.(US|O|N)$/, '');
+
+            if (this.usExchangeCache.has(cleanSym)) {
+                return [`${this.usExchangeCache.get(cleanSym)}:${cleanSym}`];
+            }
+
+            if (PriceService.KNOWN_ARCA_ETFS.has(cleanSym)) {
+                return [
+                    `NYSEARCA:${cleanSym}`,
+                    `NASDAQ:${cleanSym}`,
+                    `NYSE:${cleanSym}`
+                ];
+            }
+
+            return [
+                `NASDAQ:${cleanSym}`,
+                `NYSE:${cleanSym}`,
+                `NYSEARCA:${cleanSym}`
+            ];
+        }
+
+        // 5. Indian NSE / BSE
+        if (sym.endsWith('.NS')) {
+            return [`NSE:${sym.replace('.NS', '')}`];
+        }
+        if (sym.endsWith('.BO')) {
+            return [`BOM:${sym.replace('.BO', '')}`];
+        }
+
+        if (this.symbolToTickerMap.has(sym)) {
+            const mapped = this.symbolToTickerMap.get(sym)!;
+            if (mapped.endsWith('.BO')) {
+                return [`BOM:${mapped.replace('.BO', '')}`];
+            }
+            return [`NSE:${mapped.replace('.NS', '')}`];
+        }
+
+        return [`NSE:${sym}`];
+    }
+
+    /**
+     * Legacy single ticker resolution for backward compatibility.
+     */
+    public getGoogleFinanceTicker(asset: Asset): string | null {
+        const cands = this.getGoogleFinanceTickerCandidates(asset);
+        return cands.length > 0 ? cands[0] : null;
+    }
+
     /**
      * Fetch & update the current price for a single asset.
-     * Returns the updated price, or null if lookup failed.
      */
     async fetchPrice(asset: Asset): Promise<number | null> {
+        const res = await this.fetchPriceDetails(asset);
+        return res ? res.price : null;
+    }
+
+    /**
+     * Fetch current price along with daily change percentage for a single asset.
+     */
+    async fetchPriceDetails(asset: Asset): Promise<PriceQuoteResult | null> {
         try {
             if (asset.type === AssetType.MutualFund) {
                 return await this.fetchMutualFundNAV(asset);
             }
-            // Use per-asset fetcher with primary + fallback
             return await this.fetchSingleStockPrice(asset);
         } catch (err) {
             console.warn(`[PriceService] Failed to fetch price for ${asset.name}:`, err);
@@ -73,37 +200,85 @@ export class PriceService {
         }
     }
 
-    async refreshAllPrices(assets: Asset[]): Promise<{ updated: number; unchanged: number; failed: number }> {
+    /**
+     * Format today's date as YYYY-MM-DD for date-level comparison.
+     */
+    public getTodayDateString(): string {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    /**
+     * Check if a mutual fund's NAV has already been updated today.
+     */
+    public isMFUpdatedToday(asset: Asset): boolean {
+        return asset.type === AssetType.MutualFund && asset.lastUpdatedDate === this.getTodayDateString();
+    }
+
+    async refreshAllPrices(assets: Asset[], forceMF = false): Promise<{ 
+        updated: number; 
+        unchanged: number; 
+        failed: number; 
+        mfSkipped: number; 
+        mfUpdated: number 
+    }> {
         let updated = 0;
         let unchanged = 0;
         let failed = 0;
+        let mfSkipped = 0;
+        let mfUpdated = 0;
+
+        const todayStr = this.getTodayDateString();
 
         // Separate MFs and Stocks
-        const mfs = assets.filter(a => a.type === AssetType.MutualFund);
+        const allMfs = assets.filter(a => a.type === AssetType.MutualFund);
         const stocks = assets.filter(a => a.type !== AssetType.MutualFund);
 
-        // 1. Process MFs individually (MFAPI doesn't have a clean bulk list endpoint)
-        for (const asset of mfs) {
-            const price = await this.fetchPrice(asset);
-            if (price !== null && asset.id) {
+        // 1. Process Mutual Funds (Only update once per day unless forceMF is true)
+        let mfsToUpdate: Asset[];
+        if (forceMF) {
+            mfsToUpdate = allMfs;
+        } else {
+            mfsToUpdate = allMfs.filter(a => a.lastUpdatedDate !== todayStr);
+            mfSkipped = allMfs.length - mfsToUpdate.length;
+        }
+
+        for (const asset of mfsToUpdate) {
+            const res = await this.fetchPriceDetails(asset);
+            if (res !== null && asset.id) {
                 try {
                     const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-                    await this.assetService.updateAsset(asset.id, { currentPrice: price, lastUpdated: now });
-                    if (price !== asset.currentPrice) {
+                    const updates: Partial<Asset> = { 
+                        currentPrice: res.price, 
+                        lastUpdated: now,
+                        lastUpdatedDate: todayStr
+                    };
+                    if (res.dailyChange !== undefined) {
+                        updates.dailyChange = res.dailyChange;
+                    }
+                    if (res.navDate) {
+                        updates.navDate = res.navDate;
+                    }
+                    await this.assetService.updateAsset(asset.id, updates);
+                    if (res.price !== asset.currentPrice) {
                         updated++;
                     } else {
                         unchanged++;
                     }
+                    mfUpdated++;
                 } catch (err) {
                     console.error(`[PriceService] Failed to save MF price for ${asset.name}:`, err);
                     failed++;
                 }
-            } else if (price === null) {
+            } else if (res === null) {
                 failed++;
             }
         }
 
-        // 2. Process Stocks individually (one API call per stock, with fallback)
+        // 2. Process Stocks & ETFs (Indian and US - always refreshed)
         if (stocks.length > 0) {
             const result = await this.fetchStockPricesIndividual(stocks);
             updated += result.updated;
@@ -111,46 +286,117 @@ export class PriceService {
             failed += result.failed;
         }
 
-        console.log(`[PriceService] Refresh complete. Updated: ${updated}, Unchanged: ${unchanged}, Failed: ${failed}`);
-        return { updated, unchanged, failed };
+        console.log(`[PriceService] Refresh complete. Updated: ${updated}, Unchanged: ${unchanged}, Failed: ${failed}, MFSkipped: ${mfSkipped}`);
+        return { updated, unchanged, failed, mfSkipped, mfUpdated };
     }
 
-    /**
-     * Cache ISIN/Name → Yahoo Symbol mapping to avoid repeatedly searching Yahoo.
-     */
     private yahooSymbolCache = new Map<string, string | null>();
 
     /**
-     * Fetch stock prices one asset at a time.
-     * Primary:  Yahoo Finance v8/chart endpoint  (via 3 CORS proxies)
-     * Fallback: Yahoo Finance v7/quote endpoint  (via 3 CORS proxies)
-     * Each asset is independent — one failure never blocks others.
-     * Results are saved to Firestore immediately after each success.
+     * Fetch stock prices.
+     * Primary:  Google Finance batch lookup (supports NSE, BSE, NASDAQ, NYSE, NYSEARCA)
+     * Fallback: Yahoo Finance v8/chart endpoint via CORS proxy
      */
     private async fetchStockPricesIndividual(stocks: Asset[]): Promise<{ updated: number; unchanged: number; failed: number }> {
         let updated = 0;
         let unchanged = 0;
         let failed = 0;
 
-        // Fire all API calls simultaneously
+        let remainingStocks = [...stocks];
+        if (this.googleFinance.isConfigured() && stocks.length > 0) {
+            try {
+                const candidateMap = new Map<string, Asset[]>();
+                const allTickersToFetch = new Set<string>();
+
+                for (const asset of stocks) {
+                    const candidates = this.getGoogleFinanceTickerCandidates(asset);
+                    for (const cand of candidates) {
+                        if (!candidateMap.has(cand)) {
+                            candidateMap.set(cand, []);
+                        }
+                        candidateMap.get(cand)!.push(asset);
+                        allTickersToFetch.add(cand);
+                    }
+                }
+
+                if (allTickersToFetch.size > 0) {
+                    const quotes = await this.googleFinance.fetchQuotes(Array.from(allTickersToFetch));
+                    const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                    const handledIds = new Set<string>();
+
+                    for (const [ticker, quote] of Object.entries(quotes)) {
+                        if (quote.status === 'SUCCESS' && typeof quote.price === 'number' && quote.price > 0) {
+                            if (ticker.includes(':')) {
+                                const [exch, sym] = ticker.split(':');
+                                if (exch === 'NASDAQ' || exch === 'NYSE' || exch === 'NYSEARCA') {
+                                    this.usExchangeCache.set(sym, exch);
+                                }
+                            }
+
+                            const assetsToUpdate = candidateMap.get(ticker) || [];
+                            for (const asset of assetsToUpdate) {
+                                if (asset.id && !handledIds.has(asset.id)) {
+                                    handledIds.add(asset.id);
+                                    const updates: Partial<Asset> = {
+                                        currentPrice: quote.price,
+                                        lastUpdated: now,
+                                        lastUpdatedDate: this.getTodayDateString(),
+                                        dailyChange: quote.changePercent
+                                    };
+                                    // Ensure US assets are explicitly stored with currency 'USD'
+                                    if (this.isUSAsset(asset) && asset.currency !== 'USD') {
+                                        updates.currency = 'USD';
+                                    }
+
+                                    await this.assetService.updateAsset(asset.id, updates);
+                                    if (quote.price !== asset.currentPrice) {
+                                        updated++;
+                                    } else {
+                                        unchanged++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    remainingStocks = stocks.filter(a => !handledIds.has(a.id!));
+                    if (remainingStocks.length === 0) {
+                        return { updated, unchanged, failed };
+                    }
+                }
+            } catch (err) {
+                console.warn('[PriceService] Google Finance batch failed, continuing to individual lookup:', err);
+            }
+        }
+
+        // 2. Individual fallback for any remaining stocks
         const results = await Promise.all(
-            stocks.map(async (asset) => {
-                const price = await this.fetchSingleStockPrice(asset);
-                return { asset, price };
+            remainingStocks.map(async (asset) => {
+                const details = await this.fetchSingleStockPrice(asset);
+                return { asset, details };
             })
         );
 
-        // Write results to Firestore (can still be parallel)
-        await Promise.all(results.map(async ({ asset, price }) => {
-            if (price !== null && asset.id) {
+        // Write results to Firestore
+        await Promise.all(results.map(async ({ asset, details }) => {
+            if (details !== null && asset.id) {
                 try {
                     const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-                    const updates: Partial<Asset> = { lastUpdated: now };
-                    if (price !== asset.currentPrice) {
-                        (updates as any).currentPrice = price;
+                    const updates: Partial<Asset> = { 
+                        lastUpdated: now,
+                        lastUpdatedDate: this.getTodayDateString()
+                    };
+                    if (details.price !== asset.currentPrice) {
+                        updates.currentPrice = details.price;
                         updated++;
                     } else {
                         unchanged++;
+                    }
+                    if (details.dailyChange !== undefined) {
+                        updates.dailyChange = details.dailyChange;
+                    }
+                    if (this.isUSAsset(asset) && asset.currency !== 'USD') {
+                        updates.currency = 'USD';
                     }
                     await this.assetService.updateAsset(asset.id, updates);
                 } catch (err) {
@@ -166,12 +412,29 @@ export class PriceService {
     }
 
     /**
-     * Fetch price for a single stock asset.
-     * Primary:  Yahoo v8/chart  — tries each proxy in order
-     * Fallback: Yahoo v7/quote  — tries each proxy in order
+     * Fetch price & change for a single stock asset.
      */
-    private async fetchSingleStockPrice(asset: Asset): Promise<number | null> {
-        // 1. Resolve the Yahoo ticker symbol
+    private async fetchSingleStockPrice(asset: Asset): Promise<PriceQuoteResult | null> {
+        // 1. Google Finance
+        if (this.googleFinance.isConfigured()) {
+            const candidates = this.getGoogleFinanceTickerCandidates(asset);
+            if (candidates.length > 0) {
+                const quotes = await this.googleFinance.fetchQuotes(candidates);
+                for (const [cand, quote] of Object.entries(quotes)) {
+                    if (quote && quote.status === 'SUCCESS' && typeof quote.price === 'number' && quote.price > 0) {
+                        if (cand.includes(':')) {
+                            const [exch, sym] = cand.split(':');
+                            if (exch === 'NASDAQ' || exch === 'NYSE' || exch === 'NYSEARCA') {
+                                this.usExchangeCache.set(sym, exch);
+                            }
+                        }
+                        return { price: quote.price, dailyChange: quote.changePercent };
+                    }
+                }
+            }
+        }
+
+        // 2. Resolve Yahoo symbol
         let symbol: string | null = this.resolveYahooSymbol(asset);
         if (!symbol) {
             const cacheKey = asset.symbol || asset.name || '';
@@ -188,7 +451,7 @@ export class PriceService {
             return null;
         }
 
-        // 2a. PRIMARY — Yahoo v8/chart
+        // 3. Fallback: Yahoo v8/chart via proxy
         const cb = Date.now();
         const yahooHosts = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com'];
 
@@ -199,32 +462,18 @@ export class PriceService {
                     const data: any = await firstValueFrom(
                         this.http.get(`${this.PROXIES[pi]}${encodeURIComponent(primaryUrl)}`)
                     );
-                    const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+                    const meta = data?.chart?.result?.[0]?.meta;
+                    const price = meta?.regularMarketPrice;
                     if (typeof price === 'number' && price > 0) {
-                        console.log(`[PriceService] ✓ ${asset.name} → ₹${price} (v8/chart, ${host}, proxy ${pi})`);
-                        return price;
+                        let dailyChange: number | undefined = undefined;
+                        const prevClose = meta?.chartPreviousClose || meta?.previousClose;
+                        if (typeof prevClose === 'number' && prevClose > 0) {
+                            dailyChange = Math.round(((price - prevClose) / prevClose) * 10000) / 100;
+                        }
+                        return { price, dailyChange };
                     }
                 } catch (e: any) {
-                    console.warn(`[PriceService] Primary v8/chart proxy ${pi} failed for ${symbol} on ${host}:`, e.message);
-                }
-            }
-        }
-
-        // 2b. FALLBACK — Yahoo v7/quote
-        for (const host of yahooHosts) {
-            const fallbackUrl = `https://${host}/v7/finance/quote?symbols=${encodeURIComponent(symbol)}&_cb=${cb}`;
-            for (let pi = 0; pi < this.PROXIES.length; pi++) {
-                try {
-                    const data: any = await firstValueFrom(
-                        this.http.get(`${this.PROXIES[pi]}${encodeURIComponent(fallbackUrl)}`)
-                    );
-                    const price = data?.quoteResponse?.result?.[0]?.regularMarketPrice;
-                    if (typeof price === 'number' && price > 0) {
-                        console.log(`[PriceService] ✓ ${asset.name} → ₹${price} (v7/quote fallback, ${host}, proxy ${pi})`);
-                        return price;
-                    }
-                } catch (e: any) {
-                    console.warn(`[PriceService] Fallback v7/quote proxy ${pi} failed for ${symbol} on ${host}:`, e.message);
+                    console.warn(`[PriceService] Proxy ${pi} failed for ${symbol} on ${host}:`, e.message);
                 }
             }
         }
@@ -238,10 +487,9 @@ export class PriceService {
     // ═══════════════════════════════════════════
 
     /**
-     * Fetch latest NAV for an Indian mutual fund using MFAPI.
-     * Supports lookup by AMFI scheme code or by searching the fund name.
+     * Fetch latest NAV & daily change for an Indian mutual fund using MFAPI.
      */
-    private async fetchMutualFundNAV(asset: Asset): Promise<number | null> {
+    private async fetchMutualFundNAV(asset: Asset): Promise<PriceQuoteResult | null> {
         const schemeCode = await this.resolveSchemeCode(asset);
         if (!schemeCode) {
             console.warn(`[PriceService] Could not resolve MFAPI scheme code for: ${asset.name}`);
@@ -250,13 +498,19 @@ export class PriceService {
 
         try {
             const data: any = await firstValueFrom(
-                this.http.get(`${this.MFAPI_BASE}/${schemeCode}/latest`)
+                this.http.get(`${this.MFAPI_BASE}/${schemeCode}`)
             );
 
-            // MFAPI returns: { meta: {...}, data: [{ date, nav }] }
+            // MFAPI returns: { meta: {...}, data: [{ date, nav }, { date, nav }, ...] }
             const nav = parseFloat(data?.data?.[0]?.nav);
+            const navDate = data?.data?.[0]?.date;
             if (!isNaN(nav) && nav > 0) {
-                return nav;
+                let dailyChange: number | undefined = undefined;
+                const prevNav = parseFloat(data?.data?.[1]?.nav);
+                if (!isNaN(prevNav) && prevNav > 0) {
+                    dailyChange = Math.round(((nav - prevNav) / prevNav) * 10000) / 100;
+                }
+                return { price: nav, dailyChange, navDate };
             }
             return null;
         } catch (err) {
@@ -266,11 +520,7 @@ export class PriceService {
     }
 
     /**
-     * Resolve the MFAPI scheme code for a mutual fund.
-     * Strategy:
-     *  1. If asset.symbol is a pure numeric string → treat as scheme code directly
-     *  2. If asset.symbol is an ISIN (starts with "INF", 12 chars) → search MFAPI by name
-     *  3. Otherwise → search MFAPI by fund name
+     * Resolve the MFAPI scheme code for a mutual fund with plan-awareness (Direct vs Regular, Growth vs IDCW).
      */
     private async resolveSchemeCode(asset: Asset): Promise<number | null> {
         const symbol = (asset.symbol || '').trim();
@@ -280,78 +530,112 @@ export class PriceService {
             return parseInt(symbol, 10);
         }
 
-        // Check cache (keyed by ISIN or name)
-        const cacheKey = symbol || asset.name.toLowerCase();
+        // Check cache (keyed by symbol or name)
+        const cacheKey = (symbol || asset.name).toLowerCase().trim();
         if (this.schemeCodeCache.has(cacheKey)) {
             return this.schemeCodeCache.get(cacheKey)!;
         }
 
-        // 2 & 3. Search MFAPI by fund name
-        const searchTerm = this.buildMFSearchTerm(asset);
-        if (!searchTerm) {
-            this.schemeCodeCache.set(cacheKey, null);
-            return null;
-        }
+        const isRegular = /regular/i.test(asset.name);
+        const isDirect = /direct/i.test(asset.name) || (!isRegular && (asset.appSource === 'Groww' || asset.appSource === 'Zerodha' || asset.appSource === 'INDmoney' || asset.appSource === 'Kuvera'));
+        const isDividend = /idcw|dividend|payout|reinvest/i.test(asset.name);
+        const isGrowth = !isDividend;
 
+        // Clean fund name to key words
+        const cleanName = asset.name
+            .replace(/\s*-\s*/g, ' ')
+            .replace(/\b(Direct|Regular|Plan|Growth|IDCW|Dividend|Option|Mutual Fund|Fund)\b/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        const coreWords = cleanName.split(' ').filter(w => w.length > 1).slice(0, 4);
+
+        // Targeted search (e.g. "Parag Parikh Flexi Cap Direct Growth")
+        const targetedQuery = [
+            ...coreWords,
+            isDirect ? 'Direct' : (isRegular ? 'Regular' : ''),
+            isGrowth ? 'Growth' : 'IDCW'
+        ].filter(Boolean).join(' ');
+
+        let results: any[] = [];
         try {
-            const results: any[] = await firstValueFrom(
-                this.http.get<any[]>(`${this.MFAPI_BASE}/search?q=${encodeURIComponent(searchTerm)}`)
+            results = await firstValueFrom(
+                this.http.get<any[]>(`${this.MFAPI_BASE}/search?q=${encodeURIComponent(targetedQuery)}`)
             );
+        } catch {}
 
-            if (results && results.length > 0) {
-                // Try to find exact or best match
-                const match = this.findBestSchemeMatch(results, asset.name);
-                const code = match ? match.schemeCode : results[0].schemeCode;
-                this.schemeCodeCache.set(cacheKey, code);
-                return code;
+        // Fallback to broader search if targeted search had no results
+        if (!results || results.length === 0) {
+            const broadQuery = coreWords.slice(0, 3).join(' ');
+            if (broadQuery) {
+                try {
+                    results = await firstValueFrom(
+                        this.http.get<any[]>(`${this.MFAPI_BASE}/search?q=${encodeURIComponent(broadQuery)}`)
+                    );
+                } catch {}
             }
-
-            console.warn(`[PriceService] No MFAPI results for search: "${searchTerm}"`);
-            this.schemeCodeCache.set(cacheKey, null);
-            return null;
-        } catch (err) {
-            console.warn(`[PriceService] MFAPI search failed for "${searchTerm}":`, err);
-            this.schemeCodeCache.set(cacheKey, null);
-            return null;
         }
+
+        if (results && results.length > 0) {
+            const match = this.findBestSchemeMatch(results, asset.name, isDirect, isRegular, isGrowth, isDividend);
+            const code = match ? match.schemeCode : results[0].schemeCode;
+            this.schemeCodeCache.set(cacheKey, code);
+            return code;
+        }
+
+        console.warn(`[PriceService] No MFAPI results for search: "${asset.name}"`);
+        this.schemeCodeCache.set(cacheKey, null);
+        return null;
     }
 
-    /**
-     * Build a search term for MFAPI from the fund name.
-     * Strips common suffixes and keeps the core fund name.
-     */
-    private buildMFSearchTerm(asset: Asset): string {
-        let name = asset.name.trim();
-        // Remove common suffixes that may cause search mismatches
-        name = name.replace(/\s*-\s*(Direct|Regular)\s*(Plan|Growth|IDCW|Dividend).*$/i, '');
-        name = name.replace(/\s*(Direct|Regular)\s*(Plan|Growth|IDCW|Dividend).*$/i, '');
-        // Keep first few meaningful words for search
-        const words = name.split(/\s+/).slice(0, 5);
-        return words.join(' ');
-    }
-
-    /**
-     * Find the best matching scheme from MFAPI search results.
-     * Prefers schemes whose name closely matches the asset name (case-insensitive).
-     */
-    private findBestSchemeMatch(results: any[], assetName: string): any {
+    private findBestSchemeMatch(
+        results: any[],
+        assetName: string,
+        isDirect: boolean,
+        isRegular: boolean,
+        isGrowth: boolean,
+        isDividend: boolean
+    ): any {
         const lowerName = assetName.toLowerCase();
-
-        // Exact match first
-        const exact = results.find((r: any) =>
-            r.schemeName?.toLowerCase() === lowerName
-        );
-        if (exact) return exact;
-
-        // Partial match — best overlap
         let bestMatch: any = null;
-        let bestScore = 0;
+        let bestScore = -999;
 
         for (const r of results) {
             const schemeName = (r.schemeName || '').toLowerCase();
-            // Count how many words from the asset name appear in the scheme name
-            const nameWords = lowerName.split(/\s+/);
-            const score = nameWords.filter(w => w.length > 2 && schemeName.includes(w)).length;
+            let score = 0;
+
+            const schemeIsDirect = schemeName.includes('direct');
+            const schemeIsRegular = schemeName.includes('regular');
+
+            if (isDirect) {
+                if (schemeIsDirect) score += 50;
+                if (schemeIsRegular) score -= 100;
+            } else if (isRegular) {
+                if (schemeIsRegular) score += 50;
+                if (schemeIsDirect) score -= 100;
+            }
+
+            const schemeIsDividend = schemeName.includes('idcw') || schemeName.includes('dividend');
+            const schemeIsGrowth = schemeName.includes('growth');
+
+            if (isGrowth) {
+                if (schemeIsGrowth) score += 40;
+                if (schemeIsDividend) score -= 80;
+            } else if (isDividend) {
+                if (schemeIsDividend) score += 40;
+                if (schemeIsGrowth) score -= 80;
+            }
+
+            const nameWords = lowerName.split(/\s+/).filter(w => w.length > 2);
+            for (const word of nameWords) {
+                if (schemeName.includes(word)) {
+                    score += 10;
+                }
+            }
+
+            if (schemeName.includes('bonus') && !lowerName.includes('bonus')) {
+                score -= 50;
+            }
+
             if (score > bestScore) {
                 bestScore = score;
                 bestMatch = r;
@@ -361,77 +645,61 @@ export class PriceService {
         return bestMatch;
     }
 
-
     private async searchYahooSymbol(query: string): Promise<string | null> {
         if (!query) return null;
         
-        // Clean up name (e.g. remove "Ltd", "Limited" for better search hits)
         const isISIN = this.isISIN(query);
         const cleanQuery = isISIN ? query : String(query).replace(/ltd\.?|limited/i, '').trim();
         const yahooSearchUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(cleanQuery)}&quotesCount=3`;
 
-        let proxyIndex = 0;
-        while (proxyIndex < this.PROXIES.length) {
-            const url = `${this.PROXIES[proxyIndex]}${encodeURIComponent(yahooSearchUrl)}`;
+        for (const proxy of this.PROXIES) {
+            const url = `${proxy}${encodeURIComponent(yahooSearchUrl)}`;
             try {
                 const data: any = await firstValueFrom(this.http.get(url));
                 const quotes = data?.quotes || [];
                 
-                // Prefer NSE (.NS) then BSE (.BO)
                 const nseMatch = quotes.find((q: any) => q.exchange === 'NSI' || q.symbol.endsWith('.NS'));
                 if (nseMatch) return nseMatch.symbol;
                 
                 const bseMatch = quotes.find((q: any) => q.exchange === 'BSE' || q.symbol.endsWith('.BO'));
                 if (bseMatch) return bseMatch.symbol;
                 
-                // Fallback to first quote if it looks like a stock
                 if (quotes.length > 0 && quotes[0].quoteType === 'EQUITY') {
                      return quotes[0].symbol;
                 }
-                break; // Request succeeded but no symbols found
+                break;
             } catch (e) {
-                console.warn(`[PriceService] Yahoo search failed via ${this.PROXIES[proxyIndex]} for ${cleanQuery}`, e);
-                proxyIndex++;
-                if (proxyIndex < this.PROXIES.length) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
+                console.warn(`[PriceService] Yahoo search failed for ${cleanQuery}`, e);
             }
         }
 
         return null;
     }
 
-    /**
-     * Resolve a Yahoo Finance symbol from an asset (for non-MF types).
-     * Skips ISIN codes since Yahoo doesn't support them.
-     */
     private resolveYahooSymbol(asset: Asset): string | null {
         if (asset.symbol) {
             const sym = asset.symbol.trim().toUpperCase();
 
-            // Already has a suffix like .NS or .BO
+            // US assets should be stripped of exchange prefixes/suffixes and NOT mapped to Indian tickers
+            if (this.isUSAsset(asset)) {
+                return sym.replace(/^(NASDAQ:|NYSE:|NYSEARCA:)/, '').replace(/\.(US|O|N)$/, '');
+            }
+
             if (sym.includes('.')) return sym;
 
-            // Check ISIN map first
             if (this.isISIN(sym) && this.isinToTickerMap.has(sym)) {
                 return this.isinToTickerMap.get(sym)!;
             }
 
-            // Check local Symbol map (ITC -> ITC.NS)
             if (this.symbolToTickerMap.has(sym)) {
                 return this.symbolToTickerMap.get(sym)!;
             }
 
-            // Default to .NS for legacy or unknown plain tickers
             return `${sym}.NS`;
         }
         return null;
     }
 
-    /**
-     * Check if a string looks like an ISIN code.
-     * Indian ISINs start with "IN" and are 12 characters long.
-     */
     private isISIN(value: string): boolean {
         return /^IN[A-Z0-9]{10}$/.test(value);
     }

@@ -1,7 +1,26 @@
 <div class="dashboard">
+  <!-- Top Dashboard Bar -->
+  <div class="dashboard-topbar">
+    <div class="topbar-title-group">
+      <h1 class="dashboard-heading">Portfolio Overview</h1>
+      <p class="dashboard-subheading">
+        <span class="subheading-desc">Real-time financial intelligence</span>
+        @if (lastRefreshed()) {
+          <span class="refresh-meta">· Synced {{ lastRefreshed() }}</span>
+        }
+      </p>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-sync-quotes" (click)="refreshQuotes()" [disabled]="isRefreshing()" title="Fetch latest market quotes for all holdings">
+        <span class="material-icons" [class.spin-active]="isRefreshing()">sync</span>
+        <span class="sync-label">{{ isRefreshing() ? 'Updating...' : 'Sync Live Prices' }}</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Stats Row -->
   <div class="stats-grid">
-    <div class="card stat-card">
+    <div class="card stat-card net-worth-card">
       <div class="material-icons stat-icon">inventory_2</div>
       <p class="stat-label">Total Assets</p>
       <div class="stat-value">₹{{ totalNetWorth() | number:'1.0-0' }}</div>
@@ -12,21 +31,39 @@
       <div class="material-icons stat-icon">paid</div>
       <p class="stat-label">Invested</p>
       <div class="stat-value">₹{{ totalCost() | number:'1.0-0' }}</div>
+      <div class="stat-change text-muted">{{ assets().length }} total holdings</div>
     </div>
 
     <div class="card stat-card">
       <div class="material-icons stat-icon">trending_up</div>
-      <p class="stat-label">Profit/Loss</p>
+      <p class="stat-label">Overall Profit/Loss</p>
       <div class="stat-value" [class.text-success]="totalGain() >= 0" [class.text-danger]="totalGain() < 0">
-        ₹{{ totalGain() | number:'1.0-0' }}
+        {{ totalGain() >= 0 ? '+' : '' }}₹{{ totalGain() | number:'1.0-0' }}
+      </div>
+      <div class="stat-change" [class.text-success]="totalGainPct() >= 0" [class.text-danger]="totalGainPct() < 0">
+        {{ totalGainPct() >= 0 ? '+' : '' }}{{ totalGainPct() | number:'1.2-2' }}% all-time
       </div>
     </div>
 
     <div class="card stat-card">
-      <div class="material-icons stat-icon">percent</div>
-      <p class="stat-label">Total Gain</p>
-      <div class="stat-value" [class.text-success]="totalGainPct() >= 0" [class.text-danger]="totalGainPct() < 0">
-        {{ totalGainPct() | number:'1.1-1' }}%
+      <div class="material-icons stat-icon">show_chart</div>
+      <p class="stat-label">Today's P&L</p>
+      <div class="stat-value" [class.text-success]="totalDaysGain() >= 0" [class.text-danger]="totalDaysGain() < 0">
+        {{ totalDaysGain() >= 0 ? '+' : '' }}₹{{ totalDaysGain() | number:'1.0-0' }}
+      </div>
+      <div class="stat-change" [class.text-success]="totalDaysGainPct() >= 0" [class.text-danger]="totalDaysGainPct() < 0">
+        {{ totalDaysGainPct() >= 0 ? '+' : '' }}{{ totalDaysGainPct() | number:'1.2-2' }}% today
+      </div>
+    </div>
+
+    <div class="card stat-card health-stat-card" routerLink="/app/essentials" style="cursor: pointer;" title="View Essentials Deep Dive">
+      <div class="material-icons stat-icon" [style.color]="healthStatus().color">{{ healthStatus().icon }}</div>
+      <p class="stat-label">Financial Health</p>
+      <div class="stat-value" [style.color]="healthStatus().color">
+        {{ essentialsService.healthScore() }} <small style="font-size: 14px; opacity: 0.7;">/ 10</small>
+      </div>
+      <div class="stat-change" [style.color]="healthStatus().color">
+        {{ healthStatus().label }} · {{ essentialsService.runwayMonths() | number:'1.1-1' }}m buffer →
       </div>
     </div>
   </div>
@@ -164,11 +201,11 @@
           @for (app of appWiseHoldings(); track app.label) {
             <div class="alloc-item">
               <div class="alloc-info">
-                <div class="alloc-dot" style="background: #333"></div>
+                <div class="alloc-dot" [style.background]="app.color"></div>
                 <span class="alloc-label">{{ app.label }}</span>
               </div>
               <div class="alloc-bar-wrap">
-                <div class="alloc-bar" [style.width.%]="app.percentage" style="background: #000"></div>
+                <div class="alloc-bar" [style.width.%]="app.percentage" [style.background]="app.color"></div>
               </div>
               <div class="alloc-values">
                 <span class="alloc-value">{{ app.value | currency:'INR':'symbol':'1.0-0' }}</span>

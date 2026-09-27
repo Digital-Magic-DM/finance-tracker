@@ -99,7 +99,6 @@ export class MarketService {
                 if (response && response.data) {
                     const niftyData = response.data.find((d: any) => d.symbol === 'NIFTY 50');
                     const stocks = response.data.filter((d: any) => d.symbol !== 'NIFTY 50');
-                    console.log(stocks, response, 'nse');
                     return {
                         nifty: niftyData ? {
                             price: niftyData.lastPrice,

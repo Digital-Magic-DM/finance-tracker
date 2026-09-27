@@ -21,6 +21,8 @@ export interface EssentialsProfile {
     annualExpenseMultiplier: number; // usually 25 for 4% rule
     dependents: number; // New: for health insurance logic
     insurance: InsuranceInfo;
+    monthlyExpenseOverride?: number; // Manual monthly expense/burn rate (₹)
+    monthlyIncomeOverride?: number;  // Manual monthly income (₹)
 }
 
 export enum TransactionType {
@@ -61,6 +63,8 @@ export interface Asset {
     appSource?: string;
     location?: AssetLocation;
     lastUpdated?: string;
+    lastUpdatedDate?: string; // YYYY-MM-DD format (e.g. '2026-09-27') to limit updates to once a day
+    navDate?: string;         // NAV date reported by AMFI / MFAPI (e.g. '26-Sep-2026')
     isLiquid?: boolean; // New: for Emergency Runway calculation
 }
 
@@ -143,3 +147,30 @@ export interface CustomChartConfig {
     sortBy: 'value_asc' | 'value_desc' | 'label_asc' | 'label_desc' | 'time_asc';
     limit?: number; // top N
 }
+
+export function getAssetAppSource(a: { appSource?: string; notes?: string }): string {
+    const raw = (a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace(/^Imported from\s*/i, '').trim() : '')).trim();
+    if (!raw) return 'Manual';
+    if (/indmoney|indstocks/i.test(raw)) return 'INDmoney';
+    if (/groww/i.test(raw)) return 'Groww';
+    if (/zerodha/i.test(raw)) return 'Zerodha';
+    if (/cdsl|nsdl/i.test(raw)) return 'CDSL / NSDL';
+    if (/csv/i.test(raw)) return 'CSV Import';
+
+    const clean = raw.replace(/\s*(pdf\s*statement|statement|\(isin:[^)]*\)|isin:[^\s)]*).*/gi, '').trim();
+    return clean || 'Imported';
+}
+
+export function getAppBrandColor(appName: string): string {
+    const map: Record<string, string> = {
+        'INDmoney': '#6366F1',
+        'Groww': '#00D09C',
+        'Zerodha': '#387ED1',
+        'CDSL / NSDL': '#F59E0B',
+        'CSV Import': '#06B6D4',
+        'Manual': '#EC4899',
+        'Imported': '#8B5CF6'
+    };
+    return map[appName] || '#A855F7';
+}
+

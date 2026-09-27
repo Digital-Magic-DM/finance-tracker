@@ -17,7 +17,7 @@ export class LayoutComponent implements OnInit {
     private meta = inject(Meta);
     // constructor() { inject(MarketService); } // Eagerly start market data fetching
     sidebarOpen = signal(false);
-    sidebarCollapsed = signal(false);
+    sidebarCollapsed = signal(localStorage.getItem('fintracker_sidebar_collapsed') === 'true');
 
     ngOnInit() {
         // Prevent all /app/* routes from being indexed by search engines.
@@ -25,7 +25,11 @@ export class LayoutComponent implements OnInit {
     }
 
     toggleSidebar() {
-        this.sidebarOpen.update((v) => !v);
+        if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+            this.sidebarOpen.update((v) => !v);
+        } else {
+            this.toggleSidebarCollapse();
+        }
     }
 
     closeSidebar() {
@@ -33,6 +37,12 @@ export class LayoutComponent implements OnInit {
     }
 
     toggleSidebarCollapse() {
-        this.sidebarCollapsed.update(v => !v);
+        this.sidebarCollapsed.update((v) => {
+            const next = !v;
+            try {
+                localStorage.setItem('fintracker_sidebar_collapsed', String(next));
+            } catch {}
+            return next;
+        });
     }
 }

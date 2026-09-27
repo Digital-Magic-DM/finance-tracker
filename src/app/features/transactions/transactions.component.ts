@@ -200,6 +200,33 @@ export class TransactionsComponent {
         return icons[type] || 'circle';
     }
 
+    exportCSV() {
+        const txs = this.filtered();
+        if (txs.length === 0) return;
+        const rows = [
+            ['Date', 'Type', 'Description', 'Category', 'Bank', 'Amount', 'Notes'],
+            ...txs.map((t: any) => {
+                const d = this.formatDate(t.date);
+                return [
+                    d.toISOString().split('T')[0],
+                    t.type,
+                    `"${(t.description || '').replace(/"/g, '""')}"`,
+                    `"${(t.category || '').replace(/"/g, '""')}"`,
+                    `"${(t.bank || '').replace(/"/g, '""')}"`,
+                    (t.amount || 0).toString(),
+                    `"${(t.notes || '').replace(/"/g, '""')}"`
+                ];
+            }),
+        ];
+        const csv = rows.map((r) => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
     formatDate(date: any): Date {
         if (date instanceof Date) return date;
         if (date?.seconds) return new Date(date.seconds * 1000);

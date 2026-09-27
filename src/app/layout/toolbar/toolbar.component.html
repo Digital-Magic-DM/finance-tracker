@@ -1,21 +1,32 @@
 <header class="toolbar">
-  <!-- Menu toggle (mobile) -->
-  <button class="menu-btn btn-icon" id="sidebar-toggle" (click)="sidebarToggle.emit()" aria-label="Toggle sidebar">
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-      <rect y="2" width="18" height="2" rx="1"/>
-      <rect y="8" width="12" height="2" rx="1"/>
-      <rect y="14" width="18" height="2" rx="1"/>
-    </svg>
-  </button>
+  <div class="toolbar-left">
+    <!-- Menu toggle (desktop collapse & mobile drawer) -->
+    <button class="menu-btn btn-icon" id="sidebar-toggle" (click)="sidebarToggle.emit()" aria-label="Toggle sidebar" title="Toggle sidebar">
+      <span class="material-icons" style="font-size: 20px;">menu</span>
+    </button>
 
-  <!-- Page title -->
-  <h2 class="page-title">{{ pageTitle() }}</h2>
+    <!-- Page title -->
+    <h2 class="page-title">{{ pageTitle() }}</h2>
+  </div>
 
   <!-- Right actions -->
   <div class="toolbar-actions">
+    <!-- Install App / Update Pill -->
+    @if (pwaService.updateAvailable()) {
+      <button class="install-pill-btn update-pill" (click)="pwaService.updateApp()" title="New version ready, click to reload">
+        <span class="material-icons">update</span>
+        <span class="btn-text">Update Ready</span>
+      </button>
+    } @else if (pwaService.canInstall()) {
+      <button class="install-pill-btn" (click)="pwaService.installApp()" title="Install FinTracker App">
+        <span class="material-icons">install_mobile</span>
+        <span class="btn-text">Install App</span>
+      </button>
+    }
+
     <!-- AI Chat Toggle -->
     <button
-      class="btn-icon"
+      class="btn-icon ai-btn"
       aria-label="Open AI Assistant"
       (click)="aiService.toggleChat()"
       [class.active]="aiService.isChatOpen()"
@@ -28,7 +39,8 @@
       class="btn-icon theme-btn"
       id="theme-toggle"
       (click)="themeService.toggle()"
-      [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
+      [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      [title]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
       @if (themeService.isDark()) {
         <span class="material-icons" style="font-size: 20px;">dark_mode</span>
       } @else {
@@ -58,6 +70,11 @@
               <span class="text-muted text-sm">{{ authService.firebaseUser()?.email || '' }}</span>
             </div>
             <div class="dropdown-divider"></div>
+            @if (pwaService.canInstall()) {
+              <button class="dropdown-item" (click)="pwaService.installApp(); showProfileDropdown.set(false)">
+                <span class="material-icons">install_mobile</span> Install App
+              </button>
+            }
             <a routerLink="/app/settings" class="dropdown-item" (click)="showProfileDropdown.set(false)">
               <span class="material-icons">settings</span> Settings
             </a>

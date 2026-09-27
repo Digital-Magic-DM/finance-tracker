@@ -4,15 +4,18 @@ import { RouterLink } from '@angular/router';
 import { AssetService } from '../../services/asset.service';
 import { TransactionService } from '../../services/transaction.service';
 import { SnapshotService } from '../../services/snapshot.service';
+import { GoogleFinanceService } from '../../services/google-finance.service';
+import { PriceService } from '../../services/price.service';
 
 
 import {
     TransactionType,
-    AssetType, ASSET_COLORS, AssetAllocation
+    AssetType, ASSET_COLORS, AssetAllocation, Asset
 } from '../../models/finance.models';
 import { PortfolioChartComponent } from '../../shared/portfolio-chart/portfolio-chart.component';
 import { NetworthChartComponent } from '../../shared/networth-chart/networth-chart.component';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { EssentialsService } from '../../services/essentials.service';
 import quotesDataFile from '../../../assets/quotes.json';
 
 @Component({
@@ -27,12 +30,16 @@ export class DashboardComponent implements OnInit {
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
     private snapshotService = inject(SnapshotService);
-
+    public googleFinance = inject(GoogleFinanceService);
+    public priceService = inject(PriceService);
+    public essentialsService = inject(EssentialsService);
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });
     snapshots = toSignal(this.snapshotService.getSnapshots(), { initialValue: [] });
 
+    isRefreshing = signal(false);
+    lastRefreshed = signal<string | null>(null);
     quoteOffset = signal(0);
 
     dailyQuote = computed(() => {
@@ -83,12 +90,23 @@ export class DashboardComponent implements OnInit {
         this.quoteOffset.update(v => v + 1);
     }
 
+    getFxRate(a: any): number {
+        return this.priceService.isUSAsset(a) ? this.googleFinance.usdToInrRate() : 1;
+    }
+
     totalNetWorth = computed(() =>
-        this.assets().reduce((sum, a) => sum + a.quantity * a.currentPrice, 0)
+        this.assets().reduce((sum, a) => {
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate ? a.buyPrice : 0);
+            const fx = this.getFxRate(a);
+            return sum + (a.quantity * cp * fx);
+        }, 0)
     );
 
     totalCost = computed(() =>
-        this.assets().reduce((sum, a) => sum + a.quantity * a.buyPrice, 0)
+        this.assets().reduce((sum, a) => {
+            const fx = this.getFxRate(a);
+            return sum + (a.quantity * a.buyPrice * fx);
+        }, 0)
     );
 
     totalGain = computed(() => this.totalNetWorth() - this.totalCost());
@@ -96,6 +114,67 @@ export class DashboardComponent implements OnInit {
     totalGainPct = computed(() =>
         this.totalCost() > 0 ? (this.totalGain() / this.totalCost()) * 100 : 0
     );
+
+    totalDaysGain = computed(() => {
+        return this.assets().reduce((s, a) => {
+            const cp = a.currentPrice > 0 ? a.currentPrice : 0;
+            const pct = (a.dailyChange || 0) / 100;
+            const daily = cp * pct * a.quantity * this.getFxRate(a);
+            return s + daily;
+        }, 0);
+    });
+
+    totalDaysGainPct = computed(() => {
+        const total = this.totalNetWorth();
+        return total > 0 ? (this.totalDaysGain() / total) * 100 : 0;
+    });
+
+    healthStatus = computed(() => {
+        const score = this.essentialsService.healthScore();
+        if (score >= 9) return { label: 'Optimal', color: 'var(--accent-success-blend)', icon: 'auto_awesome' };
+        if (score >= 7.5) return { label: 'Strong', color: 'var(--accent-success-blend)', icon: 'verified' };
+        if (score >= 5) return { label: 'Stable', color: 'var(--accent-warning-blend)', icon: 'check_circle' };
+        return { label: 'Needs Focus', color: 'var(--accent-danger-blend)', icon: 'error' };
+    });
+
+    async refreshQuotes() {
+        if (this.isRefreshing()) return;
+        this.isRefreshing.set(true);
+        try {
+            await this.priceService.refreshAllPrices(this.assets());
+            this.lastRefreshed.set(new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }));
+        } catch (err) {
+            console.error('[Dashboard] Live quote refresh error:', err);
+        } finally {
+            this.isRefreshing.set(false);
+        }
+    }
+
+    getAssetApp(a: Asset): string {
+        const raw = (a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace(/^Imported from\s*/i, '').trim() : '')).trim();
+        if (!raw) return 'Manual';
+        if (/indmoney|indstocks/i.test(raw)) return 'INDmoney';
+        if (/groww/i.test(raw)) return 'Groww';
+        if (/zerodha/i.test(raw)) return 'Zerodha';
+        if (/cdsl|nsdl/i.test(raw)) return 'CDSL / NSDL';
+        if (/csv/i.test(raw)) return 'CSV Import';
+
+        const clean = raw.replace(/\s*(pdf\s*statement|statement|\(isin:[^)]*\)|isin:[^\s)]*).*/gi, '').trim();
+        return clean || 'Imported';
+    }
+
+    getAppColor(appName: string): string {
+        const map: Record<string, string> = {
+            'INDmoney': '#6366F1',
+            'Groww': '#00D09C',
+            'Zerodha': '#387ED1',
+            'CDSL / NSDL': '#F59E0B',
+            'CSV Import': '#06B6D4',
+            'Manual': '#EC4899',
+            'Imported': '#8B5CF6'
+        };
+        return map[appName] || '#A855F7';
+    }
 
     monthlyIncome = computed(() => {
         const now = new Date();
@@ -140,7 +219,9 @@ export class DashboardComponent implements OnInit {
         if (total === 0) return [];
         const grouped: { [key: string]: number } = {};
         for (const a of this.assets()) {
-            const val = a.quantity * a.currentPrice;
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate ? a.buyPrice : 0);
+            const fx = this.getFxRate(a);
+            const val = a.quantity * cp * fx;
             grouped[a.type] = (grouped[a.type] || 0) + val;
         }
         return Object.entries(grouped).map(([type, value]) => ({
@@ -157,8 +238,10 @@ export class DashboardComponent implements OnInit {
         
         const grouped: { [key: string]: number } = {};
         for (const a of this.assets()) {
-            const val = a.quantity * a.currentPrice;
-            const source = a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace('Imported from', '').trim() : 'Manual');
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate ? a.buyPrice : 0);
+            const fx = this.getFxRate(a);
+            const val = a.quantity * cp * fx;
+            const source = this.getAssetApp(a);
             
             grouped[source] = (grouped[source] || 0) + val;
         }
@@ -167,7 +250,8 @@ export class DashboardComponent implements OnInit {
             .map(([label, value]) => ({
                 label,
                 value,
-                percentage: (value / total) * 100
+                percentage: (value / total) * 100,
+                color: this.getAppColor(label)
             }))
             .sort((a, b) => b.value - a.value);
     });

@@ -13,11 +13,11 @@
     <!-- Step 1: Upload -->
     @if (step() === 'upload') {
       <div class="modal-body">
-        <p class="upload-subtitle">Import your mutual fund &amp; stock holdings from <strong>Groww</strong> or <strong>INDmoney</strong> CSV / Excel exports.</p>
+        <p class="upload-subtitle">Import your mutual fund &amp; stock holdings from <strong>Groww</strong>, <strong>INDmoney</strong> (CSV, Excel, or PDF Statement), or <strong>CDSL / NSDL</strong>.</p>
 
         <div class="supported-formats">
           <span class="material-icons" style="font-size: 16px; color: var(--text-muted)">info</span>
-          <span>Supports: <strong>.csv</strong>, <strong>.xlsx</strong>, <strong>.xls</strong></span>
+          <span>Supports: <strong>.csv</strong>, <strong>.xlsx</strong>, <strong>.xls</strong>, <strong>.pdf</strong></span>
         </div>
 
         <div
@@ -31,7 +31,7 @@
           <span class="material-icons drop-icon">upload_file</span>
           <span class="drop-title">Drag & drop your file here</span>
           <span class="drop-subtitle">or click to browse</span>
-          <input #fileInput type="file" accept=".csv,.xlsx,.xls" hidden (change)="onFileSelected($event)" />
+          <input #fileInput type="file" accept=".csv,.xlsx,.xls,.pdf" hidden (change)="onFileSelected($event)" />
         </div>
 
         @if (error()) {
@@ -61,6 +61,45 @@
           </div>
         }
 
+        <!-- Existing Assets Selector Banner -->
+        @if (existingCount() > 0) {
+          <div class="existing-banner">
+            <div class="banner-header">
+              <span class="material-icons banner-icon">sync_problem</span>
+              <div>
+                <strong class="banner-title">{{ existingCount() }} existing portfolio asset{{ existingCount() !== 1 ? 's' : '' }} detected</strong>
+                <p class="banner-sub">Choose how to handle assets that already exist in your portfolio:</p>
+              </div>
+            </div>
+
+            <div class="strategy-selector">
+              <label class="strategy-card" [class.active]="duplicateMode() === 'update'" (click)="setDuplicateMode('update')">
+                <input type="radio" name="dupMode" [checked]="duplicateMode() === 'update'" />
+                <div class="strategy-info">
+                  <span class="strategy-name">Update Existing (Recommended)</span>
+                  <span class="strategy-desc">Update old qty &amp; prices with sheet values</span>
+                </div>
+              </label>
+
+              <label class="strategy-card" [class.active]="duplicateMode() === 'create'" (click)="setDuplicateMode('create')">
+                <input type="radio" name="dupMode" [checked]="duplicateMode() === 'create'" />
+                <div class="strategy-info">
+                  <span class="strategy-name">Add as New</span>
+                  <span class="strategy-desc">Create duplicate asset entries</span>
+                </div>
+              </label>
+
+              <label class="strategy-card" [class.active]="duplicateMode() === 'skip'" (click)="setDuplicateMode('skip')">
+                <input type="radio" name="dupMode" [checked]="duplicateMode() === 'skip'" />
+                <div class="strategy-info">
+                  <span class="strategy-name">Skip Existing</span>
+                  <span class="strategy-desc">Only import brand new assets</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        }
+
         <div class="preview-table-wrap">
           <table class="preview-table">
             <thead>
@@ -68,6 +107,7 @@
                 <th style="width: 40px">
                   <input type="checkbox" [checked]="selectedCount === rows().length" (change)="toggleAll()" />
                 </th>
+                <th>Status</th>
                 <th>Name</th>
                 <th>Type</th>
                 <th class="num">Qty</th>
@@ -79,11 +119,33 @@
               @for (row of rows(); track $index) {
                 <tr [class.deselected]="!row.selected" (click)="toggleRow($index)">
                   <td><input type="checkbox" [checked]="row.selected" (click)="$event.stopPropagation()" (change)="toggleRow($index)" /></td>
-                  <td class="name-cell">{{ row.asset.name }}</td>
+                  <td class="status-cell">
+                    @if (!row.isDuplicate) {
+                      <span class="status-badge badge-new">+ NEW</span>
+                    } @else {
+                      @if (duplicateMode() === 'update') {
+                        <span class="status-badge badge-update" [title]="'Current in Portfolio: Qty ' + row.existingAsset?.quantity + ' @ ' + (row.existingAsset?.currency === 'USD' ? '$' : '₹') + (row.existingAsset?.buyPrice | number:'1.2-2')">
+                          ↺ UPDATE
+                        </span>
+                      } @else if (duplicateMode() === 'create') {
+                        <span class="status-badge badge-dup" title="Will create as a new separate asset">+ DUPLICATE</span>
+                      } @else {
+                        <span class="status-badge badge-skip" title="Will not be imported">SKIP</span>
+                      }
+                    }
+                  </td>
+                  <td class="name-cell">
+                    <span class="asset-title">{{ row.asset.name }}</span>
+                    @if (row.isDuplicate && row.existingAsset) {
+                      <span class="match-info">
+                        Matched: <em>{{ row.existingAsset.name }}</em> (Current: {{ row.existingAsset.quantity }} @ {{ row.existingAsset.currency === 'USD' ? '$' : '₹' }}{{ row.existingAsset.buyPrice | number:'1.2-2' }})
+                      </span>
+                    }
+                  </td>
                   <td><span class="type-badge" [attr.data-type]="row.asset.type">{{ row.asset.type }}</span></td>
                   <td class="num">{{ row.asset.quantity }}</td>
-                  <td class="num">₹{{ row.asset.buyPrice | number:'1.2-2' }}</td>
-                  <td class="num">₹{{ row.asset.currentPrice | number:'1.2-2' }}</td>
+                  <td class="num">{{ row.asset.currency === 'USD' ? '$' : '₹' }}{{ row.asset.buyPrice | number:'1.2-2' }}</td>
+                  <td class="num">{{ row.asset.currency === 'USD' ? '$' : '₹' }}{{ row.asset.currentPrice | number:'1.2-2' }}</td>
                 </tr>
               }
             </tbody>
@@ -102,11 +164,23 @@
         <button class="btn btn-ghost" (click)="reset()">
           <span class="material-icons" style="font-size: 18px">arrow_back</span> Back
         </button>
-        <button class="btn btn-primary" [disabled]="importing() || selectedCount === 0" (click)="confirmImport()">
+
+        <button class="btn btn-primary" [disabled]="importing() || selectedCount === 0" (click)="onImportClick()">
           @if (importing()) {
             <span class="material-icons spin" style="font-size: 18px">sync</span> Importing...
           } @else {
-            <span class="material-icons" style="font-size: 18px">download_done</span> Import {{ selectedCount }} Assets
+            <span class="material-icons" style="font-size: 18px">download_done</span>
+            @if (existingCount() > 0) {
+              @if (duplicateMode() === 'update') {
+                Import ({{ newCount() }} New, {{ existingCount() }} Updates)
+              } @else if (duplicateMode() === 'create') {
+                Import {{ selectedCount }} (All as New)
+              } @else {
+                Import {{ newCount() }} ({{ existingCount() }} Skipped)
+              }
+            } @else {
+              Import {{ selectedCount }} Assets
+            }
           }
         </button>
       </div>
@@ -121,13 +195,17 @@
         <h3>Import Complete!</h3>
         <p class="done-summary">
           @if (importedCount() > 0) {
-            <span><strong>{{ importedCount() }}</strong> new assets added</span>
+            <span><strong>{{ importedCount() }}</strong> new asset{{ importedCount() !== 1 ? 's' : '' }} added</span>
           }
           @if (importedCount() > 0 && updatedCount() > 0) {
             <span> · </span>
           }
           @if (updatedCount() > 0) {
-            <span><strong>{{ updatedCount() }}</strong> existing assets updated</span>
+            <span><strong>{{ updatedCount() }}</strong> existing asset{{ updatedCount() !== 1 ? 's' : '' }} updated</span>
+          }
+          @if (skippedCount() > 0) {
+            <span> · </span>
+            <span><strong>{{ skippedCount() }}</strong> skipped</span>
           }
         </p>
         <div class="done-actions">
@@ -141,4 +219,60 @@
       </div>
     }
   </div>
+
+  <!-- Prompt Modal: Ask Add or Update before executing -->
+  @if (showActionModal()) {
+    <div class="action-prompt-overlay" (click)="$event.stopPropagation()">
+      <div class="action-prompt-card">
+        <div class="prompt-icon-wrap">
+          <span class="material-icons prompt-icon">help_outline</span>
+        </div>
+        <h4>Existing Assets Detected</h4>
+        <p class="prompt-desc">
+          You are importing <strong>{{ selectedCount }}</strong> assets.
+          We found <strong>{{ existingCount() }}</strong> asset{{ existingCount() !== 1 ? 's' : '' }} that already exist in your portfolio.
+          How would you like to handle them?
+        </p>
+
+        <div class="prompt-choices">
+          <button class="choice-btn primary-choice" (click)="confirmImport('update')">
+            <div class="choice-left">
+              <span class="material-icons choice-icon">update</span>
+              <div class="choice-text">
+                <span class="choice-title">Update Existing (Recommended)</span>
+                <span class="choice-sub">Update old holdings with latest sheet values (no duplicates)</span>
+              </div>
+            </div>
+            <span class="choice-badge">{{ existingCount() }} to update</span>
+          </button>
+
+          <button class="choice-btn secondary-choice" (click)="confirmImport('create')">
+            <div class="choice-left">
+              <span class="material-icons choice-icon">add_circle_outline</span>
+              <div class="choice-text">
+                <span class="choice-title">Add as New</span>
+                <span class="choice-sub">Create new entries alongside old ones (duplicate)</span>
+              </div>
+            </div>
+            <span class="choice-badge">{{ existingCount() }} duplicate</span>
+          </button>
+
+          <button class="choice-btn skip-choice" (click)="confirmImport('skip')">
+            <div class="choice-left">
+              <span class="material-icons choice-icon">skip_next</span>
+              <div class="choice-text">
+                <span class="choice-title">Skip Existing</span>
+                <span class="choice-sub">Only import the {{ newCount() }} new assets</span>
+              </div>
+            </div>
+            <span class="choice-badge">{{ existingCount() }} skip</span>
+          </button>
+        </div>
+
+        <div class="prompt-footer">
+          <button class="btn btn-ghost" (click)="showActionModal.set(false)">Cancel</button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

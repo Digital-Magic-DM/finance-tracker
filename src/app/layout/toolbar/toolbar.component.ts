@@ -6,6 +6,7 @@ import { filter, map } from 'rxjs/operators';
 
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AiService } from '../../services/ai.service';
+import { PwaService } from '../../services/pwa.service';
 
 @Component({
     selector: 'app-toolbar',
@@ -18,6 +19,7 @@ export class ToolbarComponent {
     authService = inject(AuthService);
     themeService = inject(ThemeService);
     aiService = inject(AiService);
+    pwaService = inject(PwaService);
     private router = inject(Router);
     private el = inject(ElementRef);
 

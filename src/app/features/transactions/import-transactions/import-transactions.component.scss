@@ -12,9 +12,10 @@
 }
 
 .import-modal {
-    background: var(--card-bg);
+    background: var(--bg-card, #ffffff);
     border-radius: 16px;
     border: 1px solid var(--border-color);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
     width: 90vw;
     max-width: 720px;
     max-height: 85vh;

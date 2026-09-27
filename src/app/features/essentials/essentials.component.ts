@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class EssentialsComponent {
     public essentialsService = inject(EssentialsService);
+    Math = Math;
     
     // UI state for inline expansions
     showRunwayInfo = signal(false);
@@ -21,6 +22,7 @@ export class EssentialsComponent {
 
     // Form Signals for editing profile
     isEditing = signal(false);
+    isSaving = signal(false);
     editData = signal({
         age: 30,
         dependents: 0,
@@ -29,7 +31,9 @@ export class EssentialsComponent {
         insurance: {
             termCover: 0,
             healthCover: 0
-        }
+        },
+        monthlyExpenseOverride: 0,
+        monthlyIncomeOverride: 0
     });
 
     // FI Matrix Data (Savings Rate vs Years to FI)
@@ -47,23 +51,41 @@ export class EssentialsComponent {
 
     healthStatus = computed(() => {
         const score = this.essentialsService.healthScore();
-        if (score >= 9) return { label: 'Perfect', color: 'var(--accent-success-blend)', icon: 'auto_awesome' };
-        if (score >= 7.5) return { label: 'Excellent', color: 'var(--accent-success-blend)', icon: 'verified' };
-        if (score >= 5) return { label: 'Solid', color: 'var(--accent-warning-blend)', icon: 'check_circle' };
-        return { label: 'Critical', color: 'var(--accent-danger-blend)', icon: 'error' };
+        if (score >= 9) return { label: 'Optimal', color: '#10B981', icon: 'auto_awesome', grade: 'A+' };
+        if (score >= 7.5) return { label: 'Strong', color: '#3B82F6', icon: 'verified', grade: 'A' };
+        if (score >= 5) return { label: 'Stable', color: '#F59E0B', icon: 'check_circle', grade: 'B' };
+        return { label: 'Needs Focus', color: '#EF4444', icon: 'error', grade: 'C' };
     });
 
     startEdit() {
         const current = this.essentialsService.profile();
         if (current) {
-            this.editData.set(JSON.parse(JSON.stringify(current)));
+            this.editData.set({
+                age: current.age || 30,
+                dependents: current.dependents || 0,
+                targetRetirementAge: current.targetRetirementAge || 60,
+                annualExpenseMultiplier: current.annualExpenseMultiplier || 25,
+                insurance: {
+                    termCover: current.insurance?.termCover || 0,
+                    healthCover: current.insurance?.healthCover || 0
+                },
+                monthlyExpenseOverride: current.monthlyExpenseOverride || (this.essentialsService.avgMonthlyExpense() || 0),
+                monthlyIncomeOverride: current.monthlyIncomeOverride || 0
+            });
         }
         this.isEditing.set(true);
     }
 
     async saveEdit() {
-        await this.essentialsService.updateProfile(this.editData());
-        this.isEditing.set(false);
+        this.isSaving.set(true);
+        try {
+            await this.essentialsService.updateProfile(this.editData());
+            this.isEditing.set(false);
+        } catch (err) {
+            console.error('Failed to update profile:', err);
+        } finally {
+            this.isSaving.set(false);
+        }
     }
 
     cancelEdit() {

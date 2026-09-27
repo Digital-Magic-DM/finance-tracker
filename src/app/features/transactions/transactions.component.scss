@@ -16,12 +16,14 @@
     
     @media (max-width: 600px) {
         width: 100%;
-        gap: 8px;
+        gap: 6px;
         justify-content: flex-start;
         align-items: stretch;
         
         .btn {
             flex: 1;
+            padding: 6px 8px;
+            font-size: 11px;
             text-align: center;
             justify-content: center;
         }
@@ -29,7 +31,7 @@
         .selected-count {
             width: 100%;
             text-align: center;
-            padding-bottom: 4px;
+            padding-bottom: 2px;
         }
     }
 }
@@ -46,7 +48,23 @@ tr.selected {
     margin-bottom: 16px;
 
     @media (max-width: 640px) {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-bottom: 10px;
+
+        .summary-item {
+            padding: 8px 6px;
+
+            .s-label {
+                font-size: 9px;
+                letter-spacing: 0.02em;
+                margin-bottom: 3px;
+            }
+
+            .s-value {
+                font-size: clamp(13px, 3.6vw, 15px);
+            }
+        }
     }
 }
 
@@ -84,6 +102,12 @@ tr.selected {
     gap: 12px;
     padding: 16px;
     margin-bottom: 16px;
+
+    @media (max-width: 600px) {
+        padding: 8px 10px;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
 }
 
 .top-row {
@@ -91,6 +115,10 @@ tr.selected {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+
+    @media (max-width: 600px) {
+        gap: 8px;
+    }
 }
 
 .date-filter-row {
@@ -100,14 +128,15 @@ tr.selected {
     flex-wrap: wrap;
 
     @media (max-width: 600px) {
-        gap: 8px;
-        flex-direction: column;
-        align-items: stretch;
+        gap: 6px;
+        flex-direction: row;
+        align-items: center;
         
-        .date-sep { display: none; }
-        .date-filter-field { width: 100%; }
-        .date-input { width: 100%; padding: 12px 12px 12px 36px; height: 42px; }
-        .clear-date-btn { align-self: center; width: 100%; justify-content: center; border: 1px solid var(--border-color); }
+        .date-sep { display: inline; font-size: 12px; }
+        .date-filter-field { flex: 1; min-width: 0; }
+        .date-input { width: 100%; padding: 4px 6px 4px 28px; height: 34px; font-size: 11px; }
+        .date-icon { font-size: 14px; left: 8px; }
+        .clear-date-btn { padding: 4px 8px; font-size: 11px; }
     }
 }
 

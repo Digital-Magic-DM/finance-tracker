@@ -63,6 +63,59 @@
       </div>
     </div>
 
+    <!-- Google Finance Integration Configuration -->
+    <div class="card gf-settings-card" style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span class="material-icons" style="color: #10b981; font-size: 22px;">trending_up</span>
+          Google Finance Live Quotes
+        </h3>
+        @if (gfService.isCustom()) {
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="badge badge-success" style="font-size: 11px;">● Connected (Custom API)</span>
+            <button class="btn btn-secondary" (click)="resetGfToDefault()" style="padding: 4px 8px; font-size: 11px;">Reset to Default</button>
+          </div>
+        } @else {
+          <span class="badge badge-success" style="font-size: 11px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981;">● Active (Built-in FinTracker API)</span>
+        }
+      </div>
+      <p style="margin-bottom: 16px; color: var(--text-muted); font-size: 13px; line-height: 1.5;">
+        Live market prices for Indian (NSE/BSE) and global stocks are powered by Google Finance. FinTracker comes with a built-in endpoint ready to use, or you can supply your own private Google Apps Script URL.
+        <a href="javascript:void(0)" (click)="showGfGuide.set(!showGfGuide())" style="color: var(--text-primary); text-decoration: underline; font-weight: bold; margin-left: 6px;">
+          {{ showGfGuide() ? 'Hide Custom Setup Instructions ▲' : 'Use Your Own Custom Endpoint ▼' }}
+        </a>
+      </p>
+
+      @if (showGfGuide()) {
+        <div style="background: var(--bg-card-hover); border: 1px dashed var(--border-light, #ccc); padding: 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;">
+          <h4 style="margin-bottom: 8px;">Want your own private quota? (Takes 2 Minutes):</h4>
+          <ol style="padding-left: 20px; line-height: 1.7; margin-bottom: 12px;">
+            <li>Go to <a href="https://sheets.new" target="_blank" style="text-decoration: underline; font-weight: bold;">sheets.new</a> to create a new Google Sheet.</li>
+            <li>In the top menu, click <strong>Extensions</strong> → <strong>Apps Script</strong>.</li>
+            <li>Delete any code in the editor, click <strong>Copy Google Apps Script</strong> below, and paste it.</li>
+            <li>Click <strong>Deploy</strong> (top right) → <strong>New deployment</strong>.</li>
+            <li>Click the gear icon next to "Select type" → choose <strong>Web app</strong>.</li>
+            <li>Set <em>Execute as:</em> <strong>Me</strong> and <em>Who has access:</em> <strong>Anyone</strong> (crucial).</li>
+            <li>Click <strong>Deploy</strong> and copy the generated <strong>Web app URL</strong>.</li>
+            <li>Paste the URL below and click <strong>Test Connection</strong>!</li>
+          </ol>
+          <button class="btn btn-secondary" (click)="copyScriptCode()" style="gap: 6px;">
+            <span class="material-icons" style="font-size: 16px;">content_copy</span> Copy Google Apps Script
+          </button>
+        </div>
+      }
+
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <input type="text" [(ngModel)]="gfUrl" placeholder="Google Apps Script Web App URL..." 
+               style="flex: 2; padding: 12px; border: 2px solid var(--border-color); background: transparent; color: var(--text-primary); font-family: inherit; font-size: 13.5px; outline: none; min-width: 260px;" />
+        <button class="btn btn-secondary" (click)="testGfConnection()" [disabled]="isTestingGf() || !gfUrl()" style="gap: 6px;">
+          <span class="material-icons" style="font-size: 16px;">{{ isTestingGf() ? 'sync' : 'network_check' }}</span>
+          {{ isTestingGf() ? 'Testing...' : 'Test Connection' }}
+        </button>
+        <button class="btn btn-primary" (click)="saveGfUrl()">Save</button>
+      </div>
+    </div>
+
     <!-- Settings Options -->
     <div class="card settings-list">
       <!-- Theme Toggle -->

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CustomChartConfig, AssetType } from '../../../models/finance.models';
+import { CustomChartConfig, AssetType, getAssetAppSource } from '../../../models/finance.models';
 import { AnalyticsBuilderService } from '../../../services/analytics-builder.service';
 import { DynamicChartComponent } from '../../../shared/dynamic-chart/dynamic-chart.component';
 
@@ -36,8 +36,7 @@ export class CustomAnalyticsBuilderComponent {
         const assets = this.analyticsBuilder.assets() || [];
         const sources = new Set<string>();
         assets.forEach(item => {
-            const source = item.appSource || (item.notes?.includes('Imported from') ? item.notes.replace('Imported from', '').trim() : 'Manual');
-            sources.add(source);
+            sources.add(getAssetAppSource(item));
         });
         return Array.from(sources).sort();
     });

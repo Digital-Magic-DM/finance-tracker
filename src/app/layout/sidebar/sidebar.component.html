@@ -1,63 +1,47 @@
 <aside class="sidebar" [class.collapsed]="collapsed()">
   <!-- Brand Header -->
   <div class="sidebar-header">
-    <div class="logo" [routerLink]="['/app/dashboard']" style="cursor: pointer;">
+    <div class="logo" [routerLink]="['/app/dashboard']" [title]="collapsed() ? pwaService.appName() : ''">
       <div class="logo-icon">
-        <img src="/assets/applogo.png" alt="Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+        <img src="/assets/applogo.png" alt="Logo" />
       </div>
       <div class="logo-text brand-name">{{ pwaService.appName() }}</div>
     </div>
-    <button class="close-btn btn-icon" (click)="closeSidebar.emit()">✕</button>
-  </div>
 
+    <!-- Close Drawer Button (Mobile) -->
+    <button class="close-btn mobile-only" (click)="closeSidebar.emit()" aria-label="Close menu">
+      <span class="material-icons" style="font-size: 20px;">close</span>
+    </button>
+  </div>
 
   <!-- Navigation -->
   <nav class="sidebar-nav">
-    <span class="nav-label">MAIN MENU</span>
+    <span class="nav-label">MENU</span>
     @for (item of navItems; track item.route) {
       <a
         class="nav-item"
         [routerLink]="item.route"
         routerLinkActive="active"
-        (click)="closeSidebar.emit()">
-        <span class="nav-icon material-icons" [title]="collapsed() ? item.label : ''">{{ item.icon }}</span>
+        (click)="closeSidebar.emit()"
+        [attr.data-tooltip]="item.label"
+        [title]="collapsed() ? item.label : ''">
+        <span class="nav-icon material-icons">{{ item.icon }}</span>
         <span class="nav-text">{{ item.label }}</span>
         <span class="nav-arrow material-icons">chevron_right</span>
       </a>
     }
   </nav>
 
-  <div class="collapse-toggle-wrapper desktop-only">
-      <button class="btn btn-ghost btn-icon" (click)="toggleCollapse.emit()" style="width: 100%; display: flex; justify-content: center;" [attr.aria-label]="collapsed() ? 'Expand Sidebar' : 'Collapse Sidebar'" title="Toggle Sidebar">
-          <span class="material-icons">{{ collapsed() ? 'chevron_right' : 'chevron_left' }}</span>
-      </button>
-  </div>
-
   <!-- Footer -->
   <div class="sidebar-footer">
-    
-    @if (pwaService.updateAvailable()) {
-      <div class="sidebar-pwa-promo footer-pwa" (click)="pwaService.updateApp(); closeSidebar.emit()">
-        <span class="material-icons">update</span>
-        <div class="pwa-text">
-          <span class="pwa-title">Update App</span>
-          <span class="pwa-subtitle">Click to refresh</span>
-        </div>
-      </div>
-    } @else if (pwaService.canInstall()) {
-      <div class="sidebar-pwa-promo footer-pwa" (click)="pwaService.installApp(); closeSidebar.emit()">
-        <span class="material-icons">install_mobile</span>
-        <div class="pwa-text">
-          <span class="pwa-title">Install App</span>
-          <span class="pwa-subtitle">Click to install</span>
-        </div>
-      </div>
-    }
-
-    <button class="footer-btn sign-out-btn" (click)="signOut()" [title]="collapsed() ? 'Sign Out' : ''">
+    <button
+      class="footer-btn sign-out-btn"
+      (click)="signOut()"
+      [attr.data-tooltip]="'Sign Out'"
+      [title]="collapsed() ? 'Sign Out' : ''">
       <span class="material-icons">logout</span>
       <span class="sign-out-text">Sign Out</span>
     </button>
-    <p class="version">v{{ appVersion }} · FinTracker</p>
+    <div class="version">v{{ appVersion }}</div>
   </div>
 </aside>

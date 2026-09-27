@@ -1,10 +1,9 @@
 import { Injectable, inject, computed } from '@angular/core';
-
 import { AssetService } from './asset.service';
+import { PriceService } from './price.service';
+import { GoogleFinanceService } from './google-finance.service';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Asset } from '../models/finance.models';
-
-
+import { Asset, AssetType } from '../models/finance.models';
 
 export interface PortfolioSummary {
     totalValue: number;
@@ -16,24 +15,30 @@ export interface PortfolioSummary {
 @Injectable({ providedIn: 'root' })
 export class PortfolioAnalyticsService {
     private assetService = inject(AssetService);
+    private priceService = inject(PriceService);
+    private googleFinance = inject(GoogleFinanceService);
 
-    // Get assets from the existing AssetService
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
 
-    // Compute basic analytics locally from synced asset data
     summary = computed(() => {
         const assets = this.assets() as Asset[];
         if (!assets.length) return { totalValue: 0, dailyChange: 0, dailyChangePercent: 0, topContributor: 'N/A' };
 
         let total = 0;
+        let totalDaily = 0;
         let topAsset = assets[0];
         let maxDailyGain = -Infinity;
 
         assets.forEach((asset: Asset) => {
-            const currentVal = asset.quantity * (asset.currentPrice || 0);
+            const cp = asset.currentPrice > 0 ? asset.currentPrice : (asset.type === AssetType.Cash || asset.type === AssetType.RealEstate ? asset.buyPrice : 0);
+            const fx = this.priceService.isUSAsset(asset) ? this.googleFinance.usdToInrRate() : 1;
+            const currentVal = asset.quantity * cp * fx;
             total += currentVal;
             
-            const dailyGain = (asset.dailyChange || 0) * asset.quantity;
+            const pct = (asset.dailyChange || 0) / 100;
+            const dailyGain = cp * pct * asset.quantity * fx;
+            totalDaily += dailyGain;
+
             if (dailyGain > maxDailyGain) {
                 maxDailyGain = dailyGain;
                 topAsset = asset;
@@ -42,9 +47,9 @@ export class PortfolioAnalyticsService {
 
         return {
             totalValue: total,
-            dailyChange: assets.reduce((acc: number, a: Asset) => acc + (a.dailyChange || 0) * a.quantity, 0),
-            dailyChangePercent: total > 0 ? ((assets.reduce((acc: number, a: Asset) => acc + (a.dailyChange || 0) * a.quantity, 0)) / (total - (assets.reduce((acc: number, a: Asset) => acc + (a.dailyChange || 0) * a.quantity, 0))) * 100) : 0,
-            topContributor: topAsset.name
+            dailyChange: totalDaily,
+            dailyChangePercent: total > 0 ? (totalDaily / total) * 100 : 0,
+            topContributor: topAsset?.name || 'N/A'
         };
     });
 }

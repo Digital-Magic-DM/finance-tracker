@@ -1,13 +1,17 @@
 import { Injectable, inject, computed, signal } from '@angular/core';
 import { AssetService } from './asset.service';
 import { TransactionService } from './transaction.service';
-import { CustomChartConfig, TransactionType } from '../models/finance.models';
+import { PriceService } from './price.service';
+import { GoogleFinanceService } from './google-finance.service';
+import { CustomChartConfig, TransactionType, AssetType, getAssetAppSource } from '../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 @Injectable({ providedIn: 'root' })
 export class AnalyticsBuilderService {
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
+    private priceService = inject(PriceService);
+    private googleFinance = inject(GoogleFinanceService);
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });
@@ -98,7 +102,7 @@ export class AnalyticsBuilderService {
             }
             if (filters.appSources?.length && config.dataSource === 'Assets') {
                 filtered = filtered.filter(item => {
-                    const itemAppSource = item.appSource || (item.notes?.includes('Imported from') ? item.notes.replace('Imported from', '').trim() : 'Manual');
+                    const itemAppSource = getAssetAppSource(item);
                     return filters.appSources!.includes(itemAppSource);
                 });
             }
@@ -111,16 +115,24 @@ export class AnalyticsBuilderService {
                 if (config.displayType !== 'widget') {
                     if (config.dimension === 'Category') groupKey = item.category || 'Uncategorized';
                     else if (config.dimension === 'Type') groupKey = item.type || 'Unknown';
-                    else if (config.dimension === 'AppSource') groupKey = item.appSource || (item.notes?.includes('Imported from') ? item.notes.replace('Imported from', '').trim() : 'Manual');
+                    else if (config.dimension === 'AppSource') groupKey = getAssetAppSource(item);
                     else if (config.dimension === 'Time') {
                         const dateObj = item.date ? (item.date.seconds ? new Date(item.date.seconds * 1000) : new Date(item.date)) : (item.purchaseDate ? new Date(item.purchaseDate) : new Date());
                         groupKey = dateObj.toLocaleString('default', { month: 'short', year: '2-digit' });
                     }
                 }
 
-                // 4. Aggregate
-                const valueToAdd = config.metric === 'Count' ? 1 : 
-                    (config.dataSource === 'Assets' ? (item.quantity * item.currentPrice) : item.amount);
+                // 4. Aggregate with multi-currency FX rate and safe unpriced asset handling
+                let valueToAdd = 0;
+                if (config.metric === 'Count') {
+                    valueToAdd = 1;
+                } else if (config.dataSource === 'Assets') {
+                    const cp = item.currentPrice > 0 ? item.currentPrice : (item.type === AssetType.Cash || item.type === AssetType.RealEstate ? item.buyPrice : 0);
+                    const fx = this.priceService.isUSAsset(item) ? this.googleFinance.usdToInrRate() : 1;
+                    valueToAdd = item.quantity * cp * fx;
+                } else {
+                    valueToAdd = Number(item.amount) || 0;
+                }
                     
                 grouped[groupKey] = (grouped[groupKey] || 0) + Number(valueToAdd || 0);
             });

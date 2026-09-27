@@ -8,13 +8,17 @@ import {
 import { doc, setDoc, collection } from 'firebase/firestore';
 import { Auth } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
-import { PortfolioSnapshot, Asset } from '../models/finance.models';
+import { PortfolioSnapshot, Asset, AssetType } from '../models/finance.models';
+import { PriceService } from './price.service';
+import { GoogleFinanceService } from './google-finance.service';
 
 @Injectable({ providedIn: 'root' })
 export class SnapshotService {
     private firestore = inject(Firestore);
     private auth = inject(Auth);
     private injector = inject(Injector);
+    private priceService = inject(PriceService);
+    private googleFinance = inject(GoogleFinanceService);
 
     async saveSnapshot(assets: Asset[]): Promise<void> {
         const uid = this.auth.currentUser?.uid;
@@ -25,7 +29,9 @@ export class SnapshotService {
         let totalAssets = 0;
 
         for (const asset of assets) {
-            const value = asset.quantity * asset.currentPrice;
+            const cp = asset.currentPrice > 0 ? asset.currentPrice : (asset.type === AssetType.Cash || asset.type === AssetType.RealEstate ? asset.buyPrice : 0);
+            const fx = this.priceService.isUSAsset(asset) ? this.googleFinance.usdToInrRate() : 1;
+            const value = asset.quantity * cp * fx;
             breakdown[asset.type] = (breakdown[asset.type] || 0) + value;
             totalAssets += value;
         }

@@ -1,16 +1,18 @@
-import { Component, inject, signal, computed, NgZone, ChangeDetectorRef } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { Component, inject, signal, computed, NgZone, ChangeDetectorRef, OnInit, HostListener } from '@angular/core';
+import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AssetService } from '../../services/asset.service';
 import { PriceService } from '../../services/price.service';
+import { GoogleFinanceService } from '../../services/google-finance.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { Asset, AssetType, ASSET_COLORS } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportDataComponent } from '../settings/import-data/import-data.component';
 import { LocationPickerComponent } from '../../shared/location-picker/location-picker.component';
 
+
 interface AssetGroup {
-    type: AssetType;
+    type: string;
     label: string;
     assets: Asset[];
     totalValue: number;
@@ -20,22 +22,31 @@ interface AssetGroup {
     allocation: number;
     color: string;
     expanded: boolean;
+    currency: 'INR' | 'USD';
+    totalValueINR?: number;
+    totalInvestedINR?: number;
     lastUpdated?: string;
 }
 
 @Component({
     selector: 'app-assets',
     standalone: true,
-    imports: [CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent, LocationPickerComponent],
+    imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent, LocationPickerComponent],
     templateUrl: './assets.component.html',
     styleUrl: './assets.component.scss',
 })
-export class AssetsComponent {
+export class AssetsComponent implements OnInit {
     private assetService = inject(AssetService);
     private priceService = inject(PriceService);
+    public googleFinance = inject(GoogleFinanceService);
     private snackbar = inject(SnackbarService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
+
+    ngOnInit() {
+        // Fetch live USD to INR exchange rate on component initialization
+        this.googleFinance.fetchUsdInrRate().catch(() => {});
+    }
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     showModal = signal(false);
@@ -52,25 +63,57 @@ export class AssetsComponent {
     selectedIds = signal<Set<string>>(new Set());
     deleting = signal(false);
 
-    viewMode = signal<'grid' | 'table'>((localStorage.getItem('assetsViewMode') as 'grid' | 'table') || 'grid');
+    // View mode: 'cards' (broker holding cards) or 'table' (accordion table)
+    viewMode = signal<'cards' | 'table'>((localStorage.getItem('assetsViewMode') as 'cards' | 'table') || 'cards');
 
     // Single expanded group tracking
     private expandedGroup = signal<string | null>(null);
 
     assetTypes = Object.values(AssetType);
+    AssetType = AssetType;
 
+    showAddDropdown = signal(false);
+
+    toggleAddDropdown(event?: Event) {
+        if (event) event.stopPropagation();
+        this.showAddDropdown.update(v => !v);
+    }
+
+    @HostListener('document:click')
+    closeAddDropdown() {
+        this.showAddDropdown.set(false);
+    }
+
+    // Top horizontal tabs & filters
+    selectedCategory = signal<string>('Overview');
+    subFilter = signal<'all' | 'investments' | 'gainers' | 'losers'>('all');
+    searchQuery = signal<string>('');
+    hideAmounts = signal<boolean>(localStorage.getItem('hideAssetAmounts') === 'true');
     appFilter = signal<string>('All');
+
+    getAssetApp(a: Asset): string {
+        const raw = (a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace(/^Imported from\s*/i, '').trim() : '')).trim();
+        if (!raw) return 'Manual';
+        if (/indmoney|indstocks/i.test(raw)) return 'INDmoney';
+        if (/groww/i.test(raw)) return 'Groww';
+        if (/zerodha/i.test(raw)) return 'Zerodha';
+        if (/cdsl|nsdl/i.test(raw)) return 'CDSL / NSDL';
+        if (/csv/i.test(raw)) return 'CSV Import';
+
+        // Strip trailing PDF Statement or (ISIN: ...)
+        const clean = raw.replace(/\s*(pdf\s*statement|statement|\(isin:[^)]*\)|isin:[^\s)]*).*/gi, '').trim();
+        return clean || 'Imported';
+    }
 
     availableApps = computed(() => {
         const apps = new Set<string>();
         for (const a of this.assets()) {
-            const source = a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace('Imported from', '').trim() : 'Manual');
-            apps.add(source);
+            apps.add(this.getAssetApp(a));
         }
         return Array.from(apps).sort();
     });
 
-    predefinedApps = ['Manual', 'Groww', 'Zerodha', 'IndMoney', 'Ethos', 'Kotak Cherry', 'Wint Wealth', 'Kuvera', 'AngelOne', 'Other'];
+    predefinedApps = ['Manual', 'Groww', 'Zerodha', 'INDmoney', 'Ethos', 'Kotak Cherry', 'Wint Wealth', 'Kuvera', 'AngelOne', 'Other'];
     showCustomApp = signal(false);
 
     // Stock Search
@@ -135,29 +178,263 @@ export class AssetsComponent {
         location: undefined
     });
 
-    filteredAssets = computed(() => {
-        const assets = this.assets();
-        const filter = this.appFilter();
-        if (filter === 'All') return assets;
-
-        return assets.filter(a => {
-            const source = a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace('Imported from', '').trim() : 'Manual');
-            return source === filter;
+    toggleHideAmounts() {
+        this.hideAmounts.update(v => {
+            const next = !v;
+            localStorage.setItem('hideAssetAmounts', String(next));
+            return next;
         });
+    }
+
+    toggleViewMode() {
+        this.viewMode.update(v => {
+            const next = v === 'cards' ? 'table' : 'cards';
+            localStorage.setItem('assetsViewMode', next);
+            return next;
+        });
+    }
+
+
+    // Market Region Filter: 'all' | 'ind' | 'us'
+    selectedMarket = signal<'all' | 'ind' | 'us'>('all');
+
+    isUSAsset(a: Asset): boolean {
+        return this.priceService.isUSAsset(a);
+    }
+
+    isIndianAsset(a: Asset): boolean {
+        return !this.isUSAsset(a);
+    }
+
+    allIndAssets = computed(() => this.assets().filter(a => this.isIndianAsset(a)));
+    allUsAssets = computed(() => this.assets().filter(a => this.isUSAsset(a)));
+    hasBothMarkets = computed(() => this.allIndAssets().length > 0 && this.allUsAssets().length > 0);
+
+    categories = computed(() => {
+        const assets = this.selectedMarket() === 'ind'
+            ? this.allIndAssets()
+            : (this.selectedMarket() === 'us' ? this.allUsAssets() : this.assets());
+
+        const counts = new Map<string, number>();
+        let hasUS = false;
+        let hasIndStock = false;
+
+        for (const a of assets) {
+            if (this.isUSAsset(a)) {
+                hasUS = true;
+                counts.set('US Stocks', (counts.get('US Stocks') || 0) + 1);
+            } else if (a.type === AssetType.Stock) {
+                hasIndStock = true;
+                counts.set('Indian Stocks', (counts.get('Indian Stocks') || 0) + 1);
+            } else {
+                const t = this.getTypeLabel(a.type || AssetType.Other);
+                counts.set(t, (counts.get(t) || 0) + 1);
+            }
+        }
+
+        const list = [{ label: 'Overview', count: assets.length, key: 'Overview' }];
+
+        if (hasIndStock) {
+            list.push({ label: 'Indian Stocks', count: counts.get('Indian Stocks')!, key: 'Indian Stocks' });
+        }
+        if (hasUS) {
+            list.push({ label: 'US Stocks', count: counts.get('US Stocks')!, key: 'US Stocks' });
+        }
+
+        const standardOrder = ['Mutual Funds', 'ETFs', 'Gold', 'Crypto', 'Real Estate', 'Cash', 'Other'];
+        for (const cat of standardOrder) {
+            if (counts.has(cat)) {
+                list.push({ label: cat, count: counts.get(cat)!, key: cat });
+            }
+        }
+        return list;
     });
 
-    totalValue = computed(() =>
-        this.filteredAssets().reduce((s, a) => s + a.quantity * a.currentPrice, 0)
+    filteredAssets = computed(() => {
+        let list = this.assets();
+
+        // 1. Market Region Filter
+        const market = this.selectedMarket();
+        if (market === 'ind') {
+            list = list.filter(a => this.isIndianAsset(a));
+        } else if (market === 'us') {
+            list = list.filter(a => this.isUSAsset(a));
+        }
+
+        // 2. App Filter
+        const app = this.appFilter();
+        if (app !== 'All') {
+            list = list.filter(a => this.getAssetApp(a) === app);
+        }
+
+        // 3. Category Tab
+        const cat = this.selectedCategory();
+        if (cat === 'Indian Stocks') {
+            list = list.filter(a => this.isIndianAsset(a) && (a.type === AssetType.Stock || a.type === AssetType.ETF));
+        } else if (cat === 'US Stocks') {
+            list = list.filter(a => this.isUSAsset(a));
+        } else if (cat !== 'Overview') {
+            list = list.filter(a => this.getTypeLabel(a.type || AssetType.Other) === cat);
+        }
+
+        // 4. Search Query
+        const q = this.searchQuery().trim().toLowerCase();
+        if (q) {
+            list = list.filter(a =>
+                (a.name && a.name.toLowerCase().includes(q)) ||
+                (a.symbol && a.symbol.toLowerCase().includes(q)) ||
+                (a.notes && a.notes.toLowerCase().includes(q))
+            );
+        }
+
+        // 5. Sub-filter
+        const sub = this.subFilter();
+        if (sub === 'gainers') {
+            list = list.filter(a => this.getGain(a) > 0);
+        } else if (sub === 'losers') {
+            list = list.filter(a => this.getGain(a) < 0);
+        }
+
+        return list;
+    });
+
+    // Market Sub-collections for Sections
+    filteredIndAssets = computed(() => this.filteredAssets().filter(a => this.isIndianAsset(a)));
+    filteredUsAssets = computed(() => this.filteredAssets().filter(a => this.isUSAsset(a)));
+
+    // Subtotals for IND section
+    indTotalInvested = computed(() =>
+        this.filteredIndAssets().reduce((s, a) => s + (a.buyPrice * a.quantity), 0)
     );
+    indTotalValue = computed(() =>
+        this.filteredIndAssets().reduce((s, a) => s + ((a.currentPrice > 0 ? a.currentPrice : (this.isNonMarketAsset(a) ? a.buyPrice : 0)) * a.quantity), 0)
+    );
+    indTotalGain = computed(() => this.indTotalValue() - this.indTotalInvested());
+
+    // Subtotals for US section
+    usTotalInvestedUSD = computed(() =>
+        this.filteredUsAssets().reduce((s, a) => s + (a.buyPrice * a.quantity), 0)
+    );
+    usTotalValueUSD = computed(() =>
+        this.filteredUsAssets().reduce((s, a) => s + ((a.currentPrice > 0 ? a.currentPrice : (this.isNonMarketAsset(a) ? a.buyPrice : 0)) * a.quantity), 0)
+    );
+    usTotalGainUSD = computed(() => this.usTotalValueUSD() - this.usTotalInvestedUSD());
+    usTotalGainPct = computed(() => {
+        const inv = this.usTotalInvestedUSD();
+        return inv > 0 ? (this.usTotalGainUSD() / inv) * 100 : 0;
+    });
+    indTotalGainPct = computed(() => {
+        const inv = this.indTotalInvested();
+        return inv > 0 ? (this.indTotalGain() / inv) * 100 : 0;
+    });
+    usTotalValueINR = computed(() => this.usTotalValueUSD() * this.USD_TO_INR);
+    usTotalInvestedINR = computed(() => this.usTotalInvestedUSD() * this.USD_TO_INR);
+
+    // FX conversion for multi-currency portfolio aggregate (Live from Google Finance / Open Exchange)
+    usdToInrRate = computed(() => this.googleFinance.usdToInrRate());
+    get USD_TO_INR(): number {
+        return this.usdToInrRate();
+    }
+
+    getAssetCurrency(a: Asset): 'USD' | 'INR' {
+        return this.isUSAsset(a) ? 'USD' : 'INR';
+    }
+
+    getFxRate(a: Asset): number {
+        return this.isUSAsset(a) ? this.USD_TO_INR : 1;
+    }
+
+    isViewingUS = computed(() => {
+        return this.selectedMarket() === 'us' || this.selectedCategory() === 'US Stocks';
+    });
+
+    usTotalDaysGainUSD = computed(() => {
+        return this.filteredUsAssets().reduce((s, a) => {
+            const cp = a.currentPrice > 0 ? a.currentPrice : 0;
+            const pct = (a.dailyChange || 0) / 100;
+            return s + (cp * pct * a.quantity);
+        }, 0);
+    });
+
+    usTotalDaysGainPct = computed(() => {
+        const val = this.usTotalValueUSD();
+        return val > 0 ? (this.usTotalDaysGainUSD() / val) * 100 : 0;
+    });
+
+    onSelectMarket(market: 'all' | 'ind' | 'us') {
+        this.selectedMarket.set(market);
+        if (market === 'us') {
+            this.selectedCategory.set('US Stocks');
+        } else if (market === 'ind' && this.selectedCategory() === 'US Stocks') {
+            this.selectedCategory.set('Indian Stocks');
+        } else if (market === 'all' && this.selectedCategory() === 'US Stocks') {
+            this.selectedCategory.set('Overview');
+        }
+    }
+
+    onSelectCategory(catKey: string) {
+        this.selectedCategory.set(catKey);
+        if (catKey === 'US Stocks') {
+            this.selectedMarket.set('us');
+        } else if (catKey === 'Indian Stocks' && this.selectedMarket() === 'us') {
+            this.selectedMarket.set('ind');
+        } else if (catKey === 'Overview' && this.selectedMarket() === 'us') {
+            this.selectedMarket.set('all');
+        }
+    }
+
+    totalValue = computed(() =>
+        this.filteredAssets().reduce((s, a) => s + (a.quantity * (a.currentPrice > 0 ? a.currentPrice : (this.isNonMarketAsset(a) ? a.buyPrice : 0)) * this.getFxRate(a)), 0)
+    );
+
+    totalInvested = computed(() =>
+        this.filteredAssets().reduce((s, a) => s + (a.buyPrice * a.quantity * this.getFxRate(a)), 0)
+    );
+
+    totalOverallGain = computed(() =>
+        this.totalValue() - this.totalInvested()
+    );
+
+    totalOverallGainPct = computed(() => {
+        const inv = this.totalInvested();
+        return inv > 0 ? (this.totalOverallGain() / inv) * 100 : 0;
+    });
+
+    totalDaysGain = computed(() => {
+        return this.filteredAssets().reduce((s, a) => {
+            const cp = a.currentPrice > 0 ? a.currentPrice : 0;
+            const pct = (a.dailyChange || 0) / 100;
+            const daily = cp * pct * a.quantity * this.getFxRate(a);
+            return s + daily;
+        }, 0);
+    });
+
+    totalDaysGainPct = computed(() => {
+        const val = this.totalValue();
+        return val > 0 ? (this.totalDaysGain() / val) * 100 : 0;
+    });
+
+    refreshAllPrices(forceMF = false) {
+        const stocks = this.assets().filter(a => a.type === AssetType.Stock || a.type === AssetType.ETF);
+        if (stocks.length > 0) this.refreshStocks(stocks);
+        const mfs = this.assets().filter(a => a.type === AssetType.MutualFund);
+        if (mfs.length > 0) this.refreshMutualFunds(forceMF);
+    }
 
     assetGroups = computed(() => {
         const assets = this.filteredAssets();
         const expandedType = this.expandedGroup();
         const totalPortfolioValue = this.totalValue();
+        const usdRate = this.USD_TO_INR;
+
+        // Separate US Stocks from Indian/other assets
+        const usStocks = assets.filter(a => this.isUSAsset(a));
+        const indAssets = assets.filter(a => !this.isUSAsset(a));
+
         const groupMap = new Map<AssetType, Asset[]>();
 
-        // Collect assets into type groups
-        for (const asset of assets) {
+        // Collect non-US assets into type groups
+        for (const asset of indAssets) {
             const type = asset.type || AssetType.Other;
             if (!groupMap.has(type)) {
                 groupMap.set(type, []);
@@ -178,10 +455,45 @@ export class AssetsComponent {
         ];
 
         const groups: AssetGroup[] = [];
+
+        // 1. If US Stocks exist, create dedicated US Stocks group
+        if (usStocks.length > 0) {
+            const tValue = usStocks.reduce((s, a) => s + a.quantity * (a.currentPrice > 0 ? a.currentPrice : (this.isNonMarketAsset(a) ? a.buyPrice : 0)), 0);
+            const tInvested = usStocks.reduce((s, a) => s + (a.buyPrice * a.quantity), 0);
+            const tGain = tValue - tInvested;
+            const gPct = tInvested > 0 ? (tGain / tInvested) * 100 : 0;
+            const tValueINR = tValue * usdRate;
+            const tInvestedINR = tInvested * usdRate;
+            const allocation = totalPortfolioValue > 0 ? (tValueINR / totalPortfolioValue) * 100 : 0;
+
+            const latestUpdate = usStocks
+                .filter(a => !!a.lastUpdated)
+                .map(a => a.lastUpdated!)
+                .sort().reverse()[0];
+
+            groups.push({
+                type: 'USStock',
+                label: 'US Stocks',
+                assets: usStocks,
+                totalValue: tValue,
+                totalInvested: tInvested,
+                totalGain: tGain,
+                gainPct: gPct,
+                allocation,
+                color: '#3b82f6',
+                expanded: expandedType === 'USStock',
+                currency: 'USD',
+                totalValueINR: tValueINR,
+                totalInvestedINR: tInvestedINR,
+                lastUpdated: latestUpdate
+            });
+        }
+
+        // 2. Add Indian & other asset groups
         for (const type of typeOrder) {
             const typeAssets = groupMap.get(type);
             if (typeAssets && typeAssets.length > 0) {
-                const tValue = typeAssets.reduce((s, a) => s + a.quantity * a.currentPrice, 0);
+                const tValue = typeAssets.reduce((s, a) => s + a.quantity * (a.currentPrice > 0 ? a.currentPrice : (this.isNonMarketAsset(a) ? a.buyPrice : 0)), 0);
                 const tInvested = typeAssets.reduce((s, a) => s + (a.buyPrice * a.quantity), 0);
                 const tGain = tValue - tInvested;
                 const gPct = tInvested > 0 ? (tGain / tInvested) * 100 : 0;
@@ -193,9 +505,13 @@ export class AssetsComponent {
                     .map(a => a.lastUpdated!)
                     .sort().reverse()[0];
 
+                const label = type === AssetType.Stock && usStocks.length > 0
+                    ? 'Indian Stocks'
+                    : this.getTypeLabel(type);
+
                 groups.push({
                     type,
-                    label: this.getTypeLabel(type),
+                    label,
                     assets: typeAssets,
                     totalValue: tValue,
                     totalInvested: tInvested,
@@ -204,6 +520,9 @@ export class AssetsComponent {
                     allocation,
                     color: ASSET_COLORS[type],
                     expanded: expandedType === type,
+                    currency: 'INR',
+                    totalValueINR: tValue,
+                    totalInvestedINR: tInvested,
                     lastUpdated: latestUpdate
                 });
             }
@@ -227,8 +546,9 @@ export class AssetsComponent {
         return labels[type] || type;
     }
 
-    getIconForType(type: AssetType): string {
-        const icons: Record<AssetType, string> = {
+    getIconForType(type: string): string {
+        if (type === 'USStock') return 'public';
+        const icons: Record<string, string> = {
             [AssetType.MutualFund]: 'pie_chart',
             [AssetType.Stock]: 'trending_up',
             [AssetType.ETF]: 'stacked_line_chart',
@@ -241,24 +561,32 @@ export class AssetsComponent {
         return icons[type] || 'category';
     }
 
+    isNonMarketAsset(a: Asset): boolean {
+        return a.type === AssetType.Cash || a.type === AssetType.RealEstate;
+    }
+
     getGain(a: Asset) {
+        if (!a.currentPrice || a.currentPrice <= 0) return 0;
         return (a.currentPrice - a.buyPrice) * a.quantity;
     }
 
     getGainPct(a: Asset) {
-        return a.buyPrice > 0 ? ((a.currentPrice - a.buyPrice) / a.buyPrice) * 100 : 0;
+        if (!a.currentPrice || a.currentPrice <= 0 || !a.buyPrice || a.buyPrice === 0) return 0;
+        return ((a.currentPrice - a.buyPrice) / a.buyPrice) * 100;
     }
 
     getAssetValue(a: Asset) {
-        return a.quantity * a.currentPrice;
+        const cp = a.currentPrice > 0 ? a.currentPrice : (this.isNonMarketAsset(a) ? a.buyPrice : 0);
+        return a.quantity * cp;
     }
 
-    getColor(type: AssetType) {
-        return ASSET_COLORS[type];
+    getColor(type: AssetType | string) {
+        if (type === 'USStock') return '#3b82f6';
+        return ASSET_COLORS[type as AssetType] || '#64748b';
     }
 
     // ─── Group collapse/expand ───────────────────
-    toggleGroup(type: AssetType) {
+    toggleGroup(type: string | AssetType) {
         if (this.expandedGroup() === type) {
             this.expandedGroup.set(null);
         } else {
@@ -266,11 +594,6 @@ export class AssetsComponent {
         }
     }
 
-    toggleViewMode() {
-        const next = this.viewMode() === 'table' ? 'grid' : 'table';
-        this.viewMode.set(next);
-        localStorage.setItem('assetsViewMode', next);
-    }
     // ─── Multi-select ────────────────────────────
     toggleSelectMode() {
         if (this.selectMode()) {
@@ -339,24 +662,68 @@ export class AssetsComponent {
     }
 
     // ─── CRUD ────────────────────────────────────
-    openAdd() {
+    openAdd(type?: AssetType, currency?: string) {
         this.editingId.set(null);
         this.showCustomApp.set(false);
+        this.showAddDropdown.set(false);
+        const selectedType = type || AssetType.Stock;
+        const defaultCurrency = currency || (this.isViewingUS() ? 'USD' : 'INR');
         this.form.set({
-            name: '', type: AssetType.Stock, quantity: 0, buyPrice: 0,
-            currentPrice: 0, symbol: '', currency: 'INR', purchaseDate: new Date(), notes: '',
+            name: '', 
+            type: selectedType, 
+            quantity: 0, 
+            buyPrice: 0,
+            currentPrice: 0, 
+            symbol: '', 
+            currency: defaultCurrency, 
+            purchaseDate: new Date(), 
+            notes: '',
             appSource: 'Manual',
             location: undefined
         });
         this.showModal.set(true);
     }
 
+    exportPortfolio() {
+        const asts = this.assets();
+        if (asts.length === 0) {
+            this.snackbar.show('No assets to export', 'info');
+            return;
+        }
+        const rows = [
+            ['Name', 'Symbol', 'Type', 'Quantity', 'Buy Price', 'Current Price', 'Currency', 'App Source', 'Notes'],
+            ...asts.map((a: any) => [
+                `"${(a.name || '').replace(/"/g, '""')}"`,
+                `"${(a.symbol || '').replace(/"/g, '""')}"`,
+                a.type || '',
+                a.quantity.toString(),
+                a.buyPrice.toString(),
+                (a.currentPrice || 0).toString(),
+                a.currency || 'INR',
+                `"${(this.getAssetApp(a) || '').replace(/"/g, '""')}"`,
+                `"${(a.notes || '').replace(/"/g, '""')}"`
+            ]),
+        ];
+        const csv = rows.map((r) => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `portfolio_export_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        this.snackbar.show(`Exported ${asts.length} holdings to CSV`, 'success');
+    }
+
     openEdit(a: Asset) {
         this.editingId.set(a.id!);
-        const source = a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace('Imported from', '').trim() : 'Manual');
+        const isUS = this.isUSAsset(a);
+        const source = this.getAssetApp(a);
         const isCustom = !!(source && !this.predefinedApps.filter(p => p !== 'Other').includes(source));
         this.showCustomApp.set(isCustom);
-        this.form.set({ ...a, appSource: source });
+        this.form.set({ 
+            ...a, 
+            currency: isUS ? 'USD' : (a.currency || 'INR'),
+            appSource: source 
+        });
         this.showModal.set(true);
     }
 
@@ -443,7 +810,7 @@ export class AssetsComponent {
         }
     }
 
-    async refreshMutualFunds() {
+    async refreshMutualFunds(force = false) {
         if (this.refreshingMFs()) return;
         this.refreshingMFs.set(true);
         try {
@@ -458,19 +825,20 @@ export class AssetsComponent {
                 return;
             }
 
-            const result = await this.priceService.refreshAllPrices(mfAssets);
+            const result = await this.priceService.refreshAllPrices(mfAssets, force);
 
             this.ngZone.run(() => {
                 this.lastRefreshed.set(new Date().toLocaleTimeString());
 
-                if (result.failed > 0 && result.updated === 0 && result.unchanged === 0) {
+                if (result.failed > 0 && result.mfUpdated === 0 && result.unchanged === 0) {
                     this.snackbar.show(`Failed to fetch prices for all ${result.failed} mutual funds.`, 'error');
-                } else if (result.failed > 0) {
-                    this.snackbar.show(`Refreshed prices (Updated: ${result.updated}), but ${result.failed} funds failed.`, 'error');
-                } else if (result.updated > 0) {
-                    this.snackbar.show(`Successfully refreshed ${result.updated} mutual fund prices`, 'success');
+                } else if (result.mfSkipped > 0 && result.mfUpdated === 0 && result.unchanged === 0) {
+                    this.snackbar.show('Mutual Fund NAVs are already up to date for today (NAV updates once daily).', 'info');
+                } else if (result.mfUpdated > 0) {
+                    const skipText = result.mfSkipped > 0 ? ` (${result.mfSkipped} already up to date)` : '';
+                    this.snackbar.show(`${force ? 'Force updated' : 'Successfully refreshed'} ${result.mfUpdated} mutual fund NAVs${skipText}`, 'success');
                 } else {
-                    this.snackbar.show('Mutual Fund prices are up to date.', 'info');
+                    this.snackbar.show(force ? 'Mutual Fund prices are up to date.' : 'Mutual Fund prices are already up to date for today.', 'info');
                 }
 
                 this.refreshingMFs.set(false);
@@ -534,12 +902,33 @@ export class AssetsComponent {
         if (!asset.id || this.refreshingAssetId().has(asset.id)) return;
         this.refreshingAssetId.update(s => new Set(s).add(asset.id!));
         try {
-            const price = await this.priceService.fetchPrice(asset);
-            if (price !== null) {
+            const res = await this.priceService.fetchPriceDetails(asset);
+            if (res !== null) {
                 const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-                await this.assetService.updateAsset(asset.id, { currentPrice: price, lastUpdated: now });
+                const todayStr = this.priceService.getTodayDateString();
+                const isUS = this.isUSAsset(asset);
+                const updates: Partial<Asset> = { 
+                    currentPrice: res.price, 
+                    lastUpdated: now,
+                    lastUpdatedDate: todayStr
+                };
+                if (isUS && asset.currency !== 'USD') {
+                    updates.currency = 'USD';
+                }
+                if (res.dailyChange !== undefined) {
+                    updates.dailyChange = res.dailyChange;
+                }
+                if (res.navDate) {
+                    updates.navDate = res.navDate;
+                }
+                await this.assetService.updateAsset(asset.id, updates);
                 this.ngZone.run(() => {
-                    this.snackbar.show(`${asset.name} updated to ₹${price.toLocaleString('en-IN')}`, 'success');
+                    const sym = isUS ? '$' : '₹';
+                    const formatted = isUS
+                        ? res.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        : res.price.toLocaleString('en-IN');
+                    const navDateStr = res.navDate ? ` (NAV: ${res.navDate})` : '';
+                    this.snackbar.show(`${asset.name} updated to ${sym}${formatted}${navDateStr}`, 'success');
                     this.cdr.markForCheck();
                 });
             } else {

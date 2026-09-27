@@ -1,210 +1,594 @@
 <div class="assets-page">
-  <div class="page-header">
-    <div class="header-left">
-      <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">
-        Total Portfolio Value: <strong style="color:var(--accent-primary)">{{ totalValue() | currency:'INR':'symbol':'1.0-0' }}</strong>
-        @if (lastRefreshed()) {
-          <span style="margin-left:12px; font-size:11px; opacity:0.6;">Updated: {{ lastRefreshed() }}</span>
-        }
-      </p>
-
-      @if (availableApps().length > 1) {
-        <div class="app-filter">
-          <label class="filter-label">App Filter:</label>
-          <select class="form-control filter-select" [value]="appFilter()" (change)="appFilter.set($any($event.target).value)">
-            <option value="All">All Apps</option>
-            @for (app of availableApps(); track app) {
-              <option [value]="app">{{ app }}</option>
-            }
-          </select>
-        </div>
+  <!-- Search & Action Toolbar -->
+  <div class="assets-toolbar-row">
+    <div class="search-box-wrap">
+      <span class="material-icons search-icon">search</span>
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search holdings (e.g. ITC, CDSL, Groww)..." 
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event)" 
+      />
+      @if (searchQuery()) {
+        <button class="clear-search-btn" (click)="searchQuery.set('')" title="Clear">
+          <span class="material-icons">close</span>
+        </button>
       }
     </div>
-    <div class="header-actions">
+
+    <div class="toolbar-actions">
       @if (selectMode()) {
         <span class="select-count">{{ selectedCount() }} selected</span>
         <button class="btn btn-ghost btn-sm" (click)="selectAll()">Select All</button>
         <button class="btn btn-ghost btn-sm" (click)="deselectAll()">Deselect</button>
-        <button class="btn btn-danger btn-sm" [disabled]="selectedCount() === 0 || deleting()"
-          (click)="deleteSelected()">
+        <button class="btn btn-danger btn-sm" [disabled]="selectedCount() === 0 || deleting()" (click)="deleteSelected()">
           <span class="material-icons sm-icon">delete</span>
           {{ deleting() ? 'Deleting...' : 'Delete (' + selectedCount() + ')' }}
         </button>
         <button class="btn btn-ghost btn-sm" (click)="toggleSelectMode()">Cancel</button>
       } @else {
-
         @if (assets().length > 0) {
-          <button class="btn btn-ghost" (click)="toggleSelectMode()" title="Multi-select to delete">
-            <span class="material-icons" style="font-size:18px; vertical-align:middle;">checklist</span>
-            Select
+          <button class="btn btn-ghost btn-sm action-tool-btn" (click)="toggleSelectMode()" title="Select holdings (multi-select to delete)">
+            <span class="material-icons sm-icon">checklist</span>
+            <span class="btn-text">Select</span>
           </button>
         }
-        <button class="btn btn-primary" id="add-asset-btn" (click)="openAdd()">
-          <span>+</span> Add Asset
+        <button class="btn btn-ghost btn-sm view-mode-btn action-tool-btn" (click)="toggleViewMode()" [title]="viewMode() === 'cards' ? 'Switch to Table View' : 'Switch to Card View'">
+          <span class="material-icons sm-icon">{{ viewMode() === 'cards' ? 'table_chart' : 'dashboard' }}</span>
+          <span class="btn-text">{{ viewMode() === 'cards' ? 'Table View' : 'Card View' }}</span>
         </button>
-        <button class="btn btn-ghost" (click)="showImport.set(true)" title="Import CSV">
-          <span class="material-icons sm-icon">upload_file</span>
-          Import
+
+        <!-- Combined Add Asset Button + Dropdown -->
+        <div class="add-asset-split-group" (click)="$event.stopPropagation()">
+          <button class="btn btn-primary btn-sm add-main-btn" id="add-asset-btn" (click)="openAdd()" title="Add Asset (+)">
+            <span class="plus-icon">+</span>
+            <span class="btn-text">Add Asset</span>
+          </button>
+          <button class="btn btn-primary btn-sm add-dropdown-toggle" (click)="toggleAddDropdown($event)" title="Add specific holding type">
+            <span class="material-icons caret-icon">arrow_drop_down</span>
+          </button>
+
+          @if (showAddDropdown()) {
+            <div class="add-asset-dropdown-menu">
+              <div class="dropdown-header">Add New Holding</div>
+              <button class="dropdown-item" (click)="openAdd(AssetType.Stock, 'INR')">
+                <span class="material-icons item-icon">show_chart</span>
+                <span class="item-label">Indian Stock</span>
+              </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.Stock, 'USD')">
+                <span class="material-icons item-icon">language</span>
+                <span class="item-label">US Stock ($)</span>
+              </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.MutualFund, 'INR')">
+                <span class="material-icons item-icon">pie_chart</span>
+                <span class="item-label">Mutual Fund</span>
+              </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.ETF, 'INR')">
+                <span class="material-icons item-icon">trending_up</span>
+                <span class="item-label">ETF</span>
+              </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.Cash, 'INR')">
+                <span class="material-icons item-icon">account_balance_wallet</span>
+                <span class="item-label">Cash / Bank</span>
+              </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.RealEstate, 'INR')">
+                <span class="material-icons item-icon">home</span>
+                <span class="item-label">Real Estate</span>
+              </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.Gold, 'INR')">
+                <span class="material-icons item-icon">star</span>
+                <span class="item-label">Gold / SGB</span>
+              </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.Crypto, 'USD')">
+                <span class="material-icons item-icon">currency_bitcoin</span>
+                <span class="item-label">Crypto</span>
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Import Button (Plus-style / document import symbol with tooltip) -->
+        <button class="btn btn-ghost btn-sm action-tool-btn" (click)="showImport.set(true)" title="Import portfolio from Groww, INDmoney, or CDSL/NSDL CAS">
+          <span class="material-icons sm-icon">post_add</span>
+          <span class="btn-text">Import</span>
+        </button>
+
+        <!-- Export Button (Up symbol with tooltip) -->
+        <button class="btn btn-ghost btn-sm action-tool-btn" (click)="exportPortfolio()" title="Export portfolio to CSV">
+          <span class="material-icons sm-icon">arrow_upward</span>
+          <span class="btn-text">Export</span>
         </button>
       }
     </div>
   </div>
 
-  <!-- Grouped asset sections (Accordion) -->
-  @if (assetGroups().length > 0) {
-    <div class="accordion-container">
-      @for (group of assetGroups(); track group.type) {
-        <div class="accordion-section" [class.expanded]="group.expanded">
-          <!-- Parent Row -->
-          <div class="accordion-parent" (click)="toggleGroup(group.type)">
-            <div class="col-name">
-              <span class="material-icons group-icon" [style.color]="group.color">{{ getIconForType(group.type) }}</span>
-              <div class="parent-title">
-                <h2>{{ group.label }}</h2>
-                <div class="meta-row">
-                  <span class="group-count">{{ group.assets.length }} assets</span>
-                  @if (group.lastUpdated) {
-                    <span class="group-last-updated">Updated: {{ group.lastUpdated }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-            
-            <div class="col-alloc">
-              <div class="allocation-wrapper">
-                <div class="allocation-bar">
-                  <div class="allocation-fill" [style.width.%]="group.allocation" [style.background]="group.color"></div>
-                </div>
-                <span class="allocation-text">{{ group.allocation | number:'1.1-1' }}%</span>
-              </div>
-            </div>
+  <!-- Market Region Segment Bar (India / US / All) -->
+  <div class="market-segment-bar">
+    <button class="market-tab" [class.active]="selectedMarket() === 'all'" (click)="onSelectMarket('all')">
+      <span class="country-pill global-pill">ALL</span>
+      <span class="m-label">All Markets</span>
+      <span class="m-count">{{ assets().length }}</span>
+    </button>
+    <button class="market-tab" [class.active]="selectedMarket() === 'ind'" (click)="onSelectMarket('ind')">
+      <span class="country-pill ind-pill">IND</span>
+      <span class="m-label">Indian Portfolio</span>
+      <span class="m-count">{{ allIndAssets().length }}</span>
+    </button>
+    <button class="market-tab" [class.active]="selectedMarket() === 'us'" (click)="onSelectMarket('us')">
+      <span class="country-pill us-pill">US</span>
+      <span class="m-label">US Stocks</span>
+      <span class="m-count">{{ allUsAssets().length }}</span>
+    </button>
+  </div>
 
-            <div class="col-invested">
-              <span class="main-val">{{ group.totalInvested | currency:'INR':'symbol':'1.0-0' }}</span>
-            </div>
+  <!-- Top Horizontal Scrollbar for Categories -->
+  <div class="top-scrollbar-container">
+    <div class="category-scroll-strip">
+      @for (cat of categories(); track cat.key) {
+        <button 
+          class="cat-tab" 
+          [class.active]="selectedCategory() === cat.key"
+          (click)="onSelectCategory(cat.key)"
+        >
+          <span class="cat-label">{{ cat.label }}</span>
+          @if (cat.count > 0 && cat.key !== 'Overview') {
+            <span class="cat-count">({{ cat.count }})</span>
+          }
+        </button>
+      }
+    </div>
+  </div>
 
-            <div class="col-value">
-              <span class="main-val">{{ group.totalValue | currency:'INR':'symbol':'1.0-0' }}</span>
-            </div>
+  <!-- Sub-filter Pills & App Filter Strip -->
+  <div class="sub-filter-strip">
+    <div class="pill-group">
+      <button class="filter-pill" [class.active]="subFilter() === 'all'" (click)="subFilter.set('all')">All</button>
+      <button class="filter-pill" [class.active]="subFilter() === 'investments'" (click)="subFilter.set('investments')">Investments</button>
+      <button class="filter-pill" [class.active]="subFilter() === 'gainers'" (click)="subFilter.set('gainers')">Gainers</button>
+      <button class="filter-pill" [class.active]="subFilter() === 'losers'" (click)="subFilter.set('losers')">Losers</button>
+    </div>
 
-            <div class="col-returns">
-              <div class="gain-box" [class.positive]="group.totalGain >= 0" [class.negative]="group.totalGain < 0">
-                <span class="gain-val">{{ group.totalGain >= 0 ? '+' : '' }}{{ group.totalGain | currency:'INR':'symbol':'1.0-0' }}</span>
-                <span class="gain-pct">({{ group.gainPct | number:'1.1-1' }}%)</span>
-              </div>
-            </div>
+    @if (availableApps().length > 1) {
+      <div class="app-filter-wrapper">
+        <span class="material-icons" style="font-size: 16px; color: var(--text-muted);">filter_list</span>
+        <select class="app-filter-select" [value]="appFilter()" (change)="appFilter.set($any($event.target).value)">
+          <option value="All">All Apps</option>
+          @for (app of availableApps(); track app) {
+            <option [value]="app">{{ app }}</option>
+          }
+        </select>
+      </div>
+    }
+  </div>
 
-            <div class="col-actions">
-               @if (group.type === 'MutualFund') {
-                <button class="btn-icon refresh-btn" [disabled]="refreshingMFs()" (click)="refreshMutualFunds(); $event.stopPropagation()" title="Refresh Mutual Fund prices">
-                  <span class="material-icons" [class.spin]="refreshingMFs()" style="font-size: 18px;">sync</span>
-                </button>
-              } @else if (group.type === 'Stock' || group.type === 'ETF') {
-                <button class="btn-icon refresh-btn" [disabled]="refreshingStocks()" (click)="refreshStocks(group.assets); $event.stopPropagation()" title="Refresh Stock prices">
-                  <span class="material-icons" [class.spin]="refreshingStocks()" style="font-size: 18px;">sync</span>
-                </button>
-              }
-              <span class="material-icons expand-icon">
-                {{ group.expanded ? 'expand_less' : 'expand_more' }}
+  <!-- Portfolio Hero Summary Card -->
+  <div class="portfolio-hero-card" [class.us-market-active]="isViewingUS()">
+    <div class="hero-top">
+      <div class="hero-val-box">
+        <span class="hero-label">
+          {{ isViewingUS() ? 'US PORTFOLIO VALUE' : (selectedMarket() === 'ind' ? 'INDIAN PORTFOLIO VALUE' : 'CURRENT VALUE') }}
+        </span>
+        <div class="hero-val-row">
+          <span class="currency-sym">{{ isViewingUS() ? '$' : '₹' }}</span>
+          <h1 class="hero-value-main">
+            {{ hideAmounts() ? '••••••' : (isViewingUS() ? (usTotalValueUSD() | number:'1.2-2') : (totalValue() | number:'1.2-2')) }}
+          </h1>
+          @if (isViewingUS()) {
+            <span class="hero-fx-approx">
+              ≈ {{ hideAmounts() ? '••••••' : (usTotalValueINR() | currency:'INR':'symbol':'1.0-0') }}
+            </span>
+          }
+          <button class="eye-toggle-btn" (click)="toggleHideAmounts()" title="{{ hideAmounts() ? 'Show amounts' : 'Hide amounts' }}">
+            <span class="material-icons">{{ hideAmounts() ? 'visibility_off' : 'visibility' }}</span>
+          </button>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="refresh-all-btn" (click)="refreshAllPrices(false)" [disabled]="refreshingStocks() || refreshingMFs()" title="Refresh Prices (Mutual Funds update 1× daily)">
+          <span class="material-icons" [class.spin]="refreshingStocks() || refreshingMFs()">sync</span>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-metrics-bar">
+      <div class="metric-item">
+        <span class="m-label">Invested</span>
+        <span class="m-val">
+          {{ hideAmounts() ? '••••••' : (isViewingUS() ? ('$' + (usTotalInvestedUSD() | number:'1.2-2')) : (totalInvested() | currency:'INR':'symbol':'1.0-0')) }}
+          @if (isViewingUS()) {
+            <span class="sub-approx">≈ {{ hideAmounts() ? '•••' : (usTotalInvestedINR() | currency:'INR':'symbol':'1.0-0') }}</span>
+          }
+        </span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric-item">
+        <span class="m-label">Overall P&amp;L</span>
+        <span class="m-val pnl-val" 
+              [class.positive]="(isViewingUS() ? usTotalGainUSD() : totalOverallGain()) >= 0" 
+              [class.negative]="(isViewingUS() ? usTotalGainUSD() : totalOverallGain()) < 0">
+          {{ hideAmounts() ? '••••••' : (
+            isViewingUS() 
+              ? ((usTotalGainUSD() >= 0 ? '+' : '') + '$' + (usTotalGainUSD() | number:'1.2-2'))
+              : ((totalOverallGain() >= 0 ? '+' : '') + (totalOverallGain() | currency:'INR':'symbol':'1.0-0'))
+          ) }}
+          <span class="pct">({{ (isViewingUS() ? usTotalGainPct() : totalOverallGainPct()) >= 0 ? '+' : '' }}{{ (isViewingUS() ? usTotalGainPct() : totalOverallGainPct()) | number:'1.2-2' }}%)</span>
+        </span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric-item">
+        <span class="m-label">Day's P&amp;L</span>
+        <span class="m-val pnl-val" [class.positive]="(isViewingUS() ? usTotalDaysGainUSD() : totalDaysGain()) >= 0" [class.negative]="(isViewingUS() ? usTotalDaysGainUSD() : totalDaysGain()) < 0">
+          {{ hideAmounts() ? '••••••' : (
+            isViewingUS()
+              ? ((usTotalDaysGainUSD() >= 0 ? '+' : '') + '$' + (usTotalDaysGainUSD() | number:'1.2-2'))
+              : ((totalDaysGain() >= 0 ? '+' : '') + (totalDaysGain() | currency:'INR':'symbol':'1.0-0'))
+          ) }}
+          <span class="pct">({{ (isViewingUS() ? usTotalDaysGainPct() : totalDaysGainPct()) >= 0 ? '+' : '' }}{{ (isViewingUS() ? usTotalDaysGainPct() : totalDaysGainPct()) | number:'1.2-2' }}%)</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reusable Broker Card Template -->
+  <ng-template #brokerCardTemplate let-asset>
+    <div class="broker-card" 
+         [class.selected]="selectMode() && isSelected(asset.id!)"
+         (click)="selectMode() ? toggleAssetSelection(asset.id!) : null">
+      
+      <!-- Top Line: Qty & LTP -->
+      <div class="card-top-line">
+        <div class="qty-avg">
+          Qty {{ asset.quantity | number:'1.0-4' }} · Avg {{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.buyPrice | number:'1.2-2' }}
+        </div>
+        <div class="ltp-info">
+          @if (asset.currentPrice && asset.currentPrice > 0) {
+            <span class="ltp-price">{{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.currentPrice | number:'1.2-2' }}</span>
+            <span class="ltp-badge" [class.positive]="(asset.dailyChange || 0) >= 0" [class.negative]="(asset.dailyChange || 0) < 0">
+              ({{ (asset.dailyChange || 0) >= 0 ? '+' : '' }}{{ (asset.dailyChange || 0) | number:'1.2-2' }}%) LTP
+            </span>
+          } @else {
+            <span class="ltp-price unpriced">--</span>
+          }
+        </div>
+      </div>
+
+      <!-- Main Line: Ticker & P&L Amount -->
+      <div class="card-main-line">
+        <div class="ticker-box">
+          <h3 class="ticker-name">{{ asset.symbol || asset.name }}</h3>
+          @if (asset.symbol && asset.name && asset.symbol !== asset.name) {
+            <span class="full-company-name">{{ asset.name }}</span>
+          }
+        </div>
+        <div class="pnl-box">
+          @if (asset.currentPrice && asset.currentPrice > 0) {
+            <span class="pnl-num" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
+              {{ hideAmounts() ? '••••••' : ((getGain(asset) >= 0 ? '+' : '') + (getGain(asset) | currency:getAssetCurrency(asset):'symbol':'1.2-2')) }}
+            </span>
+          } @else {
+            <span class="pnl-num unpriced">--</span>
+          }
+        </div>
+      </div>
+
+      <!-- Sub Line: Current Value & Return % -->
+      <div class="card-sub-line">
+        <div class="current-val-box">
+          <span class="sub-label">Current</span>
+          @if (asset.currentPrice && asset.currentPrice > 0 || isNonMarketAsset(asset)) {
+            <span class="sub-val">{{ hideAmounts() ? '••••••' : (getAssetValue(asset) | currency:getAssetCurrency(asset):'symbol':'1.2-2') }}</span>
+          } @else {
+            <span class="sub-val unpriced">--</span>
+          }
+        </div>
+        <div class="return-pct-box">
+          @if (asset.currentPrice && asset.currentPrice > 0) {
+            <span class="return-pct" [class.positive]="getGainPct(asset) >= 0" [class.negative]="getGainPct(asset) < 0">
+              {{ getGainPct(asset) >= 0 ? '+' : '' }}{{ getGainPct(asset) | number:'1.2-2' }}%
+            </span>
+          } @else {
+            <span class="return-pct unpriced">--</span>
+          }
+        </div>
+      </div>
+
+      <!-- Footer Line: Invested, Source Tag, Actions -->
+      <div class="card-footer-line">
+        <div class="footer-meta">
+          <span class="invested-txt">Invested {{ hideAmounts() ? '••••••' : ((asset.buyPrice * asset.quantity) | currency:getAssetCurrency(asset):'symbol':'1.2-2') }}</span>
+          <span class="meta-dot">·</span>
+          <span class="app-tag">{{ getAssetApp(asset) }}</span>
+          @if (asset.navDate) {
+            <span class="meta-dot">·</span>
+            <span class="update-time">NAV: {{ asset.navDate }}</span>
+          } @else if (asset.lastUpdated) {
+            <span class="meta-dot">·</span>
+            <span class="update-time">{{ asset.lastUpdated }}</span>
+          }
+        </div>
+
+        <div class="footer-actions" (click)="$event.stopPropagation()">
+          @if (selectMode()) {
+            <div class="select-checkbox" (click)="toggleAssetSelection(asset.id!)">
+              <span class="material-icons">
+                {{ isSelected(asset.id!) ? 'check_box' : 'check_box_outline_blank' }}
               </span>
+            </div>
+          } @else {
+            @if (asset.type === 'Stock' || asset.type === 'ETF' || asset.type === 'MutualFund') {
+              <button class="btn-card-action" [disabled]="refreshingAssetId().has(asset.id!)" (click)="refreshSingleAsset(asset)" [title]="asset.type === 'MutualFund' ? 'Force refresh NAV' : 'Refresh price'">
+                <span class="material-icons" [class.spin]="refreshingAssetId().has(asset.id!)">sync</span>
+              </button>
+            }
+            <button class="btn-card-action" (click)="openEdit(asset)" title="Edit">
+              <span class="material-icons">edit</span>
+            </button>
+            <button class="btn-card-action btn-del" (click)="delete(asset.id!)" title="Delete">
+              <span class="material-icons">delete</span>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Holdings Content: Broker Cards View OR Table View -->
+  @if (filteredAssets().length > 0) {
+    @if (viewMode() === 'cards') {
+      <!-- Case 1: Both markets present and in 'all' view with Overview tab -> Render separated IND and US sections -->
+      @if (selectedMarket() === 'all' && hasBothMarkets() && selectedCategory() === 'Overview') {
+        <!-- 🇮🇳 Indian Portfolio Section -->
+        @if (filteredIndAssets().length > 0) {
+          <div class="market-section-divider">
+            <div class="section-badge-group">
+              <span class="country-pill ind-pill">IND</span>
+              <h3 class="section-heading">Indian Holdings</h3>
+              <span class="section-counter">{{ filteredIndAssets().length }} assets</span>
+            </div>
+            <div class="section-meta-right">
+              <span class="meta-label">Subtotal:</span>
+              <span class="meta-value">{{ hideAmounts() ? '••••••' : (indTotalValue() | currency:'INR':'symbol':'1.0-0') }}</span>
             </div>
           </div>
 
-          <!-- Child Rows (Expanded) -->
-          @if (group.expanded) {
-            <div class="accordion-children">
-              @if (selectMode()) {
-                <div class="group-select-bar">
-                  <button class="btn-ghost btn-xs" (click)="selectGroupAll(group); $event.stopPropagation()">
-                    Select all {{ group.label }}
-                  </button>
-                </div>
-              }
+          <div class="holdings-cards-list">
+            @for (asset of filteredIndAssets(); track asset.id) {
+              <ng-container *ngTemplateOutlet="brokerCardTemplate; context: { $implicit: asset }"></ng-container>
+            }
+          </div>
+        }
 
-              <!-- Header row for children (optional, but helps context if needed, skip for now to save space, column names will align with parent headers if we imagine them) -->
-              <div class="children-list">
-                @for (asset of group.assets; track asset.id) {
-                  <div class="accordion-child" 
-                       [class.selected]="selectMode() && isSelected(asset.id!)"
-                       (click)="selectMode() ? toggleAssetSelection(asset.id!) : null">
-                    
-                    <div class="col-name child-name-col">
-                      @if (selectMode()) {
-                        <div class="select-checkbox" (click)="toggleAssetSelection(asset.id!); $event.stopPropagation()">
-                          <span class="material-icons" style="font-size: 18px;">
-                            {{ isSelected(asset.id!) ? 'check_box' : 'check_box_outline_blank' }}
-                          </span>
-                        </div>
-                      }
-                      <div class="name-box">
-                        <span class="name-text">{{ asset.name }}</span>
-                        @if (asset.symbol) {
-                          <span class="symbol-text">{{ asset.symbol }}</span>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="col-alloc child-qty-col">
-                      <span class="qty-val">{{ asset.quantity | number:'1.0-4' }} units</span>
-                    </div>
-
-                    <div class="col-invested child-invested-col">
-                      <span class="main-val">₹{{ (asset.buyPrice * asset.quantity) | number:'1.0-2' }}</span>
-                      <span class="sub-val">@ ₹{{ asset.buyPrice | number:'1.0-2' }}</span>
-                    </div>
-
-                    <div class="col-value child-value-col">
-                      <div class="val-box">
-                        <span class="main-val">₹{{ getAssetValue(asset) | number:'1.0-2' }}</span>
-                        <span class="sub-val">@ ₹{{ asset.currentPrice | number:'1.0-2' }}</span>
-                        @if (asset.lastUpdated) {
-                          <span class="row-last-updated">{{ asset.lastUpdated }}</span>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="col-returns child-returns-col">
-                      <div class="gain-box" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
-                        <span class="gain-val">{{ getGain(asset) >= 0 ? '+' : '' }}{{ getGain(asset) | currency:'INR':'symbol':'1.0-0' }}</span>
-                        <span class="gain-pct">({{ getGainPct(asset) | number:'1.1-1' }}%)</span>
-                      </div>
-                    </div>
-
-                    <div class="col-actions child-actions-col">
-                      @if (!selectMode()) {
-                        <div class="actions-wrapper">
-                          @if (asset.type === 'Stock' || asset.type === 'ETF') {
-                            <button class="btn-icon" 
-                              [disabled]="refreshingAssetId().has(asset.id!)"
-                              (click)="refreshSingleAsset(asset); $event.stopPropagation()" 
-                              title="Refresh price">
-                              <span class="material-icons" 
-                                [class.spin]="refreshingAssetId().has(asset.id!)"
-                                style="font-size: 15px;">sync</span>
-                            </button>
-                          }
-                          <button class="btn-icon" (click)="openEdit(asset); $event.stopPropagation()" title="Edit">
-                            <span class="material-icons" style="font-size: 16px;">edit</span>
-                          </button>
-                          <button class="btn-icon btn-delete" (click)="delete(asset.id!); $event.stopPropagation()" title="Delete">
-                            <span class="material-icons" style="font-size: 16px;">delete</span>
-                          </button>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
+        <!-- 🇺🇸 US Stocks Section -->
+        @if (filteredUsAssets().length > 0) {
+          <div class="market-section-divider us-section-divider">
+            <div class="section-badge-group">
+              <span class="country-pill us-pill">US</span>
+              <h3 class="section-heading">US Stocks &amp; Holdings</h3>
+              <span class="section-counter">{{ filteredUsAssets().length }} assets</span>
             </div>
+            <div class="section-meta-right">
+              <span class="meta-label">Subtotal:</span>
+              <span class="meta-value">${{ hideAmounts() ? '••••••' : (usTotalValueUSD() | number:'1.2-2') }}</span>
+              <span class="meta-sub-inr">(≈ {{ hideAmounts() ? '••••••' : (usTotalValueINR() | currency:'INR':'symbol':'1.0-0') }})</span>
+            </div>
+          </div>
+
+          <div class="holdings-cards-list">
+            @for (asset of filteredUsAssets(); track asset.id) {
+              <ng-container *ngTemplateOutlet="brokerCardTemplate; context: { $implicit: asset }"></ng-container>
+            }
+          </div>
+        }
+      } @else {
+        <!-- Single market selected (IND or US) OR specific category selected -->
+        @if (selectedMarket() === 'ind' || (selectedMarket() === 'all' && allUsAssets().length === 0)) {
+          <div class="market-section-divider">
+            <div class="section-badge-group">
+              <span class="country-pill ind-pill">IND</span>
+              <h3 class="section-heading">Indian Holdings</h3>
+              <span class="section-counter">{{ filteredAssets().length }} assets</span>
+            </div>
+            <div class="section-meta-right">
+              <span class="meta-label">Subtotal:</span>
+              <span class="meta-value">{{ hideAmounts() ? '••••••' : (indTotalValue() | currency:'INR':'symbol':'1.0-0') }}</span>
+            </div>
+          </div>
+        } @else if (isViewingUS()) {
+          <div class="market-section-divider us-section-divider">
+            <div class="section-badge-group">
+              <span class="country-pill us-pill">US</span>
+              <h3 class="section-heading">US Stocks &amp; Holdings</h3>
+              <span class="section-counter">{{ filteredAssets().length }} assets</span>
+            </div>
+            <div class="section-meta-right">
+              <span class="meta-label">Subtotal:</span>
+              <span class="meta-value">${{ hideAmounts() ? '••••••' : (usTotalValueUSD() | number:'1.2-2') }}</span>
+              <span class="meta-sub-inr">(≈ {{ hideAmounts() ? '••••••' : (usTotalValueINR() | currency:'INR':'symbol':'1.0-0') }})</span>
+            </div>
+          </div>
+        }
+
+        <div class="holdings-cards-list">
+          @for (asset of filteredAssets(); track asset.id) {
+            <ng-container *ngTemplateOutlet="brokerCardTemplate; context: { $implicit: asset }"></ng-container>
           }
         </div>
       }
-    </div>
+    } @else {
+      <!-- Classic Grouped Table View -->
+      <div class="accordion-container">
+        @for (group of assetGroups(); track group.type) {
+          <div class="accordion-section" [class.expanded]="group.expanded">
+            <div class="accordion-parent" (click)="toggleGroup(group.type)">
+              <div class="col-name">
+                <span class="material-icons group-icon" [style.color]="group.color">{{ getIconForType(group.type) }}</span>
+                <div class="parent-title">
+                  <h2>{{ group.label }}</h2>
+                  <div class="meta-row">
+                    <span class="group-count">{{ group.assets.length }} assets</span>
+                    @if (group.currency === 'USD') {
+                      <span class="fx-rate-pill" style="font-size: 10px; padding: 1px 6px; border-radius: 4px; background: rgba(59, 130, 246, 0.12); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.25);">1 USD ≈ ₹{{ USD_TO_INR | number:'1.2-2' }}</span>
+                    }
+                    @if (group.type === 'MutualFund') {
+                      <span class="fx-rate-pill" style="font-size: 10px; padding: 1px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25);">1× Daily NAV</span>
+                    }
+                    @if (group.lastUpdated) {
+                      <span class="group-last-updated">Updated: {{ group.lastUpdated }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-alloc">
+                <div class="allocation-wrapper">
+                  <div class="allocation-bar">
+                    <div class="allocation-fill" [style.width.%]="group.allocation" [style.background]="group.color"></div>
+                  </div>
+                  <span class="allocation-text">{{ group.allocation | number:'1.1-1' }}%</span>
+                </div>
+              </div>
+
+              <div class="col-invested">
+                <span class="main-val">{{ hideAmounts() ? '••••••' : (group.totalInvested | currency:group.currency:'symbol':(group.currency === 'USD' ? '1.2-2' : '1.0-0')) }}</span>
+                @if (group.currency === 'USD') {
+                  <span class="sub-val" style="font-size: 11px; opacity: 0.7;">≈ {{ hideAmounts() ? '••••••' : (group.totalInvestedINR | currency:'INR':'symbol':'1.0-0') }}</span>
+                }
+              </div>
+
+              <div class="col-value">
+                <span class="main-val">{{ hideAmounts() ? '••••••' : (group.totalValue | currency:group.currency:'symbol':(group.currency === 'USD' ? '1.2-2' : '1.0-0')) }}</span>
+                @if (group.currency === 'USD') {
+                  <span class="sub-val" style="font-size: 11px; opacity: 0.7;">≈ {{ hideAmounts() ? '••••••' : (group.totalValueINR | currency:'INR':'symbol':'1.0-0') }}</span>
+                }
+              </div>
+
+              <div class="col-returns">
+                <div class="gain-box" [class.positive]="group.totalGain >= 0" [class.negative]="group.totalGain < 0">
+                  <span class="gain-val">{{ hideAmounts() ? '••••••' : ((group.totalGain >= 0 ? '+' : '') + (group.totalGain | currency:group.currency:'symbol':(group.currency === 'USD' ? '1.2-2' : '1.0-0'))) }}</span>
+                  <span class="gain-pct">({{ group.gainPct | number:'1.1-1' }}%)</span>
+                </div>
+              </div>
+
+              <div class="col-actions">
+                @if (group.type === 'MutualFund') {
+                  <button class="btn-icon refresh-btn" [disabled]="refreshingMFs()" (click)="refreshMutualFunds(true); $event.stopPropagation()" title="Force Refresh Mutual Fund NAVs">
+                    <span class="material-icons" [class.spin]="refreshingMFs()" style="font-size: 18px;">sync</span>
+                  </button>
+                } @else if (group.type === 'Stock' || group.type === 'ETF' || group.type === 'USStock') {
+                  <button class="btn-icon refresh-btn" [disabled]="refreshingStocks()" (click)="refreshStocks(group.assets); $event.stopPropagation()" title="Refresh Stock prices">
+                    <span class="material-icons" [class.spin]="refreshingStocks()" style="font-size: 18px;">sync</span>
+                  </button>
+                }
+                <span class="material-icons expand-icon">
+                  {{ group.expanded ? 'expand_less' : 'expand_more' }}
+                </span>
+              </div>
+            </div>
+
+            @if (group.expanded) {
+              <div class="accordion-children">
+                <div class="children-list">
+                  @for (asset of group.assets; track asset.id) {
+                    <div class="accordion-child" 
+                         [class.selected]="selectMode() && isSelected(asset.id!)"
+                         (click)="selectMode() ? toggleAssetSelection(asset.id!) : null">
+                      
+                      <div class="col-name child-name-col">
+                        @if (selectMode()) {
+                          <div class="select-checkbox" (click)="toggleAssetSelection(asset.id!); $event.stopPropagation()">
+                            <span class="material-icons" style="font-size: 18px;">
+                              {{ isSelected(asset.id!) ? 'check_box' : 'check_box_outline_blank' }}
+                            </span>
+                          </div>
+                        }
+                        <div class="name-box">
+                          <span class="name-text">{{ asset.name }}</span>
+                          @if (asset.symbol) {
+                            <span class="symbol-text">{{ asset.symbol }}</span>
+                          }
+                        </div>
+                      </div>
+
+                      <div class="col-alloc child-qty-col">
+                        <span class="qty-val">{{ asset.quantity | number:'1.0-4' }} units</span>
+                      </div>
+
+                      <div class="col-invested child-invested-col">
+                        <span class="main-val">{{ hideAmounts() ? '••••••' : ((asset.buyPrice * asset.quantity) | currency:getAssetCurrency(asset):'symbol':'1.0-2') }}</span>
+                        <span class="sub-val">@ {{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.buyPrice | number:'1.0-2' }}</span>
+                      </div>
+
+                      <div class="col-value child-value-col">
+                        <div class="val-box">
+                          @if (asset.currentPrice && asset.currentPrice > 0 || isNonMarketAsset(asset)) {
+                            <span class="main-val">{{ hideAmounts() ? '••••••' : (getAssetValue(asset) | currency:getAssetCurrency(asset):'symbol':'1.0-2') }}</span>
+                          } @else {
+                            <span class="main-val unpriced">--</span>
+                          }
+                          @if (asset.currentPrice && asset.currentPrice > 0) {
+                            <span class="sub-val">@ {{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.currentPrice | number:'1.2-2' }}</span>
+                          } @else {
+                            <span class="sub-val unpriced">@ --</span>
+                          }
+                          @if (asset.navDate) {
+                            <span class="row-last-updated">NAV: {{ asset.navDate }}</span>
+                          } @else if (asset.lastUpdated) {
+                            <span class="row-last-updated">{{ asset.lastUpdated }}</span>
+                          }
+                        </div>
+                      </div>
+
+                      <div class="col-returns child-returns-col">
+                        @if (asset.currentPrice && asset.currentPrice > 0) {
+                          <div class="gain-box" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
+                            <span class="gain-val">{{ hideAmounts() ? '••••••' : ((getGain(asset) >= 0 ? '+' : '') + (getGain(asset) | currency:getAssetCurrency(asset):'symbol':(isUSAsset(asset) ? '1.2-2' : '1.0-0'))) }}</span>
+                            <span class="gain-pct">({{ getGainPct(asset) | number:'1.1-1' }}%)</span>
+                          </div>
+                        } @else {
+                          <div class="gain-box unpriced">
+                            <span class="gain-val">--</span>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="col-actions child-actions-col">
+                        @if (!selectMode()) {
+                          <div class="actions-wrapper">
+                            @if (asset.type === 'Stock' || asset.type === 'ETF' || asset.type === 'MutualFund') {
+                              <button class="btn-icon" 
+                                [disabled]="refreshingAssetId().has(asset.id!)"
+                                (click)="refreshSingleAsset(asset); $event.stopPropagation()" 
+                                [title]="asset.type === 'MutualFund' ? 'Force refresh NAV' : 'Refresh price'">
+                                <span class="material-icons" 
+                                  [class.spin]="refreshingAssetId().has(asset.id!)"
+                                  style="font-size: 15px;">sync</span>
+                              </button>
+                            }
+                            <button class="btn-icon" (click)="openEdit(asset); $event.stopPropagation()" title="Edit">
+                              <span class="material-icons" style="font-size: 16px;">edit</span>
+                            </button>
+                            <button class="btn-icon btn-delete" (click)="delete(asset.id!); $event.stopPropagation()" title="Delete">
+                              <span class="material-icons" style="font-size: 16px;">delete</span>
+                            </button>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
   } @else {
-    <div class="card empty-state" style="margin-top: 40px;">
+    <div class="card empty-state" style="margin-top: 30px;">
       <span class="material-icons empty-icon">work</span>
-      <h3>No assets found</h3>
-      <p>Click "Add Asset" to start tracking your portfolio.</p>
+      <h3>No holdings found</h3>
+      <p>Try clearing your search or filter, or import holdings from INDmoney / Groww.</p>
     </div>
   }
 </div>
@@ -245,7 +629,7 @@
           </div>
         </div>
 
-        @if (form().type === 'Stock' || form().type === 'ETF' || form().type === 'MutualFund') {
+        @if (form().type === 'Stock' || form().type === 'ETF') {
           <div class="stock-search-container">
             <div class="search-header">
               <label>Search Symbol</label>
@@ -275,9 +659,9 @@
 
         @if (form().type !== 'Cash' && form().type !== 'RealEstate') {
           <div class="form-group">
-            <label>Symbol / ISIN</label>
+            <label>{{ form().type === 'MutualFund' ? 'Scheme Code / ISIN (Optional)' : 'Symbol / ISIN' }}</label>
             <input class="form-control" type="text" [value]="form().symbol || ''"
-              (input)="updateForm('symbol', $any($event.target).value)" placeholder="e.g. RELIANCE.NS" />
+              (input)="updateForm('symbol', $any($event.target).value)" [placeholder]="form().type === 'MutualFund' ? 'e.g. 120503' : 'e.g. RELIANCE.NS'" />
           </div>
         }
 
@@ -292,19 +676,19 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>Quantity *</label>
-            <input class="form-control" type="number" [value]="form().quantity" min="0" max="99999999"
+            <label>{{ form().type === 'MutualFund' ? 'Units' : 'Quantity' }} *</label>
+            <input class="form-control" type="number" [value]="form().quantity" min="0" max="99999999" step="any"
               (input)="updateForm('quantity', +$any($event.target).value)" />
           </div>
           <div class="form-group">
-            <label>Buy Price (₹) *</label>
-            <input class="form-control" type="number" [value]="form().buyPrice" min="0" max="999999999"
+            <label>{{ form().type === 'MutualFund' ? 'Avg NAV (₹)' : ('Buy Price (' + (form().currency === 'USD' ? '$' : '₹') + ')') }} *</label>
+            <input class="form-control" type="number" [value]="form().buyPrice" min="0" max="999999999" step="any"
               (input)="updateForm('buyPrice', +$any($event.target).value)" />
           </div>
         </div>
         <div class="form-group">
-          <label>Current Price (₹) *</label>
-          <input class="form-control" type="number" [value]="form().currentPrice" min="0" max="999999999"
+          <label>{{ form().type === 'MutualFund' ? 'Current NAV (₹)' : ('Current Price (' + (form().currency === 'USD' ? '$' : '₹') + ')') }} *</label>
+          <input class="form-control" type="number" [value]="form().currentPrice" min="0" max="999999999" step="any"
             (input)="updateForm('currentPrice', +$any($event.target).value)" />
         </div>
         @if (form().type !== 'Cash' && form().type !== 'RealEstate') {

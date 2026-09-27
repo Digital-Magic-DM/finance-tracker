@@ -8,11 +8,21 @@
         </button>
         <button class="btn btn-ghost" (click)="toggleSelectMode()">Cancel</button>
       } @else {
-        <button class="btn btn-secondary" (click)="toggleSelectMode()">Select</button>
-        <button class="btn btn-primary" id="add-tx-btn" (click)="openAdd()">+ Add</button>
-        <button class="btn btn-ghost" (click)="showImport.set(true)" title="Import from CSV/Excel">
-          <span class="material-icons sm-icon">upload_file</span>
-          Import
+        <button class="btn btn-secondary action-tool-btn" (click)="toggleSelectMode()" title="Select transactions (multi-select to delete)">
+          <span class="material-icons sm-icon">checklist</span>
+          <span class="btn-text">Select</span>
+        </button>
+        <button class="btn btn-primary" id="add-tx-btn" (click)="openAdd()" title="Add Transaction">
+          <span class="plus-icon">+</span>
+          <span class="btn-text">Add</span>
+        </button>
+        <button class="btn btn-ghost action-tool-btn" (click)="showImport.set(true)" title="Import from CSV/Excel">
+          <span class="material-icons sm-icon">post_add</span>
+          <span class="btn-text">Import</span>
+        </button>
+        <button class="btn btn-ghost action-tool-btn" (click)="exportCSV()" title="Export transactions to CSV">
+          <span class="material-icons sm-icon">arrow_upward</span>
+          <span class="btn-text">Export</span>
         </button>
       }
     </div>

@@ -1,6 +1,7 @@
-import { Component, inject, signal, output, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, signal, computed, output, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImportDataService, ParsedImportRow, ImportPlatform } from '../../../services/import-data.service';
+import { AssetService } from '../../../services/asset.service';
 import { SnackbarService } from '../../../services/snackbar.service';
 
 @Component({
@@ -12,6 +13,7 @@ import { SnackbarService } from '../../../services/snackbar.service';
 })
 export class ImportDataComponent {
     private importService = inject(ImportDataService);
+    private assetService = inject(AssetService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
     private snackbar = inject(SnackbarService);
@@ -25,9 +27,17 @@ export class ImportDataComponent {
     importing = signal(false);
     importedCount = signal(0);
     updatedCount = signal(0);
+    skippedCount = signal(0);
     dragOver = signal(false);
     error = signal('');
     fileName = signal('');
+
+    // Strategy for existing matching assets: 'update' | 'create' | 'skip'
+    duplicateMode = signal<'update' | 'create' | 'skip'>('update');
+    showActionModal = signal(false);
+
+    existingCount = computed(() => this.rows().filter(r => r.selected && r.isDuplicate).length);
+    newCount = computed(() => this.rows().filter(r => r.selected && !r.isDuplicate).length);
 
     onDragOver(e: DragEvent) {
         e.preventDefault();
@@ -57,8 +67,8 @@ export class ImportDataComponent {
 
     private async processFile(file: File) {
         const ext = file.name.split('.').pop()?.toLowerCase();
-        if (!['csv', 'xlsx', 'xls'].includes(ext || '')) {
-            this.error.set('Please upload a CSV or Excel (.xlsx / .xls) file.');
+        if (!['csv', 'xlsx', 'xls', 'pdf'].includes(ext || '')) {
+            this.error.set('Please upload a CSV, Excel (.xlsx / .xls), or PDF holding statement.');
             return;
         }
         this.error.set('');
@@ -66,15 +76,18 @@ export class ImportDataComponent {
 
         try {
             const result = await this.importService.parseFile(file);
+            const existingAssets = await this.assetService.getAssetsSnapshot();
+            const matchedRows = this.importService.matchWithExisting(result.rows, existingAssets);
+
             this.ngZone.run(() => {
                 this.detectedPlatform.set(result.platform);
 
-                if (result.rows.length === 0) {
+                if (matchedRows.length === 0) {
                     this.error.set('No valid data found. Please check the file format.');
                     return;
                 }
 
-                this.rows.set(result.rows);
+                this.rows.set(matchedRows);
                 this.step.set('preview');
                 this.cdr.markForCheck();
             });
@@ -108,26 +121,61 @@ export class ImportDataComponent {
         if (p === 'groww-stock') return 'Groww (Stocks)';
         if (p === 'groww-mf') return 'Groww (Mutual Funds)';
         if (p === 'indmoney') return 'INDmoney';
+        if (p === 'indmoney-us') return 'INDmoney (US Stocks)';
+        if (p === 'indmoney-pdf') return 'INDmoney (PDF Statement)';
+        if (p === 'cdsl-pdf') return 'CDSL / NSDL (PDF Statement)';
         return 'CSV / Excel';
     }
 
-    async confirmImport() {
+    setDuplicateMode(mode: 'update' | 'create' | 'skip') {
+        this.duplicateMode.set(mode);
+    }
+
+    onImportClick() {
+        if (this.importing() || this.selectedCount === 0) return;
+
+        // If existing assets are present, show prompt modal asking how to handle them
+        if (this.existingCount() > 0) {
+            this.showActionModal.set(true);
+        } else {
+            this.confirmImport();
+        }
+    }
+
+    async confirmImport(mode?: 'update' | 'create' | 'skip') {
+        if (mode) {
+            this.duplicateMode.set(mode);
+        }
+        this.showActionModal.set(false);
+
         if (this.importing()) return;
         this.importing.set(true);
         this.error.set('');
+
         try {
-            const { created, updated } = await this.importService.importAssets(this.rows());
+            const { created, updated, skipped } = await this.importService.importAssets(
+                this.rows(),
+                this.duplicateMode()
+            );
+
             this.ngZone.run(() => {
                 this.importedCount.set(created);
                 this.updatedCount.set(updated);
+                this.skippedCount.set(skipped);
                 this.step.set('done');
                 this.importing.set(false);
                 this.cdr.markForCheck();
                 this.imported.emit(created + updated);
-                this.snackbar.show(
-                    `✅ Import complete! ${created} asset${created !== 1 ? 's' : ''} added successfully.`,
-                    'success',
-                );
+
+                let msg = '✅ Import complete!';
+                if (created > 0 && updated > 0) {
+                    msg = `✅ Import complete! ${created} added, ${updated} updated.`;
+                } else if (updated > 0) {
+                    msg = `✅ Updated ${updated} existing asset${updated !== 1 ? 's' : ''}!`;
+                } else {
+                    msg = `✅ Added ${created} new asset${created !== 1 ? 's' : ''}!`;
+                }
+                this.snackbar.show(msg, 'success');
             });
         } catch (err: any) {
             this.ngZone.run(() => {
@@ -146,8 +194,10 @@ export class ImportDataComponent {
         this.step.set('upload');
         this.rows.set([]);
         this.error.set('');
+        this.fileName.set('');
         this.importedCount.set(0);
         this.updatedCount.set(0);
-        this.fileName.set('');
+        this.skippedCount.set(0);
+        this.showActionModal.set(false);
     }
 }

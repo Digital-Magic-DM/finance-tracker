@@ -6,7 +6,16 @@
 
   <!-- Sidebar -->
   <div class="sidebar-wrapper" [class.open]="sidebarOpen()" [class.collapsed]="sidebarCollapsed()">
-    <app-sidebar [collapsed]="sidebarCollapsed()" (closeSidebar)="closeSidebar()" (toggleCollapse)="toggleSidebarCollapse()" />
+    <app-sidebar [collapsed]="sidebarCollapsed()" (closeSidebar)="closeSidebar()" />
+
+    <!-- Single Center Collapse Button Between Sidebar and Main Content -->
+    <button 
+      class="sidebar-edge-toggle desktop-only" 
+      (click)="toggleSidebarCollapse()" 
+      [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+      [attr.aria-label]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
+      <span class="material-icons toggle-icon">{{ sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}</span>
+    </button>
   </div>
 
   <!-- Main content -->
