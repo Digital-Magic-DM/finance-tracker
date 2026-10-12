@@ -128,6 +128,23 @@
                 </div>
             </div>
 
+            <!-- Target Runway Goal Strip & Quick Changers -->
+            <div class="runway-goal-strip">
+                <div class="goal-info">
+                    <span class="goal-label">YOUR GOAL:</span>
+                    <strong class="goal-target">{{ essentialsService.targetRunwayMonths() }} MONTHS ({{ essentialsService.targetRunwayCapital() | currency:'INR':'symbol':'1.0-0' }})</strong>
+                    <span class="goal-pct" [class.achieved]="essentialsService.runwayTargetProgress() >= 100">
+                        {{ essentialsService.runwayTargetProgress() }}% Funded
+                    </span>
+                </div>
+                <div class="goal-chips" title="Quick change your emergency runway target">
+                    <button class="goal-chip" [class.active]="essentialsService.targetRunwayMonths() === 3" (click)="quickSetRunway(3)">3M</button>
+                    <button class="goal-chip" [class.active]="essentialsService.targetRunwayMonths() === 6" (click)="quickSetRunway(6)">6M</button>
+                    <button class="goal-chip" [class.active]="essentialsService.targetRunwayMonths() === 9" (click)="quickSetRunway(9)">9M</button>
+                    <button class="goal-chip" [class.active]="essentialsService.targetRunwayMonths() === 12" (click)="quickSetRunway(12)">12M</button>
+                </div>
+            </div>
+
             <div class="card-quick-stats">
                 <div class="quick-stat-item">
                     <span class="qs-label">Liquid Assets:</span>
@@ -509,6 +526,27 @@
                                 <small class="text-muted">(Leave 0 to use transaction income)</small>
                             </label>
                             <input type="number" [(ngModel)]="editData().monthlyIncomeOverride" placeholder="e.g. 120000" />
+                        </div>
+                    </div>
+
+                    <!-- Section: Emergency Runway Target -->
+                    <div class="form-section-title">Emergency Runway Buffer Goal</div>
+                    <div class="form-group">
+                        <label>
+                            Target Emergency Runway (Months)
+                            <small class="text-muted">(How many months of basic expenses you want safe in liquid cash/FDs)</small>
+                        </label>
+                        <div class="input-with-chips">
+                            <input type="number" [(ngModel)]="editData().targetRunwayMonths" min="1" max="60" placeholder="6" />
+                            <div class="preset-chips">
+                                <button type="button" class="preset-chip" [class.active]="editData().targetRunwayMonths === 3" (click)="editData().targetRunwayMonths = 3">3M (Lean)</button>
+                                <button type="button" class="preset-chip" [class.active]="editData().targetRunwayMonths === 6" (click)="editData().targetRunwayMonths = 6">6M (Safe)</button>
+                                <button type="button" class="preset-chip" [class.active]="editData().targetRunwayMonths === 9" (click)="editData().targetRunwayMonths = 9">9M (Prudent)</button>
+                                <button type="button" class="preset-chip" [class.active]="editData().targetRunwayMonths === 12" (click)="editData().targetRunwayMonths = 12">12M (Ideal)</button>
+                            </div>
+                        </div>
+                        <div class="field-hint" style="font-size: 11px; margin-top: 6px; color: var(--text-muted);">
+                            Required Emergency Fund: <strong>₹{{ ((editData().monthlyExpenseOverride || essentialsService.effectiveMonthlyExpense()) * (editData().targetRunwayMonths || 6)) | number:'1.0-0' }}</strong>
                         </div>
                     </div>
 

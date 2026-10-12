@@ -455,7 +455,7 @@ export class ImportDataService {
             assets.push({
                 name,
                 symbol: cleanSym,
-                type: isETF ? AssetType.ETF : AssetType.Stock,
+                type: isETF ? AssetType.ETF : AssetType.USStock,
                 quantity,
                 buyPrice,
                 currentPrice: currentPrice > 0 ? currentPrice : 0,
@@ -595,6 +595,9 @@ export class ImportDataService {
     private inferType(row: any[], typeIdx: number, name: string): AssetType {
         if (typeIdx >= 0) {
             const val = String(row[typeIdx]).toLowerCase();
+            if (val.includes('fixed deposit') || val.includes('term deposit') || val.includes(' fd') || val === 'fd') return AssetType.FixedDeposit;
+            if (val.includes('bond') || val.includes('debenture') || val.includes('g-sec') || val.includes('gsec') || val.includes('ncd') || val.includes('sgb') || val.includes('treasury')) return AssetType.Bond;
+            if (val.includes('us stock') || val.includes('us equity')) return AssetType.USStock;
             if (val.includes('mutual') || val.includes('mf') || val.includes('fund')) return AssetType.MutualFund;
             if (val.includes('etf')) return AssetType.ETF;
             if (val.includes('stock') || val.includes('equity') || val.includes('share')) return AssetType.Stock;
@@ -602,6 +605,8 @@ export class ImportDataService {
         }
         // Heuristic from name
         const lower = name.toLowerCase();
+        if (lower.includes('fixed deposit') || lower.includes('term deposit') || lower.includes(' fd') || lower.endsWith(' fd')) return AssetType.FixedDeposit;
+        if (lower.includes('bond') || lower.includes('sgb') || lower.includes('debenture') || lower.includes('g-sec') || lower.includes('gsec') || lower.includes('ncd')) return AssetType.Bond;
         if (lower.includes('fund') || lower.includes('scheme') || lower.includes('amc')) {
             if (lower.includes('etf') || lower.includes('exchange traded')) return AssetType.ETF;
             return AssetType.MutualFund;

@@ -10,7 +10,7 @@ import { PriceService } from '../../services/price.service';
 
 import {
     TransactionType,
-    AssetType, ASSET_COLORS, AssetAllocation, Asset
+    AssetType, AssetAllocation, Asset
 } from '../../models/finance.models';
 import { PortfolioChartComponent } from '../../shared/portfolio-chart/portfolio-chart.component';
 import { NetworthChartComponent } from '../../shared/networth-chart/networth-chart.component';
@@ -96,7 +96,7 @@ export class DashboardComponent implements OnInit {
 
     totalNetWorth = computed(() =>
         this.assets().reduce((sum, a) => {
-            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate ? a.buyPrice : 0);
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
             const fx = this.getFxRate(a);
             return sum + (a.quantity * cp * fx);
         }, 0)
@@ -219,17 +219,65 @@ export class DashboardComponent implements OnInit {
         if (total === 0) return [];
         const grouped: { [key: string]: number } = {};
         for (const a of this.assets()) {
-            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate ? a.buyPrice : 0);
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
             const fx = this.getFxRate(a);
             const val = a.quantity * cp * fx;
-            grouped[a.type] = (grouped[a.type] || 0) + val;
+
+            let label = 'Other';
+            if (a.type === AssetType.USStock || (a.type === AssetType.Stock && this.priceService.isUSAsset(a))) {
+                label = 'US Stocks';
+            } else if (a.type === AssetType.Stock) {
+                label = 'Indian Stocks';
+            } else if (a.type === AssetType.MutualFund) {
+                label = 'Mutual Funds';
+            } else if (a.type === AssetType.FixedDeposit) {
+                label = 'Fixed Deposits';
+            } else if (a.type === AssetType.Bond) {
+                label = 'Bonds';
+            } else if (a.type === AssetType.ETF) {
+                label = 'ETFs';
+            } else if (a.type === AssetType.Gold) {
+                label = 'Gold';
+            } else if (a.type === AssetType.RealEstate) {
+                label = 'Real Estate';
+            } else if (a.type === AssetType.Crypto) {
+                label = 'Crypto';
+            } else if (a.type === AssetType.Cash) {
+                label = 'Cash';
+            }
+
+            grouped[label] = (grouped[label] || 0) + val;
         }
-        return Object.entries(grouped).map(([type, value]) => ({
-            label: type,
-            value,
-            percentage: (value / total) * 100,
-            color: ASSET_COLORS[type as AssetType] || '#9E9E9E',
-        }));
+
+        const labelColors: Record<string, string> = {
+            'Indian Stocks': 'var(--asset-stock)',
+            'Stock': 'var(--asset-stock)',
+            'US Stocks': 'var(--asset-us-stock)',
+            'USStock': 'var(--asset-us-stock)',
+            'Mutual Funds': 'var(--asset-mf)',
+            'MutualFund': 'var(--asset-mf)',
+            'Fixed Deposits': 'var(--asset-fd)',
+            'FixedDeposit': 'var(--asset-fd)',
+            'Bonds': 'var(--asset-bond)',
+            'Bond': 'var(--asset-bond)',
+            'ETFs': 'var(--asset-etf)',
+            'ETF': 'var(--asset-etf)',
+            'Gold': 'var(--asset-gold)',
+            'Cash': 'var(--asset-cash)',
+            'Real Estate': 'var(--asset-re)',
+            'RealEstate': 'var(--asset-re)',
+            'Crypto': 'var(--asset-crypto)',
+            'Other': 'var(--asset-other)',
+        };
+
+        return Object.entries(grouped)
+            .map(([label, value]) => ({
+                label,
+                value,
+                percentage: (value / total) * 100,
+                color: labelColors[label] || 'var(--asset-other)',
+            }))
+            .sort((a, b) => b.value - a.value);
     });
     
     appWiseHoldings = computed(() => {
@@ -238,7 +286,7 @@ export class DashboardComponent implements OnInit {
         
         const grouped: { [key: string]: number } = {};
         for (const a of this.assets()) {
-            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate ? a.buyPrice : 0);
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
             const fx = this.getFxRate(a);
             const val = a.quantity * cp * fx;
             const source = this.getAssetApp(a);
@@ -257,7 +305,7 @@ export class DashboardComponent implements OnInit {
     });
 
     networthHistory = computed(() =>
-        this.snapshots().map((s) => ({ date: s.date, value: s.netWorth }))
+        this.snapshotService.buildNetWorthPoints(this.snapshots(), this.assets())
     );
 
     monthlySpendingTrend = computed(() => {

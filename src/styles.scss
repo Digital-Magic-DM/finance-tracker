@@ -48,10 +48,12 @@ html {
 
   --sidebar-width: 260px;
   --toolbar-height: 64px;
-  --radius-sm: 0px; /* Minimalist sharp corners */
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
 
   --transition-fast: 0.1s ease;
   --transition-normal: 0.2s ease;
@@ -59,7 +61,10 @@ html {
 
   /* Asset Type Colors - Vibrant Premium Palette */
   --asset-stock: #3b82f6; /* Blue */
+  --asset-us-stock: #06b6d4; /* Cyan */
   --asset-mf: #8b5cf6;    /* Violet */
+  --asset-fd: #d97706;    /* Amber / FD */
+  --asset-bond: #14b8a6;  /* Teal / Mint */
   --asset-etf: #ec4899;   /* Pink */
   --asset-gold: #eab308;  /* Gold/Yellow */
   --asset-cash: #10b981;  /* Emerald */
@@ -97,7 +102,10 @@ html {
 
   /* Asset Type Colors - Vibrant Dark Mode Palette */
   --asset-stock: #60a5fa; /* Light Blue */
+  --asset-us-stock: #22d3ee; /* Light Cyan */
   --asset-mf: #a78bfa;    /* Light Violet */
+  --asset-fd: #fbbf24;    /* Light Amber / FD */
+  --asset-bond: #2dd4bf;  /* Light Mint / Teal */
   --asset-etf: #f472b6;   /* Light Pink */
   --asset-gold: #facc15;  /* Light Gold */
   --asset-cash: #34d399;  /* Light Emerald */
@@ -281,6 +289,7 @@ a { text-decoration: none; color: inherit; }
   align-items: center;
   padding: 4px 12px;
   border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -330,6 +339,7 @@ a { text-decoration: none; color: inherit; }
 .stat-card {
   position: relative;
   border: 2px solid var(--border-color) !important;
+  border-radius: var(--radius-lg);
 
   .stat-icon {
     width: 44px;
@@ -342,7 +352,7 @@ a { text-decoration: none; color: inherit; }
     margin-bottom: 20px;
     background: transparent !important;
     color: var(--text-primary);
-    border-radius: 0;
+    border-radius: var(--radius-sm);
   }
 
   .stat-value {
@@ -367,6 +377,7 @@ a { text-decoration: none; color: inherit; }
     margin-top: 12px;
     padding: 2px 8px;
     border: 1px solid var(--border-color);
+    border-radius: var(--radius-xs);
     display: inline-block;
 
     &.positive { background: var(--text-primary); color: var(--bg-primary); }

@@ -1,6 +1,9 @@
 export enum AssetType {
     Stock = 'Stock',
+    USStock = 'USStock',
     MutualFund = 'MutualFund',
+    FixedDeposit = 'FixedDeposit',
+    Bond = 'Bond',
     ETF = 'ETF',
     Gold = 'Gold',
     Cash = 'Cash',
@@ -23,6 +26,7 @@ export interface EssentialsProfile {
     insurance: InsuranceInfo;
     monthlyExpenseOverride?: number; // Manual monthly expense/burn rate (₹)
     monthlyIncomeOverride?: number;  // Manual monthly income (₹)
+    targetRunwayMonths?: number;     // Target emergency runway months (e.g. 3, 6, 9, 12; default 6)
 }
 
 export enum TransactionType {
@@ -66,6 +70,9 @@ export interface Asset {
     lastUpdatedDate?: string; // YYYY-MM-DD format (e.g. '2026-09-27') to limit updates to once a day
     navDate?: string;         // NAV date reported by AMFI / MFAPI (e.g. '26-Sep-2026')
     isLiquid?: boolean; // New: for Emergency Runway calculation
+    interestRate?: number;     // e.g. 7.5% for FD or 8.2% coupon for Corporate Bond
+    maturityDate?: string;     // YYYY-MM-DD or date string
+    subType?: string;          // e.g. 'Corporate Bond' | 'Govt Bond (G-Sec)' | 'Bank FD' | 'NBFC FD' | 'Tax-Free Bond'
 }
 
 export interface Transaction {
@@ -87,6 +94,8 @@ export interface PortfolioSnapshot {
     netWorth: number;
     totalAssets: number;
     totalLiabilities: number;
+    totalInvested?: number;
+    totalProfit?: number;
     breakdown: { [key in AssetType]?: number };
 }
 
@@ -100,11 +109,16 @@ export interface AssetAllocation {
 export interface NetWorthPoint {
     date: string;
     value: number;
+    invested?: number;
+    profit?: number;
 }
 
 export const ASSET_COLORS: { [key in AssetType]: string } = {
     [AssetType.Stock]: 'var(--asset-stock)',
+    [AssetType.USStock]: 'var(--asset-us-stock)',
     [AssetType.MutualFund]: 'var(--asset-mf)',
+    [AssetType.FixedDeposit]: 'var(--asset-fd)',
+    [AssetType.Bond]: 'var(--asset-bond)',
     [AssetType.ETF]: 'var(--asset-etf)',
     [AssetType.Gold]: 'var(--asset-gold)',
     [AssetType.Cash]: 'var(--asset-cash)',

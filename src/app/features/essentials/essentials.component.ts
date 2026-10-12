@@ -33,7 +33,8 @@ export class EssentialsComponent {
             healthCover: 0
         },
         monthlyExpenseOverride: 0,
-        monthlyIncomeOverride: 0
+        monthlyIncomeOverride: 0,
+        targetRunwayMonths: 6
     });
 
     // FI Matrix Data (Savings Rate vs Years to FI)
@@ -70,10 +71,16 @@ export class EssentialsComponent {
                     healthCover: current.insurance?.healthCover || 0
                 },
                 monthlyExpenseOverride: current.monthlyExpenseOverride || (this.essentialsService.avgMonthlyExpense() || 0),
-                monthlyIncomeOverride: current.monthlyIncomeOverride || 0
+                monthlyIncomeOverride: current.monthlyIncomeOverride || 0,
+                targetRunwayMonths: current.targetRunwayMonths || 6
             });
         }
         this.isEditing.set(true);
+    }
+
+    async quickSetRunway(months: number) {
+        this.editData.update(d => ({ ...d, targetRunwayMonths: months }));
+        await this.essentialsService.updateProfile({ targetRunwayMonths: months });
     }
 
     async saveEdit() {

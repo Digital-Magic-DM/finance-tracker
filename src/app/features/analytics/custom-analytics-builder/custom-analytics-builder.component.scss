@@ -1,8 +1,10 @@
 .builder-modal {
     background: var(--bg-card);
-    border: 3px solid var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
     margin-bottom: 24px;
     animation: slideDown 0.3s ease-out;
+    overflow: hidden;
 
     .builder-content {
         padding: 0;
@@ -10,7 +12,7 @@
 
     .card-header {
         padding: 20px 24px;
-        border-bottom: 3px solid var(--text-primary);
+        border-bottom: 2px solid var(--border-color);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -65,7 +67,7 @@
         border: 2px solid var(--border-color);
         background: var(--bg-primary);
         color: var(--text-primary);
-        border-radius: 0;
+        border-radius: var(--radius-sm);
         font-size: 14px;
         font-family: 'Inter', sans-serif;
         font-weight: 600;
@@ -176,7 +178,7 @@
     text-transform: uppercase;
     cursor: pointer;
     transition: all 0.2s;
-    border-radius: 0;
+    border-radius: var(--radius-sm);
 
     &:hover {
         border-color: var(--text-primary);

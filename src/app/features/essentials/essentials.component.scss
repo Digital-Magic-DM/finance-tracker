@@ -1068,3 +1068,108 @@
         }
     }
 }
+
+/* Target Runway Goal Strip */
+.runway-goal-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: var(--radius-md, 8px);
+    margin: 8px 0;
+
+    .goal-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .goal-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #f59e0b;
+            letter-spacing: 0.5px;
+        }
+
+        .goal-target {
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .goal-pct {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+
+            &.achieved {
+                color: #10b981;
+            }
+        }
+    }
+
+    .goal-chips {
+        display: flex;
+        gap: 6px;
+
+        .goal-chip {
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: var(--radius-sm, 4px);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+
+            &:hover {
+                color: var(--text-primary);
+                border-color: #f59e0b;
+            }
+
+            &.active {
+                background: #f59e0b;
+                color: #000;
+                border-color: #f59e0b;
+            }
+        }
+    }
+}
+
+.input-with-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .preset-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+
+        .preset-chip {
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: var(--radius-sm, 4px);
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.08);
+                color: var(--text-primary);
+            }
+
+            &.active {
+                background: #f59e0b;
+                color: #000;
+                border-color: #f59e0b;
+            }
+        }
+    }
+}
+

@@ -127,7 +127,7 @@ export class AnalyticsBuilderService {
                 if (config.metric === 'Count') {
                     valueToAdd = 1;
                 } else if (config.dataSource === 'Assets') {
-                    const cp = item.currentPrice > 0 ? item.currentPrice : (item.type === AssetType.Cash || item.type === AssetType.RealEstate ? item.buyPrice : 0);
+                    const cp = item.currentPrice > 0 ? item.currentPrice : (item.type === AssetType.Cash || item.type === AssetType.RealEstate || item.type === AssetType.Bond || item.type === AssetType.FixedDeposit ? item.buyPrice : 0);
                     const fx = this.priceService.isUSAsset(item) ? this.googleFinance.usdToInrRate() : 1;
                     valueToAdd = item.quantity * cp * fx;
                 } else {

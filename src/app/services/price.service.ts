@@ -83,6 +83,7 @@ export class PriceService {
      */
     public isUSAsset(asset: Asset): boolean {
         if (!asset) return false;
+        if (asset.type === AssetType.USStock) return true;
         if (asset.currency === 'USD') return true;
         if (asset.notes && /us stock|alpaca|nasdaq|nyse|vested|indmoney \(us/i.test(asset.notes)) return true;
         if (asset.appSource && /alpaca|vested|drivewealth/i.test(asset.appSource)) return true;

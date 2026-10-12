@@ -57,7 +57,7 @@ export class AnalyticsComponent {
     }
 
     networthHistory = computed(() =>
-        this.snapshots().map((s) => ({ date: s.date, value: s.netWorth }))
+        this.snapshotService.buildNetWorthPoints(this.snapshots(), this.assets())
     );
 
     categoryBreakdown = computed(() => {

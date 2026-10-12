@@ -56,7 +56,7 @@
                 <span class="material-icons item-icon">show_chart</span>
                 <span class="item-label">Indian Stock</span>
               </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.Stock, 'USD')">
+              <button class="dropdown-item" (click)="openAdd(AssetType.USStock, 'USD')">
                 <span class="material-icons item-icon">language</span>
                 <span class="item-label">US Stock ($)</span>
               </button>
@@ -64,13 +64,21 @@
                 <span class="material-icons item-icon">pie_chart</span>
                 <span class="item-label">Mutual Fund</span>
               </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.FixedDeposit, 'INR')">
+                <span class="material-icons item-icon">savings</span>
+                <span class="item-label">Fixed Deposit (FD)</span>
+              </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.Bond, 'INR')">
+                <span class="material-icons item-icon">receipt_long</span>
+                <span class="item-label">Corporate &amp; Govt Bonds</span>
+              </button>
               <button class="dropdown-item" (click)="openAdd(AssetType.ETF, 'INR')">
                 <span class="material-icons item-icon">trending_up</span>
                 <span class="item-label">ETF</span>
               </button>
               <button class="dropdown-item" (click)="openAdd(AssetType.Cash, 'INR')">
                 <span class="material-icons item-icon">account_balance_wallet</span>
-                <span class="item-label">Cash / Bank</span>
+                <span class="item-label">Cash &amp; Bank Balance</span>
               </button>
               <button class="dropdown-item" (click)="openAdd(AssetType.RealEstate, 'INR')">
                 <span class="material-icons item-icon">home</span>
@@ -82,7 +90,11 @@
               </button>
               <button class="dropdown-item" (click)="openAdd(AssetType.Crypto, 'USD')">
                 <span class="material-icons item-icon">currency_bitcoin</span>
-                <span class="item-label">Crypto</span>
+                <span class="item-label">Crypto ($)</span>
+              </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.Other, 'INR')">
+                <span class="material-icons item-icon">category</span>
+                <span class="item-label">Other Asset</span>
               </button>
             </div>
           }
@@ -103,24 +115,26 @@
     </div>
   </div>
 
-  <!-- Market Region Segment Bar (India / US / All) -->
-  <div class="market-segment-bar">
-    <button class="market-tab" [class.active]="selectedMarket() === 'all'" (click)="onSelectMarket('all')">
-      <span class="country-pill global-pill">ALL</span>
-      <span class="m-label">All Markets</span>
-      <span class="m-count">{{ assets().length }}</span>
-    </button>
-    <button class="market-tab" [class.active]="selectedMarket() === 'ind'" (click)="onSelectMarket('ind')">
-      <span class="country-pill ind-pill">IND</span>
-      <span class="m-label">Indian Portfolio</span>
-      <span class="m-count">{{ allIndAssets().length }}</span>
-    </button>
-    <button class="market-tab" [class.active]="selectedMarket() === 'us'" (click)="onSelectMarket('us')">
-      <span class="country-pill us-pill">US</span>
-      <span class="m-label">US Stocks</span>
-      <span class="m-count">{{ allUsAssets().length }}</span>
-    </button>
-  </div>
+  <!-- Market Region Segment Bar (Only rendered dynamically when user owns holdings across both Indian and US markets) -->
+  @if (hasBothMarkets()) {
+    <div class="market-segment-bar">
+      <button class="market-tab" [class.active]="selectedMarket() === 'all'" (click)="onSelectMarket('all')">
+        <span class="country-pill global-pill">ALL</span>
+        <span class="m-label">All Markets</span>
+        <span class="m-count">{{ assets().length }}</span>
+      </button>
+      <button class="market-tab" [class.active]="selectedMarket() === 'ind'" (click)="onSelectMarket('ind')">
+        <span class="country-pill ind-pill">IND</span>
+        <span class="m-label">Indian Portfolio</span>
+        <span class="m-count">{{ allIndAssets().length }}</span>
+      </button>
+      <button class="market-tab" [class.active]="selectedMarket() === 'us'" (click)="onSelectMarket('us')">
+        <span class="country-pill us-pill">US</span>
+        <span class="m-label">US Stocks</span>
+        <span class="m-count">{{ allUsAssets().length }}</span>
+      </button>
+    </div>
+  }
 
   <!-- Top Horizontal Scrollbar for Categories -->
   <div class="top-scrollbar-container">
@@ -152,10 +166,10 @@
     @if (availableApps().length > 1) {
       <div class="app-filter-wrapper">
         <span class="material-icons" style="font-size: 16px; color: var(--text-muted);">filter_list</span>
-        <select class="app-filter-select" [value]="appFilter()" (change)="appFilter.set($any($event.target).value)">
-          <option value="All">All Apps</option>
+        <select class="app-filter-select" [ngModel]="appFilter()" (ngModelChange)="appFilter.set($event)">
+          <option value="All" [selected]="appFilter() === 'All'">All Apps</option>
           @for (app of availableApps(); track app) {
-            <option [value]="app">{{ app }}</option>
+            <option [value]="app" [selected]="appFilter() === app">{{ app }}</option>
           }
         </select>
       </div>
@@ -240,7 +254,22 @@
       <!-- Top Line: Qty & LTP -->
       <div class="card-top-line">
         <div class="qty-avg">
-          Qty {{ asset.quantity | number:'1.0-4' }} · Avg {{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.buyPrice | number:'1.2-2' }}
+          @if (asset.type === 'FixedDeposit') {
+            <span class="rate-badge" style="font-weight: 700; color: #f59e0b;">{{ asset.interestRate ? asset.interestRate + '% p.a. ' : '' }}FD</span>
+            @if (asset.maturityDate) {
+              <span class="meta-dot">·</span> Mat: {{ asset.maturityDate }}
+            }
+          } @else if (asset.type === 'Bond') {
+            <span class="rate-badge" style="font-weight: 700; color: #14b8a6;">{{ asset.subType || 'Bond' }}</span>
+            @if (asset.interestRate) {
+              <span class="meta-dot">·</span> {{ asset.interestRate }}%
+            }
+            @if (asset.maturityDate) {
+              <span class="meta-dot">·</span> Mat: {{ asset.maturityDate }}
+            }
+          } @else {
+            Qty {{ asset.quantity | number:'1.0-4' }} · Avg {{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.buyPrice | number:'1.2-2' }}
+          }
         </div>
         <div class="ltp-info">
           @if (asset.currentPrice && asset.currentPrice > 0) {
@@ -508,11 +537,17 @@
                           @if (asset.symbol) {
                             <span class="symbol-text">{{ asset.symbol }}</span>
                           }
+                          @if (asset.type === 'FixedDeposit' && asset.interestRate) {
+                            <span class="symbol-text" style="color: #f59e0b; font-weight: 600;">{{ asset.interestRate }}% p.a.{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}</span>
+                          }
+                          @if (asset.type === 'Bond') {
+                            <span class="symbol-text" style="color: #14b8a6; font-weight: 600;">{{ asset.subType || 'Bond' }}{{ asset.interestRate ? ' · ' + asset.interestRate + '%' : '' }}{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}</span>
+                          }
                         </div>
                       </div>
 
                       <div class="col-alloc child-qty-col">
-                        <span class="qty-val">{{ asset.quantity | number:'1.0-4' }} units</span>
+                        <span class="qty-val">{{ asset.quantity | number:'1.0-4' }} {{ asset.type === 'MutualFund' ? 'units' : (asset.type === 'FixedDeposit' ? 'deposit' : 'qty') }}</span>
                       </div>
 
                       <div class="col-invested child-invested-col">
@@ -605,29 +640,82 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label>Asset Name *</label>
+          <label>
+            {{ form().type === 'FixedDeposit' ? 'Bank / Institution Name *' : (form().type === 'Bond' ? 'Bond / Issuer Name *' : (form().type === 'RealEstate' ? 'Property Name *' : (form().type === 'Cash' ? 'Account / Bank Name *' : 'Asset Name *'))) }}
+          </label>
           <input class="form-control" type="text" [value]="form().name" maxlength="100"
-            (input)="updateForm('name', $any($event.target).value)" placeholder="e.g. Reliance Industries" />
+            (input)="updateForm('name', $any($event.target).value)" 
+            [placeholder]="form().type === 'FixedDeposit' ? 'e.g. HDFC Bank FD, Bajaj Finance Corporate FD' : (form().type === 'Bond' ? 'e.g. Tata Capital 8.5% NCD, NHAI Tax-Free' : (form().type === 'RealEstate' ? 'e.g. 3BHK Apartment, Commercial Plot' : 'e.g. Reliance Industries'))" />
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>Type *</label>
-            <select class="form-control" [value]="form().type"
-              (change)="updateForm('type', $any($event.target).value)">
+            <select class="form-control" [ngModel]="form().type"
+              (ngModelChange)="updateForm('type', $event)">
               @for (t of assetTypes; track t) {
-                <option [value]="t">{{ t }}</option>
+                <option [value]="t" [selected]="t === form().type">{{ getTypeLabel(t) }}</option>
               }
             </select>
           </div>
           <div class="form-group">
             <label>Currency</label>
-            <select class="form-control" [value]="form().currency"
-              (change)="updateForm('currency', $any($event.target).value)">
-              <option value="INR">INR (₹)</option>
-              <option value="USD">USD ($)</option>
+            <select class="form-control" [ngModel]="form().currency"
+              (ngModelChange)="updateForm('currency', $event)">
+              <option value="INR" [selected]="form().currency === 'INR'">INR (₹)</option>
+              <option value="USD" [selected]="form().currency === 'USD'">USD ($)</option>
             </select>
           </div>
         </div>
+
+        <!-- Dedicated Section for Fixed Deposit (FD) -->
+        @if (form().type === 'FixedDeposit') {
+          <div class="form-row">
+            <div class="form-group">
+              <label>Interest Rate (% p.a.)</label>
+              <input class="form-control" type="number" [value]="form().interestRate || 7.0" min="0" max="100" step="0.05"
+                (input)="updateForm('interestRate', +$any($event.target).value)" placeholder="e.g. 7.25" />
+            </div>
+            <div class="form-group">
+              <label>Maturity Date (Optional)</label>
+              <input class="form-control" type="date" [value]="form().maturityDate || ''"
+                (input)="updateForm('maturityDate', $any($event.target).value)" />
+            </div>
+          </div>
+          <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin: 4px 0 12px 0;">
+            <input type="checkbox" id="fdLiquidCheck" [checked]="form().isLiquid"
+              (change)="updateForm('isLiquid', $any($event.target).checked)" style="width: 16px; height: 16px; cursor: pointer;" />
+            <label for="fdLiquidCheck" style="margin: 0; cursor: pointer; font-size: 12px; color: var(--text-secondary);">
+              Eligible for Emergency Runway liquid buffer (can be prematurely broken)
+            </label>
+          </div>
+        }
+
+        <!-- Dedicated Section for Bonds & Corporate Bonds -->
+        @if (form().type === 'Bond') {
+          <div class="form-row">
+            <div class="form-group">
+              <label>Bond Category / Sub-Type</label>
+              <select class="form-control" [ngModel]="form().subType || 'Corporate Bond'"
+                (ngModelChange)="updateForm('subType', $event)">
+                <option value="Corporate Bond">Corporate Bond (NCD)</option>
+                <option value="Govt Bond (G-Sec)">Government Bond (G-Sec / T-Bill)</option>
+                <option value="Sovereign Gold Bond (SGB)">Sovereign Gold Bond (SGB)</option>
+                <option value="Tax-Free Bond">Tax-Free Infrastructure Bond</option>
+                <option value="Other Bond">Other Bond</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Coupon / Interest Rate (% p.a.)</label>
+              <input class="form-control" type="number" [value]="form().interestRate || 8.5" min="0" max="100" step="0.05"
+                (input)="updateForm('interestRate', +$any($event.target).value)" placeholder="e.g. 8.75" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Maturity Date (Optional)</label>
+            <input class="form-control" type="date" [value]="form().maturityDate || ''"
+              (input)="updateForm('maturityDate', $any($event.target).value)" />
+          </div>
+        }
 
         @if (form().type === 'Stock' || form().type === 'ETF') {
           <div class="stock-search-container">
@@ -657,11 +745,11 @@
           </div>
         }
 
-        @if (form().type !== 'Cash' && form().type !== 'RealEstate') {
+        @if (form().type !== 'Cash' && form().type !== 'RealEstate' && form().type !== 'FixedDeposit') {
           <div class="form-group">
-            <label>{{ form().type === 'MutualFund' ? 'Scheme Code / ISIN (Optional)' : 'Symbol / ISIN' }}</label>
+            <label>{{ form().type === 'MutualFund' ? 'Scheme Code / ISIN (Optional)' : (form().type === 'Bond' ? 'Bond ISIN / Symbol (Optional)' : 'Symbol / ISIN') }}</label>
             <input class="form-control" type="text" [value]="form().symbol || ''"
-              (input)="updateForm('symbol', $any($event.target).value)" [placeholder]="form().type === 'MutualFund' ? 'e.g. 120503' : 'e.g. RELIANCE.NS'" />
+              (input)="updateForm('symbol', $any($event.target).value)" [placeholder]="form().type === 'MutualFund' ? 'e.g. 120503' : (form().type === 'Bond' ? 'e.g. INE001A07... or SGB2028' : (form().type === 'USStock' ? 'e.g. AAPL, NVDA, TSLA' : 'e.g. RELIANCE.NS'))" />
           </div>
         }
 
@@ -676,29 +764,29 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label>{{ form().type === 'MutualFund' ? 'Units' : 'Quantity' }} *</label>
+            <label>{{ form().type === 'MutualFund' ? 'Units' : (form().type === 'FixedDeposit' ? 'Deposit Count' : 'Quantity') }} *</label>
             <input class="form-control" type="number" [value]="form().quantity" min="0" max="99999999" step="any"
               (input)="updateForm('quantity', +$any($event.target).value)" />
           </div>
           <div class="form-group">
-            <label>{{ form().type === 'MutualFund' ? 'Avg NAV (₹)' : ('Buy Price (' + (form().currency === 'USD' ? '$' : '₹') + ')') }} *</label>
+            <label>{{ form().type === 'MutualFund' ? 'Avg NAV (₹)' : (form().type === 'FixedDeposit' ? 'Principal Deposit (₹)' : ('Buy Price (' + (form().currency === 'USD' ? '$' : '₹') + ')')) }} *</label>
             <input class="form-control" type="number" [value]="form().buyPrice" min="0" max="999999999" step="any"
               (input)="updateForm('buyPrice', +$any($event.target).value)" />
           </div>
         </div>
         <div class="form-group">
-          <label>{{ form().type === 'MutualFund' ? 'Current NAV (₹)' : ('Current Price (' + (form().currency === 'USD' ? '$' : '₹') + ')') }} *</label>
+          <label>{{ form().type === 'MutualFund' ? 'Current NAV (₹)' : (form().type === 'FixedDeposit' ? 'Current / Maturity Value (₹)' : ('Current Price (' + (form().currency === 'USD' ? '$' : '₹') + ')')) }} *</label>
           <input class="form-control" type="number" [value]="form().currentPrice" min="0" max="999999999" step="any"
             (input)="updateForm('currentPrice', +$any($event.target).value)" />
         </div>
-        @if (form().type !== 'Cash' && form().type !== 'RealEstate') {
+        @if (form().type !== 'Cash' && form().type !== 'RealEstate' && form().type !== 'FixedDeposit') {
           <div class="form-row">
             <div class="form-group">
               <label>App Source</label>
-              <select class="form-control" [value]="showCustomApp() ? 'Other' : form().appSource"
-                (change)="updateAppSource($any($event.target).value)">
+              <select class="form-control" [ngModel]="showCustomApp() ? 'Other' : form().appSource"
+                (ngModelChange)="updateAppSource($event)">
                 @for (app of predefinedApps; track app) {
-                  <option [value]="app">{{ app }}</option>
+                  <option [value]="app" [selected]="app === (showCustomApp() ? 'Other' : form().appSource)">{{ app }}</option>
                 }
               </select>
             </div>

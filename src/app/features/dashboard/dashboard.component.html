@@ -107,7 +107,7 @@
     <div class="card chart-card">
       <div class="card-header">
         <h3>Net Worth History</h3>
-        <span class="badge badge-success">{{ networthHistory().length }} Days</span>
+        <span class="badge badge-success">{{ networthHistory().length }} Points</span>
       </div>
       @if (networthHistory().length > 0) {
         <app-networth-chart [data]="networthHistory()" />

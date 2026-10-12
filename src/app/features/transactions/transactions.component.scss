@@ -175,6 +175,7 @@ tr.selected {
     gap: 4px;
     font-size: 12px;
     padding: 6px 10px;
+    border-radius: var(--radius-sm);
 }
 
 .filter-group {
@@ -195,6 +196,7 @@ tr.selected {
     text-transform: uppercase;
     cursor: pointer;
     transition: all var(--transition-fast);
+    border-radius: var(--radius-sm);
 
     &:hover {
         background: var(--bg-card-hover);
@@ -228,12 +230,14 @@ tr.selected {
     .search-input {
         width: 100%;
         padding-left: 40px;
+        border-radius: var(--radius-sm);
     }
 }
 
 .tx-table-card {
     padding: 0;
     overflow-x: auto;
+    border-radius: var(--radius-lg);
 }
 
 .tx-row-desc {
@@ -246,6 +250,7 @@ tr.selected {
     width: 28px;
     height: 28px;
     border: 1px solid var(--border-color);
+    border-radius: var(--radius-xs);
     display: inline-flex;
     align-items: center;
     justify-content: center;

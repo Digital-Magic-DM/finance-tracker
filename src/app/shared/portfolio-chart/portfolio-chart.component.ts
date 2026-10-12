@@ -58,17 +58,38 @@ export class PortfolioChartComponent implements AfterViewInit, OnChanges, OnDest
                         position: 'right',
                         labels: {
                             color: this.resolveColor('var(--text-muted)'),
-                            font: { family: 'Inter', size: 12, weight: 600 },
-                            padding: 16,
+                            font: { family: 'Inter', size: 11, weight: 600 },
+                            padding: 12,
                             usePointStyle: true,
-                            pointStyleWidth: 10,
+                            pointStyleWidth: 8,
+                            generateLabels: (chart) => {
+                                const data = chart.data;
+                                if (!data.labels?.length || !data.datasets.length) return [];
+                                const dataset = data.datasets[0];
+                                const total = (dataset.data as number[]).reduce((s, v) => s + (Number(v) || 0), 0);
+                                return data.labels.map((label, i) => {
+                                    const val = Number(dataset.data[i]) || 0;
+                                    const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0';
+                                    return {
+                                        text: `${label} (${pct}%)`,
+                                        fillStyle: (dataset.backgroundColor as string[])[i],
+                                        strokeStyle: '#333333',
+                                        lineWidth: 1,
+                                        pointStyle: 'circle',
+                                        hidden: isNaN(val) || (chart as any)._hiddenIndices?.[i],
+                                        index: i
+                                    };
+                                });
+                            }
                         },
                     },
                     tooltip: {
                         callbacks: {
                             label: (ctx) => {
                                 const val = ctx.raw as number;
-                                return ` ₹${val.toLocaleString('en-IN')} (${ctx.label})`;
+                                const total = (ctx.chart.data.datasets[0].data as number[]).reduce((s, v) => s + (Number(v) || 0), 0);
+                                const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0';
+                                return ` ₹${val.toLocaleString('en-IN')} (${pct}%)`;
                             },
                         },
                     },

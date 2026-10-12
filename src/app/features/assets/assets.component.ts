@@ -175,7 +175,11 @@ export class AssetsComponent implements OnInit {
         purchaseDate: new Date(),
         notes: '',
         appSource: 'Manual',
-        location: undefined
+        location: undefined,
+        interestRate: undefined,
+        maturityDate: undefined,
+        subType: undefined,
+        isLiquid: true
     });
 
     toggleHideAmounts() {
@@ -241,9 +245,9 @@ export class AssetsComponent implements OnInit {
             list.push({ label: 'US Stocks', count: counts.get('US Stocks')!, key: 'US Stocks' });
         }
 
-        const standardOrder = ['Mutual Funds', 'ETFs', 'Gold', 'Crypto', 'Real Estate', 'Cash', 'Other'];
+        const standardOrder = ['Mutual Funds', 'Fixed Deposits', 'Bonds', 'ETFs', 'Gold', 'Crypto', 'Real Estate', 'Cash', 'Other'];
         for (const cat of standardOrder) {
-            if (counts.has(cat)) {
+            if (counts.has(cat) && counts.get(cat)! > 0) {
                 list.push({ label: cat, count: counts.get(cat)!, key: cat });
             }
         }
@@ -270,7 +274,7 @@ export class AssetsComponent implements OnInit {
         // 3. Category Tab
         const cat = this.selectedCategory();
         if (cat === 'Indian Stocks') {
-            list = list.filter(a => this.isIndianAsset(a) && (a.type === AssetType.Stock || a.type === AssetType.ETF));
+            list = list.filter(a => this.isIndianAsset(a) && a.type === AssetType.Stock);
         } else if (cat === 'US Stocks') {
             list = list.filter(a => this.isUSAsset(a));
         } else if (cat !== 'Overview') {
@@ -446,6 +450,8 @@ export class AssetsComponent implements OnInit {
         const typeOrder: AssetType[] = [
             AssetType.MutualFund,
             AssetType.Stock,
+            AssetType.FixedDeposit,
+            AssetType.Bond,
             AssetType.ETF,
             AssetType.Gold,
             AssetType.Crypto,
@@ -480,7 +486,7 @@ export class AssetsComponent implements OnInit {
                 totalGain: tGain,
                 gainPct: gPct,
                 allocation,
-                color: '#3b82f6',
+                color: this.getColor(AssetType.USStock),
                 expanded: expandedType === 'USStock',
                 currency: 'USD',
                 totalValueINR: tValueINR,
@@ -532,25 +538,32 @@ export class AssetsComponent implements OnInit {
 
     selectedCount = computed(() => this.selectedIds().size);
 
-    getTypeLabel(type: AssetType): string {
-        const labels: Record<AssetType, string> = {
+    getTypeLabel(type: AssetType | string): string {
+        const labels: Record<string, string> = {
+            [AssetType.Stock]: 'Indian Stocks',
+            [AssetType.USStock]: 'US Stocks',
             [AssetType.MutualFund]: 'Mutual Funds',
-            [AssetType.Stock]: 'Stocks',
+            [AssetType.FixedDeposit]: 'Fixed Deposits',
+            [AssetType.Bond]: 'Bonds',
             [AssetType.ETF]: 'ETFs',
             [AssetType.Gold]: 'Gold',
             [AssetType.Crypto]: 'Crypto',
             [AssetType.RealEstate]: 'Real Estate',
             [AssetType.Cash]: 'Cash',
-            [AssetType.Other]: 'Other',
+            [AssetType.Other]: 'Other'
         };
-        return labels[type] || type;
+        return labels[type as string] || type;
     }
 
     getIconForType(type: string): string {
-        if (type === 'USStock') return 'public';
+        if (type === 'USStock' || type === AssetType.USStock) return 'language';
+        if (type === 'FixedDeposit' || type === AssetType.FixedDeposit) return 'savings';
         const icons: Record<string, string> = {
             [AssetType.MutualFund]: 'pie_chart',
             [AssetType.Stock]: 'trending_up',
+            [AssetType.USStock]: 'language',
+            [AssetType.FixedDeposit]: 'savings',
+            [AssetType.Bond]: 'receipt_long',
             [AssetType.ETF]: 'stacked_line_chart',
             [AssetType.Gold]: 'workspace_premium',
             [AssetType.Crypto]: 'currency_bitcoin',
@@ -562,7 +575,7 @@ export class AssetsComponent implements OnInit {
     }
 
     isNonMarketAsset(a: Asset): boolean {
-        return a.type === AssetType.Cash || a.type === AssetType.RealEstate;
+        return a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit;
     }
 
     getGain(a: Asset) {
@@ -581,7 +594,9 @@ export class AssetsComponent implements OnInit {
     }
 
     getColor(type: AssetType | string) {
-        if (type === 'USStock') return '#3b82f6';
+        if (type === 'USStock' || type === AssetType.USStock) return 'var(--asset-us-stock)';
+        if (type === 'FixedDeposit' || type === AssetType.FixedDeposit) return 'var(--asset-fd)';
+        if (type === AssetType.Bond) return 'var(--asset-bond)';
         return ASSET_COLORS[type as AssetType] || '#64748b';
     }
 
@@ -666,12 +681,37 @@ export class AssetsComponent implements OnInit {
         this.editingId.set(null);
         this.showCustomApp.set(false);
         this.showAddDropdown.set(false);
-        const selectedType = type || AssetType.Stock;
-        const defaultCurrency = currency || (this.isViewingUS() ? 'USD' : 'INR');
+        let selectedType = type;
+        if (!selectedType) {
+            const catMap: Record<string, AssetType> = {
+                'Indian Stocks': AssetType.Stock,
+                'US Stocks': AssetType.USStock,
+                'Mutual Funds': AssetType.MutualFund,
+                'Fixed Deposits': AssetType.FixedDeposit,
+                'Bonds': AssetType.Bond,
+                'ETFs': AssetType.ETF,
+                'Gold': AssetType.Gold,
+                'Crypto': AssetType.Crypto,
+                'Real Estate': AssetType.RealEstate,
+                'Cash': AssetType.Cash,
+                'Other': AssetType.Other,
+            };
+            const currentCat = this.selectedCategory();
+            if (currentCat && catMap[currentCat]) {
+                selectedType = catMap[currentCat];
+            } else if (this.selectedMarket() === 'us') {
+                selectedType = AssetType.USStock;
+            } else {
+                selectedType = AssetType.Stock;
+            }
+        }
+        const defaultCurrency = currency || ((selectedType === AssetType.USStock || selectedType === AssetType.Crypto || this.isViewingUS()) ? 'USD' : 'INR');
+        const defaultQty = (selectedType === AssetType.FixedDeposit || selectedType === AssetType.RealEstate || selectedType === AssetType.Cash) ? 1 : 0;
+        const defaultSubType = selectedType === AssetType.Bond ? 'Corporate Bond' : (selectedType === AssetType.FixedDeposit ? 'Bank FD' : undefined);
         this.form.set({
             name: '', 
             type: selectedType, 
-            quantity: 0, 
+            quantity: defaultQty, 
             buyPrice: 0,
             currentPrice: 0, 
             symbol: '', 
@@ -679,7 +719,11 @@ export class AssetsComponent implements OnInit {
             purchaseDate: new Date(), 
             notes: '',
             appSource: 'Manual',
-            location: undefined
+            location: undefined,
+            interestRate: selectedType === AssetType.FixedDeposit ? 7.0 : (selectedType === AssetType.Bond ? 8.5 : undefined),
+            maturityDate: undefined,
+            subType: defaultSubType,
+            isLiquid: selectedType !== AssetType.RealEstate
         });
         this.showModal.set(true);
     }
@@ -736,12 +780,30 @@ export class AssetsComponent implements OnInit {
             // Clear irrelevant fields when type changes
             if (field === 'type') {
                 const type = value as AssetType;
-                if (type === AssetType.Cash || type === AssetType.RealEstate) {
+                if (type === AssetType.USStock || type === AssetType.Crypto) {
+                    next.currency = 'USD';
+                } else if (!this.editingId()) {
+                    next.currency = 'INR';
+                }
+                if (type === AssetType.Cash || type === AssetType.RealEstate || type === AssetType.FixedDeposit) {
                     next.symbol = '';
+                }
+                if (type === AssetType.Cash || type === AssetType.RealEstate) {
                     next.appSource = 'Manual';
                 }
                 if (type !== AssetType.RealEstate) {
                     next.location = undefined;
+                }
+                if (type === AssetType.FixedDeposit) {
+                    if (!next.quantity || next.quantity <= 0) next.quantity = 1;
+                    if (next.interestRate === undefined) next.interestRate = 7.0;
+                    if (!next.subType) next.subType = 'Bank FD';
+                    next.isLiquid = true;
+                }
+                if (type === AssetType.Bond) {
+                    if (!next.quantity || next.quantity <= 0) next.quantity = 1;
+                    if (!next.subType) next.subType = 'Corporate Bond';
+                    if (next.interestRate === undefined) next.interestRate = 8.5;
                 }
             }
             return next;
@@ -782,10 +844,16 @@ export class AssetsComponent implements OnInit {
 
             // Clean data: Firestore doesn't like 'undefined' values
             const cleanData: any = { ...data };
+            if ((!cleanData.currentPrice || cleanData.currentPrice <= 0) && this.isNonMarketAsset(cleanData as Asset)) {
+                cleanData.currentPrice = cleanData.buyPrice;
+            }
             if (cleanData.location === undefined) delete cleanData.location;
             if (!cleanData.notes) delete cleanData.notes;
             if (!cleanData.symbol) delete cleanData.symbol;
             if (!cleanData.appSource) delete cleanData.appSource;
+            if (cleanData.interestRate === undefined || cleanData.interestRate === null || isNaN(cleanData.interestRate) || cleanData.interestRate <= 0) delete cleanData.interestRate;
+            if (!cleanData.maturityDate) delete cleanData.maturityDate;
+            if (!cleanData.subType) delete cleanData.subType;
 
             if (id) {
                 await this.assetService.updateAsset(id, cleanData);

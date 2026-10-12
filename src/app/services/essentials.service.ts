@@ -94,11 +94,11 @@ export class EssentialsService {
         return Math.max(0, Math.min(100, Math.round(((inc - exp) / inc) * 100)));
     });
 
-    // 4. Liquid Assets Total (Cash + isLiquid assets + Liquid/Overnight/Arbitrage Mutual Funds)
+    // 4. Liquid Assets Total (Cash + Fixed Deposits + isLiquid assets + Liquid/Overnight/Arbitrage Mutual Funds)
     liquidAssetsTotal = computed(() => {
         return this.assets()
             .filter(a => {
-                if (a.type === AssetType.Cash || a.isLiquid) return true;
+                if (a.type === AssetType.Cash || a.type === AssetType.FixedDeposit || a.isLiquid) return true;
                 if (a.type === AssetType.MutualFund) {
                     const n = (a.name || '').toLowerCase();
                     return /liquid|overnight|arbitrage|money market|savings fund|cash/i.test(n);
@@ -106,7 +106,7 @@ export class EssentialsService {
                 return false;
             })
             .reduce((s, a) => {
-                const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate ? a.buyPrice : 0);
+                const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
                 const fx = this.priceService.isUSAsset(a) ? this.googleFinance.usdToInrRate() : 1;
                 return s + (a.quantity * cp * fx);
             }, 0);
@@ -118,7 +118,27 @@ export class EssentialsService {
         return expense > 0 ? (this.liquidAssetsTotal() / expense) : 0;
     });
 
-    // 5.1 Runway Targets (3m, 6m, 12m)
+    // 5.1 Configured Target Runway (Defaults to 6 months if not specified)
+    targetRunwayMonths = computed(() => {
+        const profile = this.profile();
+        return profile?.targetRunwayMonths && profile.targetRunwayMonths > 0 ? profile.targetRunwayMonths : 6;
+    });
+
+    targetRunwayCapital = computed(() => {
+        return this.effectiveMonthlyExpense() * this.targetRunwayMonths();
+    });
+
+    runwayTargetProgress = computed(() => {
+        const target = this.targetRunwayCapital();
+        if (target <= 0) return 0;
+        return Math.min(100, Math.round((this.liquidAssetsTotal() / target) * 100));
+    });
+
+    runwayDeficitOrSurplus = computed(() => {
+        return this.liquidAssetsTotal() - this.targetRunwayCapital();
+    });
+
+    // 5.2 Runway Tier Benchmarks (3m, 6m, 12m)
     runwayTargets = computed(() => {
         const expense = this.effectiveMonthlyExpense();
         return {
@@ -128,10 +148,10 @@ export class EssentialsService {
         };
     });
 
-    // 5.2 Current Net Worth
+    // 5.3 Current Net Worth
     currentNetWorth = computed(() => {
         return this.assets().reduce((s, a) => {
-            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate ? a.buyPrice : 0);
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
             const fx = this.priceService.isUSAsset(a) ? this.googleFinance.usdToInrRate() : 1;
             return s + (a.quantity * cp * fx);
         }, 0);
