@@ -10,10 +10,23 @@
         <span>Back to Home</span>
       </a>
 
-      <a routerLink="/" class="brand-badge">
-        <span class="material-icons brand-icon">account_balance_wallet</span>
-        <span class="brand-name">{{ pwaService.appName() }}</span>
-      </a>
+      <div class="nav-right-actions">
+        <button
+          type="button"
+          class="btn-theme-toggle"
+          (click)="themeService.toggle()"
+          [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+          title="Toggle theme">
+          <span class="material-icons">
+            {{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}
+          </span>
+        </button>
+
+        <a routerLink="/" class="brand-badge">
+          <span class="material-icons brand-icon">account_balance_wallet</span>
+          <span class="brand-name">{{ pwaService.appName() }}</span>
+        </a>
+      </div>
     </div>
 
     <!-- Title Card -->
@@ -212,7 +225,7 @@
           If you have questions, feedback, or legal inquiries regarding these Terms of Service, please reach out to:
         </p>
         <p>
-          <strong>Email:</strong> <code>dineshmurugan2004&#64;gmail.com</code><br>
+          <strong>Email:</strong> <code>dineshmurugan518&#64;gmail.com</code><br>
           <strong>Platform:</strong> {{ pwaService.appName() }}
         </p>
       </div>

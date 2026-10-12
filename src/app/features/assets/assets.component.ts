@@ -5,6 +5,7 @@ import { AssetService } from '../../services/asset.service';
 import { PriceService } from '../../services/price.service';
 import { GoogleFinanceService } from '../../services/google-finance.service';
 import { SnackbarService } from '../../services/snackbar.service';
+import { TickerRegistryService } from '../../services/ticker-registry.service';
 import { Asset, AssetType, ASSET_COLORS } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportDataComponent } from '../settings/import-data/import-data.component';
@@ -39,6 +40,7 @@ export class AssetsComponent implements OnInit {
     private assetService = inject(AssetService);
     private priceService = inject(PriceService);
     public googleFinance = inject(GoogleFinanceService);
+    private tickerRegistry = inject(TickerRegistryService);
     private snackbar = inject(SnackbarService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
@@ -143,11 +145,11 @@ export class AssetsComponent implements OnInit {
     private async loadStockData(exchange: 'NSE' | 'BSE') {
         try {
             if (exchange === 'NSE' && this.nseData().length === 0) {
-                const data = await import('./nse_companies.json');
-                this.nseData.set(data.default);
+                const data = await this.tickerRegistry.getNseData();
+                this.nseData.set(data);
             } else if (exchange === 'BSE' && this.bseData().length === 0) {
-                const data = await import('./bse_isin.json');
-                this.bseData.set(data.default);
+                const data = await this.tickerRegistry.getBseData();
+                this.bseData.set(data);
             }
         } catch (err) {
             console.error('Failed to load stock data:', err);

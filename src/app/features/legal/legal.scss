@@ -1,15 +1,28 @@
+:host {
+  display: block;
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 .legal-page {
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100%;
   width: 100%;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   position: relative;
   overflow-x: hidden;
-  padding: 32px 16px 64px 16px;
+  padding: 32px 16px 80px 16px;
+  box-sizing: border-box;
 
   @media (max-width: 600px) {
-    padding: 16px 12px 48px 12px;
+    padding: 16px 12px 64px 12px;
   }
 }
 
@@ -80,6 +93,37 @@
 
     .material-icons {
       font-size: 18px;
+    }
+  }
+
+  .nav-right-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm, 8px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.08);
+      transform: scale(1.05);
+    }
+
+    .material-icons {
+      font-size: 20px;
     }
   }
 

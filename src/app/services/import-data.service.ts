@@ -3,8 +3,7 @@ import * as XLSX from 'xlsx';
 import * as pdfjsLib from 'pdfjs-dist';
 import { AssetService } from './asset.service';
 import { Asset, AssetType } from '../models/finance.models';
-import nseCompanies from '../features/assets/nse_companies.json';
-import bseIsins from '../features/assets/bse_isin.json';
+import { TickerRegistryService } from './ticker-registry.service';
 
 // Configure PDF.js worker
 // @ts-ignore - The dynamic import warning is suppressed for Vite
@@ -86,6 +85,15 @@ export const US_STOCK_NAMES: Record<string, string> = {
     BAC: 'Bank of America Corp.',
     C: 'Citigroup Inc.',
     WFC: 'Wells Fargo & Co.',
+    TSM: 'Taiwan Semiconductor Manufacturing',
+    ARM: 'Arm Holdings plc',
+    ASML: 'ASML Holding N.V.',
+    SMCI: 'Super Micro Computer Inc.',
+    PANW: 'Palo Alto Networks',
+    CRWD: 'CrowdStrike Holdings',
+    NET: 'Cloudflare Inc.',
+    NOW: 'ServiceNow Inc.',
+    INTU: 'Intuit Inc.',
     // Popular US ETFs
     SPY: 'SPDR S&P 500 ETF Trust',
     VOO: 'Vanguard S&P 500 ETF',
@@ -109,6 +117,11 @@ export const US_STOCK_NAMES: Record<string, string> = {
     ARKK: 'ARK Innovation ETF',
     SOXX: 'iShares Semiconductor ETF',
     SMH: 'VanEck Semiconductor ETF',
+    TLT: 'iShares 20+ Year Treasury Bond ETF',
+    GLD: 'SPDR Gold Shares',
+    SLV: 'iShares Silver Trust',
+    VNQ: 'Vanguard Real Estate ETF',
+    BND: 'Vanguard Total Bond Market ETF',
 };
 
 // ─── Header synonyms for each platform ─────────────────────────────
@@ -130,23 +143,7 @@ const TYPE_SYNONYMS = ['type', 'asset type', 'instrument type', 'segment', 'cate
 @Injectable({ providedIn: 'root' })
 export class ImportDataService {
     private assetService = inject(AssetService);
-
-    // ISIN -> Symbol map (e.g. INE07T201019 -> RBA.NS)
-    private isinToTickerMap = new Map<string, string>();
-
-    constructor() {
-        const allData = [...(bseIsins as any[]), ...(nseCompanies as any[])];
-        for (const item of allData) {
-            const isin = (item.ISIN_NUMBER || item.isin_number || '').toUpperCase();
-            const symbol = (item.symbol || '').toUpperCase();
-            if (isin && symbol) {
-                // If already set and current is NSE (.NS), prefer NSE
-                if (!this.isinToTickerMap.has(isin) || symbol.endsWith('.NS')) {
-                    this.isinToTickerMap.set(isin, symbol);
-                }
-            }
-        }
-    }
+    private tickerRegistry = inject(TickerRegistryService);
 
     // ═══════════════════════════════════════════
     //  PUBLIC API
@@ -157,6 +154,9 @@ export class ImportDataService {
      * Automatically detects the platform and format.
      */
     async parseFile(file: File): Promise<ImportResult> {
+        // Ensure ticker registry is loaded on demand for ticker/ISIN mapping
+        await this.tickerRegistry.ensureLoaded();
+
         const ext = file.name.split('.').pop()?.toLowerCase();
         if (ext === 'pdf' || file.type === 'application/pdf') {
             return this.parsePdf(file);
@@ -449,7 +449,11 @@ export class ImportDataService {
             }
 
             const cleanSym = symbol.replace(/^(NASDAQ:|NYSE:|NYSEARCA:)/, '').replace(/\.(US|O|N)$/, '');
-            const isETF = ['SPY', 'QQQ', 'VOO', 'VTI', 'IVV', 'DIA', 'IWM', 'XLK', 'XLF', 'XLE', 'XLV', 'SCHD', 'SOXX', 'SMH', 'ARKK'].includes(cleanSym) || cleanSym.endsWith('ETF');
+            const isETF = [
+                'SPY', 'VOO', 'IVV', 'QQQ', 'VTI', 'DIA', 'IWM', 'VT', 'VEA', 'VWO',
+                'XLK', 'XLF', 'XLV', 'XLE', 'XLI', 'XLP', 'XLY', 'SCHD', 'JEPI',
+                'ARKK', 'SOXX', 'SMH', 'TLT', 'GLD', 'SLV', 'VNQ', 'BND'
+            ].includes(cleanSym) || cleanSym.endsWith('ETF');
             const name = US_STOCK_NAMES[cleanSym] || (isETF ? `${cleanSym} ETF` : `${cleanSym} Stock`);
 
             assets.push({
@@ -458,7 +462,7 @@ export class ImportDataService {
                 type: isETF ? AssetType.ETF : AssetType.USStock,
                 quantity,
                 buyPrice,
-                currentPrice: currentPrice > 0 ? currentPrice : 0,
+                currentPrice: currentPrice > 0 ? currentPrice : buyPrice,
                 currency: 'USD',
                 purchaseDate,
                 appSource: 'INDmoney',
@@ -620,6 +624,7 @@ export class ImportDataService {
      * Parse a PDF holding statement (INDmoney, CDSL, NSDL, etc.).
      */
     async parsePdf(file: File): Promise<ImportResult> {
+        await this.tickerRegistry.ensureLoaded();
         const data = await this.readFileAsArrayBuffer(file);
         const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(data) });
         const pdf = await loadingTask.promise;
@@ -734,7 +739,7 @@ export class ImportDataService {
         if (current) parsedHoldings.push(current);
 
         let assets: Omit<Asset, 'id'>[] = parsedHoldings.map(item => {
-            const mappedTicker = this.isinToTickerMap.get(item.isin) || '';
+            const mappedTicker = this.tickerRegistry.lookupIsin(item.isin) || '';
             const cleanSym = mappedTicker.replace(/\.(NS|BO)$/, '') || item.isin;
             const formattedName = this.formatCompanyName(item.name, cleanSym);
             const isMf = item.isin.startsWith('INF');

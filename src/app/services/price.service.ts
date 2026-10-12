@@ -3,9 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Asset, AssetType } from '../models/finance.models';
 import { AssetService } from './asset.service';
 import { GoogleFinanceService } from './google-finance.service';
+import { TickerRegistryService } from './ticker-registry.service';
 import { firstValueFrom } from 'rxjs';
-import nseCompanies from '../features/assets/nse_companies.json';
-import bseIsins from '../features/assets/bse_isin.json';
 
 export interface PriceQuoteResult {
     price: number;
@@ -24,6 +23,7 @@ export class PriceService {
     private http = inject(HttpClient);
     private assetService = inject(AssetService);
     public googleFinance = inject(GoogleFinanceService);
+    private tickerRegistry = inject(TickerRegistryService);
 
     // Working CORS proxies
     private PROXIES = [
@@ -37,35 +37,12 @@ export class PriceService {
     // Cache US symbol -> working exchange (e.g. AAPL -> NASDAQ, IBM -> NYSE, SPY -> NYSEARCA)
     private usExchangeCache = new Map<string, string>();
 
-    // ISIN → Ticker mapping from local JSON
-    private isinToTickerMap = new Map<string, string>();
-    // Plain Symbol → Suffix Symbol (e.g., ITC -> ITC.NS)
-    private symbolToTickerMap = new Map<string, string>();
-
     private static KNOWN_ARCA_ETFS = new Set([
         'SPY', 'VOO', 'IVV', 'VTI', 'DIA', 'IWM', 'VT', 'VEA', 'VWO',
         'XLK', 'XLF', 'XLE', 'XLV', 'XLI', 'XLP', 'XLY', 'SCHD', 'SOXX', 'SMH', 'ARKK'
     ]);
 
-    constructor() {
-        const allData = [...(bseIsins as any[]), ...(nseCompanies as any[])];
-        
-        for (const item of allData) {
-            const isin = (item.ISIN_NUMBER || item.isin_number || '').toUpperCase();
-            const symbol = (item.symbol || '').toUpperCase();
-            
-            if (isin) {
-                this.isinToTickerMap.set(isin, symbol);
-            }
-            
-            if (symbol) {
-                const plainSymbol = symbol.split('.')[0];
-                if (!this.symbolToTickerMap.has(plainSymbol) || symbol.endsWith('.NS')) {
-                    this.symbolToTickerMap.set(plainSymbol, symbol);
-                }
-            }
-        }
-    }
+    constructor() {}
 
     public static readonly POPULAR_US_SYMBOLS = new Set([
         'AAPL', 'MSFT', 'GOOGL', 'GOOG', 'AMZN', 'NVDA', 'META', 'TSLA', 'BLK', 'IBM',
@@ -101,16 +78,17 @@ export class PriceService {
     public getGoogleFinanceTickerCandidates(asset: Asset): string[] {
         let sym = (asset.symbol || '').trim().toUpperCase();
 
-        // 1. If sym is an ISIN, look up in local isinToTickerMap
+        // 1. If sym is an ISIN, look up in ticker registry
         if (this.isISIN(sym)) {
-            sym = (this.isinToTickerMap.get(sym) || '').toUpperCase();
+            sym = (this.tickerRegistry.lookupIsin(sym) || '').toUpperCase();
         }
 
         // 2. If sym is empty, check if asset.name matches any ticker
         if (!sym && asset.name) {
             const clean = asset.name.toUpperCase().trim();
-            if (this.symbolToTickerMap.has(clean)) {
-                sym = this.symbolToTickerMap.get(clean)!;
+            const mapped = this.tickerRegistry.lookupSymbol(clean);
+            if (mapped) {
+                sym = mapped;
             }
         }
 
@@ -159,8 +137,8 @@ export class PriceService {
             return [`BOM:${sym.replace('.BO', '')}`];
         }
 
-        if (this.symbolToTickerMap.has(sym)) {
-            const mapped = this.symbolToTickerMap.get(sym)!;
+        const mapped = this.tickerRegistry.lookupSymbol(sym);
+        if (mapped) {
             if (mapped.endsWith('.BO')) {
                 return [`BOM:${mapped.replace('.BO', '')}`];
             }
@@ -191,6 +169,7 @@ export class PriceService {
      */
     async fetchPriceDetails(asset: Asset): Promise<PriceQuoteResult | null> {
         try {
+            await this.tickerRegistry.ensureLoaded();
             if (asset.type === AssetType.MutualFund) {
                 return await this.fetchMutualFundNAV(asset);
             }
@@ -226,6 +205,7 @@ export class PriceService {
         mfSkipped: number; 
         mfUpdated: number 
     }> {
+        await this.tickerRegistry.ensureLoaded();
         let updated = 0;
         let unchanged = 0;
         let failed = 0;
@@ -688,12 +668,14 @@ export class PriceService {
 
             if (sym.includes('.')) return sym;
 
-            if (this.isISIN(sym) && this.isinToTickerMap.has(sym)) {
-                return this.isinToTickerMap.get(sym)!;
+            if (this.isISIN(sym)) {
+                const mapped = this.tickerRegistry.lookupIsin(sym);
+                if (mapped) return mapped;
             }
 
-            if (this.symbolToTickerMap.has(sym)) {
-                return this.symbolToTickerMap.get(sym)!;
+            const mapped = this.tickerRegistry.lookupSymbol(sym);
+            if (mapped) {
+                return mapped;
             }
 
             return `${sym}.NS`;

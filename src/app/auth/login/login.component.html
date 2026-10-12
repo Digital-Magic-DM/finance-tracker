@@ -3,6 +3,24 @@
   <div class="blur-blob one"></div>
   <div class="blur-blob two"></div>
 
+  <!-- Top Navigation Bar -->
+  <header class="login-nav">
+    <a routerLink="/" class="btn-nav-back" title="Back to Home">
+      <span class="material-icons">arrow_back</span>
+      <span>Home</span>
+    </a>
+    <button
+      type="button"
+      class="btn-theme-toggle"
+      (click)="themeService.toggle()"
+      [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      title="Toggle theme">
+      <span class="material-icons">
+        {{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}
+      </span>
+    </button>
+  </header>
+
   <div class="login-wrapper">
     <div class="login-card card-glass animate-fade-in">
       

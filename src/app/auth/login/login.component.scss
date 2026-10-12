@@ -1,12 +1,14 @@
 :host {
   display: flex;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   width: 100%;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   position: relative;
+  overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .login-page {
@@ -22,6 +24,75 @@
 
   @media (max-width: 480px) {
     padding: 16px 12px;
+  }
+}
+
+/* Top Navigation Bar */
+.login-nav {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  right: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+
+  @media (max-width: 480px) {
+    top: 14px;
+    left: 14px;
+    right: 14px;
+  }
+
+  .btn-nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 7px 14px;
+    border-radius: var(--radius-sm, 8px);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.08);
+      transform: translateX(-2px);
+    }
+
+    .material-icons {
+      font-size: 18px;
+    }
+  }
+
+  .btn-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm, 8px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.08);
+      transform: scale(1.05);
+    }
+
+    .material-icons {
+      font-size: 20px;
+    }
   }
 }
 
