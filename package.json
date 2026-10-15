@@ -1,6 +1,6 @@
 {
   "name": "finance-tracker",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "scripts": {
     "ng": "ng",
     "start": "npm run setup-env && ng serve",
