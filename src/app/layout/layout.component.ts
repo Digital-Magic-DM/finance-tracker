@@ -5,16 +5,19 @@ import { ToolbarComponent } from './toolbar/toolbar.component';
 // import { MarketService } from '../services/market.service';
 import { Meta } from '@angular/platform-browser';
 import { AiChatComponent } from '../shared/ai-chat/ai-chat.component';
+import { PinLockComponent } from '../shared/pin-lock/pin-lock.component';
+import { PinSecurityService } from '../services/pin-security.service';
 
 @Component({
     selector: 'app-layout',
     standalone: true,
-    imports: [RouterOutlet, SidebarComponent, ToolbarComponent, AiChatComponent],
+    imports: [RouterOutlet, SidebarComponent, ToolbarComponent, AiChatComponent, PinLockComponent],
     templateUrl: './layout.component.html',
     styleUrl: './layout.component.scss',
 })
 export class LayoutComponent implements OnInit {
     private meta = inject(Meta);
+    pinSecurity = inject(PinSecurityService);
     // constructor() { inject(MarketService); } // Eagerly start market data fetching
     sidebarOpen = signal(false);
     sidebarCollapsed = signal(localStorage.getItem('fintracker_sidebar_collapsed') === 'true');

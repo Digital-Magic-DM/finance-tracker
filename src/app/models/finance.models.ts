@@ -132,14 +132,30 @@ export const TRANSACTION_CATEGORIES = [
     'Entertainment', 'Healthcare', 'Shopping', 'Education', 'Rent', 'Other'
 ];
 
+export const ASSET_TYPE_LABELS: Record<string, string> = {
+    [AssetType.Stock]: 'Indian Stocks',
+    [AssetType.USStock]: 'US Stocks',
+    [AssetType.MutualFund]: 'Mutual Funds',
+    [AssetType.FixedDeposit]: 'Fixed Deposits',
+    [AssetType.Bond]: 'Bonds',
+    [AssetType.ETF]: 'ETFs',
+    [AssetType.Gold]: 'Gold',
+    [AssetType.Crypto]: 'Crypto',
+    [AssetType.RealEstate]: 'Real Estate',
+    [AssetType.Cash]: 'Cash',
+    [AssetType.Other]: 'Other'
+};
+
 export type ChartDataSource = 'Income' | 'Expense' | 'Assets';
-export type ChartMetric = 'Sum' | 'Count';
-export type ChartDimension = 'Category' | 'Type' | 'Time' | 'AppSource' | 'None';
-export type ChartType = 'bar' | 'line' | 'pie' | 'doughnut';
+export type ChartMetric = 'Sum' | 'Count' | 'Average' | 'Max' | 'Min';
+export type ChartDimension = 'Category' | 'Type' | 'Time' | 'AppSource' | 'Bank' | 'DayOfWeek' | 'None';
+export type ChartType = 'bar' | 'line' | 'area' | 'pie' | 'doughnut' | 'polarArea' | 'radar';
+export type ChartPalette = 'default' | 'emerald' | 'sunset' | 'cyber' | 'ocean' | 'monochrome';
 
 export interface ChartDateRange {
     startDate?: string; // ISO
     endDate?: string; // ISO
+    preset?: 'all' | '1m' | '3m' | '6m' | 'this_year' | '1y' | 'custom';
 }
 
 export interface ChartFilter {
@@ -147,6 +163,9 @@ export interface ChartFilter {
     categories?: string[];
     assetTypes?: AssetType[];
     appSources?: string[];
+    banks?: string[];
+    minAmount?: number;
+    maxAmount?: number;
 }
 
 export interface CustomChartConfig {
@@ -160,6 +179,9 @@ export interface CustomChartConfig {
     chartType: ChartType;
     sortBy: 'value_asc' | 'value_desc' | 'label_asc' | 'label_desc' | 'time_asc';
     limit?: number; // top N
+    palette?: ChartPalette;
+    showLegend?: boolean;
+    cardWidth?: 'full' | 'half';
 }
 
 export function getAssetAppSource(a: { appSource?: string; notes?: string }): string {

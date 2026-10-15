@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
 import { authRedirectGuard } from './auth/auth-redirect.guard';
+import { pinSetupGuard } from './auth/pin-setup.guard';
 // import { MarketDashboardComponent } from './features/market-dashboard/market-dashboard.component';
 
 export const routes: Routes = [
@@ -17,6 +18,12 @@ export const routes: Routes = [
             import('./auth/login/login.component').then((m) => m.LoginComponent),
     },
     {
+        path: 'setup-pin',
+        canActivate: [pinSetupGuard],
+        loadComponent: () =>
+            import('./features/setup-pin/setup-pin.component').then((m) => m.SetupPinComponent),
+    },
+    {
         path: 'terms',
         loadComponent: () =>
             import('./features/legal/terms.component').then((m) => m.TermsComponent),
@@ -29,6 +36,7 @@ export const routes: Routes = [
     {
         path: 'app',
         canActivate: [authGuard],
+        canActivateChild: [authGuard],
         loadComponent: () =>
             import('./layout/layout.component').then((m) => m.LayoutComponent),
         children: [

@@ -5,11 +5,12 @@ import { TransactionService } from '../../services/transaction.service';
 import { Transaction, TransactionType, TRANSACTION_CATEGORIES } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportTransactionsComponent } from './import-transactions/import-transactions.component';
+import { CustomSelectDirective } from '../../shared/directives/custom-select.directive';
 
 @Component({
     selector: 'app-transactions',
     standalone: true,
-    imports: [CommonModule, FormsModule, DatePipe, ImportTransactionsComponent],
+    imports: [CommonModule, FormsModule, DatePipe, ImportTransactionsComponent, CustomSelectDirective],
     templateUrl: './transactions.component.html',
     styleUrl: './transactions.component.scss',
 })

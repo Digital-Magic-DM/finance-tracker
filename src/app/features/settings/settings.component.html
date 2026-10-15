@@ -1,213 +1,1141 @@
 <div class="settings-page">
-  <div class="page-header">
+  <!-- Top Sub-pages Navigation Bar -->
+  <div class="settings-subnav">
+    <button 
+      class="subnav-item" 
+      [class.active]="activeSubPage() === 'basic'" 
+      (click)="setSubPage('basic')">
+      <span class="material-icons">person</span>
+      <span>Basic Details</span>
+    </button>
+
+    <button 
+      class="subnav-item" 
+      [class.active]="activeSubPage() === 'reports'" 
+      (click)="setSubPage('reports')">
+      <span class="material-icons">assessment</span>
+      <span>Reports</span>
+    </button>
+
+    <button 
+      class="subnav-item" 
+      [class.active]="activeSubPage() === 'pin'" 
+      (click)="setSubPage('pin')">
+      <span class="material-icons">{{ pinSecurity.isPinSet() ? 'lock' : 'lock_open' }}</span>
+      <span>{{ pinSecurity.isPinSet() ? 'Change PIN' : 'Set PIN' }}</span>
+      @if (pinSecurity.isPinSet()) {
+        <span class="subnav-pill active-pill">Active</span>
+      } @else {
+        <span class="subnav-pill setup-pill">Setup</span>
+      }
+    </button>
+
+    <button 
+      class="subnav-item" 
+      [class.active]="activeSubPage() === 'devices'" 
+      (click)="setSubPage('devices')">
+      <span class="material-icons">devices</span>
+      <span>Active Devices</span>
+      <span class="subnav-pill count-pill">{{ deviceService.sessions().length || 1 }}</span>
+    </button>
   </div>
 
   @if (authService.isLoggedIn()) {
-    <!-- Profile card -->
-    <div class="card profile-card">
-      <div class="profile-header">
-        @if (authService.firebaseUser()?.photoURL) {
-          <img [src]="authService.firebaseUser()?.photoURL" [alt]="authService.firebaseUser()?.displayName || 'User'" class="profile-avatar" referrerpolicy="no-referrer" />
-        } @else {
-          <div class="profile-avatar-fallback">
-            {{ (authService.firebaseUser()?.displayName || authService.firebaseUser()?.email || 'D').charAt(0).toUpperCase() }}
+
+    <!-- =================================================================== -->
+    <!-- SUB-PAGE 1: BASIC DETAILS -->
+    <!-- =================================================================== -->
+    @if (activeSubPage() === 'basic') {
+      <div class="subpage-content">
+        <!-- Profile Card -->
+        <div class="card profile-card">
+          <div class="profile-header">
+            @if (authService.firebaseUser()?.photoURL) {
+              <img [src]="authService.firebaseUser()?.photoURL" [alt]="authService.firebaseUser()?.displayName || 'User'" class="profile-avatar" referrerpolicy="no-referrer" />
+            } @else {
+              <div class="profile-avatar-fallback">
+                {{ (authService.firebaseUser()?.displayName || authService.firebaseUser()?.email || 'D').charAt(0).toUpperCase() }}
+              </div>
+            }
+
+            <div class="profile-info">
+              @if (!isEditingProfile()) {
+                <div class="profile-title-row">
+                  <h2>{{ authService.firebaseUser()?.displayName || 'User Profile' }}</h2>
+                  <button class="btn-icon-subtle" (click)="startEditingProfile()" title="Edit Name">
+                    <span class="material-icons" style="font-size: 18px;">edit</span>
+                  </button>
+                </div>
+              } @else {
+                <div class="profile-edit-row">
+                  <input type="text" [(ngModel)]="displayNameInput" class="form-input" placeholder="Your Display Name" />
+                  <button class="btn btn-primary" (click)="saveDisplayName()" style="padding: 6px 14px; font-size: 13px;">Save</button>
+                  <button class="btn btn-secondary" (click)="isEditingProfile.set(false)" style="padding: 6px 12px; font-size: 13px;">Cancel</button>
+                </div>
+              }
+
+              <p class="profile-email">{{ authService.firebaseUser()?.email || '' }}</p>
+              
+              <div class="profile-badges">
+                <span class="badge badge-success">● Connected ({{ authService.firebaseUser()?.providerData?.[0]?.providerId === 'google.com' ? 'Google' : 'Email' }})</span>
+                <span class="badge badge-muted">UID: {{ authService.firebaseUser()?.uid?.slice(0, 10) }}...</span>
+              </div>
+            </div>
           </div>
-        }
-        <div class="profile-info">
-          <h2>{{ authService.firebaseUser()?.displayName || 'User Profile' }}</h2>
-          <p>{{ authService.firebaseUser()?.email || '' }}</p>
-          @if (authService.firebaseUser()) {
-            <span class="badge badge-success" style="margin-top:8px">● Google Account Connected</span>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="settings-grid">
+          <div class="card setting-stat">
+            <div class="ss-label">Total Assets</div>
+            <div class="ss-value">{{ assets().length }}</div>
+          </div>
+          <div class="card setting-stat">
+            <div class="ss-label">Total Transactions</div>
+            <div class="ss-value">{{ transactions().length }}</div>
+          </div>
+          <div class="card setting-stat">
+            <div class="ss-label">Active Theme</div>
+            <div class="ss-value" style="display: flex; align-items: center; gap: 6px;">
+              <span class="material-icons" style="font-size: 22px;">{{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}</span>
+              {{ themeService.isDark() ? 'Dark' : 'Light' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Gemini AI Integration Card -->
+        <div class="card ai-settings-card">
+          <h3 class="card-section-title">
+            <span class="material-icons" style="font-size: 22px;">auto_awesome</span>
+            Gemini AI Integration
+          </h3>
+          <p class="card-description">
+            Connect your personal free API key to enable the FinTracker AI Financial Assistant. Your key is stored purely locally and never shared.
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="external-link">Get a free Gemini API Key here ↗</a>
+          </p>
+          <div class="input-actions-row">
+            <input type="password" [(ngModel)]="geminiKey" placeholder="Paste your Gemini API Key..." class="form-input flex-input" />
+            <select [(ngModel)]="geminiModel" appCustomSelect class="form-select">
+              <option value="auto">Auto (Gemini 3.1+)</option>
+              <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Latest)</option>
+              <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash-Lite</option>
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+            </select>
+            <button class="btn btn-primary" (click)="saveApiKey()">Save</button>
+          </div>
+        </div>
+
+        <!-- Google Finance Integration Card -->
+        <div class="card gf-settings-card">
+          <div class="card-header-flex">
+            <h3 class="card-section-title">
+              <span class="material-icons" style="color: #10b981; font-size: 22px;">trending_up</span>
+              Google Finance Live Quotes
+            </h3>
+            @if (gfService.isCustom()) {
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="badge badge-success" style="font-size: 11px;">● Connected (Custom API)</span>
+                <button class="btn btn-secondary" (click)="resetGfToDefault()" style="padding: 4px 8px; font-size: 11px;">Reset to Default</button>
+              </div>
+            } @else {
+              <span class="badge badge-success" style="font-size: 11px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981;">● Active (Built-in FinTracker API)</span>
+            }
+          </div>
+          <p class="card-description">
+            Live market prices for Indian (NSE/BSE) and global stocks are powered by Google Finance. FinTracker comes with a built-in endpoint ready to use, or you can supply your own private Google Apps Script URL.
+            <a href="javascript:void(0)" (click)="showGfGuide.set(!showGfGuide())" class="external-link" style="margin-left: 6px;">
+              {{ showGfGuide() ? 'Hide Custom Setup Instructions ▲' : 'Use Your Own Custom Endpoint ▼' }}
+            </a>
+          </p>
+
+          @if (showGfGuide()) {
+            <div class="guide-box">
+              <h4 style="margin-bottom: 8px;">Want your own private quota? (Takes 2 Minutes):</h4>
+              <ol style="padding-left: 20px; line-height: 1.7; margin-bottom: 12px;">
+                <li>Go to <a href="https://sheets.new" target="_blank" style="text-decoration: underline; font-weight: bold;">sheets.new</a> to create a new Google Sheet.</li>
+                <li>In the top menu, click <strong>Extensions</strong> → <strong>Apps Script</strong>.</li>
+                <li>Delete any code in the editor, click <strong>Copy Google Apps Script</strong> below, and paste it.</li>
+                <li>Click <strong>Deploy</strong> (top right) → <strong>New deployment</strong>.</li>
+                <li>Click the gear icon next to "Select type" → choose <strong>Web app</strong>.</li>
+                <li>Set <em>Execute as:</em> <strong>Me</strong> and <em>Who has access:</em> <strong>Anyone</strong> (crucial).</li>
+                <li>Click <strong>Deploy</strong> and copy the generated <strong>Web app URL</strong>.</li>
+                <li>Paste the URL below and click <strong>Test Connection</strong>!</li>
+              </ol>
+              <button class="btn btn-secondary" (click)="copyScriptCode()" style="gap: 6px;">
+                <span class="material-icons" style="font-size: 16px;">content_copy</span> Copy Google Apps Script
+              </button>
+            </div>
           }
-        </div>
-      </div>
-    </div>
 
-    <!-- Stats -->
-    <div class="settings-grid">
-      <div class="card setting-stat">
-        <div class="ss-label">Total Assets</div>
-        <div class="ss-value">{{ assets().length }}</div>
-      </div>
-      <div class="card setting-stat">
-        <div class="ss-label">Total Transactions</div>
-        <div class="ss-value">{{ transactions().length }}</div>
-      </div>
-      <div class="card setting-stat">
-        <div class="ss-label">Theme</div>
-        <div class="ss-value" style="display: flex; align-items: center; gap: 6px;">
-          <span class="material-icons" style="font-size: 22px;">{{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}</span>
-          {{ themeService.isDark() ? 'Dark' : 'Light' }}
-        </div>
-      </div>
-    </div>
-
-    <!-- AI Settings Configuration -->
-    <div class="card ai-settings-card" style="margin-bottom: 24px;">
-      <h3 style="margin-bottom: 8px;">🤖 Gemini AI Integration</h3>
-      <p style="margin-bottom: 16px; color: var(--text-muted); font-size: 13px;">
-        Connect your own free API key to enable the FinTracker AI Assistant. Your key is stored purely locally and never leaves your browser.
-        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--text-primary); text-decoration: underline; font-weight: bold;">Get a free API Key here.</a>
-      </p>
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <input type="password" [(ngModel)]="geminiKey" placeholder="Paste your Gemini API Key..." 
-               style="flex: 2; padding: 12px; border: 2px solid var(--border-color); background: transparent; color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none; min-width: 200px;" />
-        <select [(ngModel)]="geminiModel" style="flex: 1; min-width: 150px; padding: 12px; border: 2px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none; cursor: pointer;">
-          <option value="auto">Auto (Gemini 3.1+)</option>
-          <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Latest)</option>
-          <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash-Lite</option>
-          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-        </select>
-        <button class="btn btn-primary" (click)="saveApiKey()">Save</button>
-      </div>
-    </div>
-
-    <!-- Google Finance Integration Configuration -->
-    <div class="card gf-settings-card" style="margin-bottom: 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-        <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
-          <span class="material-icons" style="color: #10b981; font-size: 22px;">trending_up</span>
-          Google Finance Live Quotes
-        </h3>
-        @if (gfService.isCustom()) {
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="badge badge-success" style="font-size: 11px;">● Connected (Custom API)</span>
-            <button class="btn btn-secondary" (click)="resetGfToDefault()" style="padding: 4px 8px; font-size: 11px;">Reset to Default</button>
+          <div class="input-actions-row">
+            <input type="text" [(ngModel)]="gfUrl" placeholder="Google Apps Script Web App URL..." class="form-input flex-input" />
+            <button class="btn btn-secondary" (click)="testGfConnection()" [disabled]="isTestingGf() || !gfUrl()" style="gap: 6px;">
+              <span class="material-icons" style="font-size: 16px;">{{ isTestingGf() ? 'sync' : 'network_check' }}</span>
+              {{ isTestingGf() ? 'Testing...' : 'Test Connection' }}
+            </button>
+            <button class="btn btn-primary" (click)="saveGfUrl()">Save</button>
           </div>
-        } @else {
-          <span class="badge badge-success" style="font-size: 11px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981;">● Active (Built-in FinTracker API)</span>
+        </div>
+
+        <!-- Preferences & Data List -->
+        <div class="card settings-list">
+          <!-- Theme Toggle -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <h4>Dark Mode</h4>
+              <p>Toggle between dark and light theme</p>
+            </div>
+            <button class="toggle-btn" [class.on]="themeService.isDark()" (click)="themeService.toggle()">
+              <span class="toggle-knob">
+                <span class="material-icons knob-icon">{{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}</span>
+              </span>
+            </button>
+          </div>
+
+          <!-- Import Portfolio -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <h4>Import Portfolio Data</h4>
+              <p>Import mutual funds &amp; stocks from Groww or INDmoney CSV</p>
+            </div>
+            <button class="btn btn-secondary" (click)="showImport.set(true)">
+              <span class="material-icons" style="font-size:18px">cloud_upload</span> Import CSV
+            </button>
+          </div>
+
+          <!-- Update/Install App -->
+          @if (pwaService.updateAvailable()) {
+            <div class="setting-row">
+              <div class="setting-info">
+                <h4>Update App</h4>
+                <p>A new version is available! Refresh to update.</p>
+              </div>
+              <button class="btn btn-primary" (click)="pwaService.updateApp()" style="gap:4px">
+                <span class="material-icons" style="font-size:18px">update</span> Update
+              </button>
+            </div>
+          } @else if (pwaService.canInstall()) {
+            <div class="setting-row">
+              <div class="setting-info">
+                <h4>Install App</h4>
+                <p>Install FinTracker to your device for quick access</p>
+              </div>
+              <button class="btn btn-primary" (click)="pwaService.installApp()" style="gap:4px">
+                <span class="material-icons" style="font-size:18px">app_shortcut</span> Install
+              </button>
+            </div>
+          }
+
+          <!-- Sign Out -->
+          <div class="setting-row danger">
+            <div class="setting-info">
+              <h4>Sign Out</h4>
+              <p>Sign out of your active FinTracker session on this device.</p>
+            </div>
+            <button class="btn btn-danger" (click)="signOut()">
+              <span class="material-icons" style="font-size:18px">power_settings_new</span> Sign Out
+            </button>
+          </div>
+        </div>
+
+        <!-- About FinTracker -->
+        <div class="card about-card">
+          <div class="about-logo" [routerLink]="['/app/dashboard']" style="cursor: pointer;">
+            <img src="/assets/applogo.png" alt="Logo" style="width: 28px; height: 28px; object-fit: contain;" />
+            <span class="about-name brand-name"> <span class="black">FinTracker</span></span>
+          </div>
+          <p>High-Precision Financial Dashboard · v1.0.0</p>
+          <p style="margin-top:4px">Built with Angular 20 · Firebase · Chart.js · Web Crypto PIN Security</p>
+        </div>
+      </div>
+    }
+
+    <!-- =================================================================== -->
+    <!-- SUB-PAGE 2: DATE-WISE REPORTS & EXPORT CENTER -->
+    <!-- =================================================================== -->
+    @if (activeSubPage() === 'reports') {
+      <div class="subpage-content">
+        <!-- Reports Header Card -->
+        <div class="card category-selector-card">
+          <div class="category-header">
+            <div>
+              <div class="report-header-badge">
+                <span class="material-icons" style="font-size: 15px;">file_download</span>
+                <span>Export &amp; Statements Center</span>
+              </div>
+              <h3 style="margin: 6px 0 4px; font-size: 18px; font-weight: 700;">Financial Reports &amp; Exports</h3>
+              <p style="margin: 0; font-size: 13px; color: var(--text-muted);">
+                Select your preferred reporting date range to generate and download customized CSV and PDF financial statements.
+              </p>
+            </div>
+            <div class="report-top-actions">
+              <button class="btn btn-export-pdf" (click)="exportMaster('pdf')">
+                <span class="material-icons" style="font-size: 16px;">picture_as_pdf</span> Master Statement (PDF)
+              </button>
+              <button class="btn btn-export-excel" (click)="exportMaster('excel')">
+                <span class="material-icons" style="font-size: 16px;">table_chart</span> Master Workbook (Excel)
+              </button>
+              <button class="btn btn-secondary-compact" (click)="exportMasterReportCSV()" title="Download raw CSV">
+                <span class="material-icons" style="font-size: 15px;">download</span> CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Date Range Selector Section -->
+          <div class="date-filter-box">
+            <div class="date-filter-top">
+              <span class="filter-label">
+                <span class="material-icons" style="font-size: 16px;">date_range</span>
+                Reporting Period Presets
+              </span>
+              <div class="active-period-indicator">
+                <span class="material-icons" style="font-size: 15px;">calendar_today</span>
+                <span>Period: <strong>{{ dateRangeLabel() }}</strong></span>
+                @if (dateRangeDays()) {
+                  <span class="days-badge">({{ dateRangeDays() }} Days)</span>
+                }
+              </div>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="preset-pills-row">
+              <button 
+                class="preset-pill" 
+                [class.active]="datePreset() === 'this_month'" 
+                (click)="setDatePreset('this_month')">
+                This Month
+              </button>
+              <button 
+                class="preset-pill" 
+                [class.active]="datePreset() === 'last_month'" 
+                (click)="setDatePreset('last_month')">
+                Last Month
+              </button>
+              <button 
+                class="preset-pill" 
+                [class.active]="datePreset() === 'last_3_months'" 
+                (click)="setDatePreset('last_3_months')">
+                Last 3 Months
+              </button>
+              <button 
+                class="preset-pill" 
+                [class.active]="datePreset() === 'current_fy'" 
+                (click)="setDatePreset('current_fy')">
+                Current FY
+              </button>
+              <button 
+                class="preset-pill" 
+                [class.active]="datePreset() === 'last_fy'" 
+                (click)="setDatePreset('last_fy')">
+                Last FY
+              </button>
+              <button 
+                class="preset-pill" 
+                [class.active]="datePreset() === 'this_year'" 
+                (click)="setDatePreset('this_year')">
+                This Year
+              </button>
+              <button 
+                class="preset-pill" 
+                [class.active]="datePreset() === 'all'" 
+                (click)="setDatePreset('all')">
+                All Time
+              </button>
+            </div>
+
+            <!-- Custom From & To Inputs -->
+            <div class="date-inputs-row">
+              <div class="date-input-group">
+                <label class="input-sublabel">From Date</label>
+                <input 
+                  type="date" 
+                  class="form-input date-picker" 
+                  [ngModel]="fromDate()" 
+                  (ngModelChange)="fromDate.set($event); onCustomDateChange()" />
+              </div>
+              <div class="date-input-group">
+                <label class="input-sublabel">To Date</label>
+                <input 
+                  type="date" 
+                  class="form-input date-picker" 
+                  [ngModel]="toDate()" 
+                  (ngModelChange)="toDate.set($event); onCustomDateChange()" />
+              </div>
+              @if (fromDate() || toDate()) {
+                <button class="btn btn-secondary btn-clear-date" (click)="setDatePreset('all')" title="Reset to All Time">
+                  <span class="material-icons" style="font-size: 16px;">clear</span> Reset Dates
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Category Sub-Tabs -->
+          <div class="category-pills" style="margin-top: 16px;">
+            <button 
+              class="cat-pill" 
+              [class.active]="reportCategory() === 'all'"
+              (click)="setReportCategory('all')">
+              <span class="material-icons">grid_view</span>
+              <span>All Reports</span>
+            </button>
+
+            <button 
+              class="cat-pill" 
+              [class.active]="reportCategory() === 'transactions'"
+              (click)="setReportCategory('transactions')">
+              <span class="material-icons">receipt_long</span>
+              <span>Transactions ({{ transactionsReport().count }})</span>
+            </button>
+
+            <button 
+              class="cat-pill" 
+              [class.active]="reportCategory() === 'portfolio'"
+              (click)="setReportCategory('portfolio')">
+              <span class="material-icons">pie_chart</span>
+              <span>Portfolio ({{ portfolioSummary().assetCount }})</span>
+            </button>
+
+            <button 
+              class="cat-pill" 
+              [class.active]="reportCategory() === 'stocks'"
+              (click)="setReportCategory('stocks')">
+              <span class="material-icons">trending_up</span>
+              <span>Stocks ({{ stocksReport().count }})</span>
+            </button>
+
+            <button 
+              class="cat-pill" 
+              [class.active]="reportCategory() === 'mf'"
+              (click)="setReportCategory('mf')">
+              <span class="material-icons">account_balance</span>
+              <span>Mutual Funds ({{ mfReport().count }})</span>
+            </button>
+
+            <button 
+              class="cat-pill" 
+              [class.active]="reportCategory() === 'fixed_income'"
+              (click)="setReportCategory('fixed_income')">
+              <span class="material-icons">savings</span>
+              <span>Fixed Deposits &amp; Bonds ({{ fixedIncomeReport().count }})</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Period Summary Stat Cards (Date-Wise Insights) -->
+        <div class="settings-grid">
+          <div class="card setting-stat">
+            <div class="ss-label">Period Inflows (Income)</div>
+            <div class="ss-value" style="color: var(--accent-success-blend);">
+              +{{ formatCurrency(transactionsReport().totalIncome) }}
+            </div>
+          </div>
+          <div class="card setting-stat">
+            <div class="ss-label">Period Outflows (Expenses)</div>
+            <div class="ss-value" style="color: var(--accent-danger);">
+              -{{ formatCurrency(transactionsReport().totalExpense) }}
+            </div>
+          </div>
+          <div class="card setting-stat">
+            <div class="ss-label">Net Period Savings / Cashflow</div>
+            <div class="ss-value" [style.color]="transactionsReport().netSavings >= 0 ? 'var(--text-primary)' : 'var(--accent-danger)'">
+              {{ transactionsReport().netSavings >= 0 ? '+' : '' }}{{ formatCurrency(transactionsReport().netSavings) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- EXPORT CARDS STUDIO (NO DATA TABLES - STREAMLINED EXPORT DIRECTORY) -->
+        <div class="report-export-grid">
+
+          <!-- 1. TRANSACTIONS STATEMENT CARD -->
+          @if (reportCategory() === 'all' || reportCategory() === 'transactions') {
+            <div class="card export-card">
+              <div class="export-card-top">
+                <div class="export-card-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">
+                  <span class="material-icons">receipt_long</span>
+                </div>
+                <div class="export-card-info">
+                  <div class="export-title-row">
+                    <h4>Transactions &amp; Cash Flow Statement</h4>
+                    <span class="badge badge-success">{{ transactionsReport().count }} Entries</span>
+                  </div>
+                  <p class="export-desc">
+                    Itemized cash inflow, outflow, and expenditure records for <strong>{{ dateRangeLabel() }}</strong>.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Sub-filter -->
+              <div class="export-card-controls">
+                <div class="sub-filter-row">
+                  <button class="pill-btn" [class.active]="txTypeFilter() === 'all'" (click)="txTypeFilter.set('all')">All</button>
+                  <button class="pill-btn" [class.active]="txTypeFilter() === 'Income'" (click)="txTypeFilter.set('Income')">Income Only</button>
+                  <button class="pill-btn" [class.active]="txTypeFilter() === 'Expense'" (click)="txTypeFilter.set('Expense')">Expenses Only</button>
+                </div>
+              </div>
+
+              <!-- Metrics Summary -->
+              <div class="export-metrics-box">
+                <div class="em-item">
+                  <span class="em-label">Total Inflow</span>
+                  <span class="em-val text-success">+{{ formatCurrency(transactionsReport().totalIncome) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Total Outflow</span>
+                  <span class="em-val text-danger">-{{ formatCurrency(transactionsReport().totalExpense) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Net Savings</span>
+                  <span class="em-val fw-bold">{{ formatCurrency(transactionsReport().netSavings) }}</span>
+                </div>
+              </div>
+
+              <div class="export-card-footer">
+                <span class="format-tag">PDF / Excel / CSV</span>
+                <div class="export-btn-group">
+                  <button class="btn btn-export-pdf" (click)="exportTransactions('pdf')">
+                    <span class="material-icons">picture_as_pdf</span> PDF Statement
+                  </button>
+                  <button class="btn btn-export-excel" (click)="exportTransactions('excel')">
+                    <span class="material-icons">table_chart</span> Excel Sheet
+                  </button>
+                  <button class="btn btn-secondary-compact" (click)="exportCSV()" title="Download raw CSV">
+                    <span class="material-icons">download</span> CSV
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- 2. PORTFOLIO VALUATION CARD -->
+          @if (reportCategory() === 'all' || reportCategory() === 'portfolio') {
+            <div class="card export-card">
+              <div class="export-card-top">
+                <div class="export-card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                  <span class="material-icons">pie_chart</span>
+                </div>
+                <div class="export-card-info">
+                  <div class="export-title-row">
+                    <h4>Overall Portfolio &amp; Asset Allocation</h4>
+                    <span class="badge badge-primary">{{ portfolioSummary().assetCount }} Assets</span>
+                  </div>
+                  <p class="export-desc">
+                    Comprehensive net worth statement, capital invested, category-wise allocation, and asset breakdown.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Metrics Summary -->
+              <div class="export-metrics-box">
+                <div class="em-item">
+                  <span class="em-label">Total Net Worth</span>
+                  <span class="em-val fw-bold">{{ formatCurrency(portfolioSummary().totalValue) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Invested Capital</span>
+                  <span class="em-val">{{ formatCurrency(portfolioSummary().totalInvested) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Total Gain / Loss</span>
+                  <span class="em-val" [style.color]="portfolioSummary().totalProfit >= 0 ? 'var(--accent-success-blend)' : 'var(--accent-danger)'">
+                    {{ portfolioSummary().totalProfit >= 0 ? '+' : '' }}{{ formatCurrency(portfolioSummary().totalProfit) }}
+                    <small>({{ portfolioSummary().totalProfitPct.toFixed(1) }}%)</small>
+                  </span>
+                </div>
+              </div>
+
+              <div class="export-card-footer">
+                <span class="format-tag">PDF / Excel / JSON</span>
+                <div class="export-btn-group">
+                  <button class="btn btn-export-pdf" (click)="exportPortfolioReport('pdf')">
+                    <span class="material-icons">picture_as_pdf</span> PDF Statement
+                  </button>
+                  <button class="btn btn-export-excel" (click)="exportPortfolioReport('excel')">
+                    <span class="material-icons">table_chart</span> Excel Sheet
+                  </button>
+                  <button class="btn btn-secondary-compact" (click)="exportPortfolio()" title="Download raw CSV">
+                    <span class="material-icons">download</span> CSV
+                  </button>
+                  <button class="btn btn-secondary-compact" (click)="exportPortfolioJSON()" title="JSON Backup">
+                    <span class="material-icons">data_object</span> JSON
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- 3. STOCKS & EQUITIES CARD -->
+          @if (reportCategory() === 'all' || reportCategory() === 'stocks') {
+            <div class="card export-card">
+              <div class="export-card-top">
+                <div class="export-card-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+                  <span class="material-icons">trending_up</span>
+                </div>
+                <div class="export-card-info">
+                  <div class="export-title-row">
+                    <h4>Equities &amp; Stocks Holdings Statement</h4>
+                    <span class="badge badge-muted">{{ stocksReport().count }} Stocks</span>
+                  </div>
+                  <p class="export-desc">
+                    Indian (NSE/BSE) and US equities statement with ticker symbols, purchase average, market price, and returns.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Sub-filter -->
+              <div class="export-card-controls">
+                <div class="sub-filter-row">
+                  <button class="pill-btn" [class.active]="stockFilter() === 'all'" (click)="stockFilter.set('all')">All Stocks</button>
+                  <button class="pill-btn" [class.active]="stockFilter() === 'india'" (click)="stockFilter.set('india')">Indian (NSE/BSE)</button>
+                  <button class="pill-btn" [class.active]="stockFilter() === 'us'" (click)="stockFilter.set('us')">US Equities</button>
+                </div>
+              </div>
+
+              <!-- Metrics Summary -->
+              <div class="export-metrics-box">
+                <div class="em-item">
+                  <span class="em-label">Current Value</span>
+                  <span class="em-val fw-bold">{{ formatCurrency(stocksReport().totalValue) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Invested in Equities</span>
+                  <span class="em-val">{{ formatCurrency(stocksReport().totalInvested) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Returns</span>
+                  <span class="em-val" [style.color]="stocksReport().totalProfit >= 0 ? 'var(--accent-success-blend)' : 'var(--accent-danger)'">
+                    {{ stocksReport().totalProfit >= 0 ? '+' : '' }}{{ formatCurrency(stocksReport().totalProfit) }}
+                    <small>({{ stocksReport().totalProfitPct.toFixed(1) }}%)</small>
+                  </span>
+                </div>
+              </div>
+
+              <div class="export-card-footer">
+                <span class="format-tag">PDF / Excel / CSV</span>
+                <div class="export-btn-group">
+                  <button class="btn btn-export-pdf" (click)="exportStocks('pdf')">
+                    <span class="material-icons">picture_as_pdf</span> PDF Statement
+                  </button>
+                  <button class="btn btn-export-excel" (click)="exportStocks('excel')">
+                    <span class="material-icons">table_chart</span> Excel Sheet
+                  </button>
+                  <button class="btn btn-secondary-compact" (click)="exportStocksCSV()" title="Download raw CSV">
+                    <span class="material-icons">download</span> CSV
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- 4. MUTUAL FUNDS STATEMENT CARD -->
+          @if (reportCategory() === 'all' || reportCategory() === 'mf') {
+            <div class="card export-card">
+              <div class="export-card-top">
+                <div class="export-card-icon" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+                  <span class="material-icons">account_balance</span>
+                </div>
+                <div class="export-card-info">
+                  <div class="export-title-row">
+                    <h4>Mutual Funds Portfolio Statement</h4>
+                    <span class="badge badge-muted">{{ mfReport().count }} Schemes</span>
+                  </div>
+                  <p class="export-desc">
+                    Scheme-wise units, invested capital, latest NAV valuation from AMFI/MFAPI, and unrealized returns.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Metrics Summary -->
+              <div class="export-metrics-box">
+                <div class="em-item">
+                  <span class="em-label">Current MF Value</span>
+                  <span class="em-val fw-bold">{{ formatCurrency(mfReport().totalValue) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Invested Capital</span>
+                  <span class="em-val">{{ formatCurrency(mfReport().totalInvested) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Mutual Fund Gains</span>
+                  <span class="em-val" [style.color]="mfReport().totalProfit >= 0 ? 'var(--accent-success-blend)' : 'var(--accent-danger)'">
+                    {{ mfReport().totalProfit >= 0 ? '+' : '' }}{{ formatCurrency(mfReport().totalProfit) }}
+                    <small>({{ mfReport().totalProfitPct.toFixed(1) }}%)</small>
+                  </span>
+                </div>
+              </div>
+
+              <div class="export-card-footer">
+                <span class="format-tag">PDF / Excel / CSV</span>
+                <div class="export-btn-group">
+                  <button class="btn btn-export-pdf" (click)="exportMutualFunds('pdf')">
+                    <span class="material-icons">picture_as_pdf</span> PDF Statement
+                  </button>
+                  <button class="btn btn-export-excel" (click)="exportMutualFunds('excel')">
+                    <span class="material-icons">table_chart</span> Excel Sheet
+                  </button>
+                  <button class="btn btn-secondary-compact" (click)="exportMutualFundsCSV()" title="Download raw CSV">
+                    <span class="material-icons">download</span> CSV
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- 5. FIXED DEPOSITS & BONDS CARD -->
+          @if (reportCategory() === 'all' || reportCategory() === 'fixed_income') {
+            <div class="card export-card">
+              <div class="export-card-top">
+                <div class="export-card-icon" style="background: rgba(20, 184, 166, 0.15); color: #14b8a6;">
+                  <span class="material-icons">savings</span>
+                </div>
+                <div class="export-card-info">
+                  <div class="export-title-row">
+                    <h4>Fixed Deposits &amp; Bonds Statement</h4>
+                    <span class="badge badge-muted">{{ fixedIncomeReport().count }} Deposits</span>
+                  </div>
+                  <p class="export-desc">
+                    Fixed deposits and debt instruments with principal amount, interest rate / coupon yield, and maturity dates.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Sub-filter -->
+              <div class="export-card-controls">
+                <div class="sub-filter-row">
+                  <button class="pill-btn" [class.active]="fixedIncomeFilter() === 'all'" (click)="fixedIncomeFilter.set('all')">All Fixed Income</button>
+                  <button class="pill-btn" [class.active]="fixedIncomeFilter() === 'fd'" (click)="fixedIncomeFilter.set('fd')">Fixed Deposits</button>
+                  <button class="pill-btn" [class.active]="fixedIncomeFilter() === 'bond'" (click)="fixedIncomeFilter.set('bond')">Bonds</button>
+                </div>
+              </div>
+
+              <!-- Metrics Summary -->
+              <div class="export-metrics-box">
+                <div class="em-item">
+                  <span class="em-label">Current / Maturity Val</span>
+                  <span class="em-val fw-bold">{{ formatCurrency(fixedIncomeReport().totalValue) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Total Principal</span>
+                  <span class="em-val">{{ formatCurrency(fixedIncomeReport().totalPrincipal) }}</span>
+                </div>
+                <div class="em-item">
+                  <span class="em-label">Avg Interest Yield</span>
+                  <span class="em-val" style="color: var(--accent-warning-blend);">
+                    {{ fixedIncomeReport().avgRate.toFixed(2) }}% p.a.
+                  </span>
+                </div>
+              </div>
+
+              <div class="export-card-footer">
+                <span class="format-tag">PDF / Excel / CSV</span>
+                <div class="export-btn-group">
+                  <button class="btn btn-export-pdf" (click)="exportFixedIncome('pdf')">
+                    <span class="material-icons">picture_as_pdf</span> PDF Statement
+                  </button>
+                  <button class="btn btn-export-excel" (click)="exportFixedIncome('excel')">
+                    <span class="material-icons">table_chart</span> Excel Sheet
+                  </button>
+                  <button class="btn btn-secondary-compact" (click)="exportFixedIncomeCSV()" title="Download raw CSV">
+                    <span class="material-icons">download</span> CSV
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- 6. MASTER CONSOLIDATED REPORT CARD -->
+          @if (reportCategory() === 'all') {
+            <div class="card export-card master-card">
+              <div class="export-card-top">
+                <div class="export-card-icon master-icon">
+                  <span class="material-icons">verified</span>
+                </div>
+                <div class="export-card-info">
+                  <div class="export-title-row">
+                    <h4>Master Consolidated Financial Statement</h4>
+                    <span class="badge badge-success">All-In-One Package</span>
+                  </div>
+                  <p class="export-desc">
+                    Comprehensive multi-section financial statement uniting Portfolio Valuation, Asset Allocation, and date-filtered Transactions for <strong>{{ dateRangeLabel() }}</strong>.
+                  </p>
+                </div>
+              </div>
+
+              <div class="master-highlights">
+                <div class="mh-chip">
+                  <span class="material-icons">check_circle</span> Includes {{ portfolioSummary().assetCount }} Portfolio Holdings
+                </div>
+                <div class="mh-chip">
+                  <span class="material-icons">check_circle</span> Includes {{ transactionsReport().count }} Filtered Transactions
+                </div>
+                <div class="mh-chip">
+                  <span class="material-icons">check_circle</span> Complete Audit &amp; Tax Stamped
+                </div>
+              </div>
+
+              <div class="export-card-footer">
+                <span class="format-tag">Master Executive Package</span>
+                <div class="export-btn-group">
+                  <button class="btn btn-export-pdf master-btn-pdf" (click)="exportMaster('pdf')">
+                    <span class="material-icons">picture_as_pdf</span> Master Statement (PDF)
+                  </button>
+                  <button class="btn btn-export-excel master-btn-excel" (click)="exportMaster('excel')">
+                    <span class="material-icons">table_chart</span> Master Workbook (Excel)
+                  </button>
+                  <button class="btn btn-secondary-compact" (click)="exportMasterReportCSV()" title="Download raw CSV">
+                    <span class="material-icons">download</span> CSV
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
+    <!-- =================================================================== -->
+    <!-- SUB-PAGE 3: CHANGE PIN (FIRST WE NEED TO SET A PIN TO ACCESS THE DATA) -->
+    <!-- =================================================================== -->
+    @if (activeSubPage() === 'pin') {
+      <div class="subpage-content">
+        <!-- FIRST TIME SETUP FLOW: PIN IS NOT SET YET -->
+        @if (!pinSecurity.isPinSet()) {
+          <div class="card pin-onboarding-card">
+            <div class="pin-onboarding-header">
+              <div class="pin-shield-icon">
+                <span class="material-icons">shield</span>
+              </div>
+              <h2>Set a Security PIN to Protect Your Data</h2>
+              <p>
+                FinTracker manages your private financial data, portfolio assets, and bank transactions. 
+                First, set a 4 to 6-digit security PIN to restrict access and lock sensitive financial views.
+              </p>
+            </div>
+
+            <div class="pin-form-wrap">
+              <div class="form-group">
+                <label class="form-label">Create New PIN (4-6 digits)</label>
+                <input 
+                  type="password" 
+                  maxlength="6"
+                  [(ngModel)]="newPin" 
+                  placeholder="Enter 4 or 6-digit PIN" 
+                  class="form-input pin-input" 
+                  autocomplete="new-password" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Confirm New PIN</label>
+                <input 
+                  type="password" 
+                  maxlength="6"
+                  [(ngModel)]="confirmPin" 
+                  placeholder="Re-enter PIN to confirm" 
+                  class="form-input pin-input" 
+                  autocomplete="new-password" />
+              </div>
+
+              @if (pinSetupError()) {
+                <div class="form-error-banner">
+                  <span class="material-icons" style="font-size: 16px;">error</span>
+                  <span>{{ pinSetupError() }}</span>
+                </div>
+              }
+
+              <div class="pin-guidance-box">
+                <div class="guidance-item">
+                  <span class="material-icons check-icon">check_circle</span>
+                  <span>Stored securely using SHA-256 cryptographic salted hashing</span>
+                </div>
+                <div class="guidance-item">
+                  <span class="material-icons check-icon">check_circle</span>
+                  <span>Protects your dashboard from unauthorized eyes on shared devices</span>
+                </div>
+                <div class="guidance-item">
+                  <span class="material-icons check-icon">check_circle</span>
+                  <span>You can change or remove your PIN anytime after initial setup</span>
+                </div>
+              </div>
+
+              <button 
+                class="btn btn-primary btn-block-large" 
+                (click)="handleSetupPin()" 
+                [disabled]="isSubmittingPin() || !newPin() || !confirmPin()">
+                <span class="material-icons" style="font-size: 18px;">lock</span>
+                {{ isSubmittingPin() ? 'Enabling PIN...' : 'Set &amp; Enable Security PIN' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- PIN IS ALREADY SET: CHANGE PIN & SECURITY PREFERENCES -->
+        @if (pinSecurity.isPinSet()) {
+          <!-- Status Banner -->
+          <div class="card pin-status-card">
+            <div class="status-left">
+              <div class="status-shield active">
+                <span class="material-icons">verified_user</span>
+              </div>
+              <div>
+                <h3 style="margin: 0 0 4px; font-size: 17px;">Security PIN Active</h3>
+                <p style="margin: 0; font-size: 13px; color: var(--text-muted);">
+                  Your financial portfolio is secured with a cryptographic PIN.
+                </p>
+              </div>
+            </div>
+            <div class="status-actions">
+              <button class="btn btn-secondary" (click)="lockAppNow()">
+                <span class="material-icons" style="font-size: 16px;">lock</span> Lock App Now
+              </button>
+            </div>
+          </div>
+
+          <!-- Change PIN Card -->
+          <div class="card pin-change-card">
+            <h3 class="card-section-title">
+              <span class="material-icons" style="font-size: 22px;">pin</span>
+              Change Security PIN
+            </h3>
+            <p class="card-description">
+              Enter your current security PIN, followed by your new 4 to 6-digit PIN.
+            </p>
+
+            <div class="pin-change-form">
+              <div class="form-group">
+                <label class="form-label">Current PIN</label>
+                <input 
+                  type="password" 
+                  maxlength="6"
+                  [(ngModel)]="currentPin" 
+                  placeholder="Enter current PIN" 
+                  class="form-input pin-input" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">New PIN (4-6 digits)</label>
+                <input 
+                  type="password" 
+                  maxlength="6"
+                  [(ngModel)]="changeNewPin" 
+                  placeholder="Enter new PIN" 
+                  class="form-input pin-input" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Confirm New PIN</label>
+                <input 
+                  type="password" 
+                  maxlength="6"
+                  [(ngModel)]="changeConfirmPin" 
+                  placeholder="Re-enter new PIN" 
+                  class="form-input pin-input" />
+              </div>
+
+              @if (pinChangeError()) {
+                <div class="form-error-banner">
+                  <span class="material-icons" style="font-size: 16px;">error</span>
+                  <span>{{ pinChangeError() }}</span>
+                </div>
+              }
+
+              <button 
+                class="btn btn-primary" 
+                (click)="handleChangePin()" 
+                [disabled]="isSubmittingPin() || !currentPin() || !changeNewPin() || !changeConfirmPin()">
+                <span class="material-icons" style="font-size: 18px;">sync_lock</span>
+                {{ isSubmittingPin() ? 'Updating...' : 'Update Security PIN' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- PIN Preferences List -->
+          <div class="card settings-list">
+            <div class="setting-row">
+              <div class="setting-info">
+                <h4>Require PIN on App Launch</h4>
+                <p>Prompt for PIN verification whenever FinTracker is reopened or refreshed</p>
+              </div>
+              <button 
+                class="toggle-btn" 
+                [class.on]="pinSecurity.requireLaunchLock()" 
+                (click)="pinSecurity.setRequireLaunchLock(!pinSecurity.requireLaunchLock())">
+                <span class="toggle-knob">
+                  <span class="material-icons knob-icon">{{ pinSecurity.requireLaunchLock() ? 'lock' : 'lock_open' }}</span>
+                </span>
+              </button>
+            </div>
+
+            <!-- Remove PIN Danger Option -->
+            <div class="setting-row danger">
+              <div class="setting-info">
+                <h4>Remove Security PIN</h4>
+                <p>Disable PIN lock protection on your financial portfolio</p>
+              </div>
+              <button class="btn btn-danger" (click)="showRemovePinModal.set(true)">
+                <span class="material-icons" style="font-size: 18px;">delete</span> Remove PIN
+              </button>
+            </div>
+          </div>
+
+          <!-- Remove PIN Confirmation Modal -->
+          @if (showRemovePinModal()) {
+            <div class="modal-backdrop" (click)="showRemovePinModal.set(false)">
+              <div class="modal-card" (click)="$event.stopPropagation()">
+                <span class="material-icons danger-icon">warning_amber</span>
+                <h3>Remove Security PIN?</h3>
+                <p>
+                  To confirm removing PIN protection, enter your current security PIN. Anyone with access to this browser will be able to view your portfolio data without entering a PIN.
+                </p>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                  <input 
+                    type="password" 
+                    maxlength="6"
+                    [(ngModel)]="removePinInput" 
+                    placeholder="Enter current PIN to confirm" 
+                    class="form-input pin-input" />
+                </div>
+
+                @if (removePinError()) {
+                  <div class="form-error-banner" style="margin-bottom: 16px;">
+                    <span class="material-icons" style="font-size: 16px;">error</span>
+                    <span>{{ removePinError() }}</span>
+                  </div>
+                }
+
+                <div class="modal-actions">
+                  <button class="btn btn-secondary" (click)="showRemovePinModal.set(false)">Cancel</button>
+                  <button class="btn btn-danger" (click)="handleRemovePin()" [disabled]="!removePinInput()">
+                    Confirm &amp; Remove PIN
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
         }
       </div>
-      <p style="margin-bottom: 16px; color: var(--text-muted); font-size: 13px; line-height: 1.5;">
-        Live market prices for Indian (NSE/BSE) and global stocks are powered by Google Finance. FinTracker comes with a built-in endpoint ready to use, or you can supply your own private Google Apps Script URL.
-        <a href="javascript:void(0)" (click)="showGfGuide.set(!showGfGuide())" style="color: var(--text-primary); text-decoration: underline; font-weight: bold; margin-left: 6px;">
-          {{ showGfGuide() ? 'Hide Custom Setup Instructions ▲' : 'Use Your Own Custom Endpoint ▼' }}
-        </a>
-      </p>
+    }
 
-      @if (showGfGuide()) {
-        <div style="background: var(--bg-card-hover); border: 1px dashed var(--border-light, #ccc); padding: 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;">
-          <h4 style="margin-bottom: 8px;">Want your own private quota? (Takes 2 Minutes):</h4>
-          <ol style="padding-left: 20px; line-height: 1.7; margin-bottom: 12px;">
-            <li>Go to <a href="https://sheets.new" target="_blank" style="text-decoration: underline; font-weight: bold;">sheets.new</a> to create a new Google Sheet.</li>
-            <li>In the top menu, click <strong>Extensions</strong> → <strong>Apps Script</strong>.</li>
-            <li>Delete any code in the editor, click <strong>Copy Google Apps Script</strong> below, and paste it.</li>
-            <li>Click <strong>Deploy</strong> (top right) → <strong>New deployment</strong>.</li>
-            <li>Click the gear icon next to "Select type" → choose <strong>Web app</strong>.</li>
-            <li>Set <em>Execute as:</em> <strong>Me</strong> and <em>Who has access:</em> <strong>Anyone</strong> (crucial).</li>
-            <li>Click <strong>Deploy</strong> and copy the generated <strong>Web app URL</strong>.</li>
-            <li>Paste the URL below and click <strong>Test Connection</strong>!</li>
-          </ol>
-          <button class="btn btn-secondary" (click)="copyScriptCode()" style="gap: 6px;">
-            <span class="material-icons" style="font-size: 16px;">content_copy</span> Copy Google Apps Script
-          </button>
-        </div>
-      }
-
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <input type="text" [(ngModel)]="gfUrl" placeholder="Google Apps Script Web App URL..." 
-               style="flex: 2; padding: 12px; border: 2px solid var(--border-color); background: transparent; color: var(--text-primary); font-family: inherit; font-size: 13.5px; outline: none; min-width: 260px;" />
-        <button class="btn btn-secondary" (click)="testGfConnection()" [disabled]="isTestingGf() || !gfUrl()" style="gap: 6px;">
-          <span class="material-icons" style="font-size: 16px;">{{ isTestingGf() ? 'sync' : 'network_check' }}</span>
-          {{ isTestingGf() ? 'Testing...' : 'Test Connection' }}
-        </button>
-        <button class="btn btn-primary" (click)="saveGfUrl()">Save</button>
-      </div>
-    </div>
-
-    <!-- Settings Options -->
-    <div class="card settings-list">
-      <!-- Theme Toggle -->
-      <div class="setting-row">
-        <div class="setting-info">
-          <h4>Dark Mode</h4>
-          <p>Toggle between dark and light theme</p>
-        </div>
-        <button class="toggle-btn" [class.on]="themeService.isDark()" (click)="themeService.toggle()">
-          <span class="toggle-knob">
-            <span class="material-icons knob-icon">{{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}</span>
-          </span>
-        </button>
-      </div>
-
-      <!-- Export CSV -->
-      <div class="setting-row">
-        <div class="setting-info">
-          <h4>Export Transactions</h4>
-          <p>Download your transactions as a CSV file</p>
-        </div>
-        <button class="btn btn-secondary" (click)="exportCSV()">
-          <span class="material-icons" style="font-size:18px">download</span> Export CSV
-        </button>
-      </div>
-
-      <!-- Export Portfolio -->
-      <div class="setting-row">
-        <div class="setting-info">
-          <h4>Export Portfolio</h4>
-          <p>Download your current asset holdings as a CSV file</p>
-        </div>
-        <button class="btn btn-secondary" (click)="exportPortfolio()">
-          <span class="material-icons" style="font-size:18px">download_for_offline</span> Export Portfolio
-        </button>
-      </div>
-
-      <!-- Import Portfolio -->
-      <div class="setting-row">
-        <div class="setting-info">
-          <h4>Import Portfolio</h4>
-          <p>Import mutual funds &amp; stocks from Groww or INDmoney</p>
-        </div>
-        <button class="btn btn-secondary" (click)="showImport.set(true)">
-          <span class="material-icons" style="font-size:18px">cloud_upload</span> Import CSV
-        </button>
-      </div>
-
-      <!-- Update/Install App -->
-      @if (pwaService.updateAvailable()) {
-        <div class="setting-row">
-          <div class="setting-info">
-            <h4>Update App</h4>
-            <p>A new version is available! Refresh to update.</p>
+    <!-- =================================================================== -->
+    <!-- SUB-PAGE 4: ACTIVE DEVICES -->
+    <!-- =================================================================== -->
+    @if (activeSubPage() === 'devices') {
+      <div class="subpage-content">
+        <!-- Current Device Highlight -->
+        <div class="card current-device-card">
+          <div class="device-card-header">
+            <div class="device-icon-wrap">
+              <span class="material-icons device-icon">
+                {{ deviceService.currentSession()?.deviceType === 'mobile' ? 'smartphone' : (deviceService.currentSession()?.deviceType === 'tablet' ? 'tablet' : 'laptop') }}
+              </span>
+            </div>
+            <div class="device-details">
+              <div class="device-title-row">
+                <h3>{{ deviceService.currentSession()?.deviceName || 'Current Device' }}</h3>
+                <span class="badge-current-pulse">
+                  <span class="pulse-dot"></span> Current Session
+                </span>
+              </div>
+              <p class="device-meta">
+                {{ deviceService.currentSession()?.browser }} · {{ deviceService.currentSession()?.os }}
+              </p>
+              <div class="device-specs">
+                <span class="spec-item">
+                  <span class="material-icons">aspect_ratio</span> {{ deviceService.currentSession()?.screenResolution }}
+                </span>
+                <span class="spec-item">
+                  <span class="material-icons">wifi</span> {{ deviceService.currentSession()?.ip }}
+                </span>
+                <span class="spec-item">
+                  <span class="material-icons">access_time</span> Active right now
+                </span>
+              </div>
+            </div>
           </div>
-          <button class="btn btn-primary" (click)="pwaService.updateApp()" style="gap:4px">
-            <span class="material-icons" style="font-size:18px">update</span> Update
-          </button>
-        </div>
-      } @else if (pwaService.canInstall()) {
-        <div class="setting-row">
-          <div class="setting-info">
-            <h4>Install App</h4>
-            <p>Install FinTracker to your device for quick access</p>
+
+          <div class="device-action-footer">
+            <button class="btn btn-danger" (click)="signOut()">
+              <span class="material-icons" style="font-size: 16px;">logout</span> Sign Out This Device
+            </button>
           </div>
-          <button class="btn btn-primary" (click)="pwaService.installApp()" style="gap:4px">
-            <span class="material-icons" style="font-size:18px">app_shortcut</span> Install
-          </button>
         </div>
-      }
 
-      <!-- Sign Out -->
-      <div class="setting-row danger">
-        <div class="setting-info">
-          <h4>Sign Out</h4>
-          <p>Manage your account settings for FinTracker.</p>
+        <!-- All Active Devices List -->
+        <div class="card devices-list-card">
+          <div class="devices-list-header">
+            <div>
+              <h4 style="margin: 0 0 4px; font-size: 16px;">Registered Sessions &amp; Devices</h4>
+              <p style="margin: 0; font-size: 13px; color: var(--text-muted);">
+                Devices currently logged into your FinTracker account.
+              </p>
+            </div>
+            @if (deviceService.sessions().length > 1) {
+              <button class="btn btn-secondary" (click)="deviceService.revokeAllOtherSessions()">
+                <span class="material-icons" style="font-size: 16px;">phonelink_erase</span> Sign Out Other Devices
+              </button>
+            }
+          </div>
+
+          <div class="sessions-list">
+            @for (sess of deviceService.sessions(); track sess.id) {
+              <div class="session-item" [class.is-current]="sess.isCurrent">
+                <div class="session-left">
+                  <div class="session-icon">
+                    <span class="material-icons">
+                      {{ sess.deviceType === 'mobile' ? 'smartphone' : (sess.deviceType === 'tablet' ? 'tablet' : 'computer') }}
+                    </span>
+                  </div>
+                  <div class="session-info">
+                    <div class="session-title">
+                      <strong>{{ sess.deviceName }}</strong>
+                      @if (sess.isCurrent) {
+                        <span class="badge badge-success" style="font-size: 11px;">This Device</span>
+                      }
+                    </div>
+                    <div class="session-sub">
+                      {{ sess.browser }} · {{ sess.os }}
+                    </div>
+                    <div class="session-time">
+                      Last active: {{ sess.isCurrent ? 'Active now' : formatDate(sess.lastActive) }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="session-right">
+                  @if (!sess.isCurrent) {
+                    <button class="btn btn-secondary btn-sm" (click)="deviceService.revokeSession(sess.id)">
+                      Revoke
+                    </button>
+                  } @else {
+                    <span class="current-label">Active</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
         </div>
-        <button class="btn btn-danger" (click)="signOut()">
-          <span class="material-icons" style="font-size:18px">power_settings_new</span> Sign Out
-        </button>
-      </div>
-    </div>
 
-    <!-- About -->
-    <div class="card about-card">
-      <div class="about-logo" [routerLink]="['/app/dashboard']" style="cursor: pointer;">
-        <img src="/assets/applogo.png" alt="Logo" style="width: 28px; height: 28px; object-fit: contain;" />
-        <span class="about-name brand-name"> <span class="black">FinTracker</span></span>
+        <!-- Security Best Practices Card -->
+        <div class="card security-tips-card">
+          <h4 class="tips-title">
+            <span class="material-icons" style="font-size: 20px;">security</span>
+            Device Security Recommendations
+          </h4>
+          <ul class="tips-list">
+            <li>
+              <strong>Security PIN Protection:</strong> Enable the Security PIN from the Change PIN tab to require authentication when viewing assets and financial statements.
+            </li>
+            <li>
+              <strong>Public or Shared Computers:</strong> Always sign out and close browser windows when using library, office, or shared computers.
+            </li>
+            <li>
+              <strong>Session Invalidation:</strong> If you suspect unauthorized access or lose a phone/laptop, click "Sign Out Other Devices" to terminate other sessions immediately.
+            </li>
+          </ul>
+        </div>
       </div>
-      <p>High-Precision Financial Dashboard · v1.0.0</p>
-      <p style="margin-top:4px">Built with Angular 20 · Firebase · Chart.js</p>
-    </div>
+    }
   }
 </div>
 

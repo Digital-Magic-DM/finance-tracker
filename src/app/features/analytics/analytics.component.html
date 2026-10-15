@@ -1,24 +1,51 @@
 <div class="analytics-page">
-  <div class="page-header">
-    <button class="btn btn-primary" (click)="isBuildingCustomChart.set(true)">
-      <span class="material-icons">add_chart</span> Build Custom Analytics
-    </button>
+  <!-- Top Bar with Timeframe Filter & Action -->
+  <div class="analytics-topbar">
+    <div class="title-area">
+      <h2>Portfolio & Financial Analytics</h2>
+      <p class="subtitle">Deep-dive into your cashflow trajectory, asset distribution, and custom metrics.</p>
+    </div>
+
+    <div class="topbar-actions">
+      <!-- Timeframe Selector -->
+      <div class="timeframe-selector">
+        <button type="button" class="tf-btn" [class.active]="selectedTimeframe() === '1M'" (click)="setTimeframe('1M')">1M</button>
+        <button type="button" class="tf-btn" [class.active]="selectedTimeframe() === '3M'" (click)="setTimeframe('3M')">3M</button>
+        <button type="button" class="tf-btn" [class.active]="selectedTimeframe() === '6M'" (click)="setTimeframe('6M')">6M</button>
+        <button type="button" class="tf-btn" [class.active]="selectedTimeframe() === 'YTD'" (click)="setTimeframe('YTD')">YTD</button>
+        <button type="button" class="tf-btn" [class.active]="selectedTimeframe() === '1Y'" (click)="setTimeframe('1Y')">1Y</button>
+        <button type="button" class="tf-btn" [class.active]="selectedTimeframe() === 'ALL'" (click)="setTimeframe('ALL')">ALL</button>
+      </div>
+
+      <button class="btn btn-primary btn-build" (click)="openCreateCustomChart()">
+        <span class="material-icons">add_chart</span> Build Custom Analytics
+      </button>
+    </div>
   </div>
 
+  <!-- Custom Analytics Builder Modal -->
   @if (isBuildingCustomChart()) {
-      <app-custom-analytics-builder (close)="isBuildingCustomChart.set(false)"></app-custom-analytics-builder>
+      <app-custom-analytics-builder 
+        [editConfig]="editingChart()" 
+        (close)="closeCustomBuilder()">
+      </app-custom-analytics-builder>
   }
 
-  <!-- Custom Widgets Section -->
+  <!-- Pinned Custom KPI Widgets Section -->
   @if (customWidgets().length > 0) {
-      <div class="summary-row custom-widgets-row">
+      <div class="custom-widgets-row">
           @for (widget of customWidgets(); track widget.config.id) {
-              <div class="card stat-card">
-                  <div class="card-header" style="padding: 0; border: none; margin-bottom: 8px;">
+              <div class="card stat-card custom-stat-widget">
+                  <div class="stat-header">
                       <p class="stat-label">{{ widget.config.title }}</p>
-                      <button class="btn btn-ghost btn-sm btn-delete" (click)="deleteCustomChart(widget.config.id)" title="Delete Widget">
-                          <span class="material-icons" style="font-size: 16px;">close</span>
-                      </button>
+                      <div class="action-icons">
+                          <button class="btn-icon-subtle" (click)="openEditCustomChart(widget.config)" title="Edit Widget">
+                              <span class="material-icons">edit</span>
+                          </button>
+                          <button class="btn-icon-subtle btn-delete" (click)="deleteCustomChart(widget.config.id)" title="Delete Widget">
+                              <span class="material-icons">close</span>
+                          </button>
+                      </div>
                   </div>
                   @if (widget.dataSignal(); as data) {
                       <div class="stat-value">
@@ -28,130 +55,272 @@
                               {{ data.data[0] || 0 | currency:'INR':'symbol':'1.0-0' }}
                           }
                       </div>
+                      <span class="badge badge-primary mt-4">{{ widget.config.metric | uppercase }}</span>
                   }
               </div>
           }
       </div>
   }
 
-  <!-- Custom Charts Section -->
+  <!-- Pinned Custom Analytics Charts Grid -->
   @if (customCharts().length > 0) {
-      <div class="custom-charts-grid">
-          @for (chart of customCharts(); track chart.config.id) {
-              <div class="card chart-section custom-chart-card">
-                  <div class="card-header">
-                      <h3>{{ chart.config.title }}</h3>
-                      <button class="btn btn-ghost btn-sm btn-delete" (click)="deleteCustomChart(chart.config.id)" title="Delete Chart">
-                          <span class="material-icons">delete_outline</span>
-                      </button>
+      <div class="custom-charts-container">
+          <div class="section-title-row">
+              <h3>
+                  <span class="material-icons" style="font-size: 18px; color: var(--accent-success-blend);">dashboard_customize</span>
+                  Custom Analytics Charts
+              </h3>
+              <span class="badge badge-success">{{ customCharts().length }} Active Views</span>
+          </div>
+
+          <div class="custom-charts-grid">
+              @for (chart of customCharts(); track chart.config.id) {
+                  <div class="card chart-section custom-chart-card" [class.full-width]="chart.config.cardWidth === 'full'">
+                      <div class="card-header">
+                          <div class="chart-title-box">
+                              <h3>{{ chart.config.title }}</h3>
+                              <span class="badge badge-primary">{{ chart.config.chartType | uppercase }} • {{ chart.config.metric | uppercase }}</span>
+                          </div>
+                          <div class="card-actions">
+                              <button class="btn-icon-subtle" (click)="openEditCustomChart(chart.config)" title="Edit Chart">
+                                  <span class="material-icons">tune</span>
+                              </button>
+                              <button class="btn-icon-subtle btn-delete" (click)="deleteCustomChart(chart.config.id)" title="Delete Chart">
+                                  <span class="material-icons">delete_outline</span>
+                              </button>
+                          </div>
+                      </div>
+                      @if (chart.dataSignal(); as data) {
+                          <app-dynamic-chart 
+                              [chartType]="chart.config.chartType"
+                              [palette]="chart.config.palette || 'default'"
+                              [labels]="data.labels"
+                              [dataset]="data.data"
+                              [isCurrency]="chart.config.metric !== 'Count'"
+                              [height]="280">
+                          </app-dynamic-chart>
+                      }
                   </div>
-                  @if (chart.dataSignal(); as data) {
-                      <app-dynamic-chart 
-                          [chartType]="chart.config.chartType"
-                          [labels]="data.labels"
-                          [dataset]="data.data"
-                          [height]="300">
-                      </app-dynamic-chart>
-                  }
-              </div>
-          }
+              }
+          </div>
       </div>
   }
 
-  <!-- Summary Cards -->
-  <div class="summary-row">
+  <!-- Financial Health KPI Summary Grid -->
+  <div class="kpi-grid">
     <div class="card stat-card">
-      <div class="material-icons stat-icon">account_balance_wallet</div>
-      <p class="stat-label">Total Income</p>
+      <div class="kpi-top">
+        <span class="material-icons stat-icon text-success">account_balance_wallet</span>
+        <span class="badge badge-success">Income</span>
+      </div>
+      <p class="stat-label">Total Cash Inflow</p>
       <div class="stat-value text-success">
         {{ totalIncome() | currency:'INR':'symbol':'1.0-0' }}
       </div>
+      <p class="stat-sub">In selected timeframe</p>
     </div>
+
     <div class="card stat-card">
-      <div class="material-icons stat-icon">money_off</div>
-      <p class="stat-label">Total Expense</p>
+      <div class="kpi-top">
+        <span class="material-icons stat-icon text-danger">money_off</span>
+        <span class="badge badge-danger">Expense</span>
+      </div>
+      <p class="stat-label">Total Outflow</p>
       <div class="stat-value text-danger">
         {{ totalExpense() | currency:'INR':'symbol':'1.0-0' }}
       </div>
+      <p class="stat-sub">Spends & investments</p>
     </div>
+
     <div class="card stat-card">
-      <div class="material-icons stat-icon">savings</div>
-      <p class="stat-label">Savings Rate</p>
-      <div class="stat-value">{{ savingsRate() | number:'1.1-1' }}%</div>
-      <div class="stat-change" [class.positive]="savingsRate() >= 0" [class.negative]="savingsRate() < 0">
-        {{ savingsRate() >= 20 ? 'Great savings!' : 'Keep saving more' }}
+      <div class="kpi-top">
+        <span class="material-icons stat-icon" [style.color]="netSavings() >= 0 ? '#10b981' : '#ef4444'">savings</span>
+        <span class="badge" [class.badge-success]="netSavings() >= 0" [class.badge-danger]="netSavings() < 0">
+          {{ netSavings() >= 0 ? '+ Surplus' : '- Deficit' }}
+        </span>
       </div>
+      <p class="stat-label">Net Savings / Cashflow</p>
+      <div class="stat-value" [class.text-success]="netSavings() >= 0" [class.text-danger]="netSavings() < 0">
+        {{ (netSavings() >= 0 ? '+' : '') + (netSavings() | currency:'INR':'symbol':'1.0-0') }}
+      </div>
+      <div class="stat-change" [class.positive]="savingsRate() >= 20" [class.negative]="savingsRate() < 0">
+        {{ savingsRate() | number:'1.1-1' }}% Savings Rate
+      </div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="kpi-top">
+        <span class="material-icons stat-icon" style="color: #06b6d4;">local_gas_station</span>
+        <span class="badge badge-primary">Runway</span>
+      </div>
+      <p class="stat-label">Emergency Buffer</p>
+      <div class="stat-value">
+        {{ liquidRunwayMonths() }} <span style="font-size: 16px; font-weight: 600; color: var(--text-muted);">mo</span>
+      </div>
+      <p class="stat-sub">Avg spend: {{ monthlyBurnRate() | currency:'INR':'symbol':'1.0-0' }}/mo</p>
     </div>
   </div>
 
-  <!-- Net Worth History Chart -->
+  <!-- Primary Charts Row 1: Monthly Cashflow Trajectory -->
   <div class="card chart-section">
     <div class="card-header">
-      <h3>Net Worth Over Time</h3>
-      <span class="badge badge-success">{{ networthHistory().length }} data points</span>
+      <div>
+        <h3>Cash Flow Trajectory (Income vs Expense vs Net)</h3>
+        <p class="subtitle">Multi-series comparison of monthly inflows, outflows, and net savings retention.</p>
+      </div>
+      <span class="badge badge-primary">{{ cashflowChartData().labels.length }} Months</span>
+    </div>
+    @if (cashflowChartData().labels.length > 0) {
+      <app-dynamic-chart 
+        [chartType]="'bar'"
+        [labels]="cashflowChartData().labels"
+        [datasets]="cashflowChartData().datasets"
+        [height]="300">
+      </app-dynamic-chart>
+    } @else {
+      <div class="empty-state">
+        <span class="material-icons empty-icon">bar_chart</span>
+        <span class="empty-title">No transactions recorded</span>
+        <span class="empty-text">Add your income and expense transactions to view your cash flow trajectory.</span>
+      </div>
+    }
+  </div>
+
+  <!-- Primary Charts Row 2: Net Worth Growth -->
+  <div class="card chart-section">
+    <div class="card-header">
+      <div>
+        <h3>Net Worth Trajectory Over Time</h3>
+        <p class="subtitle">Historical portfolio balance snapshots showing wealth accumulation.</p>
+      </div>
+      <span class="badge badge-success">{{ networthHistory().length }} Snapshots</span>
     </div>
     @if (networthHistory().length > 0) {
       <app-networth-chart [data]="networthHistory()" [height]="300" />
     } @else {
       <div class="empty-state">
         <span class="material-icons empty-icon">trending_up</span>
-        <span class="empty-title">No history yet</span>
-        <span class="empty-text">Visit daily to build your net worth history chart.</span>
+        <span class="empty-title">No snapshots recorded yet</span>
+        <span class="empty-text">Visit daily or add assets to automatically record your net worth snapshots.</span>
       </div>
     }
   </div>
 
-  <!-- Monthly Spending Trend -->
-  <div class="card monthly-trend">
-    <div class="card-header">
-      <h3>Monthly Spending Trend</h3>
-      <span class="badge badge-primary">Last 6 Months</span>
-    </div>
-    @if (monthlySpendingTrend().length > 0) {
-      <div class="trend-list">
-        @for (item of monthlySpendingTrend(); track item.month) {
-          <div class="trend-row">
-            <span class="trend-month fw-bold">{{ item.month }}</span>
-            <div class="trend-bar-wrap">
-              <div class="trend-bar" [style.width.%]="(item.amount / monthlySpendingTrend()[0].amount) * 100"></div>
-            </div>
-            <span class="trend-amount fw-bold">{{ item.amount | currency:'INR':'symbol':'1.0-0' }}</span>
+  <!-- Secondary Charts Row (Two Columns: Category Breakdown & Asset Allocation) -->
+  <div class="dual-charts-grid">
+    <!-- Expense by Category Card -->
+    <div class="card chart-section">
+      <div class="card-header">
+        <div>
+          <h3>Expense by Category</h3>
+          <p class="subtitle">Distribution of spending across distinct budget categories.</p>
+        </div>
+        <div class="view-toggle">
+          <button type="button" class="toggle-btn" [class.active]="categoryViewMode() === 'chart'" (click)="categoryViewMode.set('chart')">
+            <span class="material-icons">donut_small</span>
+          </button>
+          <button type="button" class="toggle-btn" [class.active]="categoryViewMode() === 'list'" (click)="categoryViewMode.set('list')">
+            <span class="material-icons">format_list_bulleted</span>
+          </button>
+        </div>
+      </div>
+
+      @if (categoryBreakdown().length > 0) {
+        @if (categoryViewMode() === 'chart') {
+          <app-dynamic-chart 
+            [chartType]="'doughnut'"
+            [palette]="'sunset'"
+            [labels]="categoryChartData().labels"
+            [dataset]="categoryChartData().dataset"
+            [height]="280">
+          </app-dynamic-chart>
+        } @else {
+          <div class="category-list">
+            @for (item of categoryBreakdown(); track item.cat) {
+              <div class="cat-row">
+                <div class="cat-name">{{ item.cat }}</div>
+                <div class="cat-bar-wrap">
+                  <div class="cat-bar" [style.width.%]="item.pct"></div>
+                </div>
+                <div class="cat-values">
+                  <span class="cat-amount">{{ item.val | currency:'INR':'symbol':'1.0-0' }}</span>
+                  <span class="cat-pct">{{ item.pct | number:'1.1-1' }}%</span>
+                </div>
+              </div>
+            }
           </div>
         }
+      } @else {
+        <div class="empty-state">
+          <span class="material-icons empty-icon">pie_chart</span>
+          <span class="empty-title">No expenses found</span>
+          <span class="empty-text">Record expenses in this timeframe to see category allocations.</span>
+        </div>
+      }
+    </div>
+
+    <!-- Asset Allocation & Wealth Distribution Card -->
+    <div class="card chart-section">
+      <div class="card-header">
+        <div>
+          <h3>Asset Allocation & Diversification</h3>
+          <p class="subtitle">Portfolio spread across asset classes and investment brokers.</p>
+        </div>
+        <div class="view-toggle">
+          <button type="button" class="toggle-btn text-toggle" [class.active]="assetAllocationMode() === 'type'" (click)="assetAllocationMode.set('type')">
+            Class
+          </button>
+          <button type="button" class="toggle-btn text-toggle" [class.active]="assetAllocationMode() === 'broker'" (click)="assetAllocationMode.set('broker')">
+            Broker
+          </button>
+        </div>
       </div>
-    } @else {
-      <div class="empty-state">
-        <span class="material-icons empty-icon">bar_chart</span>
-        <span class="empty-title">No spending data yet</span>
-      </div>
-    }
+
+      @if (assets().length > 0) {
+        @if (assetAllocationMode() === 'type') {
+          <app-dynamic-chart 
+            [chartType]="'polarArea'"
+            [palette]="'cyber'"
+            [labels]="assetAllocationByType().labels"
+            [dataset]="assetAllocationByType().dataset"
+            [height]="280">
+          </app-dynamic-chart>
+        } @else {
+          <app-dynamic-chart 
+            [chartType]="'pie'"
+            [palette]="'ocean'"
+            [labels]="assetAllocationByBroker().labels"
+            [dataset]="assetAllocationByBroker().dataset"
+            [height]="280">
+          </app-dynamic-chart>
+        }
+      } @else {
+        <div class="empty-state">
+          <span class="material-icons empty-icon">account_balance</span>
+          <span class="empty-title">No portfolio assets</span>
+          <span class="empty-text">Add stocks, mutual funds, or bank balances in the Assets tab.</span>
+        </div>
+      }
+    </div>
   </div>
 
-  <!-- Category Breakdown -->
-  <div class="card category-breakdown">
-    <div class="card-header">
-      <h3>Expense by Category</h3>
+  <!-- Weekly Spending Rhythm Pattern -->
+  @if (hasDayOfWeekData()) {
+    <div class="card chart-section">
+      <div class="card-header">
+        <div>
+          <h3>Weekly Spending Rhythm</h3>
+          <p class="subtitle">Analyze day-of-the-week spending spikes to pinpoint weekend vs weekday budget habits.</p>
+        </div>
+        <span class="badge badge-primary">Day-of-Week Pattern</span>
+      </div>
+      <app-dynamic-chart 
+        [chartType]="'bar'"
+        [palette]="'cyber'"
+        [labels]="dayOfWeekSpending().labels"
+        [dataset]="dayOfWeekSpending().dataset"
+        [height]="220">
+      </app-dynamic-chart>
     </div>
-    @if (categoryBreakdown().length > 0) {
-      <div class="category-list">
-        @for (item of categoryBreakdown(); track item.cat) {
-          <div class="cat-row">
-            <div class="cat-name">{{ item.cat }}</div>
-            <div class="cat-bar-wrap">
-              <div class="cat-bar" [style.width.%]="item.pct"></div>
-            </div>
-            <div class="cat-values">
-              <span class="cat-amount">{{ item.val | currency:'INR':'symbol':'1.0-0' }}</span>
-              <span class="cat-pct">{{ item.pct | number:'1.1-1' }}%</span>
-            </div>
-          </div>
-        }
-      </div>
-    } @else {
-      <div class="empty-state">
-        <span class="material-icons empty-icon">folder</span>
-        <span class="empty-title">No expense data</span>
-      </div>
-    }
-  </div>
+  }
 </div>

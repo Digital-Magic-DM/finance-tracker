@@ -633,3 +633,248 @@ a { text-decoration: none; color: inherit; }
   .empty-title { font-size: 16px; font-weight: 600; color: var(--text-secondary); }
   .empty-text { font-size: 13px; max-width: 280px; }
 }
+
+/* ===== Custom Select Dropdown Styling ===== */
+
+/* Native select hidden accessibly when custom select directive is applied */
+.custom-select-native-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.custom-select-wrapper {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  box-sizing: border-box;
+
+  &.is-form-control {
+    display: block;
+    width: 100%;
+  }
+
+  &.is-form-select {
+    display: inline-flex;
+    min-width: 160px;
+  }
+
+  &.is-app-filter {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+.custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  user-select: none;
+
+  &:hover:not(:disabled) {
+    background: var(--bg-card-hover);
+  }
+
+  &:focus-visible,
+  &.is-open {
+    outline: none;
+    background: var(--bg-card-hover);
+    box-shadow: 4px 4px 0px var(--border-color);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .custom-select-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .custom-select-arrow {
+    font-size: 18px;
+    color: var(--text-muted);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+
+    &.is-open {
+      transform: rotate(180deg);
+      color: var(--text-primary);
+    }
+  }
+
+  /* Variant: App Filter (as shown in user's filter-list bar) */
+  &.is-app-filter {
+    display: inline-flex;
+    width: auto;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    box-shadow: none !important;
+    gap: 4px;
+
+    &:hover:not(:disabled) {
+      opacity: 0.85;
+    }
+
+    .custom-select-arrow {
+      font-size: 16px;
+    }
+  }
+
+  /* Variant: Form Select (Settings screen inline action bar) */
+  &.is-form-select {
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    font-size: 13.5px;
+    min-width: 160px;
+    width: auto;
+
+    &:focus-visible,
+    &.is-open {
+      box-shadow: 2px 2px 0px var(--border-color);
+    }
+  }
+}
+
+/* Floating Dropdown Menu (Appended to document.body) */
+.custom-select-menu {
+  position: fixed;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-sizing: border-box;
+  animation: customSelectMenuFade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  [data-theme="dark"] & {
+    background: #0d0d0d;
+    border-color: #333333;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 999px;
+
+    &:hover {
+      background: var(--text-muted);
+    }
+  }
+}
+
+.custom-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s ease;
+  line-height: 1.4;
+
+  &:hover:not(.disabled) {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    transform: translateX(2px);
+  }
+
+  &.is-selected {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    font-weight: 700;
+
+    .custom-select-option-text {
+      color: var(--bg-primary);
+    }
+
+    .custom-select-check {
+      color: var(--bg-primary);
+    }
+  }
+
+  &.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .custom-select-option-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .custom-select-check {
+    font-size: 16px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+}
+
+@keyframes customSelectMenuFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+

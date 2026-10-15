@@ -159,7 +159,7 @@ export type NetworthPeriod = '3M' | '6M' | 'YTM' | '1Y' | 'ALL';
                 font-size: 11px;
                 font-weight: 700;
                 letter-spacing: 0.02em;
-                color: var(--text-muted, #666666);
+                color: var(--text-secondary, #94a3b8);
                 border-radius: 4px;
                 cursor: pointer;
                 transition: all 0.15s ease;
@@ -491,8 +491,8 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
 
         const pts = this.filteredData();
         const isDark = this.themeService.isDark();
-        const textColor = this.resolveColor('--text-muted', '#666666');
-        const borderColor = this.resolveColor('--border-light', isDark ? '#262626' : '#e5e7eb');
+        const textColor = isDark ? '#cbd5e1' : '#475569';
+        const borderColor = this.resolveColor('--border-light', isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)');
         const networthColor = isDark ? '#38bdf8' : '#0284c7';
         const investedColor = isDark ? '#a78bfa' : '#7c3aed';
         const profitColor = this.currentProfit() >= 0 
@@ -568,10 +568,10 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
                     tooltip: {
                         mode: 'index',
                         intersect: false,
-                        backgroundColor: this.resolveColor('--bg-card', isDark ? '#171717' : '#ffffff'),
-                        titleColor: this.resolveColor('--text-primary', isDark ? '#ffffff' : '#000000'),
-                        bodyColor: this.resolveColor('--text-secondary', isDark ? '#cccccc' : '#333333'),
-                        borderColor: this.resolveColor('--border-color', isDark ? '#404040' : '#e0e0e0'),
+                        backgroundColor: isDark ? '#111111' : '#ffffff',
+                        titleColor: isDark ? '#f8fafc' : '#0f172a',
+                        bodyColor: isDark ? '#cbd5e1' : '#334155',
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)',
                         borderWidth: 1,
                         padding: 10,
                         boxPadding: 4,
@@ -631,8 +631,8 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
 
         const pts = this.filteredData();
         const isDark = this.themeService.isDark();
-        const textColor = this.resolveColor('--text-muted', '#666666');
-        const borderColor = this.resolveColor('--border-light', isDark ? '#262626' : '#e5e7eb');
+        const textColor = isDark ? '#cbd5e1' : '#475569';
+        const borderColor = this.resolveColor('--border-light', isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)');
         const networthColor = isDark ? '#38bdf8' : '#0284c7';
         const investedColor = isDark ? '#a78bfa' : '#7c3aed';
         const profitColor = this.currentProfit() >= 0 
@@ -690,10 +690,10 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
         // Update tooltip
         if (this.chart.options.plugins?.tooltip) {
             const tooltip = this.chart.options.plugins.tooltip as any;
-            tooltip.backgroundColor = this.resolveColor('--bg-card', isDark ? '#171717' : '#ffffff');
-            tooltip.titleColor = this.resolveColor('--text-primary', isDark ? '#ffffff' : '#000000');
-            tooltip.bodyColor = this.resolveColor('--text-secondary', isDark ? '#cccccc' : '#333333');
-            tooltip.borderColor = this.resolveColor('--border-color', isDark ? '#404040' : '#e0e0e0');
+            tooltip.backgroundColor = isDark ? '#111111' : '#ffffff';
+            tooltip.titleColor = isDark ? '#f8fafc' : '#0f172a';
+            tooltip.bodyColor = isDark ? '#cbd5e1' : '#334155';
+            tooltip.borderColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)';
         }
 
         this.chart.update();

@@ -1,0 +1,230 @@
+.pin-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.pin-lock-modal {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transition: transform var(--transition-fast);
+
+  &.shake {
+    animation: shake 0.4s ease-in-out;
+  }
+}
+
+.pin-brand {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.pin-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+
+  .lock-icon {
+    font-size: 28px;
+    color: var(--text-primary);
+  }
+}
+
+.pin-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px;
+}
+
+.pin-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Dots */
+.pin-dots {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background: transparent;
+  transition: all var(--transition-fast);
+
+  &.filled {
+    background: var(--text-primary);
+    transform: scale(1.15);
+  }
+}
+
+.pin-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-danger, #ef4444);
+  font-size: 12.5px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  animation: fadeIn 0.2s ease;
+
+  .material-icons {
+    font-size: 16px;
+  }
+}
+
+/* Keypad */
+.pin-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 280px;
+  margin-bottom: 20px;
+}
+
+.key-btn {
+  height: 56px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light, #333);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  user-select: none;
+
+  &:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-color);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.key-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  &.key-icon .material-icons {
+    font-size: 22px;
+    color: var(--text-muted);
+  }
+}
+
+.pin-footer {
+  margin-top: 8px;
+}
+
+.forgot-pin-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+/* Shake Animation */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Forgot modal */
+.forgot-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.forgot-modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 380px;
+  text-align: center;
+
+  .forgot-shield {
+    font-size: 40px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    color: var(--text-primary);
+  }
+
+  p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+}
+
+.forgot-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+
+  .btn {
+    border-radius: var(--radius-md);
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}

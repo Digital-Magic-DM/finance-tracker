@@ -1,8 +1,21 @@
 import { Component, Input, OnChanges, AfterViewInit, ElementRef, ViewChild, OnDestroy, inject, effect } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 import { ThemeService } from '../../services/theme.service';
+import { ChartPalette, ChartType } from '../../models/finance.models';
 
 Chart.register(...registerables);
+
+export interface DynamicChartDataset {
+    label?: string;
+    data: number[];
+    backgroundColor?: any;
+    borderColor?: any;
+    borderWidth?: number;
+    fill?: boolean;
+    tension?: number;
+    borderRadius?: number;
+    type?: any;
+}
 
 @Component({
     selector: 'app-dynamic-chart',
@@ -13,9 +26,13 @@ Chart.register(...registerables);
 export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     @ViewChild('canvas') canvasRef?: ElementRef<HTMLCanvasElement>;
     
-    @Input() chartType: 'bar' | 'line' | 'pie' | 'doughnut' = 'bar';
+    @Input() chartType: ChartType = 'bar';
     @Input() labels: string[] = [];
     @Input() dataset: number[] = [];
+    @Input() datasets?: DynamicChartDataset[];
+    @Input() palette: ChartPalette = 'default';
+    @Input() showLegend?: boolean;
+    @Input() isCurrency = true;
     @Input() height = 240;
 
     private themeService = inject(ThemeService);
@@ -30,7 +47,7 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
     }
 
     ngAfterViewInit() { 
-        if (this.labels.length > 0) this.buildChart(); 
+        if (this.hasData()) this.buildChart(); 
     }
     
     ngOnChanges() { 
@@ -38,8 +55,7 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
             this.chart.destroy(); 
             this.chart = undefined;
         }
-        if (this.labels.length > 0) {
-            // Need setTimeout to allow the view to render the canvas if transitioning from empty state
+        if (this.hasData()) {
             setTimeout(() => this.buildChart(), 0);
         }
     }
@@ -48,8 +64,46 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
         this.chart?.destroy(); 
     }
 
+    public hasData(): boolean {
+        if (this.datasets && this.datasets.length > 0) {
+            return this.datasets.some(d => d.data && d.data.length > 0);
+        }
+        return this.labels.length > 0 && this.dataset.length > 0;
+    }
+
     private resolveColor(varName: string, fallback: string): string {
         return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || fallback;
+    }
+
+    private getPaletteColors(isDark: boolean): string[] {
+        switch (this.palette) {
+            case 'emerald':
+                return ['#10b981', '#059669', '#34d399', '#14b8a6', '#6ee7b7', '#047857', '#0d9488', '#2dd4bf'];
+            case 'sunset':
+                return ['#f97316', '#fb923c', '#f43f5e', '#e11d48', '#f59e0b', '#fbbf24', '#ea580c', '#be123c'];
+            case 'cyber':
+                return ['#8b5cf6', '#06b6d4', '#ec4899', '#3b82f6', '#a855f7', '#6366f1', '#d946ef', '#14b8a6'];
+            case 'ocean':
+                return ['#0284c7', '#0ea5e9', '#06b6d4', '#14b8a6', '#38bdf8', '#22d3ee', '#2563eb', '#0891b2'];
+            case 'monochrome':
+                return isDark
+                    ? ['#ffffff', '#e4e4e7', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155']
+                    : ['#000000', '#18181b', '#334155', '#475569', '#64748b', '#94a3b8', '#cbd5e1'];
+            case 'default':
+            default:
+                return [
+                    isDark ? '#38bdf8' : '#000000',
+                    this.resolveColor('--asset-stock', '#3b82f6'),
+                    this.resolveColor('--asset-mf', '#8b5cf6'),
+                    this.resolveColor('--asset-etf', '#ec4899'),
+                    this.resolveColor('--asset-gold', '#eab308'),
+                    this.resolveColor('--asset-cash', '#10b981'),
+                    this.resolveColor('--asset-bond', '#14b8a6'),
+                    this.resolveColor('--asset-us-stock', '#06b6d4'),
+                    this.resolveColor('--asset-re', '#f97316'),
+                    '#6366f1', '#64748b', '#d97706'
+                ];
+        }
     }
 
     private buildChart() {
@@ -57,75 +111,161 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
         const ctx = this.canvasRef.nativeElement.getContext('2d');
         if (!ctx) return;
 
-        const textColor = this.resolveColor('--text-muted', '#666666');
-        const borderColor = this.resolveColor('--border-light', 'rgba(0,0,0,0.1)');
-        const primaryColor = this.resolveColor('--text-primary', '#000000');
-        const bgPrimary = this.resolveColor('--bg-card', '#ffffff');
+        const isDark = this.themeService.isDark();
+        const textColor = isDark ? '#cbd5e1' : '#475569';
+        const legendColor = isDark ? '#f1f5f9' : '#1e293b';
+        const borderColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)';
+        const bgCard = isDark ? '#111111' : '#ffffff';
 
-        const colorPalette = [
-            primaryColor,
-            this.resolveColor('--asset-stock', '#FF5252'),
-            this.resolveColor('--asset-mf', '#FF4081'),
-            this.resolveColor('--asset-etf', '#E040FB'),
-            this.resolveColor('--asset-gold', '#FFD740'),
-            this.resolveColor('--asset-cash', '#69F0AE'),
-            this.resolveColor('--asset-re', '#40C4FF'),
-            this.resolveColor('--text-secondary', '#888'),
-            '#333', '#aaa', '#4a4a4a', '#8a8a8a', '#111'
-        ];
+        const paletteColors = this.getPaletteColors(isDark);
+        const primaryColor = paletteColors[0];
 
         const isCircular = this.chartType === 'pie' || this.chartType === 'doughnut';
+        const isRadial = this.chartType === 'polarArea' || this.chartType === 'radar';
+        const isArea = this.chartType === 'area';
+        const actualType = (isArea ? 'line' : this.chartType) as keyof import('chart.js').ChartTypeRegistry;
+
+        const shouldDisplayLegend = this.showLegend !== undefined 
+            ? this.showLegend 
+            : (isCircular || isRadial || (this.datasets && this.datasets.length > 1));
+
+        let chartDatasets: any[] = [];
+
+        if (this.datasets && this.datasets.length > 0) {
+            chartDatasets = this.datasets.map((ds, idx) => {
+                const color = ds.borderColor || ds.backgroundColor || paletteColors[idx % paletteColors.length];
+                return {
+                    label: ds.label || `Series ${idx + 1}`,
+                    data: ds.data,
+                    backgroundColor: ds.backgroundColor || (isArea || ds.fill ? `${color}33` : color),
+                    borderColor: ds.borderColor || color,
+                    borderWidth: ds.borderWidth !== undefined ? ds.borderWidth : 2,
+                    fill: ds.fill !== undefined ? ds.fill : isArea,
+                    tension: ds.tension !== undefined ? ds.tension : 0.3,
+                    borderRadius: ds.borderRadius !== undefined ? ds.borderRadius : (actualType === 'bar' ? 4 : 0),
+                    type: ds.type
+                };
+            });
+        } else {
+            let bg: any = primaryColor;
+            let border: any = primaryColor;
+
+            if (isCircular || isRadial) {
+                bg = paletteColors;
+                border = isDark ? '#0d0d0d' : '#ffffff';
+            } else if (isArea) {
+                // Gradient fill for area charts
+                const gradient = ctx.createLinearGradient(0, 0, 0, this.height);
+                gradient.addColorStop(0, `${primaryColor}66`); // 40% opacity
+                gradient.addColorStop(1, `${primaryColor}05`); // 2% opacity
+                bg = gradient;
+                border = primaryColor;
+            }
+
+            chartDatasets = [{
+                data: this.dataset,
+                backgroundColor: bg,
+                borderColor: border,
+                borderWidth: isCircular ? 2 : (actualType === 'bar' ? 1.5 : 2.5),
+                borderRadius: actualType === 'bar' ? 4 : 0,
+                fill: isArea,
+                tension: actualType === 'line' || isArea ? 0.3 : 0
+            }];
+        }
+
+        // Setup Scales based on chart family
+        let scalesConfig: any = {};
+        if (isRadial) {
+            scalesConfig = {
+                r: {
+                    grid: { color: borderColor },
+                    angleLines: { color: borderColor },
+                    ticks: {
+                        color: textColor,
+                        backdropColor: 'transparent',
+                        font: { family: 'Inter', size: 10, weight: 600 }
+                    }
+                }
+            };
+        } else if (!isCircular) {
+            scalesConfig = {
+                x: {
+                    grid: { color: borderColor, display: false },
+                    ticks: { 
+                        color: textColor, 
+                        font: { family: 'Inter', size: 10, weight: 600 }, 
+                        maxRotation: 45, 
+                        minRotation: 0 
+                    },
+                    border: { display: true, color: borderColor }
+                },
+                y: {
+                    grid: { color: borderColor },
+                    ticks: {
+                        color: textColor,
+                        font: { family: 'Inter', size: 10, weight: 600 },
+                        callback: (val: any) => {
+                            if (!this.isCurrency) return val;
+                            const num = Number(val);
+                            if (Math.abs(num) >= 10000000) return '₹' + (num / 10000000).toFixed(1) + 'Cr';
+                            if (Math.abs(num) >= 100000) return '₹' + (num / 100000).toFixed(1) + 'L';
+                            if (Math.abs(num) >= 1000) return '₹' + (num / 1000).toFixed(0) + 'k';
+                            return '₹' + num;
+                        },
+                    },
+                    border: { display: false }
+                },
+            };
+        }
 
         this.chart = new Chart(ctx, {
-            type: this.chartType,
+            type: actualType,
             data: {
                 labels: this.labels,
-                datasets: [{
-                    data: this.dataset,
-                    backgroundColor: isCircular ? colorPalette : primaryColor,
-                    borderColor: isCircular ? bgPrimary : primaryColor,
-                    borderWidth: isCircular ? 2 : 2,
-                    borderRadius: this.chartType === 'bar' ? 0 : 0 // brutalist
-                }]
+                datasets: chartDatasets
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: { 
-                        display: isCircular,
-                        position: 'right',
-                        labels: { color: textColor, font: { family: 'Inter', size: 10, weight: 600 } }
+                        display: shouldDisplayLegend,
+                        position: isCircular || isRadial ? 'right' : 'top',
+                        labels: { 
+                            color: legendColor, 
+                            font: { family: 'Inter', size: 11, weight: 600 },
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
                     },
                     tooltip: {
-                        backgroundColor: bgPrimary,
-                        titleColor: primaryColor,
-                        bodyColor: this.resolveColor('--text-secondary', '#333'),
-                        borderColor: primaryColor,
-                        borderWidth: 2,
-                        padding: 12,
-                        cornerRadius: 0,
+                        backgroundColor: bgCard,
+                        titleColor: isDark ? '#f8fafc' : '#0f172a',
+                        bodyColor: isDark ? '#cbd5e1' : '#334155',
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)',
+                        borderWidth: 1,
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (context) => {
+                                const label = context.dataset.label || context.label || '';
+                                const rawVal = context.raw as number;
+                                if (!this.isCurrency) return ` ${label}: ${rawVal.toLocaleString()}`;
+                                return ` ${label}: ₹${Math.round(rawVal).toLocaleString('en-IN')}`;
+                            }
+                        }
                     },
                 },
-                scales: isCircular ? {} : {
-                    x: {
-                        grid: { color: borderColor, display: false },
-                        ticks: { color: textColor, font: { family: 'Inter', size: 10 }, maxRotation: 45, minRotation: 0 },
-                        border: { display: true, color: primaryColor }
+                scales: scalesConfig,
+                elements: actualType === 'line' || isArea ? {
+                    point: { 
+                        radius: 2, 
+                        hoverRadius: 6, 
+                        backgroundColor: primaryColor, 
+                        borderWidth: 2, 
+                        borderColor: bgCard 
                     },
-                    y: {
-                        grid: { color: borderColor },
-                        ticks: {
-                            color: textColor,
-                            font: { family: 'Inter', size: 10 },
-                            callback: (val) => '₹' + (Number(val) / 1000).toFixed(0) + 'k',
-                        },
-                        border: { display: false }
-                    },
-                },
-                elements: this.chartType === 'line' ? {
-                    point: { radius: 0, hoverRadius: 6, backgroundColor: primaryColor, borderWidth: 2, borderColor: bgPrimary },
-                    line: { tension: 0, borderWidth: 3 }, // Brutal tension 0
+                    line: { tension: 0.3 }
                 } : {},
             },
         });

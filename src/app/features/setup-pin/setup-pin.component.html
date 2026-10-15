@@ -1,0 +1,133 @@
+<section class="setup-pin-page">
+  <!-- Subtle ambient background glow -->
+  <div class="blur-blob one"></div>
+  <div class="blur-blob two"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="setup-nav">
+    <div class="brand-link">
+      <img src="/assets/applogo.png" alt="FinTracker" class="brand-logo" />
+      <span class="brand-name">FinTracker</span>
+    </div>
+    <button
+      type="button"
+      class="btn-theme-toggle"
+      (click)="themeService.toggle()"
+      [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      title="Toggle theme">
+      <span class="material-icons">
+        {{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}
+      </span>
+    </button>
+  </header>
+
+  <div class="setup-wrapper">
+    <div class="setup-card animate-fade-in">
+      
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="icon-badge">
+          <span class="material-icons">lock</span>
+        </div>
+        <h2>Set Security PIN</h2>
+        <p class="subtitle">
+          Configure a 4 to 6 digit security PIN to protect your financial account.
+        </p>
+      </div>
+
+      <!-- Compact User Session Indicator -->
+      <div class="user-session-bar">
+        <div class="user-meta">
+          <span class="material-icons user-icon">account_circle</span>
+          <span class="user-email" [title]="user()?.email">{{ user()?.email || 'Authenticated User' }}</span>
+        </div>
+        <button type="button" class="btn-signout" (click)="signOut()" title="Sign out / switch account">
+          <span class="material-icons">logout</span>
+          <span>Sign Out</span>
+        </button>
+      </div>
+
+      @if (error()) {
+        <div class="error-msg animate-fade-in">
+          <span class="material-icons">error_outline</span>
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <!-- PIN Setup Form -->
+      <form class="setup-form" (submit)="$event.preventDefault(); handleSetPin()">
+        
+        <!-- Field 1: New PIN -->
+        <div class="form-group">
+          <div class="label-row">
+            <label class="form-label" for="new-pin-input">New PIN</label>
+            <button type="button" class="btn-toggle-reveal" (click)="toggleShowPin()">
+              <span class="material-icons">{{ showPin() ? 'visibility_off' : 'visibility' }}</span>
+              <span>{{ showPin() ? 'Hide' : 'Show' }}</span>
+            </button>
+          </div>
+          <input
+            id="new-pin-input"
+            [type]="showPin() ? 'text' : 'password'"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="6"
+            [(ngModel)]="newPin"
+            name="newPin"
+            placeholder="Enter 4 to 6 digits"
+            class="form-input pin-input"
+            autocomplete="new-password"
+            autofocus />
+        </div>
+
+        <!-- Field 2: Confirm PIN -->
+        <div class="form-group">
+          <label class="form-label" for="confirm-pin-input">Confirm PIN</label>
+          <input
+            id="confirm-pin-input"
+            [type]="showPin() ? 'text' : 'password'"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="6"
+            [(ngModel)]="confirmPin"
+            name="confirmPin"
+            placeholder="Re-enter your PIN"
+            class="form-input pin-input"
+            autocomplete="new-password" />
+        </div>
+
+        <!-- Compact Hint Helper -->
+        <div class="pin-hint-row">
+          @if (newPin() && confirmPin() && newPin() !== confirmPin()) {
+            <span class="hint-msg error">
+              <span class="material-icons">close</span> PINs do not match
+            </span>
+          } @else if (newPin().length >= 4 && newPin() === confirmPin()) {
+            <span class="hint-msg success">
+              <span class="material-icons">check</span> PINs match
+            </span>
+          } @else {
+            <span class="hint-msg">
+              <span class="material-icons">info</span> 4 to 6 numeric digits required
+            </span>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="btn btn-primary btn-submit"
+          [disabled]="isSubmitting() || newPin().length < 4 || newPin() !== confirmPin()">
+          @if (isSubmitting()) {
+            <span class="material-icons rotating">sync</span>
+            <span>Securing Account...</span>
+          } @else {
+            <span class="material-icons">lock_open</span>
+            <span>Set PIN &amp; Continue</span>
+          }
+        </button>
+      </form>
+
+    </div>
+  </div>
+</section>

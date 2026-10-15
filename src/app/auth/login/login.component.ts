@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { Meta, Title } from '@angular/platform-browser';
 import { ThemeService } from '../../services/theme.service';
 import { PwaService } from '../../services/pwa.service';
+import { PinSecurityService } from '../../services/pin-security.service';
 
 @Component({
     selector: 'app-login',
@@ -46,6 +47,8 @@ export class LoginComponent {
         this.error.set('');
     }
 
+    private pinSecurity = inject(PinSecurityService);
+
     submitEmailAuth() {
         if (!this.email || !this.password) {
             this.error.set('Please enter email and password.');
@@ -65,7 +68,15 @@ export class LoginComponent {
             : this.authService.signInWithEmail(this.email, this.password);
 
         authAction.subscribe({
-            next: () => {
+            next: async () => {
+                const user = this.authService.getCurrentUser();
+                if (user) {
+                    const hasPin = await this.pinSecurity.ensureLoaded(user.uid);
+                    if (!hasPin) {
+                        this.router.navigate(['/setup-pin']);
+                        return;
+                    }
+                }
                 this.router.navigate(['/app/dashboard']);
             },
             error: (err: any) => {
@@ -101,7 +112,15 @@ export class LoginComponent {
         this.loading.set(true);
         this.error.set('');
         this.authService.signInWithGoogle().subscribe({
-            next: () => {
+            next: async () => {
+                const user = this.authService.getCurrentUser();
+                if (user) {
+                    const hasPin = await this.pinSecurity.ensureLoaded(user.uid);
+                    if (!hasPin) {
+                        this.router.navigate(['/setup-pin']);
+                        return;
+                    }
+                }
                 this.router.navigate(['/app/dashboard']);
             },
             error: (err: any) => {

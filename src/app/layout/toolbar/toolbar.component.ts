@@ -37,7 +37,8 @@ export class ToolbarComponent {
         this.router.events.pipe(
             filter((e) => e instanceof NavigationEnd),
             map(() => {
-                const parts = this.router.url.split('/');
+                const urlWithoutQuery = this.router.url.split('?')[0];
+                const parts = urlWithoutQuery.split('/');
                 const url = parts[2] || parts[1] || 'dashboard';
                 // Handle complex routes like market-dashboard -> Market
                 const title = url.split('-')[0];

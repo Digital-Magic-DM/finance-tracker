@@ -10,7 +10,7 @@ import { Asset, AssetType, ASSET_COLORS } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportDataComponent } from '../settings/import-data/import-data.component';
 import { LocationPickerComponent } from '../../shared/location-picker/location-picker.component';
-
+import { CustomSelectDirective } from '../../shared/directives/custom-select.directive';
 
 interface AssetGroup {
     type: string;
@@ -32,7 +32,7 @@ interface AssetGroup {
 @Component({
     selector: 'app-assets',
     standalone: true,
-    imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent, LocationPickerComponent],
+    imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent, LocationPickerComponent, CustomSelectDirective],
     templateUrl: './assets.component.html',
     styleUrl: './assets.component.scss',
 })

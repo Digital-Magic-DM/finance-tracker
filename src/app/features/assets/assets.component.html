@@ -166,7 +166,7 @@
     @if (availableApps().length > 1) {
       <div class="app-filter-wrapper">
         <span class="material-icons" style="font-size: 16px; color: var(--text-muted);">filter_list</span>
-        <select class="app-filter-select" [ngModel]="appFilter()" (ngModelChange)="appFilter.set($event)">
+        <select class="app-filter-select" appCustomSelect [ngModel]="appFilter()" (ngModelChange)="appFilter.set($event)">
           <option value="All" [selected]="appFilter() === 'All'">All Apps</option>
           @for (app of availableApps(); track app) {
             <option [value]="app" [selected]="appFilter() === app">{{ app }}</option>
@@ -650,7 +650,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Type *</label>
-            <select class="form-control" [ngModel]="form().type"
+            <select class="form-control" appCustomSelect [ngModel]="form().type"
               (ngModelChange)="updateForm('type', $event)">
               @for (t of assetTypes; track t) {
                 <option [value]="t" [selected]="t === form().type">{{ getTypeLabel(t) }}</option>
@@ -659,7 +659,7 @@
           </div>
           <div class="form-group">
             <label>Currency</label>
-            <select class="form-control" [ngModel]="form().currency"
+            <select class="form-control" appCustomSelect [ngModel]="form().currency"
               (ngModelChange)="updateForm('currency', $event)">
               <option value="INR" [selected]="form().currency === 'INR'">INR (₹)</option>
               <option value="USD" [selected]="form().currency === 'USD'">USD ($)</option>
@@ -695,7 +695,7 @@
           <div class="form-row">
             <div class="form-group">
               <label>Bond Category / Sub-Type</label>
-              <select class="form-control" [ngModel]="form().subType || 'Corporate Bond'"
+              <select class="form-control" appCustomSelect [ngModel]="form().subType || 'Corporate Bond'"
                 (ngModelChange)="updateForm('subType', $event)">
                 <option value="Corporate Bond">Corporate Bond (NCD)</option>
                 <option value="Govt Bond (G-Sec)">Government Bond (G-Sec / T-Bill)</option>
@@ -783,7 +783,7 @@
           <div class="form-row">
             <div class="form-group">
               <label>App Source</label>
-              <select class="form-control" [ngModel]="showCustomApp() ? 'Other' : form().appSource"
+              <select class="form-control" appCustomSelect [ngModel]="showCustomApp() ? 'Other' : form().appSource"
                 (ngModelChange)="updateAppSource($event)">
                 @for (app of predefinedApps; track app) {
                   <option [value]="app" [selected]="app === (showCustomApp() ? 'Other' : form().appSource)">{{ app }}</option>

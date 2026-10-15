@@ -28,4 +28,9 @@
 
   <!-- AI Assistant Overlay -->
   <app-ai-chat></app-ai-chat>
+
+  <!-- Security PIN Lock Screen -->
+  @if (pinSecurity.isLocked()) {
+    <app-pin-lock />
+  }
 </div>

@@ -1,0 +1,73 @@
+<div class="pin-lock-overlay">
+  <div class="pin-lock-modal" [class.shake]="shakeError()">
+    <!-- Branding -->
+    <div class="pin-brand">
+      <div class="pin-icon-wrap">
+        <span class="material-icons lock-icon">lock</span>
+      </div>
+      <h2 class="pin-title">Security PIN Required</h2>
+      <p class="pin-subtitle">Enter your 4-digit PIN to access your financial data</p>
+    </div>
+
+    <!-- PIN Visual Dots -->
+    <div class="pin-dots">
+      <div class="pin-dot" [class.filled]="enteredPin().length >= 1"></div>
+      <div class="pin-dot" [class.filled]="enteredPin().length >= 2"></div>
+      <div class="pin-dot" [class.filled]="enteredPin().length >= 3"></div>
+      <div class="pin-dot" [class.filled]="enteredPin().length >= 4"></div>
+    </div>
+
+    <!-- Error message -->
+    @if (error()) {
+      <div class="pin-error-msg">
+        <span class="material-icons">error_outline</span>
+        <span>{{ error() }}</span>
+      </div>
+    }
+
+    <!-- Numeric Keypad -->
+    <div class="pin-keypad">
+      <button type="button" class="key-btn" (click)="appendDigit('1')">1</button>
+      <button type="button" class="key-btn" (click)="appendDigit('2')">2</button>
+      <button type="button" class="key-btn" (click)="appendDigit('3')">3</button>
+
+      <button type="button" class="key-btn" (click)="appendDigit('4')">4</button>
+      <button type="button" class="key-btn" (click)="appendDigit('5')">5</button>
+      <button type="button" class="key-btn" (click)="appendDigit('6')">6</button>
+
+      <button type="button" class="key-btn" (click)="appendDigit('7')">7</button>
+      <button type="button" class="key-btn" (click)="appendDigit('8')">8</button>
+      <button type="button" class="key-btn" (click)="appendDigit('9')">9</button>
+
+      <button type="button" class="key-btn key-text" (click)="clearPin()">C</button>
+      <button type="button" class="key-btn" (click)="appendDigit('0')">0</button>
+      <button type="button" class="key-btn key-icon" (click)="deleteDigit()" aria-label="Backspace">
+        <span class="material-icons">backspace</span>
+      </button>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="pin-footer">
+      <button type="button" class="forgot-pin-btn" (click)="showForgotModal.set(true)">
+        Forgot PIN?
+      </button>
+    </div>
+  </div>
+
+  <!-- Forgot PIN Modal -->
+  @if (showForgotModal()) {
+    <div class="forgot-modal-backdrop" (click)="showForgotModal.set(false)">
+      <div class="forgot-modal-content" (click)="$event.stopPropagation()">
+        <span class="material-icons forgot-shield">shield</span>
+        <h3>Reset Security PIN</h3>
+        <p>
+          For your financial data security, your PIN is securely hashed. If you have forgotten your PIN, you can sign out and re-authenticate via Google or Email to reset your security configuration.
+        </p>
+        <div class="forgot-actions">
+          <button class="btn btn-secondary" (click)="showForgotModal.set(false)">Cancel</button>
+          <button class="btn btn-danger" (click)="signOutToReset()">Sign Out &amp; Reset</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

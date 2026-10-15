@@ -1,33 +1,54 @@
 <div class="builder-modal">
     <div class="builder-content">
         <div class="card-header">
-            <h3>Create Custom Analytics</h3>
+            <div>
+                <h3>{{ editConfig ? 'Edit Custom Analytics' : 'Create Custom Analytics' }}</h3>
+                <p class="subtitle">Customize metrics, dimensions, chart styles, and custom filter rules.</p>
+            </div>
             <button class="btn btn-ghost btn-close" (click)="cancel()">
                 <span class="material-icons">close</span>
             </button>
         </div>
 
+        <!-- Quick Starter Templates (when creating new) -->
+        @if (!editConfig) {
+            <div class="templates-strip">
+                <span class="templates-label">
+                    <span class="material-icons">auto_awesome</span> Quick Presets:
+                </span>
+                <div class="template-chips">
+                    @for (tmpl of starterTemplates; track tmpl.title) {
+                        <button type="button" class="template-chip" (click)="applyTemplate(tmpl)">
+                            {{ tmpl.title }}
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+
         <div class="builder-grid">
-            <!-- Form Section -->
+            <!-- Controls Form Section -->
             <div class="form-section">
+                <!-- Row 1: Title & Display Type -->
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Item Name</label>
-                        <input type="text" [ngModel]="config().title" (ngModelChange)="updateConfig('title', $event)" class="form-control">
+                    <div class="form-group flex-2">
+                        <label>Item Name *</label>
+                        <input type="text" [ngModel]="config().title" (ngModelChange)="updateConfig('title', $event)" class="form-control" placeholder="e.g. Dining Out Spends, MF Growth">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group flex-1">
                         <label>Display As</label>
-                        <select [ngModel]="config().displayType" (ngModelChange)="updateConfig('displayType', $event)" class="form-control">
-                            <option value="chart">Chart</option>
-                            <option value="widget">Widget (Scalar)</option>
+                        <select [ngModel]="config().displayType" (ngModelChange)="updateConfig('displayType', $event)" appCustomSelect class="form-control">
+                            <option value="chart">Interactive Chart</option>
+                            <option value="widget">Summary Card (Scalar)</option>
                         </select>
                     </div>
                 </div>
                 
+                <!-- Row 2: Data Source, Metric & Card Width -->
                 <div class="form-row">
                     <div class="form-group">
                         <label>Data Source</label>
-                        <select [ngModel]="config().dataSource" (ngModelChange)="updateConfig('dataSource', $event)" class="form-control">
+                        <select [ngModel]="config().dataSource" (ngModelChange)="updateConfig('dataSource', $event)" appCustomSelect class="form-control">
                             <option value="Expense">Expense Transactions</option>
                             <option value="Income">Income Transactions</option>
                             <option value="Assets">Current Assets</option>
@@ -36,91 +57,219 @@
                     
                     <div class="form-group">
                         <label>Metric</label>
-                        <select [ngModel]="config().metric" (ngModelChange)="updateConfig('metric', $event)" class="form-control">
-                            <option value="Sum">Sum (Total Value)</option>
-                            <option value="Count">Count (Number of Items)</option>
+                        <select [ngModel]="config().metric" (ngModelChange)="updateConfig('metric', $event)" appCustomSelect class="form-control">
+                            <option value="Sum">Sum (Total ₹)</option>
+                            <option value="Count">Count (Number of Records)</option>
+                            <option value="Average">Average (Mean Value ₹)</option>
+                            <option value="Max">Maximum Single Record (₹)</option>
+                            <option value="Min">Minimum Single Record (₹)</option>
                         </select>
                     </div>
+
+                    @if (config().displayType !== 'widget') {
+                        <div class="form-group">
+                            <label>Card Width</label>
+                            <select [ngModel]="config().cardWidth || 'half'" (ngModelChange)="updateConfig('cardWidth', $event)" appCustomSelect class="form-control">
+                                <option value="half">Half Width (2 Columns)</option>
+                                <option value="full">Full Width (Banner)</option>
+                            </select>
+                        </div>
+                    }
                 </div>
 
                 @if (config().displayType !== 'widget') {
+                    <!-- Row 3: Group By (Dimension) & Chart Type -->
                     <div class="form-row">
                         <div class="form-group">
                             <label>Group By (Dimension)</label>
-                            <select [ngModel]="config().dimension" (ngModelChange)="updateConfig('dimension', $event)" class="form-control">
-                                <option value="Category">Category</option>
-                                <option value="Type">Asset Type</option>
-                                <option value="AppSource">App Source</option>
-                                <option value="Time">Time (Month)</option>
+                            <select [ngModel]="config().dimension" (ngModelChange)="updateConfig('dimension', $event)" appCustomSelect class="form-control">
+                                @if (config().dataSource !== 'Assets') {
+                                    <option value="Category">Category</option>
+                                    <option value="Bank">Bank Account</option>
+                                    <option value="Time">Time (Month / Trend)</option>
+                                    <option value="DayOfWeek">Day of the Week</option>
+                                    <option value="Type">Transaction Type</option>
+                                } @else {
+                                    <option value="Type">Asset Class / Type</option>
+                                    <option value="AppSource">Broker / App Source</option>
+                                }
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
-                            <label>Chart Type</label>
-                            <select [ngModel]="config().chartType" (ngModelChange)="updateConfig('chartType', $event)" class="form-control">
-                                <option value="doughnut">Doughnut</option>
-                                <option value="pie">Pie</option>
-                                <option value="bar">Bar</option>
-                                <option value="line">Line</option>
+                            <label>Chart Style</label>
+                            <select [ngModel]="config().chartType" (ngModelChange)="updateConfig('chartType', $event)" appCustomSelect class="form-control">
+                                <option value="doughnut">Donut Chart</option>
+                                <option value="pie">Pie Chart</option>
+                                <option value="bar">Bar Chart</option>
+                                <option value="line">Line Trend</option>
+                                <option value="area">Area Gradient</option>
+                                <option value="polarArea">Polar Area Chart</option>
+                                <option value="radar">Radar Chart</option>
                             </select>
                         </div>
                     </div>
 
-                    @if (config().dataSource === 'Assets') {
-                        <div class="form-group mb-12">
-                            <label>Filter By Asset Type</label>
-                            <div class="filter-pills">
-                                @for (type of availableAssetTypes; track type) {
-                                    <button 
-                                        type="button"
-                                        class="filter-pill" 
-                                        [class.active]="config().filters.assetTypes?.includes(type)"
-                                        (click)="toggleAssetType(type)">
-                                        {{ type }}
-                                    </button>
-                                }
+                    <!-- Visual Chart Type Selector Pills -->
+                    <div class="form-group mb-12">
+                        <label>Visual Style Picker</label>
+                        <div class="chart-type-selector">
+                            @for (type of chartTypesList; track type.id) {
+                                <button 
+                                    type="button" 
+                                    class="chart-type-btn"
+                                    [class.active]="config().chartType === type.id"
+                                    (click)="updateConfig('chartType', type.id)">
+                                    <span class="material-icons">{{ type.icon }}</span>
+                                    <span>{{ type.label }}</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Color Theme / Palette Selector -->
+                    <div class="form-group mb-12">
+                        <label>Color Palette</label>
+                        <div class="palettes-grid">
+                            @for (p of palettesList; track p.id) {
+                                <button 
+                                    type="button" 
+                                    class="palette-btn"
+                                    [class.active]="(config().palette || 'default') === p.id"
+                                    (click)="updateConfig('palette', p.id)">
+                                    <div class="palette-dots">
+                                        @for (color of p.preview; track color) {
+                                            <span class="dot" [style.background]="color"></span>
+                                        }
+                                    </div>
+                                    <span class="palette-title">{{ p.label }}</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Time Range Presets -->
+                <div class="form-group mb-12">
+                    <label>Time Window</label>
+                    <div class="filter-pills">
+                        <button type="button" class="filter-pill" [class.active]="!config().filters.dateRange?.preset || config().filters.dateRange?.preset === 'all'" (click)="setDatePreset('all')">All Time</button>
+                        <button type="button" class="filter-pill" [class.active]="config().filters.dateRange?.preset === '1m'" (click)="setDatePreset('1m')">Last 30 Days</button>
+                        <button type="button" class="filter-pill" [class.active]="config().filters.dateRange?.preset === '3m'" (click)="setDatePreset('3m')">Last 3 Months</button>
+                        <button type="button" class="filter-pill" [class.active]="config().filters.dateRange?.preset === '6m'" (click)="setDatePreset('6m')">Last 6 Months</button>
+                        <button type="button" class="filter-pill" [class.active]="config().filters.dateRange?.preset === 'this_year'" (click)="setDatePreset('this_year')">This Year</button>
+                        <button type="button" class="filter-pill" [class.active]="config().filters.dateRange?.preset === 'custom'" (click)="setDatePreset('custom')">Custom Dates</button>
+                    </div>
+                    @if (config().filters.dateRange?.preset === 'custom') {
+                        <div class="form-row mt-8">
+                            <div class="form-group">
+                                <label style="font-size: 11px;">From Date</label>
+                                <input type="date" class="form-control" [ngModel]="config().filters.dateRange?.startDate" (ngModelChange)="setStartDate($event)">
+                            </div>
+                            <div class="form-group">
+                                <label style="font-size: 11px;">To Date</label>
+                                <input type="date" class="form-control" [ngModel]="config().filters.dateRange?.endDate" (ngModelChange)="setEndDate($event)">
                             </div>
                         </div>
+                    }
+                </div>
 
+                <!-- Dimension-specific Multi-Select Filters -->
+                @if (config().dataSource === 'Assets') {
+                    <div class="form-group mb-12">
+                        <label>Filter By Asset Class</label>
+                        <div class="filter-pills">
+                            @for (type of availableAssetTypes; track type) {
+                                <button 
+                                    type="button"
+                                    class="filter-pill" 
+                                    [class.active]="config().filters.assetTypes?.includes(type)"
+                                    (click)="toggleAssetType(type)">
+                                    {{ type }}
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-12">
+                        <label>Filter By Broker / Platform</label>
+                        <div class="filter-pills">
+                            @for (source of availableAppSources(); track source) {
+                                <button 
+                                    type="button"
+                                    class="filter-pill" 
+                                    [class.active]="config().filters.appSources?.includes(source)"
+                                    (click)="toggleAppSource(source)">
+                                    {{ source }}
+                                </button>
+                            }
+                        </div>
+                    </div>
+                } @else {
+                    <div class="form-group mb-12">
+                        <label>Filter By Category (Optional)</label>
+                        <div class="filter-pills scrollable-pills">
+                            @for (cat of categories; track cat) {
+                                <button 
+                                    type="button"
+                                    class="filter-pill" 
+                                    [class.active]="config().filters.categories?.includes(cat)"
+                                    (click)="toggleCategory(cat)">
+                                    {{ cat }}
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    @if (availableBanks().length > 0) {
                         <div class="form-group mb-12">
-                            <label>Filter By App/Source</label>
+                            <label>Filter By Bank Account (Optional)</label>
                             <div class="filter-pills">
-                                @for (source of availableAppSources(); track source) {
+                                @for (b of availableBanks(); track b) {
                                     <button 
                                         type="button"
                                         class="filter-pill" 
-                                        [class.active]="config().filters.appSources?.includes(source)"
-                                        (click)="toggleAppSource(source)">
-                                        {{ source }}
+                                        [class.active]="config().filters.banks?.includes(b)"
+                                        (click)="toggleBank(b)">
+                                        {{ b }}
                                     </button>
                                 }
                             </div>
                         </div>
                     }
+                }
 
+                @if (config().displayType !== 'widget') {
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Sort By</label>
-                            <select [ngModel]="config().sortBy" (ngModelChange)="updateConfig('sortBy', $event)" class="form-control">
-                                <option value="value_desc">Value (Highest First)</option>
-                                <option value="value_asc">Value (Lowest First)</option>
-                                <option value="time_asc">Chronological</option>
-                                <option value="label_asc">Alphabetical</option>
+                            <label>Sort Results</label>
+                            <select [ngModel]="config().sortBy" (ngModelChange)="updateConfig('sortBy', $event)" appCustomSelect class="form-control">
+                                <option value="value_desc">Highest Value First</option>
+                                <option value="value_asc">Lowest Value First</option>
+                                <option value="time_asc">Chronological Order</option>
+                                <option value="label_asc">Alphabetical (A-Z)</option>
                                 <option value="label_desc">Alphabetical (Z-A)</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label>Limit (Top N)</label>
-                            <input type="number" [ngModel]="config().limit" (ngModelChange)="updateConfig('limit', $event)" class="form-control" min="0">
+                            <label>Limit (Top N Results)</label>
+                            <input type="number" [ngModel]="config().limit" (ngModelChange)="updateConfig('limit', $event)" class="form-control" min="1" max="50" placeholder="e.g. 5, 10 or empty for all">
                         </div>
                     </div>
                 }
             </div>
 
-            <!-- Preview Section -->
+            <!-- Real-time Live Preview Section -->
             <div class="preview-section">
-                <h4>Live Preview</h4>
+                <div class="preview-header">
+                    <h4>
+                        <span class="material-icons" style="color: var(--accent-success-blend); font-size: 18px;">visibility</span>
+                        Live Interactive Preview
+                    </h4>
+                    <span class="badge badge-primary">{{ config().displayType === 'widget' ? 'KPI Widget' : (config().chartType | uppercase) }}</span>
+                </div>
+
                 @if (validationError()) {
                     <div class="validation-alert">
                         <span class="material-icons">error_outline</span>
@@ -129,22 +278,29 @@
                 } @else if (previewData(); as data) {
                     <div class="preview-chart-box">
                         @if (config().displayType === 'widget') {
-                            <div class="widget-preview">
-                                <h3>{{ config().title }}</h3>
-                                <div class="widget-value">
+                            <div class="widget-preview card stat-card">
+                                <p class="stat-label">{{ config().title }}</p>
+                                <div class="stat-value">
                                     @if (config().metric === 'Count') {
                                         {{ data.data[0] || 0 | number }}
                                     } @else {
                                         {{ data.data[0] || 0 | currency:'INR':'symbol':'1.0-0' }}
                                     }
                                 </div>
+                                <span class="badge badge-success mt-8">Dynamic KPI</span>
                             </div>
                         } @else {
+                            <div class="preview-meta">
+                                <h5>{{ config().title }}</h5>
+                                <span class="text-muted text-sm">{{ data.labels.length }} Data Points</span>
+                            </div>
                             <app-dynamic-chart 
                                 [chartType]="config().chartType"
+                                [palette]="config().palette || 'default'"
                                 [labels]="data.labels"
                                 [dataset]="data.data"
-                                [height]="260">
+                                [isCurrency]="config().metric !== 'Count'"
+                                [height]="280">
                             </app-dynamic-chart>
                         }
                     </div>
@@ -154,7 +310,10 @@
 
         <div class="builder-actions">
             <button class="btn btn-ghost" (click)="cancel()">Cancel</button>
-            <button class="btn btn-primary" [disabled]="validationError() !== null" (click)="save()">Save Chart</button>
+            <button class="btn btn-primary" [disabled]="validationError() !== null" (click)="save()">
+                <span class="material-icons" style="font-size: 16px;">save</span>
+                {{ editConfig ? 'Update Analytics' : 'Save & Pin to Dashboard' }}
+            </button>
         </div>
     </div>
 </div>
