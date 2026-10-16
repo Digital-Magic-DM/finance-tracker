@@ -12,7 +12,7 @@ import {
   getEmergencyRunway,
 } from './tools.js';
 
-export function createFinTrackerMcpServer(): McpServer {
+export function createFinTrackerMcpServer(sessionUid?: string): McpServer {
   const server = new McpServer({
     name: 'fintracker-mcp',
     version: '1.0.0',
@@ -32,7 +32,7 @@ export function createFinTrackerMcpServer(): McpServer {
     },
     async ({ uid }) => {
       try {
-        const resolvedUid = resolveUserId(uid);
+        const resolvedUid = resolveUserId(uid, sessionUid);
         const data = await getNetWorthOverview(resolvedUid);
         return {
           content: [
@@ -79,7 +79,7 @@ export function createFinTrackerMcpServer(): McpServer {
     },
     async ({ uid, type, isLiquid }) => {
       try {
-        const resolvedUid = resolveUserId(uid);
+        const resolvedUid = resolveUserId(uid, sessionUid);
         const assets = await listAssets(resolvedUid, { type, isLiquid });
         return {
           content: [
@@ -138,7 +138,7 @@ export function createFinTrackerMcpServer(): McpServer {
     },
     async ({ uid, name, type, quantity, buyPrice, currentPrice, currency, isLiquid, notes }) => {
       try {
-        const resolvedUid = resolveUserId(uid);
+        const resolvedUid = resolveUserId(uid, sessionUid);
         const result = await addAsset(resolvedUid, {
           name,
           type,
@@ -189,7 +189,7 @@ export function createFinTrackerMcpServer(): McpServer {
     },
     async ({ uid, assetId, currentPrice, notes }) => {
       try {
-        const resolvedUid = resolveUserId(uid);
+        const resolvedUid = resolveUserId(uid, sessionUid);
         await updateAssetPrice(resolvedUid, assetId, currentPrice, notes);
         return {
           content: [
@@ -225,7 +225,7 @@ export function createFinTrackerMcpServer(): McpServer {
     },
     async ({ uid, type, category, bank, startDate, endDate, limit }) => {
       try {
-        const resolvedUid = resolveUserId(uid);
+        const resolvedUid = resolveUserId(uid, sessionUid);
         const transactions = await listTransactions(resolvedUid, {
           type,
           category,
@@ -280,7 +280,7 @@ export function createFinTrackerMcpServer(): McpServer {
     },
     async ({ uid, type, amount, description, category, bank, date, notes }) => {
       try {
-        const resolvedUid = resolveUserId(uid);
+        const resolvedUid = resolveUserId(uid, sessionUid);
         const result = await addTransaction(resolvedUid, {
           type,
           amount,
@@ -328,7 +328,7 @@ export function createFinTrackerMcpServer(): McpServer {
     },
     async ({ uid, year, month }) => {
       try {
-        const resolvedUid = resolveUserId(uid);
+        const resolvedUid = resolveUserId(uid, sessionUid);
         const summary = await getCashFlowSummary(resolvedUid, { year, month });
         return {
           content: [
@@ -358,7 +358,7 @@ export function createFinTrackerMcpServer(): McpServer {
     },
     async ({ uid }) => {
       try {
-        const resolvedUid = resolveUserId(uid);
+        const resolvedUid = resolveUserId(uid, sessionUid);
         const data = await getEmergencyRunway(resolvedUid);
         return {
           content: [

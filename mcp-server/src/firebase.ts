@@ -86,3 +86,9 @@ export function getFirestoreDb(): admin.firestore.Firestore {
     );
   }
 }
+
+export function getFirebaseAuth(): admin.auth.Auth {
+  // Ensure Firebase app is initialized
+  getFirestoreDb();
+  return admin.auth();
+}

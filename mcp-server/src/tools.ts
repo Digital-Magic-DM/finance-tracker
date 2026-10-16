@@ -1,11 +1,21 @@
 import { getFirestoreDb } from './firebase.js';
 import { Asset, Transaction, NetWorthOverview, CashFlowSummary, AssetType, TransactionType } from './types.js';
 
-export function resolveUserId(explicitUid?: string): string {
+export function resolveUserId(explicitUid?: string, sessionUid?: string): string {
+  // If this session was authenticated with a personal user token, enforce that user strictly
+  if (sessionUid) {
+    if (explicitUid && explicitUid !== sessionUid) {
+      throw new Error(
+        `Access denied: You are authenticated as user ${sessionUid}. You cannot access or modify financial records of user ${explicitUid}.`
+      );
+    }
+    return sessionUid;
+  }
+
   const uid = explicitUid || process.env.DEFAULT_USER_UID;
   if (!uid) {
     throw new Error(
-      'User ID is required. Please provide "uid" parameter or configure DEFAULT_USER_UID in the server environment variables.'
+      'User ID is required. Please provide a "uid" parameter or connect using your personal FinTracker AI key.'
     );
   }
   return uid;

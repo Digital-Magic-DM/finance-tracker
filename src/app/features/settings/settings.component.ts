@@ -19,8 +19,9 @@ import { ReportExportService } from '../../services/report-export.service';
 import { ImportDataComponent } from './import-data/import-data.component';
 import { CustomSelectDirective } from '../../shared/directives/custom-select.directive';
 import { AssetType, TransactionType, getAssetAppSource } from '../../models/finance.models';
+import { McpAuthService } from '../../services/mcp-auth.service';
 
-export type SettingsSubPage = 'basic' | 'reports' | 'pin' | 'devices';
+export type SettingsSubPage = 'basic' | 'reports' | 'pin' | 'devices' | 'mcp';
 export type ReportCategory = 'all' | 'portfolio' | 'stocks' | 'mf' | 'fixed_income' | 'transactions';
 export type DatePreset = 'this_month' | 'last_month' | 'last_3_months' | 'current_fy' | 'last_fy' | 'this_year' | 'all' | 'custom';
 
@@ -40,6 +41,7 @@ export class SettingsComponent implements OnInit {
     pinSecurity = inject(PinSecurityService);
     deviceService = inject(DeviceSessionService);
     reportExport = inject(ReportExportService);
+    mcpAuth = inject(McpAuthService);
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
     private route = inject(ActivatedRoute);
@@ -101,7 +103,7 @@ export class SettingsComponent implements OnInit {
         // Read initial tab from query param if provided
         this.route.queryParamMap.subscribe((params) => {
             const tab = params.get('tab') as SettingsSubPage | null;
-            if (tab && ['basic', 'reports', 'pin', 'devices'].includes(tab)) {
+            if (tab && ['basic', 'reports', 'pin', 'devices', 'mcp'].includes(tab)) {
                 this.activeSubPage.set(tab);
             }
             const cat = params.get('category') as ReportCategory | null;
@@ -993,5 +995,50 @@ export class SettingsComponent implements OnInit {
         if (!dateVal) return '-';
         const d = dateVal?.seconds ? new Date(dateVal.seconds * 1000) : new Date(dateVal);
         return isNaN(d.getTime()) ? '-' : d.toLocaleDateString();
+    }
+
+    // =========================================================================
+    // MCP (Model Context Protocol) & AI Assistant Key Management
+    // =========================================================================
+    showMcpToken = signal(false);
+    activeMcpSnippetTab = signal<'claude' | 'antigravity' | 'cursor' | 'url'>('claude');
+    copiedSnippet = signal<string | null>(null);
+
+    toggleShowMcpToken() {
+        this.showMcpToken.update((v) => !v);
+    }
+
+    setMcpSnippetTab(tab: 'claude' | 'antigravity' | 'cursor' | 'url') {
+        this.activeMcpSnippetTab.set(tab);
+    }
+
+    async generateMcpKey(label = 'Personal AI Assistant') {
+        await this.mcpAuth.generatePersonalMcpKey(label);
+        this.showMcpToken.set(true);
+    }
+
+    async revokeMcpKey() {
+        if (confirm('Are you sure you want to revoke this AI key? Any connected AI assistants (Claude, Antigravity, Cursor) will immediately lose access.')) {
+            await this.mcpAuth.revokePersonalMcpKey();
+            this.showMcpToken.set(false);
+        }
+    }
+
+    copyMcpSnippet(text: string, snippetId: string) {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(
+            () => {
+                this.copiedSnippet.set(snippetId);
+                this.snackbar.show('Copied to clipboard!', 'success');
+                setTimeout(() => {
+                    if (this.copiedSnippet() === snippetId) {
+                        this.copiedSnippet.set(null);
+                    }
+                }, 2500);
+            },
+            () => {
+                this.snackbar.show('Failed to copy. Please copy manually.', 'error');
+            }
+        );
     }
 }

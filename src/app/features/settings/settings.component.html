@@ -40,6 +40,19 @@
         {{ deviceService.sessions().length || 1 }}
       </span>
     </button>
+
+    <button 
+      class="subnav-item" 
+      [class.active]="activeSubPage() === 'mcp'" 
+      (click)="setSubPage('mcp')">
+      <span class="material-icons">smart_toy</span>
+      <span>AI & MCP</span>
+      @if (mcpAuth.status() === 'active') {
+        <span class="subnav-pill active-pill">Active</span>
+      } @else {
+        <span class="subnav-pill setup-pill">Connect</span>
+      }
+    </button>
   </div>
 
   @if (authService.isLoggedIn()) {
@@ -1170,6 +1183,222 @@
               <strong>Session Invalidation:</strong> If you suspect unauthorized access or lose a phone/laptop, click "Sign Out Other Devices" to terminate other sessions immediately.
             </li>
           </ul>
+        </div>
+      </div>
+    }
+
+    <!-- =================================================================== -->
+    <!-- SUB-PAGE 5: AI & MCP ASSISTANT -->
+    <!-- =================================================================== -->
+    @if (activeSubPage() === 'mcp') {
+      <div class="subpage-content mcp-subpage">
+        <!-- MCP Status & Token Card -->
+        <div class="card mcp-hero-card">
+          <div class="mcp-hero-header">
+            <div class="mcp-title-wrap">
+              <div class="mcp-icon-badge">
+                <span class="material-icons">smart_toy</span>
+              </div>
+              <div>
+                <h2>AI Assistant & MCP Integration</h2>
+                <p class="mcp-subtitle">
+                  Connect AI tools like <strong>Antigravity IDE</strong>, <strong>Claude Desktop</strong>, and <strong>Cursor</strong> directly to your personal portfolio.
+                </p>
+              </div>
+            </div>
+
+            <div class="mcp-status-badge" [class.active-status]="mcpAuth.status() === 'active'">
+              <span class="status-indicator-dot"></span>
+              <span>{{ mcpAuth.status() === 'active' ? 'Connected & Active' : 'Not Connected' }}</span>
+            </div>
+          </div>
+
+          <!-- Security Callout -->
+          <div class="mcp-security-banner">
+            <span class="material-icons security-banner-icon">verified_user</span>
+            <div class="security-banner-text">
+              <strong>Isolated Multi-User Security:</strong>
+              Your personal key is uniquely tied to your FinTracker account UID. Neither other users nor external assistants can access or tamper with your records without your secret key.
+            </div>
+          </div>
+
+          <!-- Active Key State -->
+          @if (mcpAuth.status() === 'active' && mcpAuth.token()) {
+            <div class="mcp-key-box">
+              <div class="mcp-key-label-row">
+                <span class="label-text">Your Personal Secret AI Access Key</span>
+                <span class="key-created-text">Created: {{ formatDate(mcpAuth.createdAt()) }}</span>
+              </div>
+
+              <div class="mcp-token-input-row">
+                <input 
+                  type="text" 
+                  [value]="showMcpToken() ? mcpAuth.token() : '••••••••••••••••••••••••••••••••••••••••••••••••'" 
+                  readonly 
+                  class="mcp-token-input"
+                />
+                <button class="btn-secondary mcp-action-btn" (click)="toggleShowMcpToken()" [title]="showMcpToken() ? 'Hide Key' : 'Reveal Key'">
+                  <span class="material-icons">{{ showMcpToken() ? 'visibility_off' : 'visibility' }}</span>
+                  <span>{{ showMcpToken() ? 'Hide' : 'Reveal' }}</span>
+                </button>
+                <button class="btn-primary mcp-action-btn" (click)="copyMcpSnippet(mcpAuth.token() || '', 'raw_token')">
+                  <span class="material-icons">{{ copiedSnippet() === 'raw_token' ? 'check' : 'content_copy' }}</span>
+                  <span>{{ copiedSnippet() === 'raw_token' ? 'Copied' : 'Copy Key' }}</span>
+                </button>
+              </div>
+
+              <div class="mcp-key-footer-actions">
+                <button class="btn-text-danger" (click)="revokeMcpKey()" [disabled]="mcpAuth.isActionInProgress()">
+                  <span class="material-icons">block</span>
+                  <span>Revoke Key</span>
+                </button>
+                <button class="btn-secondary btn-sm" (click)="generateMcpKey()" [disabled]="mcpAuth.isActionInProgress()">
+                  <span class="material-icons">refresh</span>
+                  <span>Regenerate Key</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Configuration Snippets -->
+            <div class="mcp-config-section">
+              <h3 class="config-section-title">
+                <span class="material-icons">code</span>
+                1-Click Connection Configs
+              </h3>
+
+              <div class="snippet-tabs">
+                <button 
+                  class="snippet-tab-btn" 
+                  [class.active]="activeMcpSnippetTab() === 'claude'" 
+                  (click)="setMcpSnippetTab('claude')">
+                  Claude Desktop
+                </button>
+                <button 
+                  class="snippet-tab-btn" 
+                  [class.active]="activeMcpSnippetTab() === 'antigravity'" 
+                  (click)="setMcpSnippetTab('antigravity')">
+                  Antigravity IDE
+                </button>
+                <button 
+                  class="snippet-tab-btn" 
+                  [class.active]="activeMcpSnippetTab() === 'cursor'" 
+                  (click)="setMcpSnippetTab('cursor')">
+                  Cursor / Windsurf
+                </button>
+                <button 
+                  class="snippet-tab-btn" 
+                  [class.active]="activeMcpSnippetTab() === 'url'" 
+                  (click)="setMcpSnippetTab('url')">
+                  Direct SSE URL
+                </button>
+              </div>
+
+              <div class="snippet-code-box">
+                @if (activeMcpSnippetTab() === 'claude') {
+                  <div class="snippet-header">
+                    <span>claude_desktop_config.json</span>
+                    <button class="copy-code-btn" (click)="copyMcpSnippet(mcpAuth.getClaudeDesktopConfig(), 'claude_json')">
+                      <span class="material-icons">{{ copiedSnippet() === 'claude_json' ? 'check' : 'content_copy' }}</span>
+                      <span>{{ copiedSnippet() === 'claude_json' ? 'Copied' : 'Copy Config' }}</span>
+                    </button>
+                  </div>
+                  <pre><code>{{ mcpAuth.getClaudeDesktopConfig() }}</code></pre>
+                }
+
+                @if (activeMcpSnippetTab() === 'antigravity') {
+                  <div class="snippet-header">
+                    <span>mcp_config.json</span>
+                    <button class="copy-code-btn" (click)="copyMcpSnippet(mcpAuth.getAntigravityConfig(), 'ag_json')">
+                      <span class="material-icons">{{ copiedSnippet() === 'ag_json' ? 'check' : 'content_copy' }}</span>
+                      <span>{{ copiedSnippet() === 'ag_json' ? 'Copied' : 'Copy Config' }}</span>
+                    </button>
+                  </div>
+                  <pre><code>{{ mcpAuth.getAntigravityConfig() }}</code></pre>
+                }
+
+                @if (activeMcpSnippetTab() === 'cursor') {
+                  <div class="snippet-header">
+                    <span>Cursor / Windsurf Setup</span>
+                    <button class="copy-code-btn" (click)="copyMcpSnippet(mcpAuth.getRemoteSseUrl(), 'cursor_url')">
+                      <span class="material-icons">{{ copiedSnippet() === 'cursor_url' ? 'check' : 'content_copy' }}</span>
+                      <span>{{ copiedSnippet() === 'cursor_url' ? 'Copied' : 'Copy URL' }}</span>
+                    </button>
+                  </div>
+                  <pre><code>{{ mcpAuth.getCursorConfig() }}</code></pre>
+                }
+
+                @if (activeMcpSnippetTab() === 'url') {
+                  <div class="snippet-header">
+                    <span>Remote Streaming SSE Endpoint</span>
+                    <button class="copy-code-btn" (click)="copyMcpSnippet(mcpAuth.getRemoteSseUrl(), 'sse_url')">
+                      <span class="material-icons">{{ copiedSnippet() === 'sse_url' ? 'check' : 'content_copy' }}</span>
+                      <span>{{ copiedSnippet() === 'sse_url' ? 'Copied' : 'Copy URL' }}</span>
+                    </button>
+                  </div>
+                  <pre><code>{{ mcpAuth.getRemoteSseUrl() }}</code></pre>
+                }
+              </div>
+            </div>
+          } @else {
+            <!-- Empty / Setup State -->
+            <div class="mcp-empty-state">
+              <div class="mcp-empty-icon">
+                <span class="material-icons">key</span>
+              </div>
+              <h3>No AI Access Key Generated Yet</h3>
+              <p>
+                Generate your private key to let AI models analyze your assets, compute your monthly savings rates, track expenses, and forecast your emergency runway securely.
+              </p>
+
+              <button 
+                class="btn-primary btn-generate-mcp" 
+                (click)="generateMcpKey()" 
+                [disabled]="mcpAuth.isActionInProgress()">
+                <span class="material-icons">bolt</span>
+                <span>{{ mcpAuth.isActionInProgress() ? 'Generating...' : 'Generate Personal AI Key' }}</span>
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Available Tools Preview Card -->
+        <div class="card mcp-tools-card">
+          <h3 class="tools-card-title">
+            <span class="material-icons">extension</span>
+            AI Capabilities & Financial Tools Enabled
+          </h3>
+          <div class="tools-grid">
+            <div class="tool-item">
+              <span class="tool-badge read-badge">Read</span>
+              <strong>get_net_worth_overview</strong>
+              <p>Live net worth, invested valuation, profit/loss, and portfolio allocation.</p>
+            </div>
+            <div class="tool-item">
+              <span class="tool-badge read-badge">Read</span>
+              <strong>list_assets</strong>
+              <p>Filter holdings by Stocks, Mutual Funds, Fixed Deposits, Gold, Cash, etc.</p>
+            </div>
+            <div class="tool-item">
+              <span class="tool-badge read-badge">Read</span>
+              <strong>get_cashflow_summary</strong>
+              <p>Monthly/yearly savings rate, burn rate, and top expense categories.</p>
+            </div>
+            <div class="tool-item">
+              <span class="tool-badge read-badge">Read</span>
+              <strong>get_emergency_runway</strong>
+              <p>Calculates exact liquid survival runway in months against monthly expenses.</p>
+            </div>
+            <div class="tool-item">
+              <span class="tool-badge write-badge">Write</span>
+              <strong>add_transaction</strong>
+              <p>Ask AI to record income or expenses conversationally into Firestore.</p>
+            </div>
+            <div class="tool-item">
+              <span class="tool-badge write-badge">Write</span>
+              <strong>add_asset</strong>
+              <p>Record new investments, stocks, or deposits directly through your AI assistant.</p>
+            </div>
+          </div>
         </div>
       </div>
     }

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Meta, Title } from '@angular/platform-browser';
@@ -17,6 +17,7 @@ import { PinSecurityService } from '../../services/pin-security.service';
 export class LoginComponent {
     private authService = inject(AuthService);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
     private meta = inject(Meta);
     private titleService = inject(Title);
     public themeService = inject(ThemeService);
@@ -77,7 +78,10 @@ export class LoginComponent {
                         return;
                     }
                 }
-                this.router.navigate(['/app/dashboard']);
+                const redirect = this.route.snapshot.queryParamMap.get('redirect') || 
+                                 this.route.snapshot.queryParamMap.get('returnUrl') || 
+                                 '/app/dashboard';
+                this.router.navigateByUrl(redirect);
             },
             error: (err: any) => {
                 // Map Firebase error codes to friendly messages
@@ -121,7 +125,10 @@ export class LoginComponent {
                         return;
                     }
                 }
-                this.router.navigate(['/app/dashboard']);
+                const redirect = this.route.snapshot.queryParamMap.get('redirect') || 
+                                 this.route.snapshot.queryParamMap.get('returnUrl') || 
+                                 '/app/dashboard';
+                this.router.navigateByUrl(redirect);
             },
             error: (err: any) => {
                 this.error.set('Sign in failed. Please try again.');
