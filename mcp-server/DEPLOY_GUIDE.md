@@ -108,6 +108,16 @@ Scroll down to the **Environment Variables** section and add the **3 Firebase va
 
 The settings page provides 1-click copy buttons for your preferred AI tool:
 
+#### Claude.ai & ChatGPT Web (Custom Connector)
+* **Connector Name:** `Finance Tracker`
+* **Remote MCP URL:** `https://finance-tracker-vczn.onrender.com/sse` *(or `/mcp`)*
+* **Authentication:** `OAuth 2.0 / 2.1 (Automated Dynamic Client Registration)`
+* **Steps:**
+  1. In Claude.ai or ChatGPT, open **Connectors** &rarr; **Add custom connector**.
+  2. Enter name `Finance Tracker` and URL `https://finance-tracker-vczn.onrender.com/sse`.
+  3. Click **Continue**, then click **Connect**.
+  4. In the authorization window that appears, paste your **Personal AI Key** and click **Authorize & Connect**!
+
 #### Claude Desktop (`claude_desktop_config.json`)
 ```json
 {

@@ -12,13 +12,21 @@ export function resolveUserId(explicitUid?: string, sessionUid?: string): string
     return sessionUid;
   }
 
-  const uid = explicitUid || process.env.DEFAULT_USER_UID;
-  if (!uid) {
-    throw new Error(
-      'User ID is required. Please provide a "uid" parameter or connect using your personal FinTracker AI key.'
-    );
+  // If no session UID, check DEFAULT_USER_UID from environment (standalone scripts / CLI only)
+  const defaultUid = process.env.DEFAULT_USER_UID;
+  if (defaultUid) {
+    if (explicitUid && explicitUid !== defaultUid) {
+      throw new Error(
+        `Access denied: Privileged session is locked to DEFAULT_USER_UID (${defaultUid}). Cannot access user ${explicitUid}.`
+      );
+    }
+    return defaultUid;
   }
-  return uid;
+
+  // Unauthenticated / unbound session: NEVER allow arbitrary user access
+  throw new Error(
+    'Access denied: Session is not bound to an authenticated user account. Please connect with your personal FinTracker AI key.'
+  );
 }
 
 /**

@@ -1001,14 +1001,14 @@ export class SettingsComponent implements OnInit {
     // MCP (Model Context Protocol) & AI Assistant Key Management
     // =========================================================================
     showMcpToken = signal(false);
-    activeMcpSnippetTab = signal<'claude' | 'antigravity' | 'cursor' | 'url'>('claude');
+    activeMcpSnippetTab = signal<'web' | 'claude' | 'antigravity' | 'cursor' | 'url'>('web');
     copiedSnippet = signal<string | null>(null);
 
     toggleShowMcpToken() {
         this.showMcpToken.update((v) => !v);
     }
 
-    setMcpSnippetTab(tab: 'claude' | 'antigravity' | 'cursor' | 'url') {
+    setMcpSnippetTab(tab: 'web' | 'claude' | 'antigravity' | 'cursor' | 'url') {
         this.activeMcpSnippetTab.set(tab);
     }
 

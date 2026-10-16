@@ -1,6 +1,6 @@
 # 🚀 FinTracker MCP Server (Model Context Protocol)
 
-A remote, cloud-deployable **Model Context Protocol (MCP)** server that connects AI assistants (Antigravity IDE, Claude Desktop, Cursor) directly to your **FinTracker** personal finance database in Firebase Firestore with **isolated multi-user authentication**.
+A remote, cloud-deployable **Model Context Protocol (MCP)** server that connects AI assistants (**Claude.ai, ChatGPT, Antigravity IDE, Claude Desktop, Cursor**) directly to your **FinTracker** personal finance database in Firebase Firestore with **isolated multi-user authentication** and **OAuth 2.1 Dynamic Client Registration**.
 
 ---
 

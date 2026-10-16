@@ -1269,6 +1269,12 @@
               <div class="snippet-tabs">
                 <button 
                   class="snippet-tab-btn" 
+                  [class.active]="activeMcpSnippetTab() === 'web'" 
+                  (click)="setMcpSnippetTab('web')">
+                  Claude.ai & ChatGPT Web
+                </button>
+                <button 
+                  class="snippet-tab-btn" 
                   [class.active]="activeMcpSnippetTab() === 'claude'" 
                   (click)="setMcpSnippetTab('claude')">
                   Claude Desktop
@@ -1294,6 +1300,39 @@
               </div>
 
               <div class="snippet-code-box">
+                @if (activeMcpSnippetTab() === 'web') {
+                  <div class="snippet-header">
+                    <span>Remote Web Connector (OAuth 2.1 Enabled)</span>
+                    <button class="copy-code-btn" (click)="copyMcpSnippet('https://finance-tracker-vczn.onrender.com/sse', 'web_url')">
+                      <span class="material-icons">{{ copiedSnippet() === 'web_url' ? 'check' : 'content_copy' }}</span>
+                      <span>{{ copiedSnippet() === 'web_url' ? 'Copied' : 'Copy URL' }}</span>
+                    </button>
+                  </div>
+                  <div class="web-connector-panel">
+                    <div class="web-param-row">
+                      <span class="web-param-label">Connector Name:</span>
+                      <span class="web-param-val">Finance Tracker</span>
+                    </div>
+                    <div class="web-param-row">
+                      <span class="web-param-label">Remote MCP URL:</span>
+                      <span class="web-param-val code-val">https://finance-tracker-vczn.onrender.com/sse</span>
+                    </div>
+                    <div class="web-param-row">
+                      <span class="web-param-label">Authentication:</span>
+                      <span class="oauth-badge-live">OAuth 2.0 / 2.1 (Dynamic Client Registration)</span>
+                    </div>
+                    <div class="web-steps-box">
+                      <strong>How to Connect in Claude.ai or ChatGPT:</strong>
+                      <ol>
+                        <li>Go to <em>Customize / Settings &rarr; Connectors &rarr; Add custom connector</em>.</li>
+                        <li>Paste the Remote MCP URL: <code>https://finance-tracker-vczn.onrender.com/sse</code></li>
+                        <li>Click <strong>Continue</strong> &rarr; then click <strong>Connect</strong>.</li>
+                        <li>A popup will ask for your Personal AI Key (copy it from above). Paste it and click <strong>Authorize & Connect</strong>!</li>
+                      </ol>
+                    </div>
+                  </div>
+                }
+
                 @if (activeMcpSnippetTab() === 'claude') {
                   <div class="snippet-header">
                     <span>claude_desktop_config.json</span>
