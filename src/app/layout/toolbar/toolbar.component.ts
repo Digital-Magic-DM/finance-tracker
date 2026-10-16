@@ -7,6 +7,7 @@ import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AiService } from '../../services/ai.service';
 import { PwaService } from '../../services/pwa.service';
+import { DeviceSessionService, DeviceSession } from '../../services/device-session.service';
 
 @Component({
     selector: 'app-toolbar',
@@ -20,16 +21,19 @@ export class ToolbarComponent {
     themeService = inject(ThemeService);
     aiService = inject(AiService);
     pwaService = inject(PwaService);
+    deviceSessionService = inject(DeviceSessionService);
     private router = inject(Router);
     private el = inject(ElementRef);
 
     sidebarToggle = output<void>();
     showProfileDropdown = signal(false);
+    showNotifications = signal(false);
 
     @HostListener('document:click', ['$event'])
     onDocumentClick(event: Event) {
         if (!this.el.nativeElement.contains(event.target)) {
             this.showProfileDropdown.set(false);
+            this.showNotifications.set(false);
         }
     }
 
@@ -48,8 +52,28 @@ export class ToolbarComponent {
         { initialValue: 'Dashboard' }
     );
 
+    toggleNotifications(event: Event) {
+        event.stopPropagation();
+        this.showNotifications.update((v) => !v);
+        this.showProfileDropdown.set(false);
+    }
+
+    verifyDevice(sessionId: string) {
+        this.deviceSessionService.verifySession(sessionId);
+    }
+
+    reportDevice(session: DeviceSession) {
+        this.deviceSessionService.markSessionCompromised(session);
+        this.showNotifications.set(false);
+    }
+
+    dismissBanner(sessionId: string) {
+        this.deviceSessionService.dismissBanner(sessionId);
+    }
+
     signOut() {
         this.authService.signOut().subscribe();
         this.showProfileDropdown.set(false);
+        this.showNotifications.set(false);
     }
 }

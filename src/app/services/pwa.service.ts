@@ -53,8 +53,16 @@ export class PwaService {
       .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
       .subscribe(() => {
         this.updateAvailable.set(true);
-        this.showUpdateNotification();
+        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          console.log('PwaService: Localhost update detected. Auto-activating fresh build...');
+          this.swUpdate.activateUpdate().then(() => document.location.reload());
+        } else {
+          this.showUpdateNotification();
+        }
       });
+
+    // Check for updates immediately on load
+    this.swUpdate.checkForUpdate().catch(() => {});
 
     // 2. Periodically check for updates (every 15 mins)
     // Wait for the app to stabilize first to avoid slowing down initial load

@@ -36,7 +36,9 @@
       (click)="setSubPage('devices')">
       <span class="material-icons">devices</span>
       <span>Active Devices</span>
-      <span class="subnav-pill count-pill">{{ deviceService.sessions().length || 1 }}</span>
+      <span class="subnav-pill count-pill" [class.alert-pill]="deviceService.unverifiedCount() > 0">
+        {{ deviceService.sessions().length || 1 }}
+      </span>
     </button>
   </div>
 
@@ -186,7 +188,7 @@
               <h4>Dark Mode</h4>
               <p>Toggle between dark and light theme</p>
             </div>
-            <button class="toggle-btn" [class.on]="themeService.isDark()" (click)="themeService.toggle()">
+            <button class="toggle-btn" [class.on]="themeService.isDark()" (click)="themeService.toggle($event)">
               <span class="toggle-knob">
                 <span class="material-icons knob-icon">{{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}</span>
               </span>
@@ -1022,6 +1024,23 @@
     <!-- =================================================================== -->
     @if (activeSubPage() === 'devices') {
       <div class="subpage-content">
+        <!-- Unverified Sessions Security Warning Banner -->
+        @if (deviceService.unverifiedCount() > 0) {
+          <div class="card unverified-warning-banner">
+            <div class="warning-banner-left">
+              <span class="material-icons warning-banner-icon">security</span>
+              <div>
+                <h4 style="margin: 0 0 4px; font-size: 15px; color: #f59e0b;">
+                  {{ deviceService.unverifiedCount() }} Unverified Device Login{{ deviceService.unverifiedCount() > 1 ? 's' : '' }} Detected
+                </h4>
+                <p style="margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.4;">
+                  A new login occurred on another device. Please review below: click <strong>Verify</strong> to trust the device, or <strong>Not Me</strong> to terminate it immediately and update your PIN or login password.
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Current Device Highlight -->
         <div class="card current-device-card">
           <div class="device-card-header">
@@ -1079,9 +1098,9 @@
 
           <div class="sessions-list">
             @for (sess of deviceService.sessions(); track sess.id) {
-              <div class="session-item" [class.is-current]="sess.isCurrent">
+              <div class="session-item" [class.is-current]="sess.isCurrent" [class.is-unverified]="!sess.isCurrent && !sess.isVerified">
                 <div class="session-left">
-                  <div class="session-icon">
+                  <div class="session-icon" [class.icon-unverified]="!sess.isCurrent && !sess.isVerified">
                     <span class="material-icons">
                       {{ sess.deviceType === 'mobile' ? 'smartphone' : (sess.deviceType === 'tablet' ? 'tablet' : 'computer') }}
                     </span>
@@ -1091,10 +1110,18 @@
                       <strong>{{ sess.deviceName }}</strong>
                       @if (sess.isCurrent) {
                         <span class="badge badge-success" style="font-size: 11px;">This Device</span>
+                      } @else if (sess.isVerified) {
+                        <span class="badge badge-verified" style="font-size: 11px;">
+                          <span class="material-icons" style="font-size: 12px;">verified_user</span> Verified
+                        </span>
+                      } @else {
+                        <span class="badge badge-unverified" style="font-size: 11px;">
+                          <span class="material-icons" style="font-size: 12px;">warning</span> Unverified Login
+                        </span>
                       }
                     </div>
                     <div class="session-sub">
-                      {{ sess.browser }} · {{ sess.os }}
+                      {{ sess.browser }} · {{ sess.os }} · IP: {{ sess.ip }}
                     </div>
                     <div class="session-time">
                       Last active: {{ sess.isCurrent ? 'Active now' : formatDate(sess.lastActive) }}
@@ -1104,9 +1131,19 @@
 
                 <div class="session-right">
                   @if (!sess.isCurrent) {
-                    <button class="btn btn-secondary btn-sm" (click)="deviceService.revokeSession(sess.id)">
-                      Revoke
-                    </button>
+                    <div class="device-actions-row">
+                      @if (!sess.isVerified) {
+                        <button class="btn btn-verify-sm" (click)="deviceService.verifySession(sess.id)" title="Trust and verify this device">
+                          <span class="material-icons" style="font-size: 13px;">check_circle</span> Verify
+                        </button>
+                        <button class="btn btn-report-sm" (click)="deviceService.markSessionCompromised(sess)" title="Report unknown login & change PIN/password">
+                          <span class="material-icons" style="font-size: 13px;">gpp_bad</span> Not Me
+                        </button>
+                      }
+                      <button class="btn btn-secondary btn-sm" (click)="deviceService.revokeSession(sess.id)">
+                        Revoke
+                      </button>
+                    </div>
                   } @else {
                     <span class="current-label">Active</span>
                   }

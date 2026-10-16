@@ -1,239 +1,289 @@
-<section class="legal-page">
+<div class="legal-page">
   <div class="blur-blob one"></div>
   <div class="blur-blob two"></div>
 
-  <div class="legal-container animate-fade-in">
-    <!-- Top Nav Bar -->
-    <div class="legal-nav-bar">
-      <a routerLink="/" class="btn-back">
-        <span class="material-icons">arrow_back</span>
-        <span>Back to Home</span>
+  <!-- Shared FinTracker Top Navigation Bar -->
+  <nav class="nav">
+    <a routerLink="/" class="logo brand-name">
+      <span class="ash">FIN</span><span class="black">TRACKER</span>
+    </a>
+    <div class="nav-links">
+      <a routerLink="/" class="nav-link"><span>&lt;</span> Home <span>&gt;</span></a>
+      <a routerLink="/docs" class="nav-link"><span>&#123;</span> Docs <span>&#125;</span></a>
+      <a
+        href="https://github.com/PDineshMurugan/finance-tracker"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="nav-link hide-xs">
+        <span>&lt;</span> GitHub <span>&gt;</span>
       </a>
-
-      <div class="nav-right-actions">
-        <button
-          type="button"
-          class="btn-theme-toggle"
-          (click)="themeService.toggle()"
-          [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
-          title="Toggle theme">
-          <span class="material-icons">
-            {{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}
-          </span>
-        </button>
-
-        <a routerLink="/" class="brand-badge">
-          <span class="material-icons brand-icon">account_balance_wallet</span>
-          <span class="brand-name">{{ pwaService.appName() }}</span>
-        </a>
-      </div>
+      <a
+        href="https://github.com/PDineshMurugan/finance-tracker/blob/master/CHANGELOG.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="nav-link hide-xs">
+        <span>[</span> Changelog <span>]</span>
+      </a>
+      <a routerLink="/login" class="nav-link"><span>(</span> Sign In <span>)</span></a>
+      <button
+        class="nav-link theme-toggle-btn"
+        (click)="themeService.toggle($event)"
+        [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+        style="background: none; border: none; cursor: pointer; padding: 4px 0;">
+        <span>[</span>
+        <i class="material-icons" style="font-size: 16px; vertical-align: middle;">
+          {{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}
+        </i>
+        <span>]</span>
+      </button>
     </div>
+  </nav>
 
-    <!-- Title Card -->
-    <div class="legal-title-card">
-      <div class="title-meta-row">
-        <span class="badge-pill">Legal Agreement</span>
-        <span class="last-updated">Last Updated: October 2026</span>
-      </div>
-      <h1>Terms of Service</h1>
-      <p class="intro-text">
-        Please read these Terms of Service carefully before utilizing {{ pwaService.appName() }}. By accessing, 
-        creating an account, or importing financial records into our platform, you acknowledge that you have read, 
-        understood, and agree to be bound by all provisions set forth herein.
+  <!-- Legal Hero Section -->
+  <header class="legal-hero">
+    <div class="legal-hero-inner">
+      <div class="industrial-label">FINTRACKER LEGAL COMPLIANCE // TERMS OF USAGE</div>
+      <h1 class="hero-title">
+        Terms <span class="hero-accent">&amp;</span> Conditions of Service
+      </h1>
+      <p class="hero-subtext">
+        Please review these Terms of Service carefully before utilizing FinTracker. By accessing the application, 
+        creating an account, or importing financial ledgers, you agree to be bound by all provisions set forth herein.
       </p>
 
-      <!-- Switch Tabs -->
-      <div class="legal-tabs">
-        <a routerLink="/terms" class="tab-btn active">Terms of Service</a>
-        <a routerLink="/privacy" class="tab-btn">Privacy Policy</a>
+      <div class="hero-meta-bar">
+        <span class="meta-pill">LAST UPDATED: <strong>OCTOBER 2026</strong></span>
+        <span class="meta-pill">GOVERNING LAW: <strong>REPUBLIC OF INDIA</strong></span>
+        <span class="meta-pill">JURISDICTION: <strong>CHENNAI, TN</strong></span>
+      </div>
+
+      <!-- Legal Switch Tabs -->
+      <div class="legal-tabs-row">
+        <a routerLink="/terms" class="legal-tab-btn active"><span>[</span> Terms of Service <span>]</span></a>
+        <a routerLink="/privacy" class="legal-tab-btn"><span>[</span> Privacy Policy <span>]</span></a>
       </div>
     </div>
+  </header>
 
-    <!-- Critical Protective Callout -->
-    <div class="legal-callout warning">
+  <!-- Main Legal Body -->
+  <main class="legal-body">
+
+    <!-- Non-Financial Advice Protective Callout -->
+    <div class="legal-callout-box">
       <span class="material-icons callout-icon">warning_amber</span>
-      <div>
-        <div class="callout-title">Important: Not Financial or Investment Advice</div>
+      <div class="callout-content">
+        <div class="callout-heading">Important: Not Financial or Investment Advice</div>
         <p>
-          {{ pwaService.appName() }} is strictly a personal net worth organizer and analytics calculator for 
-          informational purposes only. We are not a Registered Investment Advisor (SEBI RIA, SEC, or equivalent), 
-          broker-dealer, wealth manager, or tax consultant. No metric, benchmark, or projection constitutes 
-          financial, legal, or investment recommendations.
+          FinTracker is strictly a personal net worth calculator and organizational dashboard for informational purposes only. 
+          We are not a Registered Investment Advisor (SEBI RIA, SEC, or equivalent), broker-dealer, or wealth management institution. 
+          No calculation, benchmark, or projection constitutes financial, legal, or investment advice.
         </p>
       </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="legal-content-card">
+    <!-- Structured Content Card -->
+    <div class="legal-card">
+
       <!-- Section 1 -->
-      <div class="legal-section">
-        <span class="section-num">Section 01</span>
-        <h2>1. Acceptance of Terms</h2>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 01</span>
+        <h2 class="section-title">1. Acceptance of Terms</h2>
         <p>
-          By creating an account, signing in with Google or email, or accessing the web application at 
-          <code>dmfintracker.web.app</code> (or any authorized domain), you confirm that you are at least 18 years 
-          of age (or legal age of majority in your jurisdiction) and possess full legal capacity to enter into these 
-          legally binding Terms. If you do not agree with any part of these Terms, you must discontinue use immediately.
+          By creating an account, signing in with Google OAuth or Email credentials, or accessing the application at 
+          <code>dmfintracker.web.app</code> (or any authorized domain), you confirm that you are at least 18 years of age 
+          and possess legal capacity to enter into these binding Terms. If you do not agree with any provision, 
+          you must discontinue use immediately.
         </p>
-      </div>
+      </section>
 
       <!-- Section 2 -->
-      <div class="legal-section">
-        <span class="section-num">Section 02</span>
-        <h2>2. Scope of Service & Nature of Calculations</h2>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 02</span>
+        <h2 class="section-title">2. Scope of Service &amp; Nature of Calculations</h2>
         <p>
-          {{ pwaService.appName() }} provides users with self-directed tools to track asset holdings, record income 
-          and expense transactions, monitor emergency runway buffers, and estimate Financial Independence (FIRE) milestones.
+          FinTracker provides users with self-directed tools to track asset allocations, record transaction ledgers, 
+          monitor emergency runway health, and project Financial Independence milestones.
         </p>
         <ul>
           <li>
-            <span class="material-icons bullet-icon">chevron_right</span>
+            <span class="bullet-indicator">→</span>
             <span>
-              <strong>Informational Estimates:</strong> All calculated statistics (including Day's Gain, Overall P&L, 
-              Emergency Runway months, and Retirement timelines) are automated mathematical approximations derived from 
-              data you provide and public market quotes.
+              <strong>Informational Mathematical Models:</strong> All calculated statistics (including Day's Gain, Overall P&L, 
+              Emergency Runway months, and Retirement targets) are automated mathematical approximations derived from 
+              data you provide and public market quote feeds.
             </span>
           </li>
           <li>
-            <span class="material-icons bullet-icon">chevron_right</span>
+            <span class="bullet-indicator">→</span>
             <span>
-              <strong>No Trading Execution:</strong> {{ pwaService.appName() }} does not execute buy/sell orders, hold custody 
-              of securities, or directly handle funds. You retain sole discretion over all financial and investment decisions.
+              <strong>Zero Order Execution:</strong> FinTracker does not execute trade orders, hold custody of funds, 
+              or manage securities. You retain exclusive discretion over all investment and financial actions.
             </span>
           </li>
         </ul>
-      </div>
+      </section>
 
       <!-- Section 3 -->
-      <div class="legal-section">
-        <span class="section-num">Section 03</span>
-        <h2>3. Third-Party Market Data & Statement Imports</h2>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 03</span>
+        <h2 class="section-title">3. Market Price Feeds &amp; Statement Parsing</h2>
         <p>
-          Our platform integrates with third-party data providers (including Google Finance, Yahoo Finance, and public 
-          Mutual Fund NAV repositories like MFAPI) to retrieve indicative market quotes and currency exchange rates.
+          The application integrates with public data endpoints (such as Google Finance and MFAPI) to display indicative prices.
         </p>
         <ul>
           <li>
-            <span class="material-icons bullet-icon">chevron_right</span>
+            <span class="bullet-indicator">→</span>
             <span>
-              <strong>Quote Delays & Discrepancies:</strong> Live quotes may be delayed, subject to exchange trading 
-              hours, or temporarily unavailable. We do not warrant the accuracy, timeliness, or completeness of third-party price feeds.
+              <strong>Quote Delays &amp; Variations:</strong> Market quotes may be delayed or subject to trading calendar variances. 
+              We do not warrant the continuous timeliness or commercial precision of third-party price feeds.
             </span>
           </li>
           <li>
-            <span class="material-icons bullet-icon">chevron_right</span>
+            <span class="bullet-indicator">→</span>
             <span>
-              <strong>Statement Parsing:</strong> Automated extraction from broker statements (such as Groww, Zerodha, 
-              INDmoney, or CAS PDFs) is provided for convenience. Statement formats frequently change; you are solely 
-              responsible for verifying imported quantities, average buy prices, and asset types.
+              <strong>Client-Side Document Parsing:</strong> Extraction from broker statements (Groww, Zerodha, INDmoney, CAS) 
+              is offered for convenience. Broker export formats may change without notice; you are solely responsible for 
+              verifying imported prices, quantities, and asset classifications.
             </span>
           </li>
         </ul>
-      </div>
+      </section>
 
       <!-- Section 4 -->
-      <div class="legal-section">
-        <span class="section-num">Section 04</span>
-        <h2>4. User Accounts, Security & Data Ownership</h2>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 04</span>
+        <h2 class="section-title">4. User Accounts, Security &amp; Data Ownership</h2>
         <p>
-          You are responsible for maintaining the confidentiality of your authentication credentials. Any activities 
-          conducted under your account remain your sole responsibility.
+          You are responsible for safeguarding your authentication credentials and maintaining access control over your devices.
         </p>
         <ul>
           <li>
-            <span class="material-icons bullet-icon">chevron_right</span>
+            <span class="bullet-indicator">→</span>
             <span>
-              <strong>Data Ownership:</strong> You retain complete ownership of all portfolio records, transactions, 
-              and notes you submit. We do not claim any proprietary rights over your personal financial data.
+              <strong>Absolute Data Ownership:</strong> You retain complete ownership of all portfolio records and notes submitted. 
+              We claim zero intellectual or commercial rights over your financial information.
             </span>
           </li>
           <li>
-            <span class="material-icons bullet-icon">chevron_right</span>
+            <span class="bullet-indicator">→</span>
             <span>
-              <strong>Data Portability:</strong> You may export your asset holdings and transactions to standard CSV 
-              formats at any time directly through the application.
+              <strong>Universal Data Portability:</strong> You may export your asset ledger and transaction history to standard 
+              CSV or Excel formats at any time directly through the application.
             </span>
           </li>
         </ul>
-      </div>
+      </section>
 
       <!-- Section 5 -->
-      <div class="legal-section">
-        <span class="section-num">Section 05</span>
-        <h2>5. Prohibited Activities</h2>
-        <p>When utilizing {{ pwaService.appName() }}, you agree not to:</p>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 05</span>
+        <h2 class="section-title">5. Prohibited Conduct</h2>
+        <p>When accessing FinTracker, you agree not to:</p>
         <ul>
-          <li><span class="material-icons bullet-icon">close</span> Interfere with, disrupt, or place an unreasonable load on the platform's infrastructure.</li>
-          <li><span class="material-icons bullet-icon">close</span> Reverse-engineer, decompile, or disassemble any part of the proprietary software or algorithms.</li>
-          <li><span class="material-icons bullet-icon">close</span> Deploy automated scrapers, bots, or unauthorized scripts to extract data or spam authentication mechanisms.</li>
-          <li><span class="material-icons bullet-icon">close</span> Use the service for fraudulent, money laundering, or unlawful purposes.</li>
+          <li><span class="bullet-indicator">→</span> Interfere with, overload, or compromise the operational integrity of platform infrastructure.</li>
+          <li><span class="bullet-indicator">→</span> Reverse-engineer, decompile, or extract proprietary calculation engines without authorization.</li>
+          <li><span class="bullet-indicator">→</span> Deploy abusive automated scrapers or flood authentication mechanisms.</li>
+          <li><span class="bullet-indicator">→</span> Utilize the service for fraudulent or unlawful purposes.</li>
         </ul>
-      </div>
+      </section>
 
       <!-- Section 6 -->
-      <div class="legal-section">
-        <span class="section-num">Section 06</span>
-        <h2>6. Disclaimer of Warranties & "AS IS" Service</h2>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 06</span>
+        <h2 class="section-title">6. Disclaimer of Warranties ("AS IS" Provision)</h2>
         <p>
-          THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER 
+          THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER 
           EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
-          PURPOSE, TITLE, OR NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, BUG-FREE, 
-          OR FREE FROM DATA TRANSMISSION DELAYS.
+          PURPOSE, TITLE, OR NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED OR COMPLETELY ERROR-FREE.
         </p>
-      </div>
+      </section>
 
       <!-- Section 7 -->
-      <div class="legal-section">
-        <span class="section-num">Section 07</span>
-        <h2>7. Limitation of Liability</h2>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 07</span>
+        <h2 class="section-title">7. Limitation of Liability</h2>
         <p>
-          TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL {{ pwaService.appName().toUpperCase() }}, 
-          ITS DEVELOPERS, AFFILIATES, OR LICENSORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL, 
-          PUNITIVE, OR SPECIAL DAMAGES—INCLUDING BUT NOT LIMITED TO LOSS OF CAPITAL, TRADING LOSSES, INVESTMENT FAILURES, 
-          LOST PROFITS, CORRUPTION OF DATA, OR SYSTEM DOWNTIME—ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY 
-          TO USE THIS SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+          TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL FINTRACKER, ITS MAINTAINERS, AFFILIATES, 
+          OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR SPECIAL DAMAGES—INCLUDING 
+          LOSS OF CAPITAL, TRADING LOSSES, INVESTMENT DRAWDOWNS, OR SYSTEM DOWNTIME—ARISING OUT OF OR RELATED TO YOUR USE 
+          OF OR INABILITY TO USE THIS SERVICE.
         </p>
-      </div>
+      </section>
 
       <!-- Section 8 -->
-      <div class="legal-section">
-        <span class="section-num">Section 08</span>
-        <h2>8. Termination & Modifications</h2>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 08</span>
+        <h2 class="section-title">8. Service Modifications &amp; Revisions</h2>
         <p>
-          We reserve the right to modify, suspend, or terminate features, service tiers, or user accounts at any time, 
-          with or without notice, in our sole discretion. We may also revise these Terms periodically. Your continued 
-          use of the application following the posting of revised Terms constitutes your acceptance of the changes.
+          We reserve the right to refine features, update calculation methods, or modify these Terms at any time. 
+          The "Last Updated" timestamp reflects the effective date of revisions. Continued usage signifies agreement with revised provisions.
         </p>
-      </div>
+      </section>
 
       <!-- Section 9 -->
-      <div class="legal-section">
-        <span class="section-num">Section 09</span>
-        <h2>9. Governing Law & Jurisdiction</h2>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 09</span>
+        <h2 class="section-title">9. Governing Law &amp; Jurisdiction</h2>
         <p>
-          These Terms shall be governed by and construed in accordance with the laws of the Republic of India. Any 
-          legal action or dispute arising out of these Terms shall be subject to the exclusive jurisdiction of the 
-          competent courts situated in Chennai, Tamil Nadu, India.
+          These Terms shall be governed by and interpreted under the laws of the Republic of India. Any dispute arising 
+          out of or relating to these Terms shall be subject to the exclusive jurisdiction of the competent courts situated in 
+          Chennai, Tamil Nadu, India.
         </p>
-      </div>
+      </section>
 
       <!-- Section 10 -->
-      <div class="legal-section">
-        <span class="section-num">Section 10</span>
-        <h2>10. Contact Information</h2>
+      <section class="legal-section-block">
+        <span class="section-tag">// SECTION 10</span>
+        <h2 class="section-title">10. Contact Information</h2>
         <p>
-          If you have questions, feedback, or legal inquiries regarding these Terms of Service, please reach out to:
+          For legal inquiries, dispute notices, or terms clarification, please contact:
         </p>
-        <p>
-          <strong>Email:</strong> <code>dineshmurugan518&#64;gmail.com</code><br>
+        <p style="margin-top: 8px;">
+          <strong>Legal Email:</strong> <code>dineshmurugan518&#64;gmail.com</code><br>
           <strong>Platform:</strong> {{ pwaService.appName() }}
         </p>
-      </div>
-    </div>
+      </section>
 
-    <!-- Legal Footer -->
-    <div class="legal-footer">
-      <p>&copy; 2026 {{ pwaService.appName() }}. All rights reserved.</p>
     </div>
-  </div>
-</section>
+  </main>
+
+  <!-- Legal Footer -->
+  <footer class="legal-footer">
+    <div class="footer-left">
+      <span>&copy; {{ currentYear }} FINTRACKER. ALL RIGHTS RESERVED.</span>
+    </div>
+    <div class="footer-right">
+      <a routerLink="/" class="footer-link">Home</a>
+      <span class="footer-sep">&middot;</span>
+      <a routerLink="/docs" class="footer-link">Docs</a>
+      <span class="footer-sep">&middot;</span>
+      <a routerLink="/terms" class="footer-link" style="color: var(--text-primary); font-weight: 800;">Terms</a>
+      <span class="footer-sep">&middot;</span>
+      <a routerLink="/privacy" class="footer-link">Privacy</a>
+      <span class="footer-sep">&middot;</span>
+      <a
+        href="https://github.com/PDineshMurugan/finance-tracker"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer-link">
+        GitHub
+      </a>
+      <span class="footer-sep">&middot;</span>
+      <a
+        href="https://github.com/PDineshMurugan/finance-tracker/blob/master/CHANGELOG.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer-link">
+        Changelog
+      </a>
+    </div>
+  </footer>
+
+  <!-- Floating Back to Top Button -->
+  @if (showBackToTop()) {
+    <button class="btn-back-to-top" (click)="scrollToTop()" aria-label="Scroll back to top">
+      <span class="material-icons">arrow_upward</span>
+      <span>[ TOP ]</span>
+    </button>
+  }
+</div>

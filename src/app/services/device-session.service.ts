@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, OnDestroy } from '@angular/core';
+import { Injectable, inject, signal, computed, OnDestroy } from '@angular/core';
 import { Auth, signOut } from '@angular/fire/auth';
 import {
     Firestore,
@@ -27,6 +27,8 @@ export interface DeviceSession {
     createdAt: string;
     isCurrent: boolean;
     revoked?: boolean;
+    isVerified?: boolean;
+    verifiedAt?: string;
 }
 
 @Injectable({
@@ -41,6 +43,26 @@ export class DeviceSessionService implements OnDestroy {
     readonly sessions = signal<DeviceSession[]>([]);
     readonly currentSession = signal<DeviceSession | null>(null);
     readonly isLoading = signal<boolean>(false);
+
+    // Unverified remote device sessions that require user verification
+    readonly unverifiedSessions = computed(() => {
+        return this.sessions().filter((s) => !s.isCurrent && !s.isVerified);
+    });
+
+    readonly unverifiedCount = computed(() => this.unverifiedSessions().length);
+
+    // Dismissed session IDs from the small top banner (persists in notification bell dropdown)
+    private dismissedBannerSessionIds = signal<Set<string>>(new Set());
+
+    // Most recent unverified session for the small notification bar
+    readonly pendingBannerSession = computed(() => {
+        const dismissed = this.dismissedBannerSessionIds();
+        return this.unverifiedSessions().find((s) => !dismissed.has(s.id)) || null;
+    });
+
+    // Compromised device session being remediated (triggers security credentials change modal)
+    readonly compromisedDevice = signal<DeviceSession | null>(null);
+    readonly isRemediationModalOpen = signal<boolean>(false);
 
     private currentSessionId: string = '';
     private authUnsubscribe?: () => void;
@@ -225,9 +247,11 @@ export class DeviceSessionService implements OnDestroy {
         const baseInfo = this.parseDeviceInfo();
         const now = new Date().toISOString();
 
-        // 1. Check existing Firestore session doc to preserve true createdAt
+        // 1. Check existing Firestore session doc to preserve true createdAt and verification status
         const sessRef = doc(this.firestore, `users/${uid}/sessions/${this.currentSessionId}`);
         let createdAt = now;
+        let isVerified = true;
+        let verifiedAt: string | undefined = now;
 
         try {
             const existingSnap = await getDoc(sessRef);
@@ -235,6 +259,30 @@ export class DeviceSessionService implements OnDestroy {
                 const existingData = existingSnap.data();
                 if (existingData?.['createdAt']) {
                     createdAt = existingData['createdAt'];
+                }
+                if (typeof existingData?.['isVerified'] === 'boolean') {
+                    isVerified = existingData['isVerified'];
+                    verifiedAt = existingData['verifiedAt'] || undefined;
+                }
+            } else {
+                // Check if other active sessions already exist for this user in Firestore
+                try {
+                    const colRef = collection(this.firestore, `users/${uid}/sessions`);
+                    const allSnap = await getDocs(colRef);
+                    const activeOthers = allSnap.docs.filter(
+                        (d) => d.id !== this.currentSessionId && d.data()['revoked'] !== true
+                    );
+                    // If there are other sessions active on other devices, a new device login starts unverified
+                    if (activeOthers.length > 0) {
+                        isVerified = false;
+                        verifiedAt = undefined;
+                    } else {
+                        isVerified = true;
+                        verifiedAt = now;
+                    }
+                } catch {
+                    isVerified = true;
+                    verifiedAt = now;
                 }
             }
         } catch (e) {
@@ -246,7 +294,9 @@ export class DeviceSessionService implements OnDestroy {
             ...baseInfo,
             lastActive: now,
             createdAt,
-            isCurrent: true
+            isCurrent: true,
+            isVerified,
+            verifiedAt
         };
 
         this.currentSession.set(current);
@@ -276,7 +326,9 @@ export class DeviceSessionService implements OnDestroy {
                     ip: current.ip,
                     lastActive: now,
                     createdAt: current.createdAt,
-                    revoked: false
+                    revoked: false,
+                    isVerified,
+                    verifiedAt: verifiedAt || null
                 },
                 { merge: true }
             );
@@ -378,6 +430,10 @@ export class DeviceSessionService implements OnDestroy {
                     if (data['revoked'] === true) return;
 
                     const isCurrent = docSnap.id === this.currentSessionId;
+                    const isVerified = typeof data['isVerified'] === 'boolean'
+                        ? data['isVerified']
+                        : (isCurrent || snap.size <= 1);
+
                     list.push({
                         id: docSnap.id,
                         deviceName: data['deviceName'] || 'Unknown Device',
@@ -388,7 +444,9 @@ export class DeviceSessionService implements OnDestroy {
                         ip: data['ip'] || 'Client Network',
                         lastActive: data['lastActive'] || new Date().toISOString(),
                         createdAt: data['createdAt'] || new Date().toISOString(),
-                        isCurrent
+                        isCurrent,
+                        isVerified,
+                        verifiedAt: data['verifiedAt'] || undefined
                     });
                 });
 
@@ -431,6 +489,10 @@ export class DeviceSessionService implements OnDestroy {
                 if (data['revoked'] === true) return;
 
                 const isCurrent = docSnap.id === this.currentSessionId;
+                const isVerified = typeof data['isVerified'] === 'boolean'
+                    ? data['isVerified']
+                    : (isCurrent || snap.size <= 1);
+
                 list.push({
                     id: docSnap.id,
                     deviceName: data['deviceName'] || 'Unknown Device',
@@ -441,7 +503,9 @@ export class DeviceSessionService implements OnDestroy {
                     ip: data['ip'] || 'Client Network',
                     lastActive: data['lastActive'] || new Date().toISOString(),
                     createdAt: data['createdAt'] || new Date().toISOString(),
-                    isCurrent
+                    isCurrent,
+                    isVerified,
+                    verifiedAt: data['verifiedAt'] || undefined
                 });
             });
 
@@ -459,6 +523,54 @@ export class DeviceSessionService implements OnDestroy {
         } catch (err) {
             console.warn('[DeviceSession] Refresh sessions error:', err);
         }
+    }
+
+    /**
+     * Verifies and marks a device session as trusted by the user.
+     */
+    async verifySession(sessionId: string): Promise<void> {
+        const uid = this.auth.currentUser?.uid;
+        if (!uid) return;
+
+        try {
+            const ref = doc(this.firestore, `users/${uid}/sessions/${sessionId}`);
+            const verifiedAt = new Date().toISOString();
+            await setDoc(ref, { isVerified: true, verifiedAt }, { merge: true });
+
+            this.sessions.update((prev) =>
+                prev.map((s) => (s.id === sessionId ? { ...s, isVerified: true, verifiedAt } : s))
+            );
+            this.snackbar.show('Device verified and trusted successfully.', 'success');
+        } catch (err: any) {
+            this.snackbar.show('Failed to verify device: ' + err.message, 'error');
+        }
+    }
+
+    /**
+     * Temporarily dismisses the small top notification bar for a specific session
+     */
+    dismissBanner(sessionId: string): void {
+        this.dismissedBannerSessionIds.update((set) => {
+            const next = new Set(set);
+            next.add(sessionId);
+            return next;
+        });
+    }
+
+    /**
+     * Marks an unrecognized/compromised device session as an issue:
+     * 1. Terminates session immediately
+     * 2. Opens the Security Remediation Dialog to update credentials/PIN
+     */
+    async markSessionCompromised(session: DeviceSession): Promise<void> {
+        await this.revokeSession(session.id);
+        this.compromisedDevice.set(session);
+        this.isRemediationModalOpen.set(true);
+    }
+
+    closeRemediationModal(): void {
+        this.isRemediationModalOpen.set(false);
+        this.compromisedDevice.set(null);
     }
 
     /**

@@ -1,0 +1,559 @@
+<div class="docs-page">
+  <!-- Ambient background glow -->
+  <div class="blur-blob one"></div>
+  <div class="blur-blob two"></div>
+
+  <!-- Shared FinTracker Top Navigation Bar -->
+  <nav class="nav">
+    <div class="logo brand-name" routerLink="/" style="cursor: pointer;">
+      {{ pwaService.appName() }}
+    </div>
+    <div class="nav-links">
+      <a routerLink="/" class="nav-link"><span>&lt;</span> Home <span>&gt;</span></a>
+      <a routerLink="/docs" class="nav-link active"><span>&#123;</span> Docs <span>&#125;</span></a>
+      <a
+        href="https://github.com/PDineshMurugan/finance-tracker"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="nav-link hide-xs">
+        <span>&lt;</span> GitHub <span>&gt;</span>
+      </a>
+      <a
+        href="https://github.com/PDineshMurugan/finance-tracker/blob/master/CHANGELOG.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="nav-link hide-xs">
+        <span>[</span> Changelog <span>]</span>
+      </a>
+      <a routerLink="/login" class="nav-link"><span>(</span> Sign In <span>)</span></a>
+      <button
+        class="nav-link theme-toggle-btn"
+        (click)="themeService.toggle($event)"
+        [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+        style="background: none; border: none; cursor: pointer; padding: 4px 0;">
+        <span>[</span>
+        <i class="material-icons" style="font-size: 16px; vertical-align: middle;">
+          {{ themeService.isDark() ? 'dark_mode' : 'light_mode' }}
+        </i>
+        <span>]</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="docs-hero">
+    <div class="docs-hero-inner">
+      <div class="industrial-label">Model Context Protocol // Open AI Integration</div>
+      <h1 class="hero-title">
+        FinTracker MCP <span class="hero-accent">&amp;</span> AI Reference
+      </h1>
+      <p class="hero-subtext">
+        Connect your AI assistants (Google Antigravity, Claude Desktop, Cursor) directly to your wealth intelligence,
+        portfolio analytics, and transaction logs via the open-source <strong>Model Context Protocol (MCP)</strong>.
+      </p>
+
+      <div class="hero-meta-strip">
+        <div class="meta-pill">
+          <span class="pill-label">Protocol:</span>
+          <span class="pill-val">MCP 2024-11-05</span>
+        </div>
+        <div class="meta-pill">
+          <span class="pill-label">Transport:</span>
+          <span class="pill-val">SSE &amp; Stdio</span>
+        </div>
+        <div class="meta-pill">
+          <span class="pill-label">Tools:</span>
+          <span class="pill-val">8 Financial APIs</span>
+        </div>
+        <div class="meta-pill">
+          <span class="pill-label">Format:</span>
+          <span class="pill-val">JSON-RPC 2.0</span>
+        </div>
+        <div class="meta-pill">
+          <span class="pill-label">Auth:</span>
+          <span class="pill-val">Bearer Token</span>
+        </div>
+      </div>
+
+      <!-- Quick Jump Chips in FinTracker Bracket Style -->
+      <div class="hero-quick-strip">
+        <span class="quick-label">// JUMP TO:</span>
+        <button class="quick-chip" (click)="scrollToSection('client-setup')">[ 01. AI Quick Connect ]</button>
+        <button class="quick-chip" (click)="scrollToSection('authentication')">[ 02. Auth &amp; Endpoints ]</button>
+        <button class="quick-chip" (click)="scrollToSection('tools-catalog')">[ 03. 8 Financial Tools ]</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout (Sidebar + Body) -->
+  <div class="docs-layout">
+    <!-- Sticky Table of Contents Sidebar -->
+    <aside class="docs-sidebar">
+      <div class="sidebar-sticky">
+        <div class="sidebar-search">
+          <span class="material-icons search-icon">search</span>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            placeholder="Search tools &amp; guides..."
+            class="search-input" />
+          @if (searchQuery()) {
+            <button class="btn-clear-search" (click)="clearSearch()" title="Clear search">
+              <span class="material-icons">close</span>
+            </button>
+          }
+        </div>
+
+        <!-- Sidebar Category Filter Chips -->
+        <div class="sidebar-filter-chips">
+          <button
+            class="filter-chip"
+            [class.active]="toolCategoryFilter() === 'all'"
+            (click)="toolCategoryFilter.set('all')">
+            All ({{ tools.length }})
+          </button>
+          <button
+            class="filter-chip"
+            [class.active]="toolCategoryFilter() === 'read'"
+            (click)="toolCategoryFilter.set('read')">
+            Read (5)
+          </button>
+          <button
+            class="filter-chip"
+            [class.active]="toolCategoryFilter() === 'write'"
+            (click)="toolCategoryFilter.set('write')">
+            Write (3)
+          </button>
+          <button
+            class="filter-chip"
+            [class.active]="toolCategoryFilter() === 'portfolio'"
+            (click)="toolCategoryFilter.set('portfolio')">
+            Portfolio
+          </button>
+          <button
+            class="filter-chip"
+            [class.active]="toolCategoryFilter() === 'transactions'"
+            (click)="toolCategoryFilter.set('transactions')">
+            Tx
+          </button>
+        </div>
+
+        <nav class="sidebar-nav">
+          <div class="nav-group-title">QUICK START</div>
+          <button
+            class="sidebar-link"
+            [class.active]="activeSection() === 'client-setup'"
+            (click)="scrollToSection('client-setup')">
+            <span class="material-icons">smart_toy</span>
+            <span>1. AI Quick Connect</span>
+          </button>
+          <button
+            class="sidebar-link"
+            [class.active]="activeSection() === 'authentication'"
+            (click)="scrollToSection('authentication')">
+            <span class="material-icons">key</span>
+            <span>2. Auth &amp; Endpoints</span>
+          </button>
+
+          <div class="nav-group-title">FINANCIAL TOOLS ({{ filteredTools().length }})</div>
+          @for (tool of filteredTools(); track tool.id) {
+            <button
+              class="sidebar-link tool-link"
+              [class.active]="activeSection() === tool.id"
+              (click)="scrollToSection(tool.id)">
+              <span class="tool-tag" [class.write]="tool.type === 'write'">{{ tool.type | uppercase }}</span>
+              <span class="tool-name-truncate">{{ tool.name }}</span>
+            </button>
+          }
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content Body -->
+    <main class="docs-main">
+      <!-- ───── Section 1: AI Client Setup (Quick Connect) ───── -->
+      <section class="doc-card" id="client-setup">
+        <div class="card-header">
+          <div class="header-tag">GETTING CONNECTED</div>
+          <h2>1. AI Client Configuration Recipes</h2>
+        </div>
+        <p class="section-lead">
+          Connect your remote FinTracker MCP server directly to your preferred AI coding environment or desktop assistant.
+        </p>
+
+        <div class="tabs-nav">
+          <button
+            class="tab-btn"
+            [class.active]="clientTab() === 'antigravity'"
+            (click)="clientTab.set('antigravity')">
+            Google Antigravity IDE
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="clientTab() === 'claude'"
+            (click)="clientTab.set('claude')">
+            Claude Desktop
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="clientTab() === 'cursor'"
+            (click)="clientTab.set('cursor')">
+            Cursor IDE
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="clientTab() === 'curl'"
+            (click)="clientTab.set('curl')">
+            cURL / Terminal
+          </button>
+        </div>
+
+        <div class="tab-content">
+          @if (clientTab() === 'antigravity') {
+            <div class="tab-pane">
+              <p>Add to your Antigravity IDE MCP configuration (<code>mcp_config.json</code>):</p>
+              <div class="code-preview-wrapper">
+                <button
+                  class="btn-copy"
+                  (click)="copySnippet(antigravityConfigCode, 'antigravity-cfg')">
+                  <span class="material-icons">
+                    {{ copiedSnippetId() === 'antigravity-cfg' ? 'check' : 'content_copy' }}
+                  </span>
+                  <span>{{ copiedSnippetId() === 'antigravity-cfg' ? 'Copied' : 'Copy' }}</span>
+                </button>
+                <pre class="code-block"><code>{{ antigravityConfigCode }}</code></pre>
+              </div>
+            </div>
+          }
+
+          @if (clientTab() === 'claude') {
+            <div class="tab-pane">
+              <p>Add to your <code>claude_desktop_config.json</code>:</p>
+              <div class="code-preview-wrapper">
+                <button
+                  class="btn-copy"
+                  (click)="copySnippet(claudeConfigCode, 'claude-cfg')">
+                  <span class="material-icons">
+                    {{ copiedSnippetId() === 'claude-cfg' ? 'check' : 'content_copy' }}
+                  </span>
+                  <span>{{ copiedSnippetId() === 'claude-cfg' ? 'Copied' : 'Copy' }}</span>
+                </button>
+                <pre class="code-block"><code>{{ claudeConfigCode }}</code></pre>
+              </div>
+            </div>
+          }
+
+          @if (clientTab() === 'cursor') {
+            <div class="tab-pane">
+              <p>In Cursor Settings &gt; Features &gt; <strong>MCP Servers</strong>, click <strong>+ Add New MCP Server</strong>:</p>
+              <ul>
+                <li><strong>Name:</strong> <code>fintracker</code></li>
+                <li><strong>Type:</strong> <code>sse</code></li>
+                <li><strong>URL:</strong> <code>https://your-fintracker-mcp.onrender.com/sse?token=YOUR_SECRET_AUTH_TOKEN</code></li>
+              </ul>
+            </div>
+          }
+
+          @if (clientTab() === 'curl') {
+            <div class="tab-pane">
+              <p>Test the remote health check and authenticated SSE stream via terminal:</p>
+              <div class="code-preview-wrapper">
+                <button
+                  class="btn-copy"
+                  (click)="copySnippet(curlTestCode, 'curl-cfg')">
+                  <span class="material-icons">
+                    {{ copiedSnippetId() === 'curl-cfg' ? 'check' : 'content_copy' }}
+                  </span>
+                  <span>{{ copiedSnippetId() === 'curl-cfg' ? 'Copied' : 'Copy' }}</span>
+                </button>
+                <pre class="code-block"><code>{{ curlTestCode }}</code></pre>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- ───── Section 2: Auth & Endpoints ───── -->
+      <section class="doc-card" id="authentication">
+        <div class="card-header">
+          <div class="header-tag">TRANSPORT &amp; AUTHENTICATION</div>
+          <h2>2. Protocol Endpoints &amp; Security</h2>
+        </div>
+        <p class="section-lead">
+          The FinTracker MCP server communicates via Server-Sent Events (SSE) and JSON-RPC 2.0 messages over standard HTTPS.
+        </p>
+
+        <div class="endpoints-table-container">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Endpoint</th>
+                <th>Auth Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-get">GET</span></td>
+                <td><code>/</code></td>
+                <td>No</td>
+                <td>Health check and service status diagnostic endpoint.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-get">GET</span></td>
+                <td><code>/sse</code></td>
+                <td><strong>Yes</strong></td>
+                <td>Establishes the Server-Sent Events (SSE) streaming transport connection.</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-post">POST</span></td>
+                <td><code>/message?sessionId=&lt;id&gt;</code></td>
+                <td><strong>Yes</strong></td>
+                <td>Receives JSON-RPC 2.0 client requests and executes tool calls.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="auth-box">
+          <h4><span class="material-icons">key</span> Authentication Header</h4>
+          <p>
+            When connecting to the remote server, clients must provide the secret token configured in your
+            <code>FINTRACKER_AUTH_TOKEN</code> environment variable via either:
+          </p>
+          <div class="code-preview">
+            <code>Authorization: Bearer YOUR_SECRET_AUTH_TOKEN</code>
+          </div>
+          <p class="sub-note">Or via URL query parameter for clients that do not support custom EventSource headers:</p>
+          <div class="code-preview">
+            <code>https://your-fintracker-mcp.onrender.com/sse?token=YOUR_SECRET_AUTH_TOKEN</code>
+          </div>
+        </div>
+
+        <div class="user-scope-box">
+          <h4><span class="material-icons">account_circle</span> Multi-User &amp; Scoping</h4>
+          <p>
+            By default, tool calls operate on the user configured in <code>DEFAULT_USER_UID</code>. If you are managing multiple accounts or portfolios, you can optionally pass an explicit <code>uid</code> parameter in any tool call's arguments.
+          </p>
+        </div>
+      </section>
+
+      <!-- ───── Section 3: Tools Reference ───── -->
+      <section class="doc-card" id="tools-catalog">
+        <div class="card-header">
+          <div class="header-tag">TOOL CATALOG</div>
+          <h2>3. Financial Tools Reference ({{ filteredTools().length }} Available)</h2>
+        </div>
+        <p class="section-lead">
+          Every tool is defined with runtime validation using Zod schemas and executes against your Firebase Firestore
+          database in real time.
+        </p>
+
+        <!-- Category Filter Pills Bar -->
+        <div class="tools-filter-strip">
+          <div class="filter-pills">
+            <button
+              class="pill-btn"
+              [class.active]="toolCategoryFilter() === 'all'"
+              (click)="toolCategoryFilter.set('all')">
+              All Tools (8)
+            </button>
+            <button
+              class="pill-btn"
+              [class.active]="toolCategoryFilter() === 'read'"
+              (click)="toolCategoryFilter.set('read')">
+              Read / Queries (5)
+            </button>
+            <button
+              class="pill-btn"
+              [class.active]="toolCategoryFilter() === 'write'"
+              (click)="toolCategoryFilter.set('write')">
+              Write / Mutations (3)
+            </button>
+            <button
+              class="pill-btn"
+              [class.active]="toolCategoryFilter() === 'portfolio'"
+              (click)="toolCategoryFilter.set('portfolio')">
+              Portfolio Tools
+            </button>
+            <button
+              class="pill-btn"
+              [class.active]="toolCategoryFilter() === 'transactions'"
+              (click)="toolCategoryFilter.set('transactions')">
+              Transactions &amp; Cashflow
+            </button>
+          </div>
+          <div class="results-count">
+            Showing {{ filteredTools().length }} of {{ tools.length }} tools
+          </div>
+        </div>
+
+        <!-- Tool Cards List -->
+        <div class="tools-list">
+          @for (tool of filteredTools(); track tool.id) {
+            <article class="tool-card" [id]="tool.id">
+              <div class="tool-card-top">
+                <div class="tool-name-wrapper">
+                  <span class="tool-badge" [class.badge-write]="tool.type === 'write'">
+                    {{ tool.type | uppercase }}
+                  </span>
+                  <h3 class="tool-title">{{ tool.name }}</h3>
+                </div>
+
+                <!-- AI Prompt Example Pill -->
+                <div class="ai-prompt-badge">
+                  <span class="material-icons prompt-icon">chat</span>
+                  <span class="prompt-text">{{ tool.aiPromptExample }}</span>
+                  <button
+                    class="btn-copy-prompt"
+                    (click)="copyPrompt(tool.aiPromptExample, 'prompt-' + tool.id)"
+                    title="Copy AI Prompt">
+                    <span class="material-icons">
+                      {{ copiedSnippetId() === 'prompt-' + tool.id ? 'check' : 'content_copy' }}
+                    </span>
+                    <span>{{ copiedSnippetId() === 'prompt-' + tool.id ? 'Copied' : 'Copy' }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <p class="tool-desc">{{ tool.description }}</p>
+
+              <!-- Parameters Table -->
+              <div class="params-block">
+                <div class="block-title">INPUT PARAMETERS</div>
+                @if (tool.parameters.length === 0) {
+                  <p class="no-params-text">None. Operates directly on the authenticated user profile.</p>
+                } @else {
+                  <table class="doc-table params-table">
+                    <thead>
+                      <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (p of tool.parameters; track p.name) {
+                        <tr>
+                          <td><code>{{ p.name }}</code></td>
+                          <td><span class="type-badge">{{ p.type }}</span></td>
+                          <td>
+                            <span class="req-badge" [class.required]="p.required">
+                              {{ p.required ? 'REQUIRED' : 'OPTIONAL' }}
+                            </span>
+                          </td>
+                          <td>{{ p.description }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+
+              <!-- Request & Response JSON-RPC Previews -->
+              <div class="payloads-grid">
+                <div class="payload-column">
+                  <div class="payload-header">
+                    <span>JSON-RPC Request</span>
+                    <button
+                      class="btn-copy"
+                      (click)="copyObjectSnippet(tool.requestExample, 'req-' + tool.id)">
+                      <span class="material-icons">
+                        {{ copiedSnippetId() === 'req-' + tool.id ? 'check' : 'content_copy' }}
+                      </span>
+                      <span>{{ copiedSnippetId() === 'req-' + tool.id ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                  <pre class="code-block"><code>{{ tool.requestExample | json }}</code></pre>
+                </div>
+
+                <div class="payload-column">
+                  <div class="payload-header">
+                    <span>Tool Response Result</span>
+                    <button
+                      class="btn-copy"
+                      (click)="copyObjectSnippet(tool.responseExample, 'res-' + tool.id)">
+                      <span class="material-icons">
+                        {{ copiedSnippetId() === 'res-' + tool.id ? 'check' : 'content_copy' }}
+                      </span>
+                      <span>{{ copiedSnippetId() === 'res-' + tool.id ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                  <pre class="code-block"><code>{{ tool.responseExample | json }}</code></pre>
+                </div>
+              </div>
+            </article>
+          }
+
+          @if (filteredTools().length === 0) {
+            <div class="no-tools-found">
+              <span class="material-icons">search_off</span>
+              <p>No tools found matching "<strong>{{ searchQuery() }}</strong>"</p>
+              <button class="btn-reset-filter" (click)="clearSearch()">Reset Filter</button>
+            </div>
+          }
+        </div>
+
+        <!-- Compact Self-Hosting Callout -->
+        <div class="self-host-banner">
+          <div class="banner-left">
+            <span class="material-icons banner-icon">terminal</span>
+            <div class="banner-text">
+              <h4>Self-Hosting or Developing the MCP Server?</h4>
+              <p>For deploying your own instance to Render.com ($0 Free Tier) or running locally via stdio, read our comprehensive deployment guide on GitHub.</p>
+            </div>
+          </div>
+          <a
+            href="https://github.com/PDineshMurugan/finance-tracker/tree/main/mcp-server"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-github-guide">
+            [ View GitHub Deploy Guide ]
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Shared FinTracker Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      &copy; 2026 {{ pwaService.appName() }}. All rights reserved.
+    </div>
+    <div class="footer-right">
+      <a routerLink="/" class="footer-link">Home</a>
+      <span class="footer-sep">·</span>
+      <a routerLink="/docs" class="footer-link">Docs</a>
+      <span class="footer-sep">·</span>
+      <a routerLink="/terms" class="footer-link">Terms</a>
+      <span class="footer-sep">·</span>
+      <a routerLink="/privacy" class="footer-link">Privacy</a>
+      <span class="footer-sep">·</span>
+      <a
+        href="https://github.com/PDineshMurugan/finance-tracker"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer-link">
+        GitHub
+      </a>
+      <span class="footer-sep">·</span>
+      <a
+        href="https://github.com/PDineshMurugan/finance-tracker/blob/master/CHANGELOG.md"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer-link">
+        Changelog
+      </a>
+    </div>
+  </footer>
+
+  <!-- Floating Back to Top Button -->
+  @if (showBackToTop()) {
+    <button class="btn-back-to-top" (click)="scrollToTop()" aria-label="Scroll back to top">
+      <span class="material-icons">arrow_upward</span>
+      <span>[ TOP ]</span>
+    </button>
+  }
+</div>

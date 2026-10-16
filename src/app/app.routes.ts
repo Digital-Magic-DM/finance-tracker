@@ -34,6 +34,21 @@ export const routes: Routes = [
             import('./features/legal/privacy.component').then((m) => m.PrivacyComponent),
     },
     {
+        path: 'docs',
+        loadComponent: () =>
+            import('./features/docs/docs.component').then((m) => m.DocsComponent),
+    },
+    {
+        path: 'developers',
+        redirectTo: 'docs',
+        pathMatch: 'full',
+    },
+    {
+        path: 'api',
+        redirectTo: 'docs',
+        pathMatch: 'full',
+    },
+    {
         path: 'app',
         canActivate: [authGuard],
         canActivateChild: [authGuard],

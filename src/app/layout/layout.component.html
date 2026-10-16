@@ -33,4 +33,9 @@
   @if (pinSecurity.isLocked()) {
     <app-pin-lock />
   }
+
+  <!-- Security Remediation Modal (Triggered on unknown device login / Not Me) -->
+  @if (deviceSessionService.isRemediationModalOpen()) {
+    <app-security-remediation-modal />
+  }
 </div>

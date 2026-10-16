@@ -1,4 +1,30 @@
 <header class="toolbar">
+  <!-- Small Notification Bar for unverified device logins -->
+  @if (deviceSessionService.pendingBannerSession(); as pendingSess) {
+    <div class="device-alert-bar" role="alert">
+      <div class="alert-bar-left">
+        <span class="material-icons alert-icon pulse-warning">warning</span>
+        <div class="alert-bar-text">
+          <span class="alert-tag">New Device Login</span>
+          <span class="alert-desc">
+            <strong>{{ pendingSess.deviceName }}</strong> ({{ pendingSess.browser }} on {{ pendingSess.os }} · IP: {{ pendingSess.ip }})
+          </span>
+        </div>
+      </div>
+      <div class="alert-bar-actions">
+        <button class="btn-bar btn-verify" (click)="verifyDevice(pendingSess.id)" title="Trust and verify this device">
+          <span class="material-icons" style="font-size: 14px;">check_circle</span> Verify
+        </button>
+        <button class="btn-bar btn-report" (click)="reportDevice(pendingSess)" title="Mark as unknown & disconnect">
+          <span class="material-icons" style="font-size: 14px;">gpp_bad</span> Not Me
+        </button>
+        <button class="btn-dismiss-alert" (click)="dismissBanner(pendingSess.id)" title="Dismiss banner">
+          <span class="material-icons" style="font-size: 16px;">close</span>
+        </button>
+      </div>
+    </div>
+  }
+
   <div class="toolbar-left">
     <!-- Menu toggle (desktop collapse & mobile drawer) -->
     <button class="menu-btn btn-icon" id="sidebar-toggle" (click)="sidebarToggle.emit()" aria-label="Toggle sidebar" title="Toggle sidebar">
@@ -24,6 +50,81 @@
       </button>
     }
 
+    <!-- Notification Bell & Security Dropdown -->
+    <div class="notification-menu-container">
+      <button
+        class="btn-icon notification-btn"
+        id="notification-bell-btn"
+        (click)="toggleNotifications($event)"
+        [class.active]="showNotifications()"
+        [attr.aria-label]="deviceSessionService.unverifiedCount() > 0 ? deviceSessionService.unverifiedCount() + ' security notifications' : 'Notifications'"
+        title="Security Notifications">
+        <span class="material-icons" style="font-size: 20px;">notifications</span>
+        @if (deviceSessionService.unverifiedCount() > 0) {
+          <span class="notification-badge-pulse">{{ deviceSessionService.unverifiedCount() }}</span>
+        }
+      </button>
+
+      @if (showNotifications()) {
+        <div class="notification-dropdown">
+          <div class="dropdown-header">
+            <div class="header-title-row">
+              <span class="material-icons" style="font-size: 18px;">security</span>
+              <span class="fw-bold">Security Notifications</span>
+            </div>
+            @if (deviceSessionService.unverifiedCount() > 0) {
+              <span class="badge-alert-count">{{ deviceSessionService.unverifiedCount() }} Unverified</span>
+            }
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <div class="dropdown-body">
+            @if (deviceSessionService.unverifiedSessions().length > 0) {
+              <div class="group-title">New Device Logins Requiring Verification</div>
+              @for (sess of deviceSessionService.unverifiedSessions(); track sess.id) {
+                <div class="unverified-card">
+                  <div class="card-top">
+                    <span class="material-icons dev-icon">
+                      {{ sess.deviceType === 'mobile' ? 'smartphone' : (sess.deviceType === 'tablet' ? 'tablet' : 'laptop') }}
+                    </span>
+                    <div class="dev-details">
+                      <strong>{{ sess.deviceName }}</strong>
+                      <span class="dev-meta">{{ sess.browser }} · {{ sess.os }}</span>
+                      <span class="dev-ip">IP: {{ sess.ip }}</span>
+                    </div>
+                  </div>
+                  <div class="card-btn-row">
+                    <button class="btn-micro btn-verify" (click)="verifyDevice(sess.id)">
+                      <span class="material-icons">check_circle</span> Verify
+                    </button>
+                    <button class="btn-micro btn-report" (click)="reportDevice(sess)">
+                      <span class="material-icons">gpp_bad</span> Not Me
+                    </button>
+                  </div>
+                </div>
+              }
+            } @else {
+              <div class="notification-empty">
+                <span class="material-icons empty-icon">verified_user</span>
+                <p class="empty-title">All Devices Verified</p>
+                <p class="empty-sub">No unrecognized login attempts.</p>
+              </div>
+            }
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <div class="dropdown-footer">
+            <a routerLink="/app/settings" [queryParams]="{ tab: 'devices' }" class="footer-link" (click)="showNotifications.set(false)">
+              <span class="material-icons" style="font-size: 15px;">devices</span>
+              Manage Active Devices ({{ deviceSessionService.sessions().length }})
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+
     <!-- AI Chat Toggle -->
     <button
       class="btn-icon ai-btn"
@@ -38,7 +139,7 @@
     <button
       class="btn-icon theme-btn"
       id="theme-toggle"
-      (click)="themeService.toggle()"
+      (click)="themeService.toggle($event)"
       [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
       [title]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'">
       @if (themeService.isDark()) {

@@ -7,7 +7,9 @@ import {
     user,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    updateProfile
+    updateProfile,
+    sendPasswordResetEmail,
+    updatePassword
 } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { from, Observable } from 'rxjs';
@@ -58,5 +60,34 @@ export class AuthService {
 
     getCurrentUser() {
         return this.auth.currentUser;
+    }
+
+    getLoginProvider(): 'google' | 'password' | 'other' {
+        const user = this.auth.currentUser;
+        if (!user || !user.providerData || user.providerData.length === 0) return 'other';
+        const providers = user.providerData.map((p) => p.providerId);
+        if (providers.includes('google.com')) return 'google';
+        if (providers.includes('password')) return 'password';
+        return 'other';
+    }
+
+    sendPasswordReset(email?: string): Observable<void> {
+        return runInInjectionContext(this.injector, () => {
+            const targetEmail = email || this.auth.currentUser?.email;
+            if (!targetEmail) {
+                return from(Promise.reject(new Error('No email address found for this account.')));
+            }
+            return from(sendPasswordResetEmail(this.auth, targetEmail));
+        });
+    }
+
+    updateUserPassword(newPassword: string): Observable<void> {
+        return runInInjectionContext(this.injector, () => {
+            const user = this.auth.currentUser;
+            if (!user) {
+                return from(Promise.reject(new Error('User is not authenticated.')));
+            }
+            return from(updatePassword(user, newPassword));
+        });
     }
 }

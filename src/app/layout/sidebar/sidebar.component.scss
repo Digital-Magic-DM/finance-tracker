@@ -6,7 +6,6 @@
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    transition: background var(--transition-slow), border-color var(--transition-slow);
 
     [data-theme="dark"] & {
         border-right-color: rgba(255, 255, 255, 0.08);

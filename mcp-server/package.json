@@ -1,0 +1,31 @@
+{
+  "name": "fintracker-mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) Remote Server for FinTracker",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:stdio": "node dist/stdio.js",
+    "dev": "tsc -w",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": ["mcp", "model-context-protocol", "finance-tracker", "ai", "gemini", "claude"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.1",
+    "typescript": "^5.7.3"
+  }
+}

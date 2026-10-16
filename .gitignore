@@ -69,9 +69,18 @@ src/environments/environment.prod.ts
 *.cert
 *.p12
 service-account.json
+*service-account*.json
 creds.json
+*creds*.json
 *.env.*
 !.env.example
+
+# MCP Server
+mcp-server/dist/
+mcp-server/node_modules/
+mcp-server/.env
+mcp-server/.env.*
+!mcp-server/.env.example
 
 #task
 TASKS.md

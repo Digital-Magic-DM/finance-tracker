@@ -12,7 +12,19 @@ import { effect } from '@angular/core';
   standalone: true,
   imports: [RouterOutlet, SnackbarComponent],
   template: `<router-outlet /><app-snackbar />`,
-  styles: [`:host { display: block; height: 100dvh; }`],
+  styles: [
+    `
+      :host {
+        display: block;
+        min-height: 100dvh;
+        width: 100%;
+      }
+      :host:has(app-layout) {
+        height: 100dvh;
+        overflow: hidden;
+      }
+    `,
+  ],
 })
 export class App {
   constructor(theme: ThemeService, pwa: PwaService, title: Title, analytics: GoogleAnalyticsService) {

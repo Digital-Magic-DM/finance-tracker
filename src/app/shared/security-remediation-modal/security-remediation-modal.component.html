@@ -1,0 +1,312 @@
+<div class="modal-backdrop" (click)="close()">
+  <div class="modal-card security-modal" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="security-header">
+      <div class="header-icon-wrap">
+        <span class="material-icons alert-icon">gpp_bad</span>
+      </div>
+      <div class="header-content">
+        <h3>Session Terminated &amp; Blocked</h3>
+        <p class="subtitle">
+          An unrecognized device was reported and disconnected immediately.
+        </p>
+      </div>
+      <button class="btn-close" (click)="close()" aria-label="Close modal">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Compromised Device Info Pill -->
+    @if (compromisedDevice(); as dev) {
+      <div class="device-summary-box">
+        <div class="device-summary-icon">
+          <span class="material-icons">
+            {{ dev.deviceType === 'mobile' ? 'smartphone' : (dev.deviceType === 'tablet' ? 'tablet' : 'laptop') }}
+          </span>
+        </div>
+        <div class="device-summary-info">
+          <div class="summary-title">
+            <strong>{{ dev.deviceName }}</strong>
+            <span class="status-revoked">Revoked &amp; Logged Out</span>
+          </div>
+          <div class="summary-details">
+            <span>{{ dev.browser }} on {{ dev.os }}</span>
+            <span class="dot-sep">•</span>
+            <span>IP: {{ dev.ip }}</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Call to action prompt -->
+    <div class="notice-callout">
+      <span class="material-icons info-icon">lock_reset</span>
+      <div class="callout-text">
+        <strong>Secure Your Account:</strong>
+        <span>
+          Someone may have obtained your credentials. Depending on how you log into FinTracker, please update your Security PIN or password below.
+        </span>
+      </div>
+    </div>
+
+    <!-- Remediation Method Selector -->
+    <div class="remediation-tabs">
+      @if (hasPin()) {
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'pin'"
+          (click)="activeTab.set('pin')">
+          <span class="material-icons">pin</span> Change Security PIN
+        </button>
+      } @else {
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'pin'"
+          (click)="activeTab.set('pin')">
+          <span class="material-icons">pin</span> Set Security PIN
+        </button>
+      }
+
+      @if (loginProvider() === 'password') {
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'password'"
+          (click)="activeTab.set('password')">
+          <span class="material-icons">password</span> Update Password
+        </button>
+      }
+
+      @if (loginProvider() === 'google') {
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'google'"
+          (click)="activeTab.set('google')">
+          <span class="material-icons">account_circle</span> Google Security
+        </button>
+      }
+    </div>
+
+    <!-- TAB 1: PIN REMEDIATION -->
+    @if (activeTab() === 'pin') {
+      <div class="tab-content">
+        <div class="tab-header-description">
+          @if (hasPin()) {
+            <h4>Update Your Security PIN</h4>
+            <p>Enter your current PIN and choose a new 4-6 digit numeric PIN to block anyone with physical or remote access.</p>
+          } @else {
+            <h4>Enable Security PIN Lock</h4>
+            <p>Your account does not currently have a PIN lock. Create a 4-6 digit PIN to lock this device with Web Crypto encryption.</p>
+          }
+        </div>
+
+        @if (pinError()) {
+          <div class="alert-box alert-error">
+            <span class="material-icons">error_outline</span>
+            <span>{{ pinError() }}</span>
+          </div>
+        }
+
+        @if (pinSuccess()) {
+          <div class="alert-box alert-success">
+            <span class="material-icons">check_circle</span>
+            <span>{{ pinSuccess() }}</span>
+          </div>
+        }
+
+        <div class="form-grid">
+          @if (hasPin()) {
+            <div class="form-group">
+              <label>Current Security PIN</label>
+              <input
+                type="password"
+                inputmode="numeric"
+                maxlength="6"
+                placeholder="••••"
+                [(ngModel)]="currentPin"
+                class="form-input" />
+            </div>
+          }
+
+          <div class="form-group">
+            <label>New Security PIN (4-6 Digits)</label>
+            <input
+              type="password"
+              inputmode="numeric"
+              maxlength="6"
+              placeholder="••••"
+              [(ngModel)]="newPin"
+              class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label>Confirm New Security PIN</label>
+            <input
+              type="password"
+              inputmode="numeric"
+              maxlength="6"
+              placeholder="••••"
+              [(ngModel)]="confirmPin"
+              class="form-input" />
+          </div>
+        </div>
+
+        <div class="action-row">
+          @if (hasPin()) {
+            <button
+              class="btn btn-primary"
+              (click)="onUpdatePin()"
+              [disabled]="isUpdatingPin() || !currentPin() || !newPin() || !confirmPin()">
+              <span class="material-icons" style="font-size: 16px;">
+                {{ isUpdatingPin() ? 'sync' : 'lock_reset' }}
+              </span>
+              {{ isUpdatingPin() ? 'Updating PIN...' : 'Update Security PIN' }}
+            </button>
+          } @else {
+            <button
+              class="btn btn-primary"
+              (click)="onEmergencySetPin()"
+              [disabled]="isUpdatingPin() || !newPin() || !confirmPin()">
+              <span class="material-icons" style="font-size: 16px;">
+                {{ isUpdatingPin() ? 'sync' : 'security' }}
+              </span>
+              {{ isUpdatingPin() ? 'Enabling PIN...' : 'Create Security PIN' }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: PASSWORD AUTH REMEDIATION -->
+    @if (activeTab() === 'password') {
+      <div class="tab-content">
+        <div class="tab-header-description">
+          <h4>Account Password Security</h4>
+          <p>
+            Your account is authenticated via Email &amp; Password (<strong>{{ userEmail() }}</strong>).
+            You can either receive an instant password reset email or update your password now.
+          </p>
+        </div>
+
+        @if (passwordError()) {
+          <div class="alert-box alert-error">
+            <span class="material-icons">error_outline</span>
+            <span>{{ passwordError() }}</span>
+          </div>
+        }
+
+        @if (passwordSuccess()) {
+          <div class="alert-box alert-success">
+            <span class="material-icons">check_circle</span>
+            <span>{{ passwordSuccess() }}</span>
+          </div>
+        }
+
+        <!-- Option 1: Send Password Reset Email -->
+        <div class="option-card">
+          <div class="option-info">
+            <strong>Recommended: Send Official Password Reset Link</strong>
+            <p>We will email a secure password reset link to {{ userEmail() }}.</p>
+          </div>
+          <button
+            class="btn btn-secondary"
+            (click)="sendPasswordResetLink()"
+            [disabled]="isSendingReset() || resetSent()">
+            <span class="material-icons" style="font-size: 16px;">
+              {{ isSendingReset() ? 'sync' : 'mail_outline' }}
+            </span>
+            {{ resetSent() ? 'Link Sent ✓' : (isSendingReset() ? 'Sending...' : 'Send Reset Email') }}
+          </button>
+        </div>
+
+        <!-- Option 2: Direct Password Update -->
+        <div class="password-direct-form">
+          <h5 style="margin: 0 0 10px; font-size: 13.5px;">Or Change Password Directly:</h5>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>New Password (min 6 characters)</label>
+              <input
+                type="password"
+                placeholder="Enter new password"
+                [(ngModel)]="newPassword"
+                class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>Confirm New Password</label>
+              <input
+                type="password"
+                placeholder="Repeat new password"
+                [(ngModel)]="confirmPassword"
+                class="form-input" />
+            </div>
+          </div>
+          <div class="action-row" style="margin-top: 12px;">
+            <button
+              class="btn btn-secondary"
+              (click)="onUpdatePassword()"
+              [disabled]="isUpdatingPassword() || !newPassword() || !confirmPassword()">
+              <span class="material-icons" style="font-size: 16px;">
+                {{ isUpdatingPassword() ? 'sync' : 'key' }}
+              </span>
+              {{ isUpdatingPassword() ? 'Saving...' : 'Save New Password' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 3: GOOGLE AUTH REMEDIATION -->
+    @if (activeTab() === 'google') {
+      <div class="tab-content">
+        <div class="tab-header-description">
+          <h4>Google Account Sign-In Detected</h4>
+          <p>
+            You sign in with your Google Account (<strong>{{ userEmail() }}</strong>).
+            FinTracker does not manage or store your Google password.
+          </p>
+        </div>
+
+        <div class="option-card google-card">
+          <div class="option-info">
+            <strong>Step 1: Check Google Security &amp; Connected Devices</strong>
+            <p>
+              Open Google Account Security to review all devices with access to your Google Account and change your Google password.
+            </p>
+          </div>
+          <a
+            href="https://myaccount.google.com/security"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary"
+            style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <span class="material-icons" style="font-size: 16px;">open_in_new</span>
+            Google Security Center
+          </a>
+        </div>
+
+        <div class="google-pin-recommendation">
+          <div class="recom-text">
+            <strong>Step 2: Add a Local Security PIN to FinTracker</strong>
+            <p>A Security PIN adds hardware-grade encryption to this device so unauthorized parties cannot view financial balances even if your browser session persists.</p>
+          </div>
+          <button class="btn btn-secondary" (click)="activeTab.set('pin')">
+            <span class="material-icons" style="font-size: 16px;">pin</span>
+            {{ hasPin() ? 'Manage FinTracker PIN' : 'Setup FinTracker PIN' }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Footer Actions -->
+    <div class="security-footer">
+      <button class="btn btn-ghost" (click)="revokeAllOtherDevices()" title="Force sign out of all other devices">
+        <span class="material-icons" style="font-size: 16px;">phonelink_erase</span>
+        Sign Out All Other Devices
+      </button>
+
+      <button class="btn btn-primary" (click)="close()">
+        <span class="material-icons" style="font-size: 16px;">done_all</span>
+        I Have Secured My Account
+      </button>
+    </div>
+  </div>
+</div>

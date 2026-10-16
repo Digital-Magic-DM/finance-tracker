@@ -50,7 +50,19 @@ export class DashboardComponent implements OnInit {
         let quotesArr: string[] = [];
         let icon = '';
 
-        if (val < 0) {
+        if (val <= -100) {
+            currentLevel = data['negative_100_extra'];
+        } else if (val <= -70) {
+            currentLevel = data['negative_70_to_99_extra'];
+        } else if (val <= -50) {
+            currentLevel = data['negative_50_to_70_extra'];
+        } else if (val <= -20) {
+            currentLevel = data['negative_20_to_50_extra'];
+        } else if (val <= -10) {
+            currentLevel = data['negative_10_to_20_extra'];
+        } else if (val <= -5) {
+            currentLevel = data['negative_5_to_10_extra'];
+        } else if (val < 0) {
             currentLevel = data['negative_small_-1_to_-5_extra'];
         } else if (val >= 0 && val <= 3) {
             currentLevel = data['one_to_three_extra'];
