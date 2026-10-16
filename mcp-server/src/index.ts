@@ -176,183 +176,10 @@ app.get('/', (req: Request, res: Response) => {
     return;
   }
 
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinTracker Remote MCP Server</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #090d16;
-      --card-bg: #111827;
-      --card-border: #1f2937;
-      --accent: #6366f1;
-      --accent-hover: #4f46e5;
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
-      --success: #10b981;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 24px;
-    }
-    .container {
-      max-width: 680px;
-      width: 100%;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 36px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      margin-bottom: 16px;
-    }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); }
-    h1 { font-size: 26px; font-weight: 800; margin-bottom: 8px; color: #fff; }
-    p.lead { font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; }
-    .features {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .feature-item { font-size: 13.5px; color: var(--text); display: flex; align-items: center; gap: 8px; }
-    .feature-item span { color: var(--accent); }
-    .btn-connect {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 14px 20px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      border-radius: 10px;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-    }
-    .btn-connect:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6); }
-    .diagnostics {
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid var(--card-border);
-    }
-    .diag-title { font-size: 13px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
-    .diag-box { display: flex; gap: 8px; }
-    .diag-input {
-      flex: 1;
-      background: #090d16;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: #fff;
-      font-family: 'Fira Code', monospace;
-      font-size: 13px;
-      outline: none;
-    }
-    .btn-verify {
-      background: #1f2937;
-      color: #fff;
-      border: 1px solid #374151;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .btn-verify:hover { background: #374151; }
-    #diagResult { margin-top: 10px; font-size: 13px; font-family: monospace; display: none; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="badge"><span class="dot"></span> Online & Ready</div>
-    <h1>FinTracker MCP Server</h1>
-    <p class="lead">
-      Production Model Context Protocol (MCP) server connecting AI clients (Antigravity IDE, Claude Desktop, Cursor) to personal portfolios with multi-tenant user isolation.
-    </p>
-
-    <div class="features">
-      <div class="feature-item"><span>✓</span> Isolated Multi-User Security</div>
-      <div class="feature-item"><span>✓</span> Real-Time Net Worth & Assets</div>
-      <div class="feature-item"><span>✓</span> Cashflow & Runway Analysis</div>
-      <div class="feature-item"><span>✓</span> Conversational Transactions</div>
-    </div>
-
-    <a href="https://dmfintracker.web.app/login?redirect=/app/settings?tab=mcp" class="btn-connect">
-      🔐 Connect With FinTracker Web App
-    </a>
-
-    <div class="diagnostics">
-      <div class="diag-title">Key Tester & Diagnostics</div>
-      <div class="diag-box">
-        <input type="text" id="tokenInput" class="diag-input" placeholder="Paste your ft_mcp_ key here to test...">
-        <button class="btn-verify" onclick="testKey()">Verify</button>
-      </div>
-      <div id="diagResult"></div>
-    </div>
-  </div>
-
-  <script>
-    async function testKey() {
-      const token = document.getElementById('tokenInput').value.trim();
-      const resEl = document.getElementById('diagResult');
-      if (!token) return;
-      resEl.style.display = 'block';
-      resEl.innerHTML = '<span style="color:#9ca3af;">Verifying with server...</span>';
-
-      try {
-        const resp = await fetch('/api/verify-token', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const data = await resp.json();
-        if (resp.ok && data.valid) {
-          resEl.innerHTML = '<span style="color:#10b981;">✓ ' + data.message + '</span>';
-        } else {
-          resEl.innerHTML = '<span style="color:#ef4444;">✗ ' + (data.message || 'Invalid key') + '</span>';
-        }
-      } catch (e) {
-        resEl.innerHTML = '<span style="color:#ef4444;">✗ Network error: ' + e.message + '</span>';
-      }
-    }
-  </script>
-</body>
-</html>`;
-
-  res.send(html);
+  // If visited by a web browser, redirect directly to the FinTracker app settings!
+  res.redirect('https://dmfintracker.web.app/login?redirect=/app/settings?tab=mcp');
 });
 
-/**
- * Shortcut /connect redirect: sends users directly to FinTracker MCP Settings
- */
 app.get('/connect', (_req: Request, res: Response) => {
   res.redirect('https://dmfintracker.web.app/login?redirect=/app/settings?tab=mcp');
 });
@@ -363,8 +190,9 @@ app.get('/health', (_req: Request, res: Response) => {
 
 /**
  * Remote SSE Endpoint: Connects AI clients via streaming SSE with session-specific user UID
+ * Supports both /sse and /mcp paths (used by Claude.ai custom connectors)
  */
-app.get('/sse', authMiddleware, async (req: Request, res: Response) => {
+app.get(['/sse', '/mcp'], authMiddleware, async (req: Request, res: Response) => {
   const userUid = req.authenticatedUser?.uid;
   console.log(`[MCP] New SSE connection request from authenticated user: ${userUid} (${req.authenticatedUser?.authType})`);
 

@@ -249,8 +249,9 @@
               <ul>
                 <li><strong>Name:</strong> <code>fintracker</code></li>
                 <li><strong>Type:</strong> <code>sse</code></li>
-                <li><strong>URL:</strong> <code>https://your-fintracker-mcp.onrender.com/sse?token=YOUR_SECRET_AUTH_TOKEN</code></li>
+                <li><strong>URL:</strong> <code>https://finance-tracker-vczn.onrender.com/sse?token=YOUR_PERSONAL_AI_KEY</code></li>
               </ul>
+              <p class="sub-note">Generate your personal key from <a routerLink="/app/settings" [queryParams]="{tab: 'mcp'}">Settings &gt; AI &amp; MCP</a>.</p>
             </div>
           }
 
@@ -319,22 +320,22 @@
         <div class="auth-box">
           <h4><span class="material-icons">key</span> Authentication Header</h4>
           <p>
-            When connecting to the remote server, clients must provide the secret token configured in your
-            <code>FINTRACKER_AUTH_TOKEN</code> environment variable via either:
+            When connecting to the remote server, clients provide their personal AI access key generated from
+            <a routerLink="/app/settings" [queryParams]="{tab: 'mcp'}">Settings &gt; AI &amp; MCP</a> via either:
           </p>
           <div class="code-preview">
-            <code>Authorization: Bearer YOUR_SECRET_AUTH_TOKEN</code>
+            <code>Authorization: Bearer YOUR_PERSONAL_AI_KEY</code>
           </div>
           <p class="sub-note">Or via URL query parameter for clients that do not support custom EventSource headers:</p>
           <div class="code-preview">
-            <code>https://your-fintracker-mcp.onrender.com/sse?token=YOUR_SECRET_AUTH_TOKEN</code>
+            <code>https://finance-tracker-vczn.onrender.com/sse?token=YOUR_PERSONAL_AI_KEY</code>
           </div>
         </div>
 
         <div class="user-scope-box">
           <h4><span class="material-icons">account_circle</span> Multi-User &amp; Scoping</h4>
           <p>
-            By default, tool calls operate on the user configured in <code>DEFAULT_USER_UID</code>. If you are managing multiple accounts or portfolios, you can optionally pass an explicit <code>uid</code> parameter in any tool call's arguments.
+            The MCP server implements strict multi-tenant isolation. Each personal key is cryptographically bound to that user's Firestore UID. Tool calls automatically operate exclusively on the authenticated user's portfolio with zero cross-user visibility.
           </p>
         </div>
       </section>

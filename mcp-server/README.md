@@ -1,6 +1,6 @@
 # 🚀 FinTracker MCP Server (Model Context Protocol)
 
-A remote, cloud-deployable **Model Context Protocol (MCP)** server that connects AI assistants (Antigravity IDE, Claude Desktop, Cursor, Gemini) directly to your **FinTracker** personal finance database in Firebase Firestore.
+A remote, cloud-deployable **Model Context Protocol (MCP)** server that connects AI assistants (Antigravity IDE, Claude Desktop, Cursor) directly to your **FinTracker** personal finance database in Firebase Firestore with **isolated multi-user authentication**.
 
 ---
 
@@ -21,12 +21,12 @@ The server equips your AI client with 8 specialized financial tools:
 
 ---
 
-## 🔒 Security for Public GitHub Repositories
+## 🔒 Multi-Tenant Security & Isolation
 
-Because this repository is public, the server is built with zero-leak security:
-1. **Zero Hardcoded Secrets**: All Firebase keys and authentication tokens are loaded exclusively from runtime environment variables.
-2. **Bearer Token Authentication**: Every incoming remote request is authenticated via the `FINTRACKER_AUTH_TOKEN`. Unauthorized requests return `401 Unauthorized`.
-3. **Strict `.gitignore`**: All local `.env` files and `*service-account*.json` keys are strictly blocked from git tracking.
+1. **Personal User Keys**: Each user generates a private, cryptographically strong key (`ft_mcp_<uid>_<secret>`) directly inside the FinTracker app under **Settings → AI & MCP**.
+2. **Hermetic Session Scoping**: The MCP server extracts the caller's verified `uid` and restricts all 8 financial tools exclusively to that user's Firestore records. No user can ever query or tamper with another user's data.
+3. **Zero Hardcoded Secrets**: All Firebase keys are loaded exclusively from runtime environment variables.
+4. **Strict `.gitignore`**: All local `.env` files and `*service-account*.json` keys are strictly blocked from git tracking.
 
 ---
 
@@ -38,35 +38,16 @@ npm install
 npm run build
 ```
 
-### 1. Configure Local Environment
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-Fill in your `FINTRACKER_AUTH_TOKEN` and Firebase credentials.
-
-### 2. Run the Remote SSE Server Locally
+### Run Server Locally
 ```bash
 npm start
 ```
-Visit `http://localhost:3000/` in your browser to verify the health check:
-```json
-{
-  "status": "healthy",
-  "service": "fintracker-mcp-server",
-  "version": "1.0.0",
-  "transport": "SSE (Server-Sent Events)"
-}
-```
-
-### 3. Run in Local Stdio Mode
-You can also run via stdio for direct local piping:
-```bash
-npm run start:stdio
-```
+Visit `http://localhost:3000/` in your browser. It automatically redirects to your FinTracker web app login!
 
 ---
 
-## ☁️ Free Remote Deployment ($0 on Render.com)
+## ☁️ Remote Cloud Deployment (Render.com)
 
-See [DEPLOY_GUIDE.md](./DEPLOY_GUIDE.md) for full step-by-step instructions with screenshots and configuration examples.
+Live Production URL: **`https://finance-tracker-vczn.onrender.com`**
+
+See [DEPLOY_GUIDE.md](./DEPLOY_GUIDE.md) for full step-by-step instructions on deploying the server for $0/month on Render.com with only 3 environment variables.

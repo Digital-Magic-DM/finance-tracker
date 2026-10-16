@@ -377,9 +377,9 @@ export class DocsComponent implements OnInit, OnDestroy {
   readonly antigravityConfigCode = `{
   "mcpServers": {
     "fintracker": {
-      "url": "https://your-fintracker-mcp.onrender.com/sse",
+      "url": "https://finance-tracker-vczn.onrender.com/sse",
       "headers": {
-        "Authorization": "Bearer YOUR_SECRET_AUTH_TOKEN"
+        "Authorization": "Bearer YOUR_PERSONAL_AI_KEY"
       }
     }
   }
@@ -388,20 +388,20 @@ export class DocsComponent implements OnInit, OnDestroy {
   readonly claudeConfigCode = `{
   "mcpServers": {
     "fintracker": {
-      "url": "https://your-fintracker-mcp.onrender.com/sse",
+      "url": "https://finance-tracker-vczn.onrender.com/sse",
       "headers": {
-        "Authorization": "Bearer YOUR_SECRET_AUTH_TOKEN"
+        "Authorization": "Bearer YOUR_PERSONAL_AI_KEY"
       }
     }
   }
 }`;
 
   readonly curlTestCode = `# 1. Test public health check
-curl https://your-fintracker-mcp.onrender.com/
+curl https://finance-tracker-vczn.onrender.com/
 
-# 2. Test authenticated SSE transport
-curl -N -H "Authorization: Bearer YOUR_SECRET_AUTH_TOKEN" \\
-     https://your-fintracker-mcp.onrender.com/sse`;
+# 2. Test authenticated SSE transport (using key from Settings > AI & MCP)
+curl -N -H "Authorization: Bearer YOUR_PERSONAL_AI_KEY" \\
+     https://finance-tracker-vczn.onrender.com/sse`;
 
   filteredTools = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();

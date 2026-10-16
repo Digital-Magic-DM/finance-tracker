@@ -32,7 +32,7 @@ export class McpAuthService {
   readonly isActionInProgress = signal<boolean>(false);
 
   // Default production MCP server URL
-  readonly serverBaseUrl = 'https://fintracker-mcp.onrender.com';
+  readonly serverBaseUrl = 'https://finance-tracker-vczn.onrender.com';
 
   constructor() {
     this.auth.onAuthStateChanged((user) => {

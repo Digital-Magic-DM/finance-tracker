@@ -63,5 +63,17 @@ npm run deploy
 ```
 This script will build the application and deploy it using the Firebase CLI.
 
+---
+
+## 🤖 FinTracker MCP Server (AI Assistant Integration)
+
+FinTracker includes a dedicated **Model Context Protocol (MCP)** server (`mcp-server/`) enabling seamless portfolio intelligence for AI assistants like **Claude Desktop**, **Antigravity IDE**, and **Cursor**:
+* **Live Server**: Hosted at `https://finance-tracker-vczn.onrender.com`
+* **Isolated Multi-User Auth**: Users generate their personal AI keys directly in the web app under **Settings → AI & MCP**.
+* **8 Financial Tools**: Live net worth calculation, asset allocation, cashflow summary, conversational transaction logging, and emergency runway evaluation.
+* **Documentation & Guides**: See [mcp-server/README.md](file:///d:/Web%20Development/Ionic%20App/Finance%20Tracker/finance-tracker/mcp-server/README.md) and [mcp-server/DEPLOY_GUIDE.md](file:///d:/Web%20Development/Ionic%20App/Finance%20Tracker/finance-tracker/mcp-server/DEPLOY_GUIDE.md).
+
+---
+
 ## 📄 License
 Private and Confidential. All rights reserved.
