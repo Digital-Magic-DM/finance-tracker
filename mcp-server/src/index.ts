@@ -295,7 +295,28 @@ app.get(['/authorize', '/oauth/authorize'], async (req: Request, res: Response) 
     }
   }
 
-  // Render clean FinTracker authorization portal
+  // Redirect directly to the FinTracker Web App SSO Authorization Portal!
+  const appBaseUrl = process.env.FINTRACKER_APP_URL || 'https://dmfintracker.web.app';
+  const authUrl = new URL(`${appBaseUrl}/mcp-authorize`);
+  if (clientId) authUrl.searchParams.set('client_id', clientId);
+  if (redirectUri) authUrl.searchParams.set('redirect_uri', redirectUri);
+  if (state) authUrl.searchParams.set('state', state);
+  if (codeChallenge) authUrl.searchParams.set('code_challenge', codeChallenge);
+  if (codeChallengeMethod) authUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
+  authUrl.searchParams.set('server', getBaseUrl(req));
+
+  return res.redirect(authUrl.toString());
+});
+/**
+ * Optional Manual Key Fallback (for CLI or headless environments)
+ */
+app.get('/oauth/manual-authorize', async (req: Request, res: Response) => {
+  const clientId = (req.query.client_id as string) || '';
+  const redirectUri = (req.query.redirect_uri as string) || 'https://claude.ai/api/mcp/auth_callback';
+  const state = (req.query.state as string) || '';
+  const codeChallenge = (req.query.code_challenge as string) || '';
+  const codeChallengeMethod = (req.query.code_challenge_method as string) || '';
+
   res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>

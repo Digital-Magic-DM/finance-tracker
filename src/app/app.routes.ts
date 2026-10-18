@@ -39,6 +39,15 @@ export const routes: Routes = [
             import('./features/docs/docs.component').then((m) => m.DocsComponent),
     },
     {
+        path: 'mcp-authorize',
+        loadComponent: () =>
+            import('./features/mcp-authorize/mcp-authorize.component').then((m) => m.McpAuthorizeComponent),
+    },
+    {
+        path: 'oauth/authorize',
+        redirectTo: 'mcp-authorize',
+    },
+    {
         path: 'developers',
         redirectTo: 'docs',
         pathMatch: 'full',
