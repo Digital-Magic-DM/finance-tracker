@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { createFinTrackerMcpServer } from './server.js';
 import { getFirestoreDb, getFirebaseAuth } from './firebase.js';
 
@@ -11,7 +13,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    exposedHeaders: ['WWW-Authenticate', 'Mcp-Session-Id', 'Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Mcp-Session-Id', 'Accept', 'X-Requested-With'],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -31,12 +40,13 @@ declare global {
 }
 
 interface SessionContext {
-  transport: SSEServerTransport;
+  transport: SSEServerTransport | StreamableHTTPServerTransport;
   uid: string;
   email?: string;
+  type: 'sse' | 'streamable';
 }
 
-// Map of active SSE client sessions
+// Map of active client sessions (both SSE and Streamable HTTP)
 const activeTransports = new Map<string, SessionContext>();
 
 // ==========================================
@@ -78,14 +88,38 @@ const oauthAccessTokens = new Map<string, OAuthAccessToken>();
 async function verifyTokenDirectly(providedToken: string): Promise<AuthenticatedUser | null> {
   // 1. Check OAuth access token (ft_oauth_...)
   if (providedToken.startsWith('ft_oauth_')) {
-    const tokenData = oauthAccessTokens.get(providedToken);
-    if (tokenData && tokenData.expiresAt > Date.now()) {
+    const cached = oauthAccessTokens.get(providedToken);
+    if (cached && cached.expiresAt > Date.now()) {
       return {
-        uid: tokenData.uid,
-        email: tokenData.email,
-        displayName: tokenData.displayName,
+        uid: cached.uid,
+        email: cached.email,
+        displayName: cached.displayName,
         authType: 'personal_key',
       };
+    }
+
+    try {
+      const db = getFirestoreDb();
+      const tokenDoc = await db.doc(`system/mcp_oauth_tokens/tokens/${providedToken}`).get();
+      if (tokenDoc.exists) {
+        const data = tokenDoc.data();
+        if (data && data.expiresAt > Date.now()) {
+          oauthAccessTokens.set(providedToken, {
+            uid: data.uid,
+            email: data.email,
+            displayName: data.displayName,
+            expiresAt: data.expiresAt,
+          });
+          return {
+            uid: data.uid,
+            email: data.email,
+            displayName: data.displayName,
+            authType: 'personal_key',
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('[MCP Auth] Error verifying OAuth token from Firestore:', err);
     }
   }
 
@@ -154,7 +188,12 @@ async function authMiddleware(req: Request, res: Response, next: NextFunction): 
   const providedToken = bearerToken || queryToken;
 
   if (!providedToken) {
-    res.setHeader('WWW-Authenticate', 'Bearer realm="FinTracker", error="unauthorized"');
+    const baseUrl = getBaseUrl(req);
+    res.setHeader(
+      'WWW-Authenticate',
+      `Bearer realm="FinTracker", error="unauthorized", resource_metadata="${baseUrl}/.well-known/oauth-protected-resource"`
+    );
+    res.setHeader('Access-Control-Expose-Headers', 'WWW-Authenticate, Mcp-Session-Id');
     res.status(401).json({
       error: 'Unauthorized',
       message: 'Missing authentication token. Provide your personal FinTracker AI Key or connect via OAuth.',
@@ -186,7 +225,12 @@ async function authMiddleware(req: Request, res: Response, next: NextFunction): 
     }
   }
 
-  res.setHeader('WWW-Authenticate', 'Bearer realm="FinTracker", error="invalid_token"');
+  const baseUrl = getBaseUrl(req);
+  res.setHeader(
+    'WWW-Authenticate',
+    `Bearer realm="FinTracker", error="invalid_token", resource_metadata="${baseUrl}/.well-known/oauth-protected-resource"`
+  );
+  res.setHeader('Access-Control-Expose-Headers', 'WWW-Authenticate, Mcp-Session-Id');
   res.status(401).json({
     error: 'Unauthorized',
     message: 'Invalid authentication credentials. Visit FinTracker to generate or reset your personal AI key.',
@@ -219,10 +263,12 @@ app.get(['/.well-known/oauth-authorization-server', '/.well-known/openid-configu
   });
 });
 
-app.get('/.well-known/oauth-protected-resource', (req: Request, res: Response) => {
+app.get(['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/*'], (req: Request, res: Response) => {
   const baseUrl = getBaseUrl(req);
+  const rawPath = req.params[0] ? `/${req.params[0]}` : '';
+  const resource = rawPath ? `${baseUrl}${rawPath}` : `${baseUrl}/mcp`;
   res.json({
-    resource: baseUrl,
+    resource,
     authorization_servers: [baseUrl],
     scopes_supported: ['read', 'write'],
   });
@@ -232,7 +278,7 @@ app.get('/.well-known/oauth-protected-resource', (req: Request, res: Response) =
  * Dynamic Client Registration (RFC 7591)
  * Claude dynamically registers itself with FinTracker upon connecting.
  */
-app.post(['/register', '/oauth/register'], (req: Request, res: Response) => {
+app.post(['/register', '/oauth/register'], async (req: Request, res: Response) => {
   const { client_name, redirect_uris, grant_types, response_types } = req.body;
   const clientId = 'ft_client_' + crypto.randomBytes(16).toString('hex');
   const clientSecret = crypto.randomBytes(32).toString('hex');
@@ -241,12 +287,24 @@ app.post(['/register', '/oauth/register'], (req: Request, res: Response) => {
     ? redirect_uris
     : ['https://claude.ai/api/mcp/auth_callback'];
 
-  oauthClients.set(clientId, {
+  const clientData = {
     clientId,
     clientSecret,
     clientName: client_name || 'Claude Custom Connector',
     redirectUris: registeredUris,
-  });
+  };
+
+  oauthClients.set(clientId, clientData);
+
+  try {
+    const db = getFirestoreDb();
+    await db.doc(`system/mcp_oauth_tokens/clients/${clientId}`).set({
+      ...clientData,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn('[OAuth] Could not persist client to Firestore:', err);
+  }
 
   res.status(201).json({
     client_id: clientId,
@@ -468,7 +526,7 @@ app.post('/oauth/authorize-submit', async (req: Request, res: Response) => {
 /**
  * Token Endpoint: Exchanges authorization code for an OAuth access token
  */
-app.post(['/token', '/oauth/token'], (req: Request, res: Response) => {
+app.post(['/token', '/oauth/token'], async (req: Request, res: Response) => {
   const { grant_type, code, redirect_uri, client_id, code_verifier } = req.body;
   const authData = oauthAuthCodes.get(code);
 
@@ -482,12 +540,24 @@ app.post(['/token', '/oauth/token'], (req: Request, res: Response) => {
   const accessToken = 'ft_oauth_' + crypto.randomBytes(32).toString('hex');
   const refreshToken = 'ft_refresh_' + crypto.randomBytes(32).toString('hex');
 
-  oauthAccessTokens.set(accessToken, {
+  const tokenRecord = {
     uid: authData.uid,
     email: authData.email,
     displayName: authData.displayName,
     expiresAt: Date.now() + 30 * 86400 * 1000, // 30 days
-  });
+  };
+
+  oauthAccessTokens.set(accessToken, tokenRecord);
+
+  try {
+    const db = getFirestoreDb();
+    await db.doc(`system/mcp_oauth_tokens/tokens/${accessToken}`).set({
+      ...tokenRecord,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn('[OAuth] Could not persist token to Firestore:', err);
+  }
 
   res.json({
     access_token: accessToken,
@@ -511,39 +581,44 @@ app.all('/api/verify-token', authMiddleware, (req: Request, res: Response) => {
 });
 
 /**
- * Public Landing & Connect Portal (Serves HTML for browsers, JSON for automated monitors)
+ * Public Landing & Connect Portal (Serves HTML for human browsers, JSON for automated monitors)
  */
-app.all('/', (req: Request, res: Response) => {
+app.all('/', (req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'OPTIONS') {
     res.sendStatus(204);
     return;
   }
 
-  const acceptsHtml = req.headers.accept?.includes('text/html');
-  if (!acceptsHtml) {
-    res.json({
-      status: 'healthy',
-      service: 'fintracker-mcp-server',
-      version: '1.0.0',
-      transport: 'SSE & Streamable HTTP',
-      multiUserAuth: 'enabled',
-      oauth: 'enabled',
-      endpoints: {
-        health: 'GET /health',
-        sse: 'ALL /sse',
-        mcp: 'ALL /mcp',
-        oauthDiscovery: 'GET /.well-known/oauth-authorization-server',
-        register: 'POST /oauth/register',
-        authorize: 'GET /oauth/authorize',
-        token: 'POST /oauth/token',
-      },
-      activeSessions: activeTransports.size,
-    });
+  // If this is an MCP initialize request, message, or has token/session, route to MCP handler
+  if (req.method === 'POST' || req.query.token || req.query.apiKey || req.headers['mcp-session-id'] || req.headers.authorization) {
+    return next();
+  }
+
+  // Only redirect if specifically an interactive browser document navigation
+  const isBrowserDoc = req.method === 'GET' && req.headers['sec-fetch-dest'] === 'document';
+  if (isBrowserDoc) {
+    res.redirect('https://dmfintracker.web.app/login?redirect=/app/settings?tab=mcp');
     return;
   }
 
-  // If visited by a web browser, redirect directly to FinTracker app settings!
-  res.redirect('https://dmfintracker.web.app/login?redirect=/app/settings?tab=mcp');
+  res.json({
+    status: 'healthy',
+    service: 'fintracker-mcp-server',
+    version: '1.0.0',
+    transport: 'SSE & Streamable HTTP',
+    multiUserAuth: 'enabled',
+    oauth: 'enabled',
+    endpoints: {
+      health: 'GET /health',
+      sse: 'ALL /sse',
+      mcp: 'ALL /mcp',
+      oauthDiscovery: 'GET /.well-known/oauth-authorization-server',
+      register: 'POST /oauth/register',
+      authorize: 'GET /oauth/authorize',
+      token: 'POST /oauth/token',
+    },
+    activeSessions: activeTransports.size,
+  });
 });
 
 app.get('/connect', (_req: Request, res: Response) => {
@@ -556,68 +631,166 @@ app.get('/health', (_req: Request, res: Response) => {
 
 /**
  * Remote SSE & Streamable HTTP Endpoint:
- * Supports both /sse and /mcp paths for all AI clients
+ * Supports /, /sse, and /mcp paths for all AI clients (Gemini, Claude.ai, ChatGPT, Cursor, VS Code)
  */
-app.all(['/sse', '/mcp'], authMiddleware, async (req: Request, res: Response) => {
+app.all(['/', '/sse', '/mcp'], authMiddleware, async (req: Request, res: Response) => {
   if (req.method === 'OPTIONS') {
     res.sendStatus(204);
     return;
   }
 
   const userUid = req.authenticatedUser?.uid;
-  console.log(`[MCP] Request (${req.method}) from authenticated user: ${userUid} (${req.authenticatedUser?.authType})`);
+  console.log(`[MCP] Request (${req.method}) on ${req.path} from authenticated user: ${userUid} (${req.authenticatedUser?.authType})`);
 
+  // 1. Handle POST requests (Streamable HTTP or message routing)
   if (req.method === 'POST') {
-    // If request contains a sessionId, route to post message handler
-    const sessionId = (req.query.sessionId as string) || (req.body?.sessionId as string);
-    if (sessionId && activeTransports.has(sessionId)) {
-      const session = activeTransports.get(sessionId)!;
-      await session.transport.handlePostMessage(req, res);
+    const headerSessionId = req.headers['mcp-session-id'] as string;
+    const querySessionId = (req.query.sessionId as string) || (req.body?.sessionId as string);
+    const sessionId = headerSessionId || querySessionId;
+
+    // Health probe or simple ping check (e.g. from monitoring/tests)
+    if (req.body?.ping) {
+      res.json({
+        status: 'active',
+        transport: 'streamable-http',
+        user: userUid,
+        message: 'FinTracker MCP endpoint is operational and authenticated',
+      });
       return;
     }
 
-    // Health / Handshake check response for Streamable HTTP probes
-    res.json({
-      status: 'active',
-      transport: 'streamable-http',
-      user: userUid,
-      message: 'FinTracker MCP endpoint is operational and authenticated',
+    if (sessionId && activeTransports.has(sessionId)) {
+      const session = activeTransports.get(sessionId)!;
+      if (session.transport instanceof StreamableHTTPServerTransport) {
+        await session.transport.handleRequest(req, res, req.body);
+        return;
+      } else if (session.transport instanceof SSEServerTransport) {
+        await session.transport.handlePostMessage(req, res, req.body);
+        return;
+      }
+    }
+
+    // New Streamable HTTP initialization request
+    if (!sessionId && isInitializeRequest(req.body)) {
+      try {
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => crypto.randomUUID(),
+          onsessioninitialized: (sid: string) => {
+            console.log(`[MCP] StreamableHTTP session initialized: ${sid} for UID: ${userUid}`);
+            activeTransports.set(sid, {
+              transport,
+              uid: userUid || '',
+              email: req.authenticatedUser?.email,
+              type: 'streamable',
+            });
+          },
+        });
+
+        transport.onclose = () => {
+          const sid = transport.sessionId;
+          if (sid && activeTransports.has(sid)) {
+            activeTransports.delete(sid);
+            console.log(`[MCP] StreamableHTTP session closed: ${sid}`);
+          }
+        };
+
+        const server = createFinTrackerMcpServer(userUid);
+        await server.connect(transport);
+        await transport.handleRequest(req, res, req.body);
+        return;
+      } catch (initErr) {
+        console.error('[MCP] Error initializing Streamable HTTP transport:', initErr);
+        if (!res.headersSent) {
+          res.status(500).json({
+            jsonrpc: '2.0',
+            error: { code: -32603, message: 'Internal server error initializing MCP session' },
+            id: null,
+          });
+        }
+        return;
+      }
+    }
+
+    // If no session ID and not an initialization request
+    if (!sessionId) {
+      res.status(400).json({
+        jsonrpc: '2.0',
+        error: { code: -32000, message: 'Bad Request: No valid session ID provided or invalid initialization request' },
+        id: null,
+      });
+      return;
+    }
+
+    // Session ID was supplied but is unknown or expired
+    res.status(404).json({
+      jsonrpc: '2.0',
+      error: { code: -32001, message: 'Session not found or expired' },
+      id: null,
     });
     return;
   }
 
-  try {
-    // Create MCP Server instance strictly bound to this caller's UID
-    const server = createFinTrackerMcpServer(userUid);
-    const transport = new SSEServerTransport('/message', res);
-
-    activeTransports.set(transport.sessionId, {
-      transport,
-      uid: userUid || '',
-      email: req.authenticatedUser?.email,
-    });
-
-    console.log(`[MCP] Session created: ${transport.sessionId} for UID: ${userUid} (Active: ${activeTransports.size})`);
-
-    res.on('close', () => {
-      activeTransports.delete(transport.sessionId);
-      console.log(`[MCP] Session closed: ${transport.sessionId} (Active: ${activeTransports.size})`);
-    });
-
-    await server.connect(transport);
-  } catch (err) {
-    console.error('[MCP] Error establishing SSE transport:', err);
-    if (!res.headersSent) {
-      res.status(500).send('Failed to initialize MCP SSE connection');
+  // 2. Handle GET requests (SSE stream establishment)
+  if (req.method === 'GET') {
+    const headerSessionId = req.headers['mcp-session-id'] as string;
+    if (headerSessionId && activeTransports.has(headerSessionId)) {
+      const session = activeTransports.get(headerSessionId)!;
+      if (session.transport instanceof StreamableHTTPServerTransport) {
+        await session.transport.handleRequest(req, res);
+        return;
+      }
     }
+
+    try {
+      // Legacy SSE transport
+      const server = createFinTrackerMcpServer(userUid);
+      const transport = new SSEServerTransport('/message', res);
+
+      activeTransports.set(transport.sessionId, {
+        transport,
+        uid: userUid || '',
+        email: req.authenticatedUser?.email,
+        type: 'sse',
+      });
+
+      console.log(`[MCP] SSE session created: ${transport.sessionId} for UID: ${userUid} (Active: ${activeTransports.size})`);
+
+      res.on('close', () => {
+        activeTransports.delete(transport.sessionId);
+        console.log(`[MCP] SSE session closed: ${transport.sessionId} (Active: ${activeTransports.size})`);
+      });
+
+      await server.connect(transport);
+    } catch (err) {
+      console.error('[MCP] Error establishing SSE transport:', err);
+      if (!res.headersSent) {
+        res.status(500).send('Failed to initialize MCP SSE connection');
+      }
+    }
+    return;
   }
+
+  // 3. Handle DELETE requests (Close session)
+  if (req.method === 'DELETE') {
+    const headerSessionId = req.headers['mcp-session-id'] as string;
+    const session = headerSessionId ? activeTransports.get(headerSessionId) : undefined;
+    if (session && session.transport instanceof StreamableHTTPServerTransport) {
+      await session.transport.handleRequest(req, res);
+      return;
+    }
+    res.status(404).json({ jsonrpc: '2.0', error: { code: -32001, message: 'Session not found' }, id: null });
+    return;
+  }
+
+  res.status(405).json({ jsonrpc: '2.0', error: { code: -32000, message: 'Method not allowed' }, id: null });
 });
 
 /**
  * Message Endpoint: Handles JSON-RPC requests for active sessions
+ * Supports both /message and /messages paths
  */
-app.post('/message', authMiddleware, async (req: Request, res: Response) => {
-  const sessionId = req.query.sessionId as string;
+app.post(['/message', '/messages'], authMiddleware, async (req: Request, res: Response) => {
+  const sessionId = (req.query.sessionId as string) || (req.headers['mcp-session-id'] as string);
 
   if (!sessionId) {
     res.status(400).send('Missing "sessionId" query parameter');
@@ -637,7 +810,11 @@ app.post('/message', authMiddleware, async (req: Request, res: Response) => {
   }
 
   try {
-    await session.transport.handlePostMessage(req, res);
+    if (session.transport instanceof SSEServerTransport) {
+      await session.transport.handlePostMessage(req, res, req.body);
+    } else if (session.transport instanceof StreamableHTTPServerTransport) {
+      await session.transport.handleRequest(req, res, req.body);
+    }
   } catch (err) {
     console.error(`[MCP] Error handling message for session ${sessionId}:`, err);
     if (!res.headersSent) {
