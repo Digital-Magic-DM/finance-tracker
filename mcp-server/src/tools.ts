@@ -2,24 +2,14 @@ import { getFirestoreDb } from './firebase.js';
 import { Asset, Transaction, NetWorthOverview, CashFlowSummary, AssetType, TransactionType } from './types.js';
 
 export function resolveUserId(explicitUid?: string, sessionUid?: string): string {
-  // If this session was authenticated with a personal user token, enforce that user strictly
+  // If this session was authenticated with a personal user token or OAuth, always bind to that user
   if (sessionUid) {
-    if (explicitUid && explicitUid !== sessionUid) {
-      throw new Error(
-        `Access denied: You are authenticated as user ${sessionUid}. You cannot access or modify financial records of user ${explicitUid}.`
-      );
-    }
     return sessionUid;
   }
 
   // If no session UID, check DEFAULT_USER_UID from environment (standalone scripts / CLI only)
   const defaultUid = process.env.DEFAULT_USER_UID;
   if (defaultUid) {
-    if (explicitUid && explicitUid !== defaultUid) {
-      throw new Error(
-        `Access denied: Privileged session is locked to DEFAULT_USER_UID (${defaultUid}). Cannot access user ${explicitUid}.`
-      );
-    }
     return defaultUid;
   }
 

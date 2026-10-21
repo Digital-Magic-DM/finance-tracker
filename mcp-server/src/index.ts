@@ -711,23 +711,27 @@ app.all(['/', '/sse', '/mcp'], authMiddleware, async (req: Request, res: Respons
       }
     }
 
-    // If no session ID and not an initialization request
-    if (!sessionId) {
-      res.status(400).json({
-        jsonrpc: '2.0',
-        error: { code: -32000, message: 'Bad Request: No valid session ID provided or invalid initialization request' },
-        id: null,
+    // Stateless fallback: If session is unknown, expired, or client doesn't send session ID (e.g. Gemini tool calls):
+    try {
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+        enableJsonResponse: true,
       });
+      const server = createFinTrackerMcpServer(userUid);
+      await server.connect(transport);
+      await transport.handleRequest(req, res, req.body);
+      return;
+    } catch (err: any) {
+      console.error('[MCP] Error handling stateless Streamable HTTP request:', err);
+      if (!res.headersSent) {
+        res.status(500).json({
+          jsonrpc: '2.0',
+          error: { code: -32603, message: 'Internal server error processing MCP request' },
+          id: req.body?.id || null,
+        });
+      }
       return;
     }
-
-    // Session ID was supplied but is unknown or expired
-    res.status(404).json({
-      jsonrpc: '2.0',
-      error: { code: -32001, message: 'Session not found or expired' },
-      id: null,
-    });
-    return;
   }
 
   // 2. Handle GET requests (SSE stream establishment)
