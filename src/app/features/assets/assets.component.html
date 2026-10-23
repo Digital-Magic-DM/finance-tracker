@@ -267,6 +267,9 @@
             @if (asset.maturityDate) {
               <span class="meta-dot">·</span> Mat: {{ asset.maturityDate }}
             }
+            @if (asset.payoutDates) {
+              <span class="meta-dot">·</span> Payout: {{ asset.payoutDates }}
+            }
           } @else {
             Qty {{ asset.quantity | number:'1.0-4' }} · Avg {{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.buyPrice | number:'1.2-2' }}
           }
@@ -541,7 +544,7 @@
                             <span class="symbol-text" style="color: #f59e0b; font-weight: 600;">{{ asset.interestRate }}% p.a.{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}</span>
                           }
                           @if (asset.type === 'Bond') {
-                            <span class="symbol-text" style="color: #14b8a6; font-weight: 600;">{{ asset.subType || 'Bond' }}{{ asset.interestRate ? ' · ' + asset.interestRate + '%' : '' }}{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}</span>
+                            <span class="symbol-text" style="color: #14b8a6; font-weight: 600;">{{ asset.subType || 'Bond' }}{{ asset.interestRate ? ' · ' + asset.interestRate + '%' : '' }}{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}{{ asset.payoutDates ? ' · ' + asset.payoutDates : '' }}</span>
                           }
                         </div>
                       </div>
@@ -692,6 +695,31 @@
 
         <!-- Dedicated Section for Bonds & Corporate Bonds -->
         @if (form().type === 'Bond') {
+          <div class="bond-isin-lookup-container">
+            <div class="search-header">
+              <label>Bond ISIN Identifier</label>
+              <span class="badge-openfigi">via OpenFIGI</span>
+            </div>
+            <div class="bond-isin-input-row">
+              <input class="form-control isin-input" type="text" [value]="form().symbol || ''"
+                (input)="updateForm('symbol', $any($event.target).value)"
+                (keydown.enter)="$event.preventDefault(); fetchBondDetails()"
+                placeholder="e.g. IN0020230085 or INE001A07SD3" maxlength="12" />
+              <button type="button" class="btn-fetch-bond" (click)="fetchBondDetails()" [disabled]="fetchingBond()">
+                @if (fetchingBond()) {
+                  <span class="material-icons spin">sync</span>
+                  <span>Fetching...</span>
+                } @else {
+                  <span class="material-icons">download</span>
+                  <span>Fetch</span>
+                }
+              </button>
+            </div>
+            <div class="bond-hint">
+              <span>Enter 12-character ISIN and click <strong>Fetch</strong> to auto-fill Name, Bond Type, Coupon (Interest Rate), and Maturity Date.</span>
+            </div>
+          </div>
+
           <div class="form-row">
             <div class="form-group">
               <label>Bond Category / Sub-Type</label>
@@ -706,15 +734,74 @@
             </div>
             <div class="form-group">
               <label>Coupon / Interest Rate (% p.a.)</label>
-              <input class="form-control" type="number" [value]="form().interestRate || 8.5" min="0" max="100" step="0.05"
-                (input)="updateForm('interestRate', +$any($event.target).value)" placeholder="e.g. 8.75" />
+              <input class="form-control" type="number" [value]="form().interestRate || 8.5" min="0" max="100" step="0.01"
+                (input)="updateForm('interestRate', +$any($event.target).value)" placeholder="e.g. 7.18" />
             </div>
           </div>
-          <div class="form-group">
-            <label>Maturity Date (Optional)</label>
-            <input class="form-control" type="date" [value]="form().maturityDate || ''"
-              (input)="updateForm('maturityDate', $any($event.target).value)" />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Maturity Date (Redemption)</label>
+              <input class="form-control" type="date" [value]="form().maturityDate || ''"
+                (input)="updateForm('maturityDate', $any($event.target).value)" />
+            </div>
+            <div class="form-group">
+              <label>Interest Payout Frequency</label>
+              <select class="form-control" appCustomSelect [ngModel]="form().payoutFrequency || 'Semi-Annual'"
+                (ngModelChange)="updateForm('payoutFrequency', $event)">
+                <option value="Semi-Annual">Semi-Annual (Twice / yr - G-Sec / SGB)</option>
+                <option value="Annual">Annual (Once / yr - Corp Bonds / NCDs)</option>
+                <option value="Quarterly">Quarterly (4 times / yr)</option>
+                <option value="Monthly">Monthly (Regular Income)</option>
+                <option value="Cumulative">Cumulative (Lump sum at maturity)</option>
+              </select>
+            </div>
           </div>
+
+          <div class="form-group">
+            <div class="field-header-row">
+              <label>Interest Credit / Payout Dates</label>
+              <span class="badge-autocalc">Auto-Calculated</span>
+            </div>
+            <input class="form-control payout-dates-input" type="text" [value]="form().payoutDates || ''"
+              (input)="updateForm('payoutDates', $any($event.target).value)"
+              placeholder="e.g. 14 Aug & 14 Feb each year" />
+            <div class="bond-hint">
+              <span>Dates when coupon interest will be credited to your bank account. Automatically computed from maturity date & frequency.</span>
+            </div>
+          </div>
+
+          <!-- Live Bond Cash Flow Projection Card -->
+          @if (form().quantity > 0 && form().buyPrice > 0 && form().interestRate) {
+            <div class="bond-cashflow-card">
+              <div class="cashflow-header">
+                <span class="material-icons">payments</span>
+                <span class="title">Projected Interest Return & Cash Flow</span>
+              </div>
+              <div class="cashflow-metrics">
+                <div class="cf-metric">
+                  <span class="cf-label">Total Principal</span>
+                  <span class="cf-val">₹{{ (form().quantity * form().buyPrice) | number:'1.2-2' }}</span>
+                </div>
+                <div class="cf-metric highlight">
+                  <span class="cf-label">Annual Interest Income</span>
+                  <span class="cf-val highlight-green">₹{{ bondAnnualInterest() | number:'1.2-2' }}</span>
+                  <span class="cf-sub">({{ form().interestRate }}% p.a.)</span>
+                </div>
+                <div class="cf-metric">
+                  <span class="cf-label">Payout per Cycle</span>
+                  <span class="cf-val">₹{{ bondInstallmentPayout().amount | number:'1.2-2' }}</span>
+                  <span class="cf-sub">{{ bondInstallmentPayout().label }}</span>
+                </div>
+              </div>
+              @if (form().payoutDates) {
+                <div class="cashflow-footer">
+                  <span class="material-icons">event_available</span>
+                  <span>Coupon payout schedule: <strong>{{ form().payoutDates }}</strong></span>
+                </div>
+              }
+            </div>
+          }
         }
 
         @if (form().type === 'Stock' || form().type === 'ETF') {
@@ -745,11 +832,11 @@
           </div>
         }
 
-        @if (form().type !== 'Cash' && form().type !== 'RealEstate' && form().type !== 'FixedDeposit') {
+        @if (form().type !== 'Cash' && form().type !== 'RealEstate' && form().type !== 'FixedDeposit' && form().type !== 'Bond') {
           <div class="form-group">
-            <label>{{ form().type === 'MutualFund' ? 'Scheme Code / ISIN (Optional)' : (form().type === 'Bond' ? 'Bond ISIN / Symbol (Optional)' : 'Symbol / ISIN') }}</label>
+            <label>{{ form().type === 'MutualFund' ? 'Scheme Code / ISIN (Optional)' : 'Symbol / ISIN' }}</label>
             <input class="form-control" type="text" [value]="form().symbol || ''"
-              (input)="updateForm('symbol', $any($event.target).value)" [placeholder]="form().type === 'MutualFund' ? 'e.g. 120503' : (form().type === 'Bond' ? 'e.g. INE001A07... or SGB2028' : (form().type === 'USStock' ? 'e.g. AAPL, NVDA, TSLA' : 'e.g. RELIANCE.NS'))" />
+              (input)="updateForm('symbol', $any($event.target).value)" [placeholder]="form().type === 'MutualFund' ? 'e.g. 120503' : (form().type === 'USStock' ? 'e.g. AAPL, NVDA, TSLA' : 'e.g. RELIANCE.NS')" />
           </div>
         }
 
@@ -762,20 +849,43 @@
           </div>
         }
 
+        @if (form().type === 'Bond') {
+          <div class="bond-price-helper">
+            <div class="helper-top">
+              <span class="material-icons">tips_and_updates</span>
+              <span class="helper-title">Face Value / Price Quick-Set</span>
+              <div class="preset-chips">
+                <button type="button" class="preset-chip" [class.active]="form().buyPrice === 100" (click)="setBondFaceValue(100)">
+                  ₹100 (G-Sec)
+                </button>
+                <button type="button" class="preset-chip" [class.active]="form().buyPrice === 1000" (click)="setBondFaceValue(1000)">
+                  ₹1,000 (Corp)
+                </button>
+                <button type="button" class="preset-chip" [class.active]="form().buyPrice === 10000" (click)="setBondFaceValue(10000)">
+                  ₹10,000
+                </button>
+              </div>
+            </div>
+            <div class="helper-text">
+              <span>Bonds mature at 100% of Face Value. For held-to-maturity bonds, set Buy Price & Current Price equal to Face Value (₹100 for Govt, ₹1,000 for Corporate) unless bought at secondary market premium/discount.</span>
+            </div>
+          </div>
+        }
+
         <div class="form-row">
           <div class="form-group">
-            <label>{{ form().type === 'MutualFund' ? 'Units' : (form().type === 'FixedDeposit' ? 'Deposit Count' : 'Quantity') }} *</label>
+            <label>{{ form().type === 'MutualFund' ? 'Units' : (form().type === 'FixedDeposit' ? 'Deposit Count' : (form().type === 'Bond' ? 'Quantity (Units / Bonds)' : 'Quantity')) }} *</label>
             <input class="form-control" type="number" [value]="form().quantity" min="0" max="99999999" step="any"
               (input)="updateForm('quantity', +$any($event.target).value)" />
           </div>
           <div class="form-group">
-            <label>{{ form().type === 'MutualFund' ? 'Avg NAV (₹)' : (form().type === 'FixedDeposit' ? 'Principal Deposit (₹)' : ('Buy Price (' + (form().currency === 'USD' ? '$' : '₹') + ')')) }} *</label>
+            <label>{{ form().type === 'MutualFund' ? 'Avg NAV (₹)' : (form().type === 'FixedDeposit' ? 'Principal Deposit (₹)' : (form().type === 'Bond' ? 'Buy Price / Face Value (₹)' : ('Buy Price (' + (form().currency === 'USD' ? '$' : '₹') + ')'))) }} *</label>
             <input class="form-control" type="number" [value]="form().buyPrice" min="0" max="999999999" step="any"
               (input)="updateForm('buyPrice', +$any($event.target).value)" />
           </div>
         </div>
         <div class="form-group">
-          <label>{{ form().type === 'MutualFund' ? 'Current NAV (₹)' : (form().type === 'FixedDeposit' ? 'Current / Maturity Value (₹)' : ('Current Price (' + (form().currency === 'USD' ? '$' : '₹') + ')')) }} *</label>
+          <label>{{ form().type === 'MutualFund' ? 'Current NAV (₹)' : (form().type === 'FixedDeposit' ? 'Current / Maturity Value (₹)' : (form().type === 'Bond' ? 'Current Price (₹)' : ('Current Price (' + (form().currency === 'USD' ? '$' : '₹') + ')'))) }} *</label>
           <input class="form-control" type="number" [value]="form().currentPrice" min="0" max="999999999" step="any"
             (input)="updateForm('currentPrice', +$any($event.target).value)" />
         </div>

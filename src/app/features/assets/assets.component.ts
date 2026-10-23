@@ -6,6 +6,7 @@ import { PriceService } from '../../services/price.service';
 import { GoogleFinanceService } from '../../services/google-finance.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { TickerRegistryService } from '../../services/ticker-registry.service';
+import { BondLookupService } from '../../services/bond-lookup.service';
 import { Asset, AssetType, ASSET_COLORS } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportDataComponent } from '../settings/import-data/import-data.component';
@@ -41,13 +42,14 @@ export class AssetsComponent implements OnInit {
     private priceService = inject(PriceService);
     public googleFinance = inject(GoogleFinanceService);
     private tickerRegistry = inject(TickerRegistryService);
+    private bondLookupService = inject(BondLookupService);
     private snackbar = inject(SnackbarService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
 
     ngOnInit() {
         // Fetch live USD to INR exchange rate on component initialization
-        this.googleFinance.fetchUsdInrRate().catch(() => {});
+        this.googleFinance.fetchUsdInrRate().catch(() => { });
     }
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
@@ -708,23 +710,26 @@ export class AssetsComponent implements OnInit {
             }
         }
         const defaultCurrency = currency || ((selectedType === AssetType.USStock || selectedType === AssetType.Crypto || this.isViewingUS()) ? 'USD' : 'INR');
-        const defaultQty = (selectedType === AssetType.FixedDeposit || selectedType === AssetType.RealEstate || selectedType === AssetType.Cash) ? 1 : 0;
+        const defaultQty = (selectedType === AssetType.FixedDeposit || selectedType === AssetType.RealEstate || selectedType === AssetType.Cash) ? 1 : (selectedType === AssetType.Bond ? 1 : 0);
         const defaultSubType = selectedType === AssetType.Bond ? 'Corporate Bond' : (selectedType === AssetType.FixedDeposit ? 'Bank FD' : undefined);
+        const defaultBuyPrice = selectedType === AssetType.Bond ? 1000 : 0;
         this.form.set({
-            name: '', 
-            type: selectedType, 
-            quantity: defaultQty, 
-            buyPrice: 0,
-            currentPrice: 0, 
-            symbol: '', 
-            currency: defaultCurrency, 
-            purchaseDate: new Date(), 
+            name: '',
+            type: selectedType,
+            quantity: defaultQty,
+            buyPrice: defaultBuyPrice,
+            currentPrice: defaultBuyPrice,
+            symbol: '',
+            currency: defaultCurrency,
+            purchaseDate: new Date(),
             notes: '',
             appSource: 'Manual',
             location: undefined,
             interestRate: selectedType === AssetType.FixedDeposit ? 7.0 : (selectedType === AssetType.Bond ? 8.5 : undefined),
             maturityDate: undefined,
             subType: defaultSubType,
+            payoutFrequency: selectedType === AssetType.Bond ? 'Annual' : undefined,
+            payoutDates: undefined,
             isLiquid: selectedType !== AssetType.RealEstate
         });
         this.showModal.set(true);
@@ -765,10 +770,16 @@ export class AssetsComponent implements OnInit {
         const source = this.getAssetApp(a);
         const isCustom = !!(source && !this.predefinedApps.filter(p => p !== 'Other').includes(source));
         this.showCustomApp.set(isCustom);
-        this.form.set({ 
-            ...a, 
+        const isBond = a.type === AssetType.Bond;
+        const payoutFreq = a.payoutFrequency || (isBond ? (a.subType === 'Govt Bond (G-Sec)' ? 'Semi-Annual' : 'Annual') : undefined);
+        const payoutDates = a.payoutDates || (isBond && a.maturityDate ? this.bondLookupService.calculatePayoutDates(a.maturityDate, payoutFreq) : undefined);
+
+        this.form.set({
+            ...a,
             currency: isUS ? 'USD' : (a.currency || 'INR'),
-            appSource: source 
+            appSource: source,
+            payoutFrequency: payoutFreq,
+            payoutDates: payoutDates,
         });
         this.showModal.set(true);
     }
@@ -806,10 +817,129 @@ export class AssetsComponent implements OnInit {
                     if (!next.quantity || next.quantity <= 0) next.quantity = 1;
                     if (!next.subType) next.subType = 'Corporate Bond';
                     if (next.interestRate === undefined) next.interestRate = 8.5;
+                    if (!next.buyPrice) next.buyPrice = 1000;
+                    if (!next.currentPrice) next.currentPrice = 1000;
+                    if (!next.payoutFrequency) next.payoutFrequency = 'Annual';
                 }
             }
+
+            // Smart reactive bond adjustments
+            if (next.type === AssetType.Bond) {
+                if (field === 'subType') {
+                    if (value === 'Govt Bond (G-Sec)') {
+                        if (next.buyPrice === 1000 || next.buyPrice === 0) {
+                            next.buyPrice = 100;
+                            next.currentPrice = 100;
+                        }
+                        if (next.interestRate === 8.5) next.interestRate = 7.18;
+                        next.payoutFrequency = 'Semi-Annual';
+                    } else if (value === 'Corporate Bond' || value === 'Tax-Free Bond') {
+                        if (next.buyPrice === 100 || next.buyPrice === 0) {
+                            next.buyPrice = 1000;
+                            next.currentPrice = 1000;
+                        }
+                        next.payoutFrequency = 'Annual';
+                    } else if (value === 'Sovereign Gold Bond (SGB)') {
+                        next.payoutFrequency = 'Semi-Annual';
+                        if (next.interestRate === 8.5) next.interestRate = 2.5;
+                    }
+                    next.payoutDates = this.bondLookupService.calculatePayoutDates(next.maturityDate, next.payoutFrequency);
+                }
+
+                // If user changes buy price on bond, automatically keep current price synced unless customized
+                if (field === 'buyPrice' && (!next.currentPrice || next.currentPrice === f.buyPrice)) {
+                    next.currentPrice = value;
+                }
+
+                // If user updates maturity date or payout frequency, recalculate payout schedule dates automatically
+                if (field === 'maturityDate' || field === 'payoutFrequency') {
+                    next.payoutDates = this.bondLookupService.calculatePayoutDates(next.maturityDate, next.payoutFrequency);
+                }
+            }
+
             return next;
         });
+    }
+
+    fetchingBond = signal(false);
+
+    async fetchBondDetails() {
+        const isin = (this.form().symbol || '').trim().toUpperCase();
+        if (!isin) {
+            this.snackbar.show('Please enter a Bond ISIN to fetch details', 'info');
+            return;
+        }
+        if (!this.bondLookupService.isValidISIN(isin)) {
+            this.snackbar.show('Invalid ISIN format. Must be 12 characters (e.g. IN0020230085 or INE001A07SD3)', 'error');
+            return;
+        }
+
+        this.fetchingBond.set(true);
+        try {
+            const details = await this.bondLookupService.fetchBondDetails(isin);
+            if (details) {
+                this.form.update(f => {
+                    const nextBuyPrice = f.buyPrice > 0 && f.buyPrice !== 1000 ? f.buyPrice : details.defaultBuyPrice;
+                    const nextCurrentPrice = f.currentPrice > 0 && f.currentPrice !== 1000 ? f.currentPrice : (f.buyPrice > 0 && f.buyPrice !== 1000 ? f.buyPrice : details.defaultCurrentPrice);
+                    const nextQty = f.quantity > 0 ? f.quantity : (details.subType === 'Govt Bond (G-Sec)' ? 100 : 1);
+
+                    return {
+                        ...f,
+                        name: f.name.trim() && f.name !== 'Unnamed Asset' ? f.name : details.name,
+                        symbol: details.isin,
+                        subType: details.subType || f.subType,
+                        interestRate: details.interestRate !== undefined ? details.interestRate : f.interestRate,
+                        maturityDate: details.maturityDate || f.maturityDate,
+                        buyPrice: nextBuyPrice,
+                        currentPrice: nextCurrentPrice,
+                        quantity: nextQty,
+                        payoutFrequency: details.payoutFrequency || f.payoutFrequency || 'Semi-Annual',
+                        payoutDates: details.payoutDates || f.payoutDates,
+                    };
+                });
+                const rateStr = details.interestRate ? `${details.interestRate}%` : '';
+                const matStr = details.maturityDate ? `Due ${details.maturityDate}` : '';
+                const payoutStr = details.payoutDates ? `Payout: ${details.payoutDates}` : '';
+                const extra = [rateStr, matStr, payoutStr].filter(Boolean).join(' • ');
+                this.snackbar.show(`Loaded: ${details.name}${extra ? ' (' + extra + ')' : ''}`, 'success');
+            } else {
+                this.snackbar.show(`No bond details found for ISIN: ${isin}`, 'info');
+            }
+        } catch (err: any) {
+            console.error('Error fetching bond details:', err);
+            this.snackbar.show(err.message || 'Failed to fetch bond details', 'error');
+        } finally {
+            this.fetchingBond.set(false);
+        }
+    }
+
+    bondAnnualInterest(): number {
+        const f = this.form();
+        if (f.type !== AssetType.Bond) return 0;
+        const qty = f.quantity || 0;
+        const price = f.buyPrice || 0;
+        const rate = f.interestRate || 0;
+        return (qty * price * rate) / 100;
+    }
+
+    bondInstallmentPayout(): { amount: number; label: string } {
+        const annual = this.bondAnnualInterest();
+        const freq = this.form().payoutFrequency || 'Semi-Annual';
+        if (freq === 'Semi-Annual') {
+            return { amount: annual / 2, label: 'Every 6 Months' };
+        } else if (freq === 'Quarterly') {
+            return { amount: annual / 4, label: 'Every 3 Months' };
+        } else if (freq === 'Monthly') {
+            return { amount: annual / 12, label: 'Every Month' };
+        } else if (freq === 'Cumulative') {
+            return { amount: annual, label: 'Lump Sum at Maturity' };
+        }
+        return { amount: annual, label: 'Once a Year' };
+    }
+
+    setBondFaceValue(val: number) {
+        this.updateForm('buyPrice', val);
+        this.updateForm('currentPrice', val);
     }
 
     updateAppSource(val: string) {
@@ -856,6 +986,8 @@ export class AssetsComponent implements OnInit {
             if (cleanData.interestRate === undefined || cleanData.interestRate === null || isNaN(cleanData.interestRate) || cleanData.interestRate <= 0) delete cleanData.interestRate;
             if (!cleanData.maturityDate) delete cleanData.maturityDate;
             if (!cleanData.subType) delete cleanData.subType;
+            if (!cleanData.payoutFrequency) delete cleanData.payoutFrequency;
+            if (!cleanData.payoutDates) delete cleanData.payoutDates;
 
             if (id) {
                 await this.assetService.updateAsset(id, cleanData);
@@ -977,8 +1109,8 @@ export class AssetsComponent implements OnInit {
                 const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
                 const todayStr = this.priceService.getTodayDateString();
                 const isUS = this.isUSAsset(asset);
-                const updates: Partial<Asset> = { 
-                    currentPrice: res.price, 
+                const updates: Partial<Asset> = {
+                    currentPrice: res.price,
                     lastUpdated: now,
                     lastUpdatedDate: todayStr
                 };

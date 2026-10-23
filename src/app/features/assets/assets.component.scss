@@ -1512,3 +1512,311 @@
     opacity: 0.6;
 }
 
+// ─── Bond ISIN Lookup UI ─────────────────────────
+.bond-isin-lookup-container {
+    margin: 8px 0 16px 0;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+
+    .search-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+
+        label {
+            margin-bottom: 0;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .badge-openfigi {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+    }
+
+    .bond-isin-input-row {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+
+        .isin-input {
+            flex: 1;
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .btn-fetch-bond {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 18px;
+            min-height: 44px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm, 8px);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all var(--transition-fast, 0.15s ease);
+
+            &:hover:not(:disabled) {
+                background: var(--bg-primary);
+                color: var(--text-primary);
+            }
+
+            &:active:not(:disabled) {
+                transform: scale(0.97);
+            }
+
+            &:disabled {
+                opacity: 0.35;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            .material-icons {
+                font-size: 18px;
+                color: inherit;
+            }
+
+            span {
+                color: inherit;
+                font-weight: inherit;
+            }
+        }
+    }
+
+    .bond-hint {
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.4;
+
+        strong {
+            color: var(--text-primary);
+        }
+    }
+}
+
+.field-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+
+    label {
+        margin-bottom: 0;
+    }
+
+    .badge-autocalc {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--asset-bond, #2dd4bf);
+        background: rgba(45, 212, 191, 0.12);
+        border: 1px solid rgba(45, 212, 191, 0.35);
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+}
+
+// ─── Bond Cash Flow Projection Card ──────────────
+.bond-cashflow-card {
+    margin: 12px 0 16px 0;
+    padding: 14px 16px;
+    background: rgba(45, 212, 191, 0.04);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    border-radius: var(--radius-md, 12px);
+
+    .cashflow-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+
+        .material-icons {
+            font-size: 18px;
+            color: var(--asset-bond, #2dd4bf);
+        }
+
+        .title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+    }
+
+    .cashflow-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 10px 12px;
+        border-radius: var(--radius-sm, 8px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+
+        @media (max-width: 600px) {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .cf-metric {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+
+            &.highlight {
+                background: rgba(45, 212, 191, 0.1);
+                border-radius: 6px;
+                padding: 6px 8px;
+                border: 1px solid rgba(45, 212, 191, 0.3);
+            }
+
+            .cf-label {
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: var(--text-muted);
+            }
+
+            .cf-val {
+                font-size: 14px;
+                font-weight: 800;
+                color: var(--text-primary);
+                font-feature-settings: 'tnum';
+
+                &.highlight-green {
+                    color: var(--asset-bond, #2dd4bf);
+                    font-size: 15px;
+                }
+            }
+
+            .cf-sub {
+                font-size: 10px;
+                color: var(--text-muted);
+                font-weight: 500;
+            }
+        }
+    }
+
+    .cashflow-footer {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        font-size: 11px;
+        color: var(--text-secondary);
+
+        .material-icons {
+            font-size: 16px;
+            color: var(--asset-bond, #2dd4bf);
+        }
+
+        strong {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+    }
+}
+
+// ─── Bond Price Helper & Quick Presets ────────────
+.bond-price-helper {
+    margin: 8px 0 14px 0;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+
+    .helper-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+
+        .material-icons {
+            font-size: 16px;
+            color: #f59e0b;
+        }
+
+        .helper-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .preset-chips {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+            flex-wrap: wrap;
+
+            .preset-chip {
+                padding: 4px 10px;
+                font-size: 11px;
+                font-weight: 700;
+                border-radius: var(--radius-xs, 4px);
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid var(--border-light, #333333);
+                color: var(--text-muted);
+                cursor: pointer;
+                transition: all var(--transition-fast, 0.15s ease);
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: var(--text-primary);
+                    border-color: var(--border-color);
+                }
+
+                &.active {
+                    background: var(--text-primary);
+                    color: var(--bg-primary);
+                    border-color: var(--text-primary);
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+                }
+            }
+        }
+    }
+
+    .helper-text {
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin: 0;
+
+        strong {
+            color: var(--text-secondary);
+        }
+    }
+}
+
+
+
+

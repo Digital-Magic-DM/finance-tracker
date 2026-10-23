@@ -13,7 +13,8 @@ import { ThemeService } from '../../services/theme.service';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
 
-export type NetworthPeriod = '3M' | '6M' | 'YTM' | '1Y' | 'ALL';
+export type NetworthPeriod = '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL';
+export type NetworthGrouping = 'ALL' | 'WEEK' | 'MONTH' | 'YEAR';
 
 @Component({
     selector: 'app-networth-chart',
@@ -23,46 +24,103 @@ export type NetworthPeriod = '3M' | '6M' | 'YTM' | '1Y' | 'ALL';
         <div class="networth-chart-container">
             <!-- Top Controls Toolbar -->
             <div class="chart-controls-bar">
-                <div class="range-selector" role="group" aria-label="Time period selector">
-                    <button 
-                        type="button" 
-                        class="range-btn" 
-                        [class.active]="selectedPeriod() === '3M'" 
-                        (click)="setPeriod('3M')">
-                        3M
-                    </button>
-                    <button 
-                        type="button" 
-                        class="range-btn" 
-                        [class.active]="selectedPeriod() === '6M'" 
-                        (click)="setPeriod('6M')">
-                        6M
-                    </button>
-                    <button 
-                        type="button" 
-                        class="range-btn" 
-                        [class.active]="selectedPeriod() === 'YTM'" 
-                        (click)="setPeriod('YTM')"
-                        title="Year To Month (Year To Date from Jan 1)">
-                        YTM
-                    </button>
-                    <button 
-                        type="button" 
-                        class="range-btn" 
-                        [class.active]="selectedPeriod() === '1Y'" 
-                        (click)="setPeriod('1Y')">
-                        1YR
-                    </button>
-                    <button 
-                        type="button" 
-                        class="range-btn" 
-                        [class.active]="selectedPeriod() === 'ALL'" 
-                        (click)="setPeriod('ALL')">
-                        ALL
-                    </button>
+                <div class="controls-left-group">
+                    <!-- Period / Timeframe Selector -->
+                    <div class="range-selector" role="group" aria-label="Time period selector">
+                        <button 
+                            type="button" 
+                            class="range-btn" 
+                            [class.active]="selectedPeriod() === '1W'" 
+                            (click)="setPeriod('1W')"
+                            title="Last 1 Week (7 Days)">
+                            1W
+                        </button>
+                        <button 
+                            type="button" 
+                            class="range-btn" 
+                            [class.active]="selectedPeriod() === '1M'" 
+                            (click)="setPeriod('1M')"
+                            title="Last 1 Month (30 Days)">
+                            1M
+                        </button>
+                        <button 
+                            type="button" 
+                            class="range-btn" 
+                            [class.active]="selectedPeriod() === '3M'" 
+                            (click)="setPeriod('3M')"
+                            title="Last 3 Months">
+                            3M
+                        </button>
+                        <button 
+                            type="button" 
+                            class="range-btn" 
+                            [class.active]="selectedPeriod() === '6M'" 
+                            (click)="setPeriod('6M')"
+                            title="Last 6 Months">
+                            6M
+                        </button>
+                        <button 
+                            type="button" 
+                            class="range-btn" 
+                            [class.active]="selectedPeriod() === '1Y'" 
+                            (click)="setPeriod('1Y')"
+                            title="Last 1 Year">
+                            1Y
+                        </button>
+                        <button 
+                            type="button" 
+                            class="range-btn" 
+                            [class.active]="selectedPeriod() === 'ALL'" 
+                            (click)="setPeriod('ALL')"
+                            title="All Time">
+                            ALL
+                        </button>
+                    </div>
+
+                    <!-- Granularity / Group By Selector -->
+                    <div class="group-selector" role="group" aria-label="Aggregation granularity">
+                        <span class="group-label">Group:</span>
+                        <button 
+                            type="button" 
+                            class="group-btn" 
+                            [class.active]="selectedGrouping() === 'ALL'" 
+                            (click)="setGrouping('ALL')"
+                            title="Daily / All raw points">
+                            All
+                        </button>
+                        <button 
+                            type="button" 
+                            class="group-btn" 
+                            [class.active]="selectedGrouping() === 'WEEK'" 
+                            (click)="setGrouping('WEEK')"
+                            title="Group by Weeks">
+                            Weeks
+                        </button>
+                        <button 
+                            type="button" 
+                            class="group-btn" 
+                            [class.active]="selectedGrouping() === 'MONTH'" 
+                            (click)="setGrouping('MONTH')"
+                            title="Group by Months">
+                            Months
+                        </button>
+                        <button 
+                            type="button" 
+                            class="group-btn" 
+                            [class.active]="selectedGrouping() === 'YEAR'" 
+                            (click)="setGrouping('YEAR')"
+                            title="Group by Years">
+                            Years
+                        </button>
+                    </div>
                 </div>
 
                 <div class="period-badge-wrap">
+                    @if (periodChange() !== 0) {
+                        <span class="period-change-badge" [class.positive]="periodChange() >= 0" [class.negative]="periodChange() < 0">
+                            {{ periodChange() >= 0 ? '▲ +' : '▼ -' }}{{ abs(periodChange()) | currency:'INR':'symbol':'1.0-0' }} ({{ periodChangePct() | number:'1.1-1' }}%)
+                        </span>
+                    }
                     <span class="period-badge">{{ periodSummaryLabel() }}</span>
                 </div>
             </div>
@@ -141,21 +199,29 @@ export type NetworthPeriod = '3M' | '6M' | 'YTM' | '1Y' | 'ALL';
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .controls-left-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
             gap: 8px;
         }
 
-        .range-selector {
+        .range-selector, .group-selector {
             display: inline-flex;
+            align-items: center;
             background: var(--bg-secondary, #fafafa);
             border: 1px solid var(--border-light, #e0e0e0);
             padding: 2px;
             gap: 2px;
             border-radius: 6px;
 
-            .range-btn {
+            .range-btn, .group-btn {
                 background: transparent;
                 border: none;
-                padding: 4px 10px;
+                padding: 4px 8px;
                 font-size: 11px;
                 font-weight: 700;
                 letter-spacing: 0.02em;
@@ -177,7 +243,44 @@ export type NetworthPeriod = '3M' | '6M' | 'YTM' | '1Y' | 'ALL';
             }
         }
 
+        .group-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            padding: 0 2px 0 6px;
+        }
+
         .period-badge-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+
+            .period-change-badge {
+                font-size: 11px;
+                font-weight: 700;
+                padding: 3px 8px;
+                border-radius: 12px;
+                display: inline-flex;
+                align-items: center;
+                gap: 2px;
+                font-feature-settings: 'tnum';
+
+                &.positive {
+                    color: #10b981;
+                    background: rgba(16, 185, 129, 0.12);
+                    border: 1px solid rgba(16, 185, 129, 0.3);
+                }
+
+                &.negative {
+                    color: #ef4444;
+                    background: rgba(239, 68, 68, 0.12);
+                    border: 1px solid rgba(239, 68, 68, 0.3);
+                }
+            }
+
             .period-badge {
                 font-size: 11px;
                 font-weight: 600;
@@ -314,13 +417,15 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
     private chart?: Chart;
 
     selectedPeriod = signal<NetworthPeriod>('ALL');
+    selectedGrouping = signal<NetworthGrouping>('ALL');
     showNetWorth = signal(true);
     showInvested = signal(true);
     showProfit = signal(true);
     rawPoints = signal<NetWorthPoint[]>([]);
 
     filteredData = computed(() => {
-        return this.filterPoints(this.selectedPeriod(), this.rawPoints());
+        const inWindow = this.filterPoints(this.selectedPeriod(), this.rawPoints());
+        return this.applyGrouping(inWindow, this.selectedGrouping());
     });
 
     currentNetWorth = computed(() => {
@@ -343,14 +448,43 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
         return inv > 0 ? (this.currentProfit() / inv) * 100 : 0;
     });
 
+    periodChange = computed(() => {
+        const pts = this.filteredData();
+        if (pts.length < 2) return 0;
+        const first = pts[0].value;
+        const last = pts[pts.length - 1].value;
+        return last - first;
+    });
+
+    periodChangePct = computed(() => {
+        const pts = this.filteredData();
+        if (pts.length < 2) return 0;
+        const first = pts[0].value;
+        if (first <= 0) return 0;
+        return (this.periodChange() / first) * 100;
+    });
+
+    abs(val: number): number {
+        return Math.abs(val);
+    }
+
     periodSummaryLabel = computed(() => {
         const p = this.selectedPeriod();
+        const g = this.selectedGrouping();
         const count = this.filteredData().length;
-        if (p === '3M') return `Last 3 Months (${count} pts)`;
-        if (p === '6M') return `Last 6 Months (${count} pts)`;
-        if (p === 'YTM') return `Year To Month (${count} pts)`;
-        if (p === '1Y') return `Last 1 Year (${count} pts)`;
-        return `All Time (${count} pts)`;
+        let pLabel = 'All Time';
+        if (p === '1W') pLabel = 'Last 1 Week';
+        else if (p === '1M') pLabel = 'Last 1 Month';
+        else if (p === '3M') pLabel = 'Last 3 Months';
+        else if (p === '6M') pLabel = 'Last 6 Months';
+        else if (p === '1Y') pLabel = 'Last 1 Year';
+
+        let gLabel = '';
+        if (g === 'WEEK') gLabel = ' · Weekly';
+        else if (g === 'MONTH') gLabel = ' · Monthly';
+        else if (g === 'YEAR') gLabel = ' · Yearly';
+
+        return `${pLabel}${gLabel} (${count} pts)`;
     });
 
     constructor() {
@@ -358,6 +492,7 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
             // Track reactive signals
             this.themeService.isDark();
             this.selectedPeriod();
+            this.selectedGrouping();
             this.showNetWorth();
             this.showInvested();
             this.showProfit();
@@ -392,6 +527,13 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
 
     setPeriod(period: NetworthPeriod) {
         this.selectedPeriod.set(period);
+        if ((period === '1W' || period === '1M') && this.selectedGrouping() === 'YEAR') {
+            this.selectedGrouping.set('ALL');
+        }
+    }
+
+    setGrouping(grouping: NetworthGrouping) {
+        this.selectedGrouping.set(grouping);
     }
 
     toggleTrack(track: 'netWorth' | 'invested' | 'profit') {
@@ -419,12 +561,14 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
         const now = new Date();
         let cutoffDate = new Date();
 
-        if (period === '3M') {
+        if (period === '1W') {
+            cutoffDate.setDate(now.getDate() - 7);
+        } else if (period === '1M') {
+            cutoffDate.setMonth(now.getMonth() - 1);
+        } else if (period === '3M') {
             cutoffDate.setMonth(now.getMonth() - 3);
         } else if (period === '6M') {
             cutoffDate.setMonth(now.getMonth() - 6);
-        } else if (period === 'YTM') {
-            cutoffDate = new Date(now.getFullYear(), 0, 1);
         } else if (period === '1Y') {
             cutoffDate.setFullYear(now.getFullYear() - 1);
         }
@@ -452,10 +596,71 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
         return filtered;
     }
 
+    private applyGrouping(points: NetWorthPoint[], grouping: NetworthGrouping): NetWorthPoint[] {
+        if (!points || points.length <= 1 || grouping === 'ALL') {
+            return points;
+        }
+
+        if (grouping === 'WEEK') {
+            const weekMap = new Map<string, NetWorthPoint>();
+            for (const p of points) {
+                const d = new Date(p.date);
+                if (isNaN(d.getTime())) continue;
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                const monday = new Date(d);
+                monday.setDate(diff);
+                const weekKey = monday.toISOString().split('T')[0];
+                weekMap.set(weekKey, p);
+            }
+            const res = Array.from(weekMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+            return res.length >= 2 ? res : points;
+        }
+
+        if (grouping === 'MONTH') {
+            const monthMap = new Map<string, NetWorthPoint>();
+            for (const p of points) {
+                const monthKey = p.date.substring(0, 7);
+                monthMap.set(monthKey, p);
+            }
+            const res = Array.from(monthMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+            return res.length >= 2 ? res : points;
+        }
+
+        if (grouping === 'YEAR') {
+            const yearMap = new Map<string, NetWorthPoint>();
+            for (const p of points) {
+                const yearKey = p.date.substring(0, 4);
+                yearMap.set(yearKey, p);
+            }
+            const res = Array.from(yearMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+            return res.length >= 2 ? res : points;
+        }
+
+        return points;
+    }
+
     private formatAxisDate(dateStr: string): string {
         try {
             const d = new Date(dateStr);
             if (isNaN(d.getTime())) return dateStr;
+            const period = this.selectedPeriod();
+            const grouping = this.selectedGrouping();
+
+            if (grouping === 'YEAR') {
+                return d.toLocaleDateString('en-IN', { year: 'numeric' });
+            }
+            if (grouping === 'MONTH') {
+                return d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+            }
+
+            if (period === '1W') {
+                return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric' });
+            }
+            if (period === '1M') {
+                return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+            }
+
             const pts = this.filteredData();
             if (pts.length >= 2) {
                 const first = new Date(pts[0].date).getTime();
@@ -694,6 +899,23 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
             tooltip.titleColor = isDark ? '#f8fafc' : '#0f172a';
             tooltip.bodyColor = isDark ? '#cbd5e1' : '#334155';
             tooltip.borderColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)';
+            if (tooltip.callbacks) {
+                tooltip.callbacks.title = (items: any[]) => {
+                    if (!items.length) return '';
+                    const idx = items[0].dataIndex;
+                    const pt = pts[idx];
+                    if (pt) {
+                        try {
+                            const d = new Date(pt.date);
+                            if (!isNaN(d.getTime())) {
+                                return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+                            }
+                        } catch {}
+                        return pt.date;
+                    }
+                    return items[0].label;
+                };
+            }
         }
 
         this.chart.update();

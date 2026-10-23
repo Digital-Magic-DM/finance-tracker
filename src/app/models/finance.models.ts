@@ -73,6 +73,8 @@ export interface Asset {
     interestRate?: number;     // e.g. 7.5% for FD or 8.2% coupon for Corporate Bond
     maturityDate?: string;     // YYYY-MM-DD or date string
     subType?: string;          // e.g. 'Corporate Bond' | 'Govt Bond (G-Sec)' | 'Bank FD' | 'NBFC FD' | 'Tax-Free Bond'
+    payoutFrequency?: string;  // e.g. 'Semi-Annual' | 'Annual' | 'Monthly' | 'Quarterly' | 'Cumulative'
+    payoutDates?: string;      // e.g. '14 Aug & 14 Feb each year'
 }
 
 export interface Transaction {
