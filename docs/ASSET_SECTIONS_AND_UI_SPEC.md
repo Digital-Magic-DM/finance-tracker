@@ -82,6 +82,13 @@ Horizontally scrollable pill tabs showing item counts:
 ### 5. Portfolio Hero KPI Card (`.portfolio-hero-card`)
 - **Total Portfolio Valuation**: Prominently displayed with a toggleable privacy eye (`••••••`).
 - **Multi-Currency Live Indicator**: Shows real-time converted INR equivalent for US assets.
+- **Screen-Aware Refresh Button (`.refresh-all-btn`)**:
+  - Dynamically updates **only the assets displayed on screen** (`filteredAssets()`).
+  - When filtering or viewing **US Stocks**, it initiates API calls strictly for US tickers (Google Finance / Yahoo Finance), without requesting quotes for Indian equities or mutual funds.
+  - When filtering **Mutual Funds**, it queries only AMFI NAVs without calling stock APIs.
+  - When filtering **Indian Stocks**, it requests only domestic exchange feeds.
+  - Non-market assets (Cash, FDs, Real Estate, Bonds) are automatically bypassed from market quote calls.
+  - Tooltip dynamically shows the active scope (e.g. *"Refresh US Stock prices"* or *"Refresh visible prices on screen"*).
 - **Metric Sub-Cards**:
   - `Total Invested Capital`
   - `Overall Returns (P&L)` with percentage multiple

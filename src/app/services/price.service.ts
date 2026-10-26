@@ -214,9 +214,15 @@ export class PriceService {
 
         const todayStr = this.getTodayDateString();
 
-        // Separate MFs and Stocks
+        // Separate MFs and Stocks (excluding non-market assets)
         const allMfs = assets.filter(a => a.type === AssetType.MutualFund);
-        const stocks = assets.filter(a => a.type !== AssetType.MutualFund);
+        const stocks = assets.filter(a =>
+            a.type !== AssetType.MutualFund &&
+            a.type !== AssetType.Cash &&
+            a.type !== AssetType.RealEstate &&
+            a.type !== AssetType.FixedDeposit &&
+            a.type !== AssetType.Bond
+        );
 
         // 1. Process Mutual Funds (Only update once per day unless forceMF is true)
         let mfsToUpdate: Asset[];

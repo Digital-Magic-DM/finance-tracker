@@ -215,7 +215,7 @@
         </div>
       </div>
       <div class="hero-actions">
-        <button class="refresh-all-btn" (click)="refreshAllPrices(false)" [disabled]="refreshingStocks() || refreshingMFs()" title="Refresh Prices (Mutual Funds update 1× daily)">
+        <button class="refresh-all-btn" (click)="refreshAllPrices(false)" [disabled]="refreshingStocks() || refreshingMFs()" [title]="refreshTooltip()">
           <span class="material-icons" [class.spin]="refreshingStocks() || refreshingMFs()">sync</span>
           Refresh
         </button>
@@ -555,7 +555,7 @@
 
               <div class="col-actions">
                 @if (group.type === 'MutualFund') {
-                  <button class="btn-icon refresh-btn" [disabled]="refreshingMFs()" (click)="refreshMutualFunds(true); $event.stopPropagation()" title="Force Refresh Mutual Fund NAVs">
+                  <button class="btn-icon refresh-btn" [disabled]="refreshingMFs()" (click)="refreshMutualFunds(true, group.assets); $event.stopPropagation()" title="Force Refresh Mutual Fund NAVs">
                     <span class="material-icons" [class.spin]="refreshingMFs()" style="font-size: 18px;">sync</span>
                   </button>
                 } @else if (group.type === 'Stock' || group.type === 'ETF' || group.type === 'USStock') {

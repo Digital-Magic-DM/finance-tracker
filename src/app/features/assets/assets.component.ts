@@ -504,11 +504,40 @@ export class AssetsComponent implements OnInit {
         return val > 0 ? (this.totalDaysGain() / val) * 100 : 0;
     });
 
+    isPriceRefreshableStock(a: Asset): boolean {
+        if (!a || !a.id) return false;
+        if (a.type === AssetType.MutualFund) return false;
+        if (this.isNonMarketAsset(a)) return false;
+        return a.type === AssetType.Stock ||
+               a.type === AssetType.USStock ||
+               a.type === AssetType.ETF ||
+               this.isUSAsset(a) ||
+               !!a.symbol;
+    }
+
+    refreshTooltip = computed(() => {
+        if (this.isViewingUS()) return 'Refresh US Stock prices';
+        const cat = this.selectedCategory();
+        if (cat === 'Mutual Funds') return 'Refresh Mutual Fund NAVs (Updates 1× daily)';
+        if (cat === 'Indian Stocks') return 'Refresh Indian Stock prices';
+        return 'Refresh visible prices on screen';
+    });
+
     refreshAllPrices(forceMF = false) {
-        const stocks = this.assets().filter(a => a.type === AssetType.Stock || a.type === AssetType.ETF);
+        // Strictly refresh ONLY the assets currently displayed on screen (filteredAssets)
+        const visible = this.filteredAssets();
+        const stocks = visible.filter(a => this.isPriceRefreshableStock(a));
+        const mfs = visible.filter(a => a.type === AssetType.MutualFund);
+
+        if (stocks.length === 0 && mfs.length === 0) {
+            const currentCat = this.selectedCategory();
+            this.snackbar.show(`No live market-priced assets to refresh in current view (${currentCat}).`, 'info');
+            return;
+        }
+
+        // Only call the fetch API for the asset types actually shown on screen!
         if (stocks.length > 0) this.refreshStocks(stocks);
-        const mfs = this.assets().filter(a => a.type === AssetType.MutualFund);
-        if (mfs.length > 0) this.refreshMutualFunds(forceMF);
+        if (mfs.length > 0) this.refreshMutualFunds(forceMF, mfs);
     }
 
     assetGroups = computed(() => {
@@ -1158,16 +1187,17 @@ export class AssetsComponent implements OnInit {
         this.showDeleteModal.set(true);
     }
 
-    async refreshMutualFunds(force = false) {
+    async refreshMutualFunds(force = false, targetAssets?: Asset[]) {
         if (this.refreshingMFs()) return;
         this.refreshingMFs.set(true);
         try {
-            // Only refresh Mutual Funds
-            const mfAssets = this.assets().filter(a => a.type === AssetType.MutualFund);
+            // Only refresh the specified or currently visible Mutual Funds on screen
+            const sourceAssets = targetAssets || this.filteredAssets();
+            const mfAssets = sourceAssets.filter(a => a.type === AssetType.MutualFund && !!a.id);
 
             if (mfAssets.length === 0) {
                 this.ngZone.run(() => {
-                    this.snackbar.show('No Mutual Funds to refresh.', 'info');
+                    this.snackbar.show('No Mutual Funds to refresh in current view.', 'info');
                     this.refreshingMFs.set(false);
                 });
                 return;
@@ -1202,16 +1232,17 @@ export class AssetsComponent implements OnInit {
         }
     }
 
-    async refreshStocks(groupAssets: Asset[]) {
+    async refreshStocks(groupAssets?: Asset[]) {
         if (this.refreshingStocks()) return;
         this.refreshingStocks.set(true);
         try {
-            // Only refresh the assets passed in (the specific group's assets)
-            const stockAssets = groupAssets.filter(a => !!a.id);
+            // Only refresh the assets passed in (or currently visible screen stocks)
+            const targetAssets = groupAssets || this.filteredAssets();
+            const stockAssets = targetAssets.filter(a => !!a.id && this.isPriceRefreshableStock(a));
 
             if (stockAssets.length === 0) {
                 this.ngZone.run(() => {
-                    this.snackbar.show('No assets to refresh in this group.', 'info');
+                    this.snackbar.show('No stock/market assets to refresh in current view.', 'info');
                     this.refreshingStocks.set(false);
                 });
                 return;
@@ -1221,16 +1252,17 @@ export class AssetsComponent implements OnInit {
 
             this.ngZone.run(() => {
                 this.lastRefreshed.set(new Date().toLocaleTimeString());
-                console.log(`Failed to fetch prices for all ${result.failed} stocks.`, result);
-                if (result.failed > 0 && result.updated === 0 && result.unchanged === 0) {
-                    this.snackbar.show(`Failed to fetch prices for all ${result.failed} stocks.`, 'error');
+                const isOnlyUS = stockAssets.every(a => this.isUSAsset(a));
+                const label = isOnlyUS ? 'US stock' : (stockAssets.some(a => this.isUSAsset(a)) ? 'stock' : 'Indian stock');
 
+                if (result.failed > 0 && result.updated === 0 && result.unchanged === 0) {
+                    this.snackbar.show(`Failed to fetch prices for all ${result.failed} ${label}s.`, 'error');
                 } else if (result.failed > 0) {
-                    this.snackbar.show(`Refreshed prices (Updated: ${result.updated}), but ${result.failed} stocks failed.`, 'error');
+                    this.snackbar.show(`Refreshed ${label} prices (Updated: ${result.updated}), but ${result.failed} failed.`, 'error');
                 } else if (result.updated > 0) {
-                    this.snackbar.show(`Successfully refreshed ${result.updated} stock prices`, 'success');
+                    this.snackbar.show(`Successfully refreshed ${result.updated} ${label} price${result.updated > 1 ? 's' : ''}`, 'success');
                 } else {
-                    this.snackbar.show('Stock prices are up to date.', 'info');
+                    this.snackbar.show(`${isOnlyUS ? 'US stock' : 'Stock'} prices are up to date.`, 'info');
                 }
 
                 this.refreshingStocks.set(false);
@@ -1239,7 +1271,7 @@ export class AssetsComponent implements OnInit {
         } catch (err) {
             console.error('[Assets] Stock Price refresh failed:', err);
             this.ngZone.run(() => {
-                this.snackbar.show('Failed to refresh Stocks. Please try again later.', 'error');
+                this.snackbar.show('Failed to refresh stocks. Please try again later.', 'error');
                 this.refreshingStocks.set(false);
                 this.cdr.markForCheck();
             });
