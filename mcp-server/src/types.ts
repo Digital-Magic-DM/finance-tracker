@@ -153,17 +153,26 @@ export type SipCategory = 'MutualFund' | 'Stock' | 'ETF' | 'Gold' | 'Crypto' | '
 export type SipFrequency = 'Monthly' | 'Weekly' | 'Quarterly';
 export type SipStatus = 'Active' | 'Paused' | 'Completed' | 'Cancelled';
 
+export type SipPaymentStatus = 'Pending' | 'Debited' | 'Failed' | 'Reversed' | 'NotApplicable';
+export type SipAllotmentStatus = 'Pending' | 'Confirmed' | 'Mismatched' | 'Cancelled';
+export type SipReconciliationStatus = 'Unreconciled' | 'Matched' | 'ManuallyConfirmed' | 'Discrepancy';
+
 export interface SipInstallment {
   id: string;
   installmentNumber: number;
   scheduledDate: string;
   executionDate: string;
   amount: number;
+  paymentStatus?: SipPaymentStatus;
+  allotmentStatus?: SipAllotmentStatus;
+  reconciliationStatus?: SipReconciliationStatus;
+  allotmentDate?: string;
   nav?: number;
   units?: number;
-  status: 'Executed' | 'Scheduled' | 'Skipped';
+  status: 'Executed' | 'Scheduled' | 'Skipped' | 'Processing';
   isMarketShifted: boolean;
   shiftReason?: string;
+  confirmationSource?: string;
   autoExecuted?: boolean;
 }
 
@@ -171,6 +180,10 @@ export interface Sip {
   id: string;
   name: string;
   category: SipCategory;
+  schemeCode?: string;
+  isin?: string;
+  planType?: 'Direct' | 'Regular';
+  option?: 'Growth' | 'IDCW';
   fundHouse?: string;
   folioNumber?: string;
   mandateAccount?: string;
@@ -183,6 +196,7 @@ export interface Sip {
   autoExecute?: boolean;
   totalInvested: number;
   installmentsPaid: number;
+  confirmedUnitsTotal?: number;
   lastExecutionDate?: string;
   nextExecutionDate?: string;
   stepUp?: { enabled: boolean; type: 'percentage' | 'fixed'; value: number };

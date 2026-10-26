@@ -6,16 +6,16 @@ import {
   Sip,
   SipInstallment,
   SipSummaryMetrics,
-  TradingDayResolution,
+  YearlyScheduleEntry,
 } from '../models/sip.models';
 import { MarketCalendarService } from './market-calendar.service';
-import { TransactionService } from './transaction.service';
-import { AssetService } from './asset.service';
+import { AmfiNavService } from './amfi-nav.service';
+import { SipReconciliationService } from './sip-reconciliation.service';
 import { SnackbarService } from './snackbar.service';
-import { TransactionType, AssetType, Asset } from '../models/finance.models';
+import { CasMutualFundHolding } from './cas-parser.service';
 
 const STORAGE_KEY = 'finance_tracker_sips_v2';
-const LAST_AUTO_CHECK_KEY = 'finance_tracker_sip_last_auto_check';
+const LAST_SCHEDULE_SYNC_KEY = 'finance_tracker_sip_last_schedule_sync';
 
 @Injectable({
   providedIn: 'root',
@@ -24,15 +24,15 @@ export class SipService {
   private firestore = inject(Firestore, { optional: true });
   private auth = inject(Auth, { optional: true });
   private calendar = inject(MarketCalendarService);
-  private txService = inject(TransactionService);
-  private assetService = inject(AssetService);
+  private navService = inject(AmfiNavService);
+  private reconciliationService = inject(SipReconciliationService);
   private snackbar = inject(SnackbarService);
 
   readonly sips = signal<Sip[]>([]);
   readonly loading = signal<boolean>(false);
-  readonly autoExecuting = signal<boolean>(false);
-  readonly lastAutoCheckTime = signal<string>(this.loadLastCheckTime());
-  readonly autoExecutionNotice = signal<{ count: number; sips: string[]; timestamp: number } | null>(null);
+  readonly syncing = signal<boolean>(false);
+  readonly lastSyncTime = signal<string>(this.loadLastSyncTime());
+  readonly pendingReconciliationNotice = signal<{ count: number; sips: string[] } | null>(null);
 
   constructor() {
     this.loadSips();
@@ -44,10 +44,13 @@ export class SipService {
     const active = list.filter((s) => s.status === 'Active');
 
     let totalMonthlyCommitment = 0;
-    let totalInvested = 0;
-    let totalExecutedInstallments = 0;
+    let totalInvested = 0; // Confirmed invested total ONLY
+    let totalPlannedCommitted = 0;
+    let totalConfirmedInstallments = 0;
+    let totalPendingAllotments = 0;
 
     const today = new Date();
+    const todayStr = this.calendar.formatDate(today);
 
     let closestUpcoming: {
       sipId: string;
@@ -62,17 +65,26 @@ export class SipService {
     let minDiffDays = Infinity;
 
     for (const sip of list) {
+      // Confirmed amounts ONLY
       totalInvested += sip.totalInvested || 0;
-      totalExecutedInstallments += (sip.installments || []).filter((i) => i.status === 'Executed').length;
+
+      const installments = sip.installments || [];
+      for (const inst of installments) {
+        totalPlannedCommitted += inst.amount;
+        if (inst.allotmentStatus === 'Confirmed' || inst.status === 'Executed') {
+          totalConfirmedInstallments++;
+        } else if (inst.executionDate <= todayStr && inst.allotmentStatus === 'Pending') {
+          totalPendingAllotments++;
+        }
+      }
 
       if (sip.status === 'Active') {
-        // Normalize frequency to monthly commitment
         let monthlyEquiv = sip.amount;
         if (sip.frequency === 'Weekly') monthlyEquiv = sip.amount * 4.33;
         else if (sip.frequency === 'Quarterly') monthlyEquiv = sip.amount / 3;
         totalMonthlyCommitment += monthlyEquiv;
 
-        // Compute upcoming execution date
+        // Upcoming execution calculation
         const nextExecStr = sip.nextExecutionDate || this.calculateNextExecutionDate(sip);
         if (nextExecStr) {
           const nextDate = this.calendar.parseDate(nextExecStr);
@@ -101,249 +113,98 @@ export class SipService {
       totalActiveSips: active.length,
       totalMonthlyCommitment: Math.round(totalMonthlyCommitment),
       totalInvested: Math.round(totalInvested),
-      totalExecutedInstallments,
+      totalPlannedCommitted: Math.round(totalPlannedCommitted),
+      totalConfirmedInstallments,
+      totalPendingAllotments,
       nextUpcomingSip: closestUpcoming,
       marketStatus: this.calendar.getMarketStatus(),
     };
   });
 
-  // ── Auto-Update Engine (Background Execution) ──
+  // ── Scheduled Installment Engine (Deterministic & Idempotent) ──
+
   /**
-   * Automatically executes due SIP installments without manual user interaction,
-   * strictly adhering to the market open/close calendar and holiday rollovers.
+   * Generates expected installments for an active SIP up to `monthsAhead` months into the future.
+   * Uses deterministic IDs `${sipId}_${YYYYMMDD}` to ensure strict idempotency across multiple runs.
+   * Never marks payment or allotment as completed solely because dates pass.
    */
-  async checkAndAutoExecuteSips(manualTrigger = false): Promise<number> {
-    if (this.autoExecuting()) return 0;
-    this.autoExecuting.set(true);
-
-    let executedCount = 0;
-    const executedSipNames: string[] = [];
-
-    try {
-      const currentList = [...this.sips()];
-      if (currentList.length === 0) return 0;
-
-      const today = new Date();
-      const todayStr = this.calendar.formatDate(today);
-      let listModified = false;
-
-      // Fetch user's existing assets to match or update holdings
-      let userAssets: Asset[] = [];
-      try {
-        userAssets = await this.assetService.getAssetsSnapshot();
-      } catch (e) {
-        console.warn('[SipService] Could not fetch assets snapshot:', e);
-      }
-
-      for (let i = 0; i < currentList.length; i++) {
-        const sip = { ...currentList[i] };
-        if (sip.status !== 'Active' || !sip.autoExecute) continue;
-
-        const installments = [...(sip.installments || [])];
-        const pendingSchedule = this.getPendingInstallmentsUpToToday(sip, todayStr);
-
-        if (pendingSchedule.length === 0) {
-          // Just ensure nextExecutionDate is properly updated
-          const nextDate = this.calculateNextExecutionDate(sip);
-          if (nextDate !== sip.nextExecutionDate) {
-            sip.nextExecutionDate = nextDate;
-            currentList[i] = sip;
-            listModified = true;
-          }
-          continue;
-        }
-
-        // Execute each pending installment chronologically
-        for (const item of pendingSchedule) {
-          console.log(`[SipService] Auto-executing SIP: ${sip.name} for execution date ${item.resolution.executionDate}`);
-
-          // 1. Calculate effective amount (Step-Up support)
-          const effectiveAmount = this.calculateEffectiveAmount(sip, item.installmentNumber);
-
-          // 2. Fetch or estimate NAV for realistic unit allocation
-          const estimatedNav = await this.resolveNavForFund(sip, userAssets);
-          const allottedUnits = Math.round((effectiveAmount / estimatedNav) * 1000) / 1000;
-
-          // 3. Record transaction in TransactionService
-          const txDesc = `SIP Auto-Debit: ${sip.name} (Installment #${item.installmentNumber})`;
-          const txNotes = `Auto-processed via Market Calendar Engine. ${item.resolution.reason}`;
-          try {
-            await this.txService.addTransaction({
-              type: TransactionType.Expense,
-              amount: effectiveAmount,
-              category: 'Investment',
-              description: txDesc,
-              bank: sip.mandateAccount || 'Bank Mandate (OTM Autopay)',
-              date: this.calendar.parseDate(item.resolution.executionDate),
-              notes: txNotes,
-              assetName: sip.name,
-            });
-          } catch (err) {
-            console.warn('[SipService] Failed to record transaction:', err);
-          }
-
-          // 4. Update or allocate holding in AssetService
-          await this.updateOrCreateAssetHolding(sip, effectiveAmount, allottedUnits, estimatedNav, userAssets);
-
-          // 5. Add installment record to SIP history
-          const installmentRecord: SipInstallment = {
-            id: 'inst_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-            installmentNumber: item.installmentNumber,
-            scheduledDate: item.resolution.scheduledDate,
-            executionDate: item.resolution.executionDate,
-            amount: effectiveAmount,
-            nav: estimatedNav,
-            units: allottedUnits,
-            status: 'Executed',
-            isMarketShifted: item.resolution.wasShifted,
-            shiftReason: item.resolution.reason,
-            autoExecuted: true,
-            executedAt: new Date().toISOString(),
-            notes: item.resolution.wasShifted
-              ? `Shifted from original ${item.resolution.scheduledDate} due to market holiday/weekend.`
-              : 'Executed on scheduled market trading day.',
-          };
-
-          installments.push(installmentRecord);
-          sip.totalInvested = (sip.totalInvested || 0) + effectiveAmount;
-          sip.installmentsPaid = (sip.installmentsPaid || 0) + 1;
-          sip.lastExecutionDate = item.resolution.executionDate;
-
-          executedCount++;
-          if (!executedSipNames.includes(sip.name)) {
-            executedSipNames.push(sip.name);
-          }
-        }
-
-        sip.installments = installments;
-        sip.nextExecutionDate = this.calculateNextExecutionDate(sip);
-        sip.updatedAt = new Date().toISOString();
-        currentList[i] = sip;
-        listModified = true;
-      }
-
-      if (listModified) {
-        await this.saveSips(currentList);
-      }
-
-      const nowStr = new Date().toISOString();
-      this.lastAutoCheckTime.set(nowStr);
-      try {
-        localStorage.setItem(LAST_AUTO_CHECK_KEY, nowStr);
-      } catch {}
-
-      if (executedCount > 0) {
-        this.autoExecutionNotice.set({
-          count: executedCount,
-          sips: executedSipNames,
-          timestamp: Date.now(),
-        });
-
-        this.snackbar.show(
-          `✨ ${executedCount} SIP installment(s) automatically executed according to market calendar!`,
-          'success',
-          5000
-        );
-      } else if (manualTrigger) {
-        this.snackbar.show(
-          'All SIPs are currently up-to-date with market open dates.',
-          'info',
-          3500
-        );
-      }
-
-      return executedCount;
-    } catch (err) {
-      console.error('[SipService] Error during auto-execution check:', err);
-      if (manualTrigger) {
-        this.snackbar.show('Failed to complete SIP auto-sync check.', 'error');
-      }
-      return 0;
-    } finally {
-      this.autoExecuting.set(false);
+  generateExpectedInstallments(sip: Sip, monthsAhead = 3): SipInstallment[] {
+    if (sip.status === 'Cancelled' || sip.status === 'Paused') {
+      return sip.installments || [];
     }
-  }
 
-  /**
-   * Determine due installment dates that have passed up to today
-   * and haven't been executed or skipped yet.
-   * Prevents runaway historical backfills by respecting lastExecutionDate
-   * and bounding newly created past-dated SIPs to current billing cycle.
-   */
-  private getPendingInstallmentsUpToToday(
-    sip: Sip,
-    todayStr: string
-  ): Array<{ installmentNumber: number; resolution: TradingDayResolution }> {
-    const results: Array<{ installmentNumber: number; resolution: TradingDayResolution }> = [];
-    const today = this.calendar.parseDate(todayStr);
+    const today = new Date();
+    const todayStr = this.calendar.formatDate(today);
     const startDate = this.calendar.parseDate(sip.startDate || todayStr);
+    const endDate = sip.endDate ? this.calendar.parseDate(sip.endDate) : null;
 
-    // If SIP hasn't started yet, nothing is pending
-    if (startDate > today) return [];
-
-    // Collect all dates already executed or skipped
-    const executedDates = new Set<string>();
+    // Existing installments indexed by deterministic ID and scheduledDate
+    const existingMap = new Map<string, SipInstallment>();
     (sip.installments || []).forEach((inst) => {
-      if (inst.status === 'Executed' || inst.status === 'Skipped') {
-        if (inst.scheduledDate) executedDates.add(inst.scheduledDate);
-        if (inst.executionDate) executedDates.add(inst.executionDate);
+      existingMap.set(inst.id, inst);
+      if (inst.scheduledDate) {
+        existingMap.set(inst.scheduledDate, inst);
       }
     });
 
-    // Check boundary:
-    // If lastExecutionDate exists, we only look for dates strictly AFTER lastExecutionDate
-    let checkFromDate: Date;
-    if (sip.lastExecutionDate) {
-      const lastDate = this.calendar.parseDate(sip.lastExecutionDate);
-      checkFromDate = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate() + 1);
-    } else {
-      // If no lastExecutionDate exists:
-      // Only check installments starting from the SIP's startDate,
-      // but never look back further than the current month to prevent historical floods!
-      const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      checkFromDate = startDate > currentMonthStart ? startDate : currentMonthStart;
-    }
+    const results: SipInstallment[] = [...(sip.installments || [])];
 
-    // If checkFromDate is in the future, nothing is due
-    if (checkFromDate > today) return [];
+    // Determine planning window:
+    // Start generating from whichever is earlier: startDate or the current month,
+    // up to `monthsAhead` from today.
+    let currYear = Math.max(startDate.getFullYear(), today.getFullYear() - 1);
+    let currMonth = currYear === today.getFullYear() ? today.getMonth() : startDate.getMonth();
 
-    let currYear = checkFromDate.getFullYear();
-    let currMonth = checkFromDate.getMonth();
-    const endYear = today.getFullYear();
-    const endMonth = today.getMonth();
+    const targetDate = new Date(today.getFullYear(), today.getMonth() + monthsAhead, 1);
+    const endYear = targetDate.getFullYear();
+    const endMonth = targetDate.getMonth();
 
-    let installmentCounter = (sip.installments || []).length;
+    let installmentNumber = (sip.installments || []).length;
 
     while (currYear < endYear || (currYear === endYear && currMonth <= endMonth)) {
       const maxDaysInMonth = new Date(currYear, currMonth + 1, 0).getDate();
       const clampedDay = Math.min(sip.sipDay || 10, maxDaysInMonth);
-      const scheduledDate = new Date(currYear, currMonth, clampedDay);
+      const scheduledDateObj = new Date(currYear, currMonth, clampedDay);
 
-      // Must be on or after both startDate and checkFromDate
-      if (scheduledDate >= checkFromDate && scheduledDate >= startDate) {
-        const resolution = this.calendar.resolveTradingDay(scheduledDate);
+      // Verify bounds: >= startDate and (<= endDate if defined)
+      if (scheduledDateObj >= startDate && (!endDate || scheduledDateObj <= endDate)) {
+        const resolution = this.calendar.resolveTradingDay(scheduledDateObj);
+        const deterministicId = `${sip.id}_${resolution.scheduledDate.replace(/-/g, '')}`;
 
-        // If market execution date is today or past, and hasn't been executed yet
-        const notYetExecuted =
-          !executedDates.has(resolution.scheduledDate) &&
-          !executedDates.has(resolution.executionDate) &&
-          (!sip.lastExecutionDate || resolution.executionDate > sip.lastExecutionDate);
+        // Idempotency check: if already exists, preserve it untouched!
+        if (!existingMap.has(deterministicId) && !existingMap.has(resolution.scheduledDate)) {
+          installmentNumber++;
+          const effectiveAmount = this.calculateEffectiveAmount(sip, installmentNumber);
 
-        if (resolution.executionDate <= todayStr && notYetExecuted) {
-          installmentCounter++;
-          results.push({
-            installmentNumber: installmentCounter,
-            resolution,
-          });
+          const newInstallment: SipInstallment = {
+            id: deterministicId,
+            installmentNumber,
+            scheduledDate: resolution.scheduledDate,
+            executionDate: resolution.executionDate,
+            amount: effectiveAmount,
+            paymentStatus: 'Pending',
+            allotmentStatus: 'Pending',
+            reconciliationStatus: 'Unreconciled',
+            status: 'Scheduled',
+            isMarketShifted: resolution.wasShifted,
+            shiftReason: resolution.reason,
+            autoExecuted: false,
+            notes: resolution.wasShifted
+              ? `Market holiday rollover: Scheduled on ${resolution.scheduledDate} ➔ Trading day ${resolution.executionDate}`
+              : 'Scheduled for mutual fund cutoff window.',
+          };
 
-          // Guard against runaway execution: at most 1 pending installment per check
-          if (results.length >= 1) break;
+          results.push(newInstallment);
+          existingMap.set(deterministicId, newInstallment);
+          existingMap.set(resolution.scheduledDate, newInstallment);
         }
       }
 
-      // Frequency increment
+      // Increment by frequency
       if (sip.frequency === 'Quarterly') {
         currMonth += 3;
+      } else if (sip.frequency === 'Weekly') {
+        currMonth += 1; // Simplified monthly cycle for schedule engine
       } else {
         currMonth += 1;
       }
@@ -354,33 +215,376 @@ export class SipService {
       }
     }
 
-    return results;
+    // Sort installments chronologically
+    return results.sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
   }
 
   /**
-   * Calculate next upcoming market-adjusted execution date
+   * Synchronizes all active SIP schedules ahead of time, ensuring future installments exist
+   * without fabricating fake payments or allotments.
    */
-  calculateNextExecutionDate(sip: Sip): string {
+  async syncAllSipSchedules(silent = false): Promise<void> {
+    if (this.syncing()) return;
+    this.syncing.set(true);
+
+    try {
+      const list = [...this.sips()];
+      if (list.length === 0) return;
+
+      let modified = false;
+      const todayStr = this.calendar.formatDate(new Date());
+
+      for (let i = 0; i < list.length; i++) {
+        const sip = { ...list[i] };
+        if (sip.status === 'Active') {
+          const updatedInstallments = this.generateExpectedInstallments(sip, 3);
+          if (updatedInstallments.length !== (sip.installments || []).length) {
+            sip.installments = updatedInstallments;
+            modified = true;
+          }
+
+          // Recalculate next upcoming execution date
+          const nextDate = this.calculateNextExecutionDate(sip);
+          if (nextDate !== sip.nextExecutionDate) {
+            sip.nextExecutionDate = nextDate;
+            modified = true;
+          }
+
+          // Recalculate confirmed totals
+          const confirmedInsts = (sip.installments || []).filter(
+            (inst) => inst.allotmentStatus === 'Confirmed' || inst.status === 'Executed'
+          );
+          sip.totalInvested = confirmedInsts.reduce((sum, inst) => sum + (inst.amount || 0), 0);
+          sip.installmentsPaid = confirmedInsts.length;
+          sip.confirmedUnitsTotal = Math.round(
+            confirmedInsts.reduce((sum, inst) => sum + (inst.units || 0), 0) * 1000
+          ) / 1000;
+
+          list[i] = sip;
+        }
+      }
+
+      if (modified) {
+        await this.saveSips(list);
+      }
+
+      const nowStr = new Date().toISOString();
+      this.lastSyncTime.set(nowStr);
+      try {
+        localStorage.setItem(LAST_SCHEDULE_SYNC_KEY, nowStr);
+      } catch {}
+
+      // Identify pending allotments awaiting reconciliation
+      const pendingSips: string[] = [];
+      list.forEach((s) => {
+        const hasPending = (s.installments || []).some(
+          (inst) => inst.executionDate <= todayStr && inst.allotmentStatus === 'Pending'
+        );
+        if (hasPending && !pendingSips.includes(s.name)) {
+          pendingSips.push(s.name);
+        }
+      });
+
+      if (pendingSips.length > 0) {
+        this.pendingReconciliationNotice.set({
+          count: pendingSips.length,
+          sips: pendingSips,
+        });
+      } else {
+        this.pendingReconciliationNotice.set(null);
+      }
+
+      if (!silent) {
+        this.snackbar.show('SIP schedules and market calendars synchronized.', 'info', 3000);
+      }
+    } finally {
+      this.syncing.set(false);
+    }
+  }
+
+  // ── Plan CRUD Operations ──
+
+  async createSip(
+    data: Omit<Sip, 'id' | 'createdAt' | 'updatedAt' | 'installmentsPaid' | 'totalInvested'>
+  ): Promise<Sip> {
+    // Validate inputs
+    if (!data.name || data.name.trim().length === 0) {
+      throw new Error('Scheme / Plan name is required.');
+    }
+    if (data.amount <= 0) {
+      throw new Error('SIP amount must be greater than zero.');
+    }
+    if (data.sipDay < 1 || data.sipDay > 31) {
+      throw new Error('SIP day must be between 1 and 31.');
+    }
+
+    const id = 'sip_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+    const now = new Date().toISOString();
+
+    const newSip: Sip = {
+      ...data,
+      id,
+      executionMode: data.executionMode || 'External',
+      dataSource: data.dataSource || 'CAS',
+      totalInvested: 0,
+      installmentsPaid: 0,
+      confirmedUnitsTotal: 0,
+      installments: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    // Pre-generate expected installments ahead of time
+    newSip.installments = this.generateExpectedInstallments(newSip, 3);
+    newSip.nextExecutionDate = this.calculateNextExecutionDate(newSip);
+
+    const updated = [newSip, ...this.sips()];
+    await this.saveSips(updated);
+    this.snackbar.show(`SIP plan "${newSip.name}" created successfully.`, 'success');
+    return newSip;
+  }
+
+  async addSip(
+    data: Omit<Sip, 'id' | 'createdAt' | 'updatedAt' | 'installmentsPaid' | 'totalInvested'>
+  ): Promise<Sip> {
+    return this.createSip(data);
+  }
+
+  async updateSip(id: string, updates: Partial<Sip>): Promise<void> {
+    const list = this.sips();
+    const index = list.findIndex((s) => s.id === id);
+    if (index === -1) return;
+
+    const existing = list[index];
+
+    // Guard: Prevent plan changes from silently modifying or wiping confirmed installments
+    let preservedInstallments = updates.installments ?? existing.installments ?? [];
+
+    const updatedSip: Sip = {
+      ...existing,
+      ...updates,
+      installments: preservedInstallments,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Re-generate schedule if day, start date, frequency, or status changed
+    if (
+      updates.sipDay !== undefined ||
+      updates.startDate !== undefined ||
+      updates.status !== undefined ||
+      updates.frequency !== undefined
+    ) {
+      updatedSip.installments = this.generateExpectedInstallments(updatedSip, 3);
+      updatedSip.nextExecutionDate = this.calculateNextExecutionDate(updatedSip);
+    }
+
+    const updated = [...list];
+    updated[index] = updatedSip;
+    await this.saveSips(updated);
+    this.snackbar.show(`SIP "${updatedSip.name}" updated successfully.`, 'success');
+  }
+
+  async pauseSip(id: string): Promise<void> {
+    await this.updateSip(id, { status: 'Paused' });
+    this.snackbar.show('SIP paused. Future expected installments paused.', 'info');
+  }
+
+  async resumeSip(id: string): Promise<void> {
+    await this.updateSip(id, { status: 'Active' });
+    this.snackbar.show('SIP resumed. Active schedule restored.', 'success');
+  }
+
+  async cancelSip(id: string): Promise<void> {
+    const sip = this.sips().find((s) => s.id === id);
+    if (!sip) return;
+
+    // Retain all confirmed installments for audit history; remove only unconfirmed future scheduled ones
+    const todayStr = this.calendar.formatDate(new Date());
+    const preservedInstallments = (sip.installments || []).filter(
+      (inst) => inst.allotmentStatus === 'Confirmed' || inst.executionDate <= todayStr
+    );
+
+    await this.updateSip(id, {
+      status: 'Cancelled',
+      installments: preservedInstallments,
+      nextExecutionDate: undefined,
+    });
+    this.snackbar.show('SIP cancelled. Historical confirmed investments preserved.', 'info');
+  }
+
+  async deleteSip(id: string): Promise<void> {
+    const list = this.sips().filter((s) => s.id !== id);
+    this.sips.set(list);
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    } catch {}
+
+    const uid = this.auth?.currentUser?.uid;
+    if (this.firestore && uid) {
+      try {
+        await deleteDoc(doc(this.firestore, `users/${uid}/sips/${id}`));
+      } catch (e) {
+        console.warn('[SipService] Could not delete from Firestore:', e);
+      }
+    }
+
+    this.snackbar.show('SIP removed.', 'info');
+  }
+
+  // ── Reconciliation Actions ──
+
+  /**
+   * Reconcile SIPs with parsed CAS mutual fund holdings.
+   * Confirms units and updates portfolio holdings.
+   */
+  async reconcileWithCas(casHoldings: CasMutualFundHolding[]): Promise<number> {
+    const list = [...this.sips()];
+    let totalConfirmedAcrossSips = 0;
+
+    for (let i = 0; i < list.length; i++) {
+      const sip = list[i];
+      const res = await this.reconciliationService.reconcileWithCasHoldings(sip, casHoldings);
+
+      if (res.confirmedCount > 0) {
+        totalConfirmedAcrossSips += res.confirmedCount;
+        const confirmedInsts = res.updatedInstallments.filter(
+          (inst) => inst.allotmentStatus === 'Confirmed'
+        );
+        list[i] = {
+          ...sip,
+          installments: res.updatedInstallments,
+          totalInvested: confirmedInsts.reduce((sum, inst) => sum + (inst.amount || 0), 0),
+          installmentsPaid: confirmedInsts.length,
+          confirmedUnitsTotal: Math.round(
+            confirmedInsts.reduce((sum, inst) => sum + (inst.units || 0), 0) * 1000
+          ) / 1000,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+    }
+
+    if (totalConfirmedAcrossSips > 0) {
+      await this.saveSips(list);
+      this.snackbar.show(
+        `✨ Reconciled and confirmed ${totalConfirmedAcrossSips} installment(s) via CAS statement!`,
+        'success'
+      );
+    } else {
+      this.snackbar.show('No pending installments matched the provided CAS statement.', 'info');
+    }
+
+    return totalConfirmedAcrossSips;
+  }
+
+  /**
+   * Manually confirm unit allotment for a specific installment.
+   */
+  async confirmInstallmentManually(
+    sipId: string,
+    installmentId: string,
+    allotmentData: {
+      allotmentDate: string;
+      nav: number;
+      units: number;
+      externalRef?: string;
+      notes?: string;
+    }
+  ): Promise<void> {
+    const list = [...this.sips()];
+    const index = list.findIndex((s) => s.id === sipId);
+    if (index === -1) return;
+
+    const sip = list[index];
+    const updatedInst = await this.reconciliationService.confirmAllotmentManually(
+      sip,
+      installmentId,
+      allotmentData
+    );
+
+    if (updatedInst) {
+      const installments = (sip.installments || []).map((i) =>
+        i.id === installmentId ? updatedInst : i
+      );
+      const confirmedInsts = installments.filter((i) => i.allotmentStatus === 'Confirmed');
+
+      list[index] = {
+        ...sip,
+        installments,
+        totalInvested: confirmedInsts.reduce((sum, i) => sum + i.amount, 0),
+        installmentsPaid: confirmedInsts.length,
+        confirmedUnitsTotal: Math.round(
+          confirmedInsts.reduce((sum, i) => sum + (i.units || 0), 0) * 1000
+        ) / 1000,
+        lastExecutionDate: updatedInst.allotmentDate,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await this.saveSips(list);
+      this.snackbar.show(
+        `Confirmed ${updatedInst.units} units for installment #${updatedInst.installmentNumber}. Portfolio holding updated.`,
+        'success'
+      );
+    }
+  }
+
+  /**
+   * Fetch suggested AMFI NAV for an installment on a specific date.
+   */
+  async getSuggestedNav(sip: Sip, dateStr: string): Promise<number | null> {
+    const code = sip.schemeCode || sip.isin;
+    if (!code) return null;
+    const snapshot = await this.navService.getNavForDate(code, dateStr);
+    return snapshot ? snapshot.nav : null;
+  }
+
+  // ── Calculation Utilities ──
+
+  calculateEffectiveAmount(sip: Sip, installmentNumber: number): number {
+    if (!sip.stepUp || !sip.stepUp.enabled) {
+      return sip.amount;
+    }
+
+    const freq = sip.stepUp.frequencyMonths || 12;
+    const stepUpCount = Math.floor((installmentNumber - 1) / freq);
+    if (stepUpCount <= 0) return sip.amount;
+
+    let amt = sip.amount;
+    for (let i = 0; i < stepUpCount; i++) {
+      if (sip.stepUp.type === 'percentage') {
+        amt += Math.round((amt * sip.stepUp.value) / 100);
+      } else {
+        amt += sip.stepUp.value;
+      }
+    }
+    return amt;
+  }
+
+  calculateNextExecutionDate(sip: Sip): string | undefined {
     const today = new Date();
     const todayStr = this.calendar.formatDate(today);
 
+    // Look in scheduled installments
+    const nextInst = (sip.installments || []).find(
+      (inst) => inst.executionDate >= todayStr && inst.allotmentStatus === 'Pending'
+    );
+    if (nextInst) return nextInst.executionDate;
+
+    // Fallback: calculate using calendar
     let year = today.getFullYear();
     let month = today.getMonth();
 
     for (let i = 0; i < 24; i++) {
       const maxDaysInMonth = new Date(year, month + 1, 0).getDate();
       const clampedDay = Math.min(sip.sipDay || 10, maxDaysInMonth);
-      const targetDate = new Date(year, month, clampedDay);
-      const resolution = this.calendar.resolveTradingDay(targetDate);
+      const scheduledDate = new Date(year, month, clampedDay);
+      const resolution = this.calendar.resolveTradingDay(scheduledDate);
 
-      // Check if this date has already been executed or skipped
-      const isAlreadyExecuted =
-        (sip.lastExecutionDate && resolution.executionDate <= sip.lastExecutionDate) ||
-        (sip.installments || []).some(
-          (inst) =>
-            (inst.scheduledDate === resolution.scheduledDate || inst.executionDate === resolution.executionDate) &&
-            (inst.status === 'Executed' || inst.status === 'Skipped')
-        );
+      const isAlreadyExecuted = (sip.installments || []).some(
+        (inst) =>
+          inst.scheduledDate === resolution.scheduledDate &&
+          (inst.allotmentStatus === 'Confirmed' || inst.status === 'Executed')
+      );
 
       if (!isAlreadyExecuted && resolution.executionDate >= todayStr) {
         return resolution.executionDate;
@@ -388,402 +592,146 @@ export class SipService {
 
       month++;
       if (month > 11) {
-        month = 0;
-        year++;
+        year += Math.floor(month / 12);
+        month = month % 12;
       }
     }
 
-    return todayStr;
-  }
-
-  /**
-   * Calculates effective amount considering Step-Up configuration
-   */
-  calculateEffectiveAmount(sip: Sip, installmentNumber: number): number {
-    if (!sip.stepUp || !sip.stepUp.enabled || sip.stepUp.value <= 0) {
-      return sip.amount;
-    }
-
-    const freq = sip.stepUp.frequencyMonths || 12;
-    const stepIncrements = Math.floor((installmentNumber - 1) / freq);
-    if (stepIncrements <= 0) return sip.amount;
-
-    if (sip.stepUp.type === 'percentage') {
-      const multiplier = Math.pow(1 + sip.stepUp.value / 100, stepIncrements);
-      return Math.round(sip.amount * multiplier);
-    } else {
-      return sip.amount + stepIncrements * sip.stepUp.value;
-    }
-  }
-
-  /**
-   * Resolves NAV for mutual fund / stock
-   */
-  private async resolveNavForFund(sip: Sip, userAssets: Asset[]): Promise<number> {
-    // 1. Check if linked asset exists with currentPrice
-    if (sip.linkedAssetId) {
-      const matched = userAssets.find((a) => a.id === sip.linkedAssetId);
-      if (matched && matched.currentPrice && matched.currentPrice > 0) {
-        return matched.currentPrice;
-      }
-    }
-
-    // 2. Try by name
-    const byName = userAssets.find(
-      (a) => a.name.toLowerCase().trim() === sip.name.toLowerCase().trim()
-    );
-    if (byName && byName.currentPrice && byName.currentPrice > 0) {
-      return byName.currentPrice;
-    }
-
-    // 3. Fallback benchmark estimate for realistic calculations
-    if (sip.category === 'MutualFund') {
-      if (/flexi|parag/i.test(sip.name)) return 86.42;
-      if (/nifty|index|50/i.test(sip.name)) return 242.15;
-      if (/small|quant/i.test(sip.name)) return 118.75;
-      if (/mid|large/i.test(sip.name)) return 94.3;
-      return 100.0;
-    } else if (sip.category === 'Gold') {
-      return 68.5; // Gold ETF units
-    } else if (sip.category === 'Stock') {
-      return 1500.0;
-    }
-
-    return 100.0;
-  }
-
-  /**
-   * Updates existing asset holding or creates a new one in user's portfolio
-   */
-  private async updateOrCreateAssetHolding(
-    sip: Sip,
-    investedAmount: number,
-    units: number,
-    nav: number,
-    userAssets: Asset[]
-  ): Promise<void> {
-    try {
-      let existingAsset = sip.linkedAssetId
-        ? userAssets.find((a) => a.id === sip.linkedAssetId)
-        : null;
-
-      if (!existingAsset) {
-        existingAsset = userAssets.find(
-          (a) => a.name.toLowerCase().trim() === sip.name.toLowerCase().trim()
-        );
-      }
-
-      const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-      const todayStr = this.calendar.formatDate(new Date());
-
-      if (existingAsset && existingAsset.id) {
-        const prevQty = existingAsset.quantity || 0;
-        const prevBuyPrice = existingAsset.buyPrice || nav;
-        const totalCostBefore = prevQty * prevBuyPrice;
-        const newTotalCost = totalCostBefore + investedAmount;
-        const newQty = prevQty + units;
-        const weightedAvgBuyPrice = newQty > 0 ? Math.round((newTotalCost / newQty) * 100) / 100 : nav;
-
-        await this.assetService.updateAsset(existingAsset.id, {
-          quantity: Math.round(newQty * 1000) / 1000,
-          buyPrice: weightedAvgBuyPrice,
-          currentPrice: nav,
-          lastUpdated: now,
-          lastUpdatedDate: todayStr,
-          navDate: todayStr,
-        });
-
-        // Update in-memory userAssets cache
-        existingAsset.quantity = Math.round(newQty * 1000) / 1000;
-        existingAsset.buyPrice = weightedAvgBuyPrice;
-        existingAsset.currentPrice = nav;
-      } else {
-        // Create new asset in portfolio
-        let assetType = AssetType.MutualFund;
-        if (sip.category === 'Stock') assetType = AssetType.Stock;
-        else if (sip.category === 'ETF') assetType = AssetType.ETF;
-        else if (sip.category === 'Gold') assetType = AssetType.Gold;
-        else if (sip.category === 'Crypto') assetType = AssetType.Crypto;
-
-        await this.assetService.addAsset({
-          name: sip.name,
-          type: assetType,
-          quantity: units,
-          buyPrice: nav,
-          currentPrice: nav,
-          currency: 'INR',
-          purchaseDate: new Date(),
-          notes: `Managed via Auto-SIP (${sip.mandateAccount || 'OTM Autopay'})`,
-          appSource: 'SIP Auto-Invest',
-          lastUpdated: now,
-          lastUpdatedDate: todayStr,
-          navDate: todayStr,
-          isLiquid: true,
-        });
-
-        userAssets.push({
-          id: 'temp_' + Date.now(),
-          name: sip.name,
-          type: assetType,
-          quantity: units,
-          buyPrice: nav,
-          currentPrice: nav,
-          currency: 'INR',
-        } as Asset);
-      }
-    } catch (e) {
-      console.warn('[SipService] Could not sync asset holding:', e);
-    }
-  }
-
-  // ── CRUD Operations ──
-  async addSip(
-    data: Omit<Sip, 'id' | 'createdAt' | 'updatedAt' | 'totalInvested' | 'installmentsPaid'>
-  ): Promise<Sip> {
-    const id = 'sip_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-    const sip: Sip = {
-      ...data,
-      id,
-      totalInvested: 0,
-      installmentsPaid: 0,
-      autoExecute: data.autoExecute !== undefined ? data.autoExecute : true,
-      status: data.status || 'Active',
-      installments: data.installments || [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    sip.nextExecutionDate = this.calculateNextExecutionDate(sip);
-
-    const updated = [sip, ...this.sips()];
-    await this.saveSips(updated);
-
-    // Run auto-execution immediately in case the start date is in the past!
-    setTimeout(() => {
-      this.checkAndAutoExecuteSips();
-    }, 500);
-
-    return sip;
-  }
-
-  async updateSip(id: string, updates: Partial<Sip>): Promise<void> {
-    const list = this.sips();
-    const idx = list.findIndex((s) => s.id === id);
-    if (idx === -1) return;
-
-    const existing = list[idx];
-    const updatedSip: Sip = {
-      ...existing,
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (updates.sipDay || updates.startDate || updates.status || updates.installments) {
-      if (!updates.nextExecutionDate) {
-        updatedSip.nextExecutionDate = this.calculateNextExecutionDate(updatedSip);
-      }
-    }
-
-    const updated = [...list];
-    updated[idx] = updatedSip;
-    await this.saveSips(updated);
-  }
-
-  async deleteSip(id: string): Promise<void> {
-    const list = this.sips().filter((s) => s.id !== id);
-    await this.saveSips(list);
-
-    const uid = this.auth?.currentUser?.uid;
-    if (uid && this.firestore) {
-      try {
-        const ref = doc(this.firestore, `users/${uid}/sips/${id}`);
-        await deleteDoc(ref);
-      } catch (e) {
-        console.warn('Firestore SIP delete error:', e);
-      }
-    }
+    return undefined;
   }
 
   async togglePauseSip(id: string): Promise<void> {
     const sip = this.sips().find((s) => s.id === id);
     if (!sip) return;
-    const newStatus = sip.status === 'Active' ? 'Paused' : 'Active';
-    await this.updateSip(id, { status: newStatus });
-    this.snackbar.show(
-      newStatus === 'Paused' ? `SIP "${sip.name}" paused.` : `SIP "${sip.name}" resumed.`,
-      'info'
-    );
-  }
-
-  async manuallyExecuteNow(id: string): Promise<void> {
-    const sip = this.sips().find((s) => s.id === id);
-    if (!sip) return;
-
-    const today = new Date();
-    const res = this.calendar.resolveTradingDay(today);
-    const instNumber = (sip.installments || []).length + 1;
-    const amount = this.calculateEffectiveAmount(sip, instNumber);
-
-    let userAssets: Asset[] = [];
-    try {
-      userAssets = await this.assetService.getAssetsSnapshot();
-    } catch {}
-
-    const nav = await this.resolveNavForFund(sip, userAssets);
-    const units = Math.round((amount / nav) * 1000) / 1000;
-
-    // Transaction
-    await this.txService.addTransaction({
-      type: TransactionType.Expense,
-      amount,
-      category: 'Investment',
-      description: `Manual SIP Debit: ${sip.name} (Installment #${instNumber})`,
-      bank: sip.mandateAccount || 'Bank Mandate',
-      date: new Date(),
-      notes: `Manually executed by user. Allotted at NAV ₹${nav}.`,
-      assetName: sip.name,
-    });
-
-    await this.updateOrCreateAssetHolding(sip, amount, units, nav, userAssets);
-
-    const newInst: SipInstallment = {
-      id: 'inst_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-      installmentNumber: instNumber,
-      scheduledDate: this.calendar.formatDate(today),
-      executionDate: res.executionDate,
-      amount,
-      nav,
-      units,
-      status: 'Executed',
-      isMarketShifted: res.wasShifted,
-      shiftReason: res.reason,
-      autoExecuted: false,
-      executedAt: new Date().toISOString(),
-      notes: 'Manually triggered installment execution.',
-    };
-
-    const installments = [...(sip.installments || []), newInst];
-    const nextDate = this.calculateNextExecutionDate({
-      ...sip,
-      installments,
-      lastExecutionDate: res.executionDate,
-    });
-
-    const updatedSip: Partial<Sip> = {
-      installments,
-      installmentsPaid: (sip.installmentsPaid || 0) + 1,
-      totalInvested: (sip.totalInvested || 0) + amount,
-      lastExecutionDate: res.executionDate,
-      nextExecutionDate: nextDate,
-    };
-
-    await this.updateSip(id, updatedSip);
-    this.snackbar.show(`Successfully executed installment of ₹${amount.toLocaleString('en-IN')} for "${sip.name}".`, 'success');
-  }
-
-  async skipNextInstallment(id: string): Promise<void> {
-    const sip = this.sips().find((s) => s.id === id);
-    if (!sip) return;
-
-    const nextExec = sip.nextExecutionDate || this.calculateNextExecutionDate(sip);
-    const instNumber = (sip.installments || []).length + 1;
-
-    const skipRecord: SipInstallment = {
-      id: 'inst_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-      installmentNumber: instNumber,
-      scheduledDate: nextExec,
-      executionDate: nextExec,
-      amount: sip.amount,
-      status: 'Skipped',
-      isMarketShifted: false,
-      autoExecuted: false,
-      executedAt: new Date().toISOString(),
-      notes: 'Skipped by user request.',
-    };
-
-    const installments = [...(sip.installments || []), skipRecord];
-
-    // Advance to next month's execution date
-    const d = this.calendar.parseDate(nextExec);
-    const nextMonthDate = new Date(d.getFullYear(), d.getMonth() + 1, sip.sipDay);
-    const nextRes = this.calendar.resolveTradingDay(nextMonthDate);
-
-    await this.updateSip(id, {
-      installments,
-      nextExecutionDate: nextRes.executionDate,
-    });
-
-    this.snackbar.show(`Skipped upcoming installment for "${sip.name}". Next debit: ${this.calendar.formatReadableDate(nextRes.executionDate)}.`, 'info');
-  }
-
-  // ── Persistence & Initialization ──
-  private async loadSips() {
-    this.loading.set(true);
-    try {
-      // 1. Check LocalStorage
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed: Sip[] = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.sips.set(parsed);
-          this.loading.set(false);
-          // Check for auto-executions in background
-          this.checkAndAutoExecuteSips();
-        }
-      }
-
-      // 2. Sync with Firestore if authenticated
-      const uid = this.auth?.currentUser?.uid;
-      if (uid && this.firestore) {
-        try {
-          const col = collection(this.firestore, `users/${uid}/sips`);
-          const snap = await getDocs(col);
-          if (!snap.empty) {
-            const remoteSips: Sip[] = [];
-            snap.forEach((d) => remoteSips.push({ id: d.id, ...(d.data() as any) }));
-            if (remoteSips.length > 0) {
-              this.sips.set(remoteSips);
-              try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteSips));
-              } catch {}
-              this.checkAndAutoExecuteSips();
-              return;
-            }
-          }
-        } catch (e) {
-          console.warn('[SipService] Firestore sync fallback to cache:', e);
-        }
-      }
-
-      // 3. Fallback to sample data if empty
-      if (this.sips().length === 0) {
-        this.loadSampleData();
-      }
-    } catch (e) {
-      console.warn('Failed to load SIPs:', e);
-      if (this.sips().length === 0) {
-        this.loadSampleData();
-      }
-    } finally {
-      this.loading.set(false);
+    if (sip.status === 'Active') {
+      await this.pauseSip(id);
+    } else {
+      await this.resumeSip(id);
     }
   }
 
-  private async saveSips(updated: Sip[]): Promise<void> {
-    this.sips.set(updated);
+  async skipNextInstallment(id: string): Promise<void> {
+    const list = [...this.sips()];
+    const index = list.findIndex((s) => s.id === id);
+    if (index === -1) return;
+    const sip = list[index];
+    const installments = [...(sip.installments || [])];
+    const todayStr = this.calendar.formatDate(new Date());
+    const nextIdx = installments.findIndex(
+      (inst) => inst.executionDate >= todayStr && inst.allotmentStatus === 'Pending'
+    );
+    if (nextIdx !== -1) {
+      installments[nextIdx] = {
+        ...installments[nextIdx],
+        status: 'Skipped',
+        paymentStatus: 'NotApplicable',
+        allotmentStatus: 'Cancelled',
+        reconciliationNotes: 'Manually skipped by user.',
+      };
+      sip.installments = installments;
+      sip.nextExecutionDate = this.calculateNextExecutionDate(sip);
+      list[index] = sip;
+      await this.saveSips(list);
+      this.snackbar.show('Next installment skipped.', 'info');
+    }
+  }
+
+  async manuallyExecuteNow(id: string): Promise<void> {
+    const list = [...this.sips()];
+    const index = list.findIndex((s) => s.id === id);
+    if (index === -1) return;
+    const sip = list[index];
+    const today = new Date();
+    const todayStr = this.calendar.formatDate(today);
+    const installments = [...(sip.installments || [])];
+
+    let inst =
+      installments.find((i) => i.allotmentStatus === 'Pending' && i.executionDate <= todayStr) ||
+      installments.find((i) => i.allotmentStatus === 'Pending');
+
+    if (!inst) {
+      this.snackbar.show('All installments are currently up to date.', 'info');
+      return;
+    }
+
+    const navSnapshot = await this.navService.getNavForDate(sip.schemeCode || sip.isin || sip.name, todayStr);
+    const nav = navSnapshot ? navSnapshot.nav : 100;
+    const units = Math.round((inst.amount / nav) * 1000) / 1000;
+
+    await this.confirmInstallmentManually(sip.id, inst.id, {
+      allotmentDate: navSnapshot ? navSnapshot.navDate : todayStr,
+      nav,
+      units,
+      notes: 'Manually confirmed via SIP Dashboard.',
+    });
+  }
+
+  async checkAndAutoExecuteSips(manualTrigger = false): Promise<number> {
+    await this.syncAllSipSchedules(!manualTrigger);
+    return 0;
+  }
+
+  getYearlySchedule(sipDay: number, year: number): YearlyScheduleEntry[] {
+    return this.calendar.generateYearlySchedule(sipDay, year);
+  }
+
+  // ── Persistence ──
+
+  async loadSips() {
+    this.loading.set(true);
+    let loaded: Sip[] = [];
+
+    // LocalStorage first
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      const cached = localStorage.getItem(STORAGE_KEY);
+      if (cached) {
+        loaded = JSON.parse(cached);
+      }
+    } catch {}
+
+    // Firestore if authenticated
+    const uid = this.auth?.currentUser?.uid;
+    if (this.firestore && uid) {
+      try {
+        const snap = await getDocs(collection(this.firestore, `users/${uid}/sips`));
+        if (!snap.empty) {
+          loaded = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) } as Sip));
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded));
+          } catch {}
+        }
+      } catch (e) {
+        console.warn('[SipService] Could not load from Firestore, using local cache:', e);
+      }
+    }
+
+    if (loaded.length === 0) {
+      this.loadSampleData();
+    } else {
+      this.sips.set(loaded);
+      // Auto-sync future schedules idempotently
+      setTimeout(() => this.syncAllSipSchedules(true), 500);
+    }
+
+    this.loading.set(false);
+  }
+
+  async saveSips(newList: Sip[]): Promise<void> {
+    this.sips.set(newList);
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
     } catch {}
 
     const uid = this.auth?.currentUser?.uid;
-    if (uid && this.firestore) {
+    if (this.firestore && uid) {
       try {
-        for (const sip of updated) {
-          const ref = doc(this.firestore, `users/${uid}/sips/${sip.id}`);
-          await setDoc(ref, sip, { merge: true });
-        }
+        const batchPromises = newList.map((sip) =>
+          setDoc(doc(this.firestore!, `users/${uid}/sips/${sip.id}`), sip)
+        );
+        await Promise.all(batchPromises);
       } catch (e) {
-        console.warn('Firestore SIP batch save error:', e);
+        console.warn('[SipService] Could not batch save to Firestore:', e);
       }
     }
   }
@@ -791,21 +739,25 @@ export class SipService {
   loadSampleData() {
     const today = new Date();
     const curYear = today.getFullYear();
-    const curMonth = today.getMonth() + 1; // 1-indexed for standard date strings
+    const curMonth = today.getMonth() + 1;
     const mStr = String(curMonth).padStart(2, '0');
 
     const sampleSips: Sip[] = [
       {
-        id: 'sip_sample_parag_parikh',
+        id: 'sip_sample_ppfas',
         name: 'Parag Parikh Flexi Cap Fund - Direct Growth',
         category: 'MutualFund',
+        schemeCode: '122639',
+        isin: 'INF879O01019',
+        planType: 'Direct',
+        option: 'Growth',
         fundHouse: 'PPFAS Mutual Fund',
-        folioNumber: 'PPF-9482019',
-        mandateAccount: 'HDFC Bank - OTM Autopay (...4819)',
+        folioNumber: '109845623',
+        mandateAccount: 'HDFC Bank - OTM Autopay',
         amount: 5000,
         frequency: 'Monthly',
         sipDay: 10,
-        startDate: '2024-01-10',
+        startDate: `${curYear}-01-10`,
         status: 'Active',
         stepUp: {
           enabled: true,
@@ -814,151 +766,159 @@ export class SipService {
           frequencyMonths: 12,
         },
         autoExecute: true,
+        executionMode: 'External',
+        dataSource: 'CAS',
         totalInvested: 45000,
+        confirmedUnitsTotal: 521.85,
         installmentsPaid: 9,
         lastExecutionDate: `${curYear}-${mStr}-12`,
         installments: [
           {
-            id: 'inst_ppfas_1',
+            id: 'sip_sample_ppfas_20260910',
             installmentNumber: 8,
             scheduledDate: `${curYear}-09-10`,
             executionDate: `${curYear}-09-10`,
             amount: 5000,
             nav: 84.2,
             units: 59.382,
+            paymentStatus: 'Debited',
+            allotmentStatus: 'Confirmed',
+            reconciliationStatus: 'Matched',
+            confirmationSource: 'CAS_STATEMENT',
+            allotmentDate: `${curYear}-09-10`,
             status: 'Executed',
             isMarketShifted: false,
-            autoExecuted: true,
+            autoExecuted: false,
             executedAt: `${curYear}-09-10T10:00:00.000Z`,
+            reconciliationNotes: 'Confirmed via CAMS Monthly CAS Statement',
           },
           {
-            id: 'inst_ppfas_2',
+            id: 'sip_sample_ppfas_20261010',
             installmentNumber: 9,
             scheduledDate: `${curYear}-${mStr}-10`,
             executionDate: `${curYear}-${mStr}-12`,
             amount: 5000,
             nav: 86.4,
             units: 57.87,
+            paymentStatus: 'Debited',
+            allotmentStatus: 'Confirmed',
+            reconciliationStatus: 'Matched',
+            confirmationSource: 'CAS_STATEMENT',
+            allotmentDate: `${curYear}-${mStr}-12`,
             status: 'Executed',
             isMarketShifted: true,
             shiftReason: 'Shifted +2 days: Scheduled on Saturday (Weekend) ➔ Executed on Monday, 12 Oct',
-            autoExecuted: true,
+            autoExecuted: false,
             executedAt: `${curYear}-${mStr}-12T10:00:00.000Z`,
+            reconciliationNotes: 'Confirmed via CAMS Monthly CAS Statement',
           },
         ],
-        notes: 'Core equity wealth builder. Annual 10% step-up enabled.',
+        notes: 'Core equity wealth builder with active risk management. Tracked via CAS.',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'sip_sample_uti_nifty50',
+        id: 'sip_sample_uti',
         name: 'UTI Nifty 50 Index Fund - Direct Growth',
         category: 'MutualFund',
+        schemeCode: '120716',
+        isin: 'INF789F01AU3',
+        planType: 'Direct',
+        option: 'Growth',
         fundHouse: 'UTI Mutual Fund',
-        folioNumber: 'UTI-8192038',
-        mandateAccount: 'State Bank of India - UPI Autopay (...1092)',
+        folioNumber: '504892110',
+        mandateAccount: 'ICICI Bank - e-Mandate',
         amount: 3000,
         frequency: 'Monthly',
         sipDay: 15,
-        startDate: '2024-02-15',
+        startDate: `${curYear}-01-15`,
         status: 'Active',
         autoExecute: true,
+        executionMode: 'External',
+        dataSource: 'CAS',
         totalInvested: 24000,
+        confirmedUnitsTotal: 99.112,
         installmentsPaid: 8,
         lastExecutionDate: `${curYear}-${mStr}-15`,
         installments: [
           {
-            id: 'inst_uti_1',
+            id: 'sip_sample_uti_20261015',
             installmentNumber: 8,
             scheduledDate: `${curYear}-${mStr}-15`,
             executionDate: `${curYear}-${mStr}-15`,
             amount: 3000,
             nav: 242.15,
             units: 12.389,
+            paymentStatus: 'Debited',
+            allotmentStatus: 'Confirmed',
+            reconciliationStatus: 'Matched',
+            confirmationSource: 'CAS_STATEMENT',
+            allotmentDate: `${curYear}-${mStr}-15`,
             status: 'Executed',
             isMarketShifted: false,
-            autoExecuted: true,
+            autoExecuted: false,
             executedAt: `${curYear}-${mStr}-15T10:00:00.000Z`,
+            reconciliationNotes: 'Confirmed via KFintech CAS Statement',
           },
         ],
-        notes: 'Passive low-cost index foundation.',
+        notes: 'Passive low-cost index allocation.',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
-        id: 'sip_sample_quant_small_cap',
+        id: 'sip_sample_quant',
         name: 'Quant Small Cap Fund - Direct Growth',
         category: 'MutualFund',
+        schemeCode: '120828',
+        isin: 'INF966L01AA3',
+        planType: 'Direct',
+        option: 'Growth',
         fundHouse: 'Quant Mutual Fund',
-        folioNumber: 'QNT-7102941',
-        mandateAccount: 'ICICI Bank - NetBanking Mandate (...8823)',
+        folioNumber: '88291044',
+        mandateAccount: 'HDFC Bank - OTM Autopay',
         amount: 2500,
         frequency: 'Monthly',
         sipDay: 25,
-        startDate: '2024-03-25',
+        startDate: `${curYear}-01-25`,
         status: 'Active',
         autoExecute: true,
+        executionMode: 'External',
+        dataSource: 'CAS',
         totalInvested: 17500,
+        confirmedUnitsTotal: 147.371,
         installmentsPaid: 7,
         lastExecutionDate: `${curYear}-${mStr}-26`,
         installments: [
           {
-            id: 'inst_quant_1',
+            id: 'sip_sample_quant_20261025',
             installmentNumber: 7,
             scheduledDate: `${curYear}-${mStr}-25`,
             executionDate: `${curYear}-${mStr}-26`,
             amount: 2500,
             nav: 118.75,
             units: 21.053,
+            paymentStatus: 'Debited',
+            allotmentStatus: 'Confirmed',
+            reconciliationStatus: 'Matched',
+            confirmationSource: 'CAS_STATEMENT',
+            allotmentDate: `${curYear}-${mStr}-26`,
             status: 'Executed',
             isMarketShifted: true,
             shiftReason: 'Shifted +1 day: Scheduled on Sunday (Weekend) ➔ Executed on Monday, 26 Oct',
-            autoExecuted: true,
+            autoExecuted: false,
             executedAt: `${curYear}-${mStr}-26T10:00:00.000Z`,
+            reconciliationNotes: 'Confirmed via CAMS Statement',
           },
         ],
-        notes: 'High alpha small-cap allocation.',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: 'sip_sample_gold_etf',
-        name: 'Nippon India ETF Gold BeES',
-        category: 'Gold',
-        fundHouse: 'Nippon India Mutual Fund',
-        folioNumber: 'NIP-4019283',
-        mandateAccount: 'Zerodha Coin / Zerodha Funds',
-        amount: 2000,
-        frequency: 'Monthly',
-        sipDay: 5,
-        startDate: '2024-04-05',
-        status: 'Active',
-        autoExecute: true,
-        totalInvested: 12000,
-        installmentsPaid: 6,
-        lastExecutionDate: `${curYear}-${mStr}-05`,
-        installments: [
-          {
-            id: 'inst_gold_1',
-            installmentNumber: 6,
-            scheduledDate: `${curYear}-${mStr}-05`,
-            executionDate: `${curYear}-${mStr}-05`,
-            amount: 2000,
-            nav: 68.5,
-            units: 29.197,
-            status: 'Executed',
-            isMarketShifted: false,
-            autoExecuted: true,
-            executedAt: `${curYear}-${mStr}-05T10:00:00.000Z`,
-          },
-        ],
-        notes: 'Hedge asset against currency and inflation risk.',
+        notes: 'Small-cap growth momentum strategy.',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
     ];
 
+    // Generate upcoming installments ahead of schedule for samples
     sampleSips.forEach((s) => {
+      s.installments = this.generateExpectedInstallments(s, 3);
       s.nextExecutionDate = this.calculateNextExecutionDate(s);
     });
 
@@ -968,10 +928,11 @@ export class SipService {
     } catch {}
   }
 
-  private loadLastCheckTime(): string {
+  private loadLastSyncTime(): string {
     try {
-      return localStorage.getItem(LAST_AUTO_CHECK_KEY) || 'Never';
-    } catch {}
-    return 'Never';
+      return localStorage.getItem(LAST_SCHEDULE_SYNC_KEY) || new Date().toISOString();
+    } catch {
+      return new Date().toISOString();
+    }
   }
 }

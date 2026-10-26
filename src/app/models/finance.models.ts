@@ -61,6 +61,7 @@ export interface Asset {
     currentPrice: number;
     dailyChange?: number;
     symbol?: string;
+    isin?: string;
     currency: string;
     purchaseDate: Date;
     notes?: string;

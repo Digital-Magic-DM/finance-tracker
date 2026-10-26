@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User must be authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // User can only access their own user document and subcollections
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // SIP Plans & Installments
+      match /sips/{sipId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Assets & Holdings
+      match /assets/{assetId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Transactions
+      match /transactions/{transactionId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Snapshots, Analytics & Settings
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Default deny all other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

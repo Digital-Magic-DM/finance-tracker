@@ -1,4 +1,7 @@
 {
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "hosting": {
     "site": "dmfintracker",
     "public": "dist/finance-tracker/browser",

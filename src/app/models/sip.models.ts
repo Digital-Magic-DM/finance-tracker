@@ -4,6 +4,28 @@ export type SipCategory = 'MutualFund' | 'Stock' | 'ETF' | 'Gold' | 'Crypto' | '
 
 export type SipStatus = 'Active' | 'Paused' | 'Completed' | 'Cancelled';
 
+export type SipPaymentStatus = 'Pending' | 'Debited' | 'Failed' | 'Reversed' | 'NotApplicable';
+
+export type SipAllotmentStatus = 'Pending' | 'Confirmed' | 'Mismatched' | 'Cancelled';
+
+export type SipReconciliationStatus = 'Unreconciled' | 'Matched' | 'ManuallyConfirmed' | 'Discrepancy';
+
+export type SipConfirmationSource =
+  | 'CAS_STATEMENT'
+  | 'BANK_MATCH'
+  | 'MANUAL_ENTRY'
+  | 'RTA_FEED'
+  | 'AMFI_VERIFIED'
+  | 'ESTIMATED_LEGACY';
+
+export type SipPlanType = 'Direct' | 'Regular';
+
+export type SipOption = 'Growth' | 'IDCW';
+
+export type SipDataSource = 'CAS' | 'BankStatement' | 'Manual' | 'CAMS' | 'KFintech';
+
+export type SipExecutionMode = 'External' | 'Manual';
+
 export interface MarketHoliday {
   date: string; // YYYY-MM-DD
   name: string;
@@ -22,19 +44,34 @@ export interface TradingDayResolution {
 }
 
 export interface SipInstallment {
-  id: string;
+  id: string; // Deterministic: `${sipId}_${scheduledDate.replace(/-/g, '')}`
   installmentNumber: number;
-  scheduledDate: string; // YYYY-MM-DD (original day, e.g. 15th)
+  scheduledDate: string; // YYYY-MM-DD (preferred day, e.g. 15th)
   executionDate: string; // YYYY-MM-DD (actual market open day, e.g. 16th)
   amount: number;
-  nav?: number;
-  units?: number;
+
+  // Lifecycle States
+  paymentStatus: SipPaymentStatus;
+  paymentDate?: string; // YYYY-MM-DD
+
+  allotmentStatus: SipAllotmentStatus;
+  allotmentDate?: string; // YYYY-MM-DD (NAV date confirmed by AMC/RTA)
+  nav?: number; // Confirmed allotment NAV
+  units?: number; // Confirmed allotted units
+
+  // Reconciliation Audit & Source
+  reconciliationStatus: SipReconciliationStatus;
+  confirmationSource?: SipConfirmationSource;
+  reconciliationNotes?: string;
+  externalReference?: string; // UTR number, Folio transaction ref, or CAS entry ref
+  transactionId?: string; // Linked bank transaction ID
+
+  // Backwards compatibility for existing UI views
   status: 'Executed' | 'Scheduled' | 'Skipped' | 'Processing';
   isMarketShifted: boolean;
   shiftReason?: string;
-  transactionId?: string;
   autoExecuted: boolean;
-  executedAt?: string; // ISO string
+  executedAt?: string; // ISO string when confirmed
   notes?: string;
 }
 
@@ -49,9 +86,17 @@ export interface Sip {
   id: string;
   name: string;
   category: SipCategory;
+
+  // Scheme & Folio Identifiers
+  schemeCode?: string; // AMFI 6-digit numeric scheme code (e.g. 122639)
+  isin?: string; // Official ISIN (e.g. INF879O01019)
+  planType?: SipPlanType; // Direct / Regular
+  option?: SipOption; // Growth / IDCW
   fundHouse?: string;
   folioNumber?: string;
   mandateAccount?: string; // e.g. 'HDFC Bank - OTM Autopay'
+
+  // Investment Terms
   amount: number;
   frequency: SipFrequency;
   sipDay: number; // 1 - 31 (preferred day of month)
@@ -59,24 +104,78 @@ export interface Sip {
   endDate?: string; // YYYY-MM-DD or empty for until cancelled
   status: SipStatus;
   stepUp?: SipStepUpConfig;
+
+  // Tracking Mode & Source
+  dataSource?: SipDataSource;
+  executionMode?: SipExecutionMode; // Default: 'External' (tracking only, no real-money execution)
+  autoExecute: boolean; // Enables automatic generation of expected installments ahead of schedule
+
+  // Accounting: Planned vs Confirmed
+  totalCommitted?: number; // Total scheduled/planned investment amount
+  totalInvested: number; // Confirmed invested amount ONLY
+  confirmedUnitsTotal?: number; // Sum of confirmed allotted units
+  installmentsPaid: number; // Count of confirmed installments
+
+  // Schedule Dates
+  lastExecutionDate?: string; // YYYY-MM-DD of latest confirmed installment
+  nextExecutionDate?: string; // YYYY-MM-DD (next scheduled trading day)
+  installments?: SipInstallment[];
+
+  // Portfolio Integration
   linkedAssetId?: string;
   linkedAssetName?: string;
-  autoExecute: boolean; // default true: auto update without user manual intervention
-  totalInvested: number;
-  installmentsPaid: number;
-  lastExecutionDate?: string; // YYYY-MM-DD
-  nextExecutionDate?: string; // YYYY-MM-DD (market adjusted)
-  installments?: SipInstallment[];
+
   notes?: string;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface NavSnapshot {
+  schemeCode: string;
+  isin?: string;
+  schemeName: string;
+  nav: number;
+  navDate: string; // YYYY-MM-DD
+  fetchedAt: string; // ISO string
+  source: 'AMFI_OFFICIAL' | 'MFAPI' | 'MANUAL';
+  delayed?: boolean; // True if NAV publication for today is still pending
+}
+
+export interface ReconciliationCandidate {
+  installmentId: string;
+  sipId: string;
+  sipName: string;
+  installmentNumber: number;
+  scheduledDate: string;
+  executionDate: string;
+  expectedAmount: number;
+  currentPaymentStatus: SipPaymentStatus;
+  currentAllotmentStatus: SipAllotmentStatus;
+
+  matchedTransaction?: {
+    id?: string;
+    date: string;
+    amount: number;
+    description: string;
+    bank?: string;
+    source: 'BANK_IMPORT' | 'CAS_IMPORT' | 'MANUAL';
+  };
+  matchedNav?: number;
+  matchedNavDate?: string;
+  calculatedUnits?: number;
+  confidenceScore: number; // 0 to 100
+  matchReasons: string[];
+  discrepancies: string[];
+  status: 'ExactMatch' | 'ProbableMatch' | 'Discrepancy' | 'Unmatched';
+}
+
 export interface SipSummaryMetrics {
   totalActiveSips: number;
   totalMonthlyCommitment: number;
-  totalInvested: number;
-  totalExecutedInstallments: number;
+  totalInvested: number; // Confirmed amount
+  totalPlannedCommitted: number; // Total planned
+  totalConfirmedInstallments: number;
+  totalPendingAllotments: number; // Debited or scheduled, awaiting unit confirmation
   nextUpcomingSip?: {
     sipId: string;
     sipName: string;
