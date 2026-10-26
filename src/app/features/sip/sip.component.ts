@@ -147,6 +147,24 @@ export class SipComponent implements OnInit {
     } catch {}
   }
 
+  // ── Table Sorting State ──
+  readonly sortField = signal<'name' | 'schemeCode' | 'amount' | 'frequency' | 'sipDay' | 'nextExecutionDate' | 'totalInvested' | 'status'>('name');
+  readonly sortDirection = signal<'asc' | 'desc'>('asc');
+
+  toggleSort(field: 'name' | 'schemeCode' | 'amount' | 'frequency' | 'sipDay' | 'nextExecutionDate' | 'totalInvested' | 'status') {
+    if (this.sortField() === field) {
+      this.sortDirection.update((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      this.sortField.set(field);
+      this.sortDirection.set(field === 'amount' || field === 'totalInvested' ? 'desc' : 'asc');
+    }
+  }
+
+  getSortIcon(field: 'name' | 'schemeCode' | 'amount' | 'frequency' | 'sipDay' | 'nextExecutionDate' | 'totalInvested' | 'status'): string {
+    if (this.sortField() !== field) return 'unfold_more';
+    return this.sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward';
+  }
+
   // ── Filtered SIPs ──
   readonly filteredSips = computed(() => {
     let list = this.sipService.sips();
@@ -168,7 +186,39 @@ export class SipComponent implements OnInit {
       );
     }
 
-    return list;
+    const field = this.sortField();
+    const dir = this.sortDirection() === 'asc' ? 1 : -1;
+
+    return list.slice().sort((a, b) => {
+      let diff = 0;
+      switch (field) {
+        case 'name':
+          diff = (a.name || '').localeCompare(b.name || '');
+          break;
+        case 'schemeCode':
+          diff = (a.schemeCode || '').localeCompare(b.schemeCode || '');
+          break;
+        case 'amount':
+          diff = a.amount - b.amount;
+          break;
+        case 'frequency':
+          diff = (a.frequency || '').localeCompare(b.frequency || '');
+          break;
+        case 'sipDay':
+          diff = (a.sipDay || 0) - (b.sipDay || 0);
+          break;
+        case 'nextExecutionDate':
+          diff = (a.nextExecutionDate || '').localeCompare(b.nextExecutionDate || '');
+          break;
+        case 'totalInvested':
+          diff = (a.totalInvested || 0) - (b.totalInvested || 0);
+          break;
+        case 'status':
+          diff = (a.status || '').localeCompare(b.status || '');
+          break;
+      }
+      return diff * dir;
+    });
   });
 
   // ── Installments for Reconciliation View ──

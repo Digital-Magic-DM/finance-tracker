@@ -625,17 +625,62 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Loan / Scrip</th>
-                <th>Category</th>
-                <th>Lender / Bank</th>
-                <th class="num">Principal</th>
-                <th class="num">Interest Rate</th>
-                <th class="num">Monthly EMI</th>
-                <th class="num">Progress</th>
-                <th class="num">Outstanding</th>
-                <th>Status</th>
-                <th class="text-right">Actions</th>
+                <th style="width: 40px;">#</th>
+                <th class="sortable-th" [class.is-sorted]="sortField() === 'name'" (click)="toggleSort('name')" title="Sort by Loan Name">
+                  <span class="th-content">
+                    <span>Loan / Scrip</span>
+                    <span class="material-icons sort-icon">{{ getSortIcon('name') }}</span>
+                  </span>
+                </th>
+                <th class="sortable-th" [class.is-sorted]="sortField() === 'loanType'" (click)="toggleSort('loanType')" title="Sort by Category">
+                  <span class="th-content">
+                    <span>Category</span>
+                    <span class="material-icons sort-icon">{{ getSortIcon('loanType') }}</span>
+                  </span>
+                </th>
+                <th class="sortable-th" [class.is-sorted]="sortField() === 'lender'" (click)="toggleSort('lender')" title="Sort by Lender">
+                  <span class="th-content">
+                    <span>Lender / Bank</span>
+                    <span class="material-icons sort-icon">{{ getSortIcon('lender') }}</span>
+                  </span>
+                </th>
+                <th class="num sortable-th" [class.is-sorted]="sortField() === 'principalAmount'" (click)="toggleSort('principalAmount')" title="Sort by Principal">
+                  <span class="th-content" style="justify-content:flex-end">
+                    <span>Principal</span>
+                    <span class="material-icons sort-icon">{{ getSortIcon('principalAmount') }}</span>
+                  </span>
+                </th>
+                <th class="num sortable-th" [class.is-sorted]="sortField() === 'interestRate'" (click)="toggleSort('interestRate')" title="Sort by Interest Rate">
+                  <span class="th-content" style="justify-content:flex-end">
+                    <span>Interest Rate</span>
+                    <span class="material-icons sort-icon">{{ getSortIcon('interestRate') }}</span>
+                  </span>
+                </th>
+                <th class="num sortable-th" [class.is-sorted]="sortField() === 'emiAmount'" (click)="toggleSort('emiAmount')" title="Sort by Monthly EMI">
+                  <span class="th-content" style="justify-content:flex-end">
+                    <span>Monthly EMI</span>
+                    <span class="material-icons sort-icon">{{ getSortIcon('emiAmount') }}</span>
+                  </span>
+                </th>
+                <th class="num sortable-th" [class.is-sorted]="sortField() === 'progress'" (click)="toggleSort('progress')" title="Sort by Progress">
+                  <span class="th-content" style="justify-content:flex-end">
+                    <span>Progress</span>
+                    <span class="material-icons sort-icon">{{ getSortIcon('progress') }}</span>
+                  </span>
+                </th>
+                <th class="num sortable-th" [class.is-sorted]="sortField() === 'outstanding'" (click)="toggleSort('outstanding')" title="Sort by Outstanding Principal">
+                  <span class="th-content" style="justify-content:flex-end">
+                    <span>Outstanding</span>
+                    <span class="material-icons sort-icon">{{ getSortIcon('outstanding') }}</span>
+                  </span>
+                </th>
+                <th class="sortable-th" [class.is-sorted]="sortField() === 'status'" (click)="toggleSort('status')" title="Sort by Status">
+                  <span class="th-content">
+                    <span>Status</span>
+                    <span class="material-icons sort-icon">{{ getSortIcon('status') }}</span>
+                  </span>
+                </th>
+                <th class="text-right" style="width: 140px;">Actions</th>
               </tr>
             </thead>
             <tbody>

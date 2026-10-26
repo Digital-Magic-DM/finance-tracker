@@ -55,6 +55,23 @@ export class TransactionsComponent {
         notes: '',
     });
 
+    sortField = signal<'date' | 'description' | 'category' | 'type' | 'amount'>('date');
+    sortDirection = signal<'asc' | 'desc'>('desc');
+
+    toggleSort(field: 'date' | 'description' | 'category' | 'type' | 'amount') {
+        if (this.sortField() === field) {
+            this.sortDirection.update((d) => (d === 'asc' ? 'desc' : 'asc'));
+        } else {
+            this.sortField.set(field);
+            this.sortDirection.set(field === 'date' || field === 'amount' ? 'desc' : 'asc');
+        }
+    }
+
+    getSortIcon(field: 'date' | 'description' | 'category' | 'type' | 'amount'): string {
+        if (this.sortField() !== field) return 'unfold_more';
+        return this.sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward';
+    }
+
     hasDateFilter = computed(() => !!(this.fromDate() || this.toDate()));
 
     filtered = computed(() => {
@@ -78,7 +95,32 @@ export class TransactionsComponent {
             const toMs = new Date(to).setHours(23, 59, 59, 999);
             list = list.filter((t) => this.formatDate(t.date).getTime() <= toMs);
         }
-        return list.sort((a, b) => this.formatDate(b.date).getTime() - this.formatDate(a.date).getTime());
+
+        const field = this.sortField();
+        const dir = this.sortDirection() === 'asc' ? 1 : -1;
+
+        return list.sort((a, b) => {
+            let diff = 0;
+            switch (field) {
+                case 'description':
+                    diff = (a.description || '').localeCompare(b.description || '');
+                    break;
+                case 'category':
+                    diff = (a.category || '').localeCompare(b.category || '');
+                    break;
+                case 'type':
+                    diff = (a.type || '').localeCompare(b.type || '');
+                    break;
+                case 'amount':
+                    diff = a.amount - b.amount;
+                    break;
+                case 'date':
+                default:
+                    diff = this.formatDate(a.date).getTime() - this.formatDate(b.date).getTime();
+                    break;
+            }
+            return diff * dir;
+        });
     });
 
     totalIncome = computed(() =>

@@ -111,6 +111,72 @@ export class AssetsComponent implements OnInit {
     hideAmounts = signal<boolean>(localStorage.getItem('hideAssetAmounts') === 'true');
     appFilter = signal<string>('All');
 
+    // Sorting state: 'value' | 'invested' | 'gain' | 'gainPct' | 'name' | 'quantity'
+    sortField = signal<'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct'>('value');
+    sortDirection = signal<'asc' | 'desc'>('desc');
+
+    toggleSort(field: 'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct') {
+        if (this.sortField() === field) {
+            this.sortDirection.update((d) => (d === 'asc' ? 'desc' : 'asc'));
+        } else {
+            this.sortField.set(field);
+            this.sortDirection.set(field === 'name' ? 'asc' : 'desc');
+        }
+    }
+
+    setSortField(field: 'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct') {
+        this.sortField.set(field);
+    }
+
+    toggleSortDirection() {
+        this.sortDirection.update((d) => (d === 'asc' ? 'desc' : 'asc'));
+    }
+
+    getSortIcon(field: 'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct'): string {
+        if (this.sortField() !== field) return 'unfold_more';
+        return this.sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward';
+    }
+
+    sortAssetList(list: Asset[]): Asset[] {
+        const field = this.sortField();
+        const dir = this.sortDirection() === 'asc' ? 1 : -1;
+
+        return [...list].sort((a, b) => {
+            let diff = 0;
+            switch (field) {
+                case 'name':
+                    diff = (a.name || '').localeCompare(b.name || '');
+                    break;
+                case 'quantity':
+                    diff = (a.quantity || 0) - (b.quantity || 0);
+                    break;
+                case 'invested': {
+                    const invA = (a.buyPrice || 0) * (a.quantity || 0) * this.getFxRate(a);
+                    const invB = (b.buyPrice || 0) * (b.quantity || 0) * this.getFxRate(b);
+                    diff = invA - invB;
+                    break;
+                }
+                case 'value': {
+                    const valA = this.getAssetValue(a) * this.getFxRate(a);
+                    const valB = this.getAssetValue(b) * this.getFxRate(b);
+                    diff = valA - valB;
+                    break;
+                }
+                case 'gain': {
+                    const gainA = this.getGain(a) * this.getFxRate(a);
+                    const gainB = this.getGain(b) * this.getFxRate(b);
+                    diff = gainA - gainB;
+                    break;
+                }
+                case 'gainPct': {
+                    diff = this.getGainPct(a) - this.getGainPct(b);
+                    break;
+                }
+            }
+            return diff * dir;
+        });
+    }
+
     getAssetApp(a: Asset): string {
         const raw = (a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace(/^Imported from\s*/i, '').trim() : '')).trim();
         if (!raw) return 'Manual';
@@ -319,7 +385,7 @@ export class AssetsComponent implements OnInit {
             list = list.filter(a => this.getGain(a) < 0);
         }
 
-        return list;
+        return this.sortAssetList(list);
     });
 
     // Market Sub-collections for Sections
@@ -538,7 +604,7 @@ export class AssetsComponent implements OnInit {
                 groups.push({
                     type,
                     label,
-                    assets: typeAssets,
+                    assets: this.sortAssetList(typeAssets),
                     totalValue: tValue,
                     totalInvested: tInvested,
                     totalGain: tGain,
@@ -553,6 +619,35 @@ export class AssetsComponent implements OnInit {
                 });
             }
         }
+
+        // Sort groups according to active sort criteria
+        const field = this.sortField();
+        const dir = this.sortDirection() === 'asc' ? 1 : -1;
+        groups.sort((a, b) => {
+            let diff = 0;
+            switch (field) {
+                case 'name':
+                    diff = a.label.localeCompare(b.label);
+                    break;
+                case 'quantity':
+                    diff = a.assets.length - b.assets.length;
+                    break;
+                case 'invested':
+                    diff = (a.totalInvestedINR || a.totalInvested) - (b.totalInvestedINR || b.totalInvested);
+                    break;
+                case 'value':
+                    diff = (a.totalValueINR || a.totalValue) - (b.totalValueINR || b.totalValue);
+                    break;
+                case 'gain':
+                    diff = a.totalGain - b.totalGain;
+                    break;
+                case 'gainPct':
+                    diff = a.gainPct - b.gainPct;
+                    break;
+            }
+            return diff * dir;
+        });
+
         return groups;
     });
 

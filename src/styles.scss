@@ -648,6 +648,45 @@ a { text-decoration: none; color: inherit; }
     color: var(--text-muted);
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-color);
+
+    &.sortable-th {
+      cursor: pointer;
+      user-select: none;
+      transition: all var(--transition-fast, 0.15s ease);
+
+      &:hover {
+        color: var(--text-primary);
+        background: var(--bg-card-hover, rgba(255, 255, 255, 0.04));
+      }
+
+      &.is-sorted {
+        color: var(--text-primary);
+        font-weight: 800;
+
+        .sort-icon {
+          opacity: 1;
+          color: var(--text-primary);
+        }
+      }
+
+      .th-content {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .sort-icon {
+        font-size: 16px;
+        line-height: 1;
+        opacity: 0.35;
+        vertical-align: middle;
+        transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+      }
+
+      &:hover .sort-icon {
+        opacity: 0.85;
+      }
+    }
   }
 
   td {

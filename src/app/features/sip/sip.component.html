@@ -446,15 +446,55 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Plan Name</th>
-                  <th>Scheme Code</th>
-                  <th>Amount</th>
-                  <th>Frequency</th>
-                  <th>Debit Day</th>
-                  <th>Next Trading Date</th>
-                  <th>Confirmed Invested</th>
-                  <th>Status</th>
-                  <th class="text-right">Actions</th>
+                  <th class="sortable-th" [class.is-sorted]="sortField() === 'name'" (click)="toggleSort('name')" title="Sort by Plan Name">
+                    <span class="th-content">
+                      <span>Plan Name</span>
+                      <span class="material-icons sort-icon">{{ getSortIcon('name') }}</span>
+                    </span>
+                  </th>
+                  <th class="sortable-th" [class.is-sorted]="sortField() === 'schemeCode'" (click)="toggleSort('schemeCode')" title="Sort by Scheme Code">
+                    <span class="th-content">
+                      <span>Scheme Code</span>
+                      <span class="material-icons sort-icon">{{ getSortIcon('schemeCode') }}</span>
+                    </span>
+                  </th>
+                  <th class="sortable-th" [class.is-sorted]="sortField() === 'amount'" (click)="toggleSort('amount')" title="Sort by Amount">
+                    <span class="th-content">
+                      <span>Amount</span>
+                      <span class="material-icons sort-icon">{{ getSortIcon('amount') }}</span>
+                    </span>
+                  </th>
+                  <th class="sortable-th" [class.is-sorted]="sortField() === 'frequency'" (click)="toggleSort('frequency')" title="Sort by Frequency">
+                    <span class="th-content">
+                      <span>Frequency</span>
+                      <span class="material-icons sort-icon">{{ getSortIcon('frequency') }}</span>
+                    </span>
+                  </th>
+                  <th class="sortable-th" [class.is-sorted]="sortField() === 'sipDay'" (click)="toggleSort('sipDay')" title="Sort by Debit Day">
+                    <span class="th-content">
+                      <span>Debit Day</span>
+                      <span class="material-icons sort-icon">{{ getSortIcon('sipDay') }}</span>
+                    </span>
+                  </th>
+                  <th class="sortable-th" [class.is-sorted]="sortField() === 'nextExecutionDate'" (click)="toggleSort('nextExecutionDate')" title="Sort by Next Trading Date">
+                    <span class="th-content">
+                      <span>Next Trading Date</span>
+                      <span class="material-icons sort-icon">{{ getSortIcon('nextExecutionDate') }}</span>
+                    </span>
+                  </th>
+                  <th class="sortable-th" [class.is-sorted]="sortField() === 'totalInvested'" (click)="toggleSort('totalInvested')" title="Sort by Confirmed Invested">
+                    <span class="th-content">
+                      <span>Confirmed Invested</span>
+                      <span class="material-icons sort-icon">{{ getSortIcon('totalInvested') }}</span>
+                    </span>
+                  </th>
+                  <th class="sortable-th" [class.is-sorted]="sortField() === 'status'" (click)="toggleSort('status')" title="Sort by Status">
+                    <span class="th-content">
+                      <span>Status</span>
+                      <span class="material-icons sort-icon">{{ getSortIcon('status') }}</span>
+                    </span>
+                  </th>
+                  <th class="text-right" style="width: 130px;">Actions</th>
                 </tr>
               </thead>
               <tbody>

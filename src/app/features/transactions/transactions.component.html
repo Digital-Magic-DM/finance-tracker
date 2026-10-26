@@ -111,12 +111,37 @@
                   (change)="$any($event.target).checked ? selectAll() : deselectAll()" />
               </th>
             }
-            <th>Description</th>
-            <th>Category</th>
-            <th>Type</th>
-            <th>Date</th>
-            <th style="text-align:right">Amount</th>
-            <th></th>
+            <th class="sortable-th" [class.is-sorted]="sortField() === 'description'" (click)="toggleSort('description')" title="Sort by Description">
+              <span class="th-content">
+                <span>Description</span>
+                <span class="material-icons sort-icon">{{ getSortIcon('description') }}</span>
+              </span>
+            </th>
+            <th class="sortable-th" [class.is-sorted]="sortField() === 'category'" (click)="toggleSort('category')" title="Sort by Category">
+              <span class="th-content">
+                <span>Category</span>
+                <span class="material-icons sort-icon">{{ getSortIcon('category') }}</span>
+              </span>
+            </th>
+            <th class="sortable-th" [class.is-sorted]="sortField() === 'type'" (click)="toggleSort('type')" title="Sort by Type">
+              <span class="th-content">
+                <span>Type</span>
+                <span class="material-icons sort-icon">{{ getSortIcon('type') }}</span>
+              </span>
+            </th>
+            <th class="sortable-th" [class.is-sorted]="sortField() === 'date'" (click)="toggleSort('date')" title="Sort by Date">
+              <span class="th-content">
+                <span>Date</span>
+                <span class="material-icons sort-icon">{{ getSortIcon('date') }}</span>
+              </span>
+            </th>
+            <th class="sortable-th text-right" [class.is-sorted]="sortField() === 'amount'" (click)="toggleSort('amount')" title="Sort by Amount" style="text-align:right">
+              <span class="th-content" style="justify-content:flex-end">
+                <span>Amount</span>
+                <span class="material-icons sort-icon">{{ getSortIcon('amount') }}</span>
+              </span>
+            </th>
+            <th style="width: 80px;"></th>
           </tr>
         </thead>
         <tbody>

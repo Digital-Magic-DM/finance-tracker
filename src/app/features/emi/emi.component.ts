@@ -196,6 +196,24 @@ export class EmiComponent {
     return Math.round((this.calcPrincipal() / total) * 100);
   });
 
+  // ── Table Sorting State ──
+  readonly sortField = signal<'name' | 'loanType' | 'lender' | 'principalAmount' | 'interestRate' | 'emiAmount' | 'progress' | 'outstanding' | 'status'>('name');
+  readonly sortDirection = signal<'asc' | 'desc'>('asc');
+
+  toggleSort(field: 'name' | 'loanType' | 'lender' | 'principalAmount' | 'interestRate' | 'emiAmount' | 'progress' | 'outstanding' | 'status') {
+    if (this.sortField() === field) {
+      this.sortDirection.update((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      this.sortField.set(field);
+      this.sortDirection.set(field === 'principalAmount' || field === 'emiAmount' || field === 'outstanding' || field === 'progress' ? 'desc' : 'asc');
+    }
+  }
+
+  getSortIcon(field: 'name' | 'loanType' | 'lender' | 'principalAmount' | 'interestRate' | 'emiAmount' | 'progress' | 'outstanding' | 'status'): string {
+    if (this.sortField() !== field) return 'unfold_more';
+    return this.sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward';
+  }
+
   // ── Filtered Loans List ──
   readonly filteredLoans = computed<Loan[]>(() => {
     const all = this.emiService.loans();
@@ -203,7 +221,7 @@ export class EmiComponent {
     const cat = this.selectedCategory();
     const q = this.searchQuery().trim().toLowerCase();
 
-    return all.filter((l) => {
+    const list = all.filter((l) => {
       // Tab filter
       if (tab === 'active' && l.status !== 'Active') return false;
       if (tab === 'closed' && l.status === 'Active') return false;
@@ -220,6 +238,43 @@ export class EmiComponent {
       }
 
       return true;
+    });
+
+    const field = this.sortField();
+    const dir = this.sortDirection() === 'asc' ? 1 : -1;
+
+    return list.slice().sort((a, b) => {
+      let diff = 0;
+      switch (field) {
+        case 'name':
+          diff = (a.name || '').localeCompare(b.name || '');
+          break;
+        case 'loanType':
+          diff = (a.loanType || '').localeCompare(b.loanType || '');
+          break;
+        case 'lender':
+          diff = (a.lender || '').localeCompare(b.lender || '');
+          break;
+        case 'principalAmount':
+          diff = a.principalAmount - b.principalAmount;
+          break;
+        case 'interestRate':
+          diff = a.interestRate - b.interestRate;
+          break;
+        case 'emiAmount':
+          diff = a.emiAmount - b.emiAmount;
+          break;
+        case 'progress':
+          diff = this.getProgressPct(a) - this.getProgressPct(b);
+          break;
+        case 'outstanding':
+          diff = this.getOutstandingBalance(a) - this.getOutstandingBalance(b);
+          break;
+        case 'status':
+          diff = (a.status || '').localeCompare(b.status || '');
+          break;
+      }
+      return diff * dir;
     });
   });
 
