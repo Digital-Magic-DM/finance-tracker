@@ -19,7 +19,7 @@ import {
   YearlyScheduleEntry,
   MarketHoliday,
 } from '../../models/sip.models';
-import { Asset } from '../../models/finance.models';
+import { Asset, AssetType } from '../../models/finance.models';
 
 @Component({
   selector: 'app-sip',
@@ -38,6 +38,37 @@ export class SipComponent implements OnInit {
   showDeleteModal = signal(false);
   sipPendingDeletion = signal<Sip | null>(null);
   deleting = signal(false);
+
+  // ── Skip Modal State & Urgent 3-day Notice ──
+  readonly showSkipModal = signal<boolean>(false);
+  readonly sipToSkip = signal<Sip | null>(null);
+  readonly skipWorkingDays = signal<number>(0);
+  readonly dismissedUrgentSipIds = signal<Set<string>>(new Set());
+
+  readonly urgentUpcomingSips = computed(() => {
+    const todayStr = this.calendarService.formatDate(new Date());
+    const dismissed = this.dismissedUrgentSipIds();
+
+    return this.sipService
+      .sips()
+      .filter(
+        (s) =>
+          s.status === 'Active' &&
+          s.nextExecutionDate &&
+          s.nextExecutionDate >= todayStr &&
+          !dismissed.has(s.id)
+      )
+      .map((s) => {
+        const workingDays = this.calendarService.getTradingDaysRemaining(s.nextExecutionDate!);
+        return {
+          sip: s,
+          workingDays,
+          isUrgent: workingDays <= 3,
+        };
+      })
+      .filter((item) => item.isUrgent)
+      .sort((a, b) => a.workingDays - b.workingDays);
+  });
 
   toggleExportDropdown(event?: Event) {
     if (event) event.stopPropagation();
@@ -90,6 +121,9 @@ export class SipComponent implements OnInit {
   // ── Form State (Add / Edit) ──
   sipFormName = '';
   sipFormCategory: SipCategory = 'MutualFund';
+  readonly sipFormCategorySignal = signal<SipCategory>('MutualFund');
+  readonly schemeSelectMode = signal<'asset' | 'amfi' | 'custom'>('asset');
+
   sipFormSchemeCode = '';
   sipFormIsin = '';
   sipFormPlanType: SipPlanType = 'Direct';
@@ -114,8 +148,104 @@ export class SipComponent implements OnInit {
   readonly schemeSearchResults = signal<Array<{ schemeCode: string; schemeName: string }>>([]);
   readonly isSearchingSchemes = signal<boolean>(false);
 
-  // ── User's Existing Assets (for linking) ──
+  // ── User's Existing Assets (for linking and dropdown selection) ──
   readonly userAssets = signal<Asset[]>([]);
+
+  readonly categoryAssets = computed<Asset[]>(() => {
+    const cat = this.sipFormCategorySignal();
+    const assets = this.userAssets();
+
+    switch (cat) {
+      case 'MutualFund':
+        return assets.filter(
+          (a) => a.type === AssetType.MutualFund || (a.type as string) === 'Mutual Fund'
+        );
+      case 'Stock':
+        return assets.filter(
+          (a) =>
+            a.type === AssetType.Stock ||
+            a.type === AssetType.USStock ||
+            (a.type as string) === 'US Stock'
+        );
+      case 'ETF':
+        return assets.filter((a) => a.type === AssetType.ETF);
+      case 'Gold':
+        return assets.filter((a) => a.type === AssetType.Gold);
+      case 'Crypto':
+        return assets.filter((a) => a.type === AssetType.Crypto);
+      case 'Other':
+        return assets.filter(
+          (a) =>
+            ![
+              'MutualFund',
+              'Mutual Fund',
+              'Stock',
+              'USStock',
+              'US Stock',
+              'ETF',
+              'Gold',
+              'Crypto',
+            ].includes(a.type as string)
+        );
+      default:
+        return assets;
+    }
+  });
+
+  onCategoryChange(cat: SipCategory) {
+    this.sipFormCategory = cat;
+    this.sipFormCategorySignal.set(cat);
+
+    const matching = this.categoryAssets();
+    if (this.sipFormLinkedAssetId) {
+      const stillValid = matching.some((a) => a.id === this.sipFormLinkedAssetId);
+      if (!stillValid) {
+        this.sipFormLinkedAssetId = '';
+      }
+    }
+
+    if (matching.length > 0) {
+      this.schemeSelectMode.set('asset');
+    } else if (cat === 'MutualFund' || cat === 'ETF') {
+      this.schemeSelectMode.set('amfi');
+    } else {
+      this.schemeSelectMode.set('custom');
+    }
+  }
+
+  onSelectExistingAsset(assetId: string) {
+    this.sipFormLinkedAssetId = assetId;
+    if (!assetId) return;
+
+    const asset = this.userAssets().find((a) => a.id === assetId);
+    if (!asset) return;
+
+    this.sipFormName = asset.name;
+    this.sipFormSchemeCode = asset.symbol || '';
+    this.sipFormIsin = asset.isin || '';
+
+    const lowerName = asset.name.toLowerCase();
+    const amcList = [
+      'Parag Parikh', 'PPFAS', 'UTI', 'HDFC', 'SBI', 'ICICI Prudential', 'Mirae Asset',
+      'Quant', 'Nippon India', 'Axis', 'Kotak', 'Tata', 'Bandhan', 'DSP', 'Motilal Oswal',
+      'Aditya Birla Sun Life', 'Canara Robeco', 'Edelweiss', 'Invesco', 'Franklin Templeton'
+    ];
+    for (const amc of amcList) {
+      if (lowerName.includes(amc.toLowerCase())) {
+        this.sipFormFundHouse = `${amc} Mutual Fund`;
+        break;
+      }
+    }
+
+    this.sipFormPlanType = lowerName.includes('regular') ? 'Regular' : 'Direct';
+    this.sipFormOption = lowerName.includes('idcw') || lowerName.includes('dividend') ? 'IDCW' : 'Growth';
+  }
+
+  getLinkedAssetName(): string {
+    if (!this.sipFormLinkedAssetId) return '';
+    const asset = this.userAssets().find((a) => a.id === this.sipFormLinkedAssetId);
+    return asset ? asset.name : '';
+  }
 
   // ── Reconciliation Filter ──
   readonly reconcileFilter = signal<'pending' | 'confirmed' | 'failed' | 'all'>('pending');
@@ -527,6 +657,7 @@ export class SipComponent implements OnInit {
     this.editingSipId.set(null);
     this.sipFormName = '';
     this.sipFormCategory = 'MutualFund';
+    this.sipFormCategorySignal.set('MutualFund');
     this.sipFormSchemeCode = '';
     this.sipFormIsin = '';
     this.sipFormPlanType = 'Direct';
@@ -546,6 +677,8 @@ export class SipComponent implements OnInit {
     this.sipFormLinkedAssetId = '';
     this.sipFormDataSource = 'CAS';
     this.sipFormNotes = '';
+    this.schemeSearchResults.set([]);
+    this.schemeSelectMode.set(this.categoryAssets().length > 0 ? 'asset' : 'amfi');
     this.showAddEditModal.set(true);
   }
 
@@ -553,6 +686,7 @@ export class SipComponent implements OnInit {
     this.editingSipId.set(sip.id);
     this.sipFormName = sip.name;
     this.sipFormCategory = sip.category;
+    this.sipFormCategorySignal.set(sip.category);
     this.sipFormSchemeCode = sip.schemeCode || '';
     this.sipFormIsin = sip.isin || '';
     this.sipFormPlanType = sip.planType || 'Direct';
@@ -572,6 +706,16 @@ export class SipComponent implements OnInit {
     this.sipFormLinkedAssetId = sip.linkedAssetId || '';
     this.sipFormDataSource = sip.dataSource || 'CAS';
     this.sipFormNotes = sip.notes || '';
+    this.schemeSearchResults.set([]);
+
+    if (sip.linkedAssetId) {
+      this.schemeSelectMode.set('asset');
+    } else if (sip.schemeCode) {
+      this.schemeSelectMode.set('amfi');
+    } else {
+      this.schemeSelectMode.set('custom');
+    }
+
     this.showAddEditModal.set(true);
   }
 
@@ -591,6 +735,10 @@ export class SipComponent implements OnInit {
       this.snackbar.show('Please provide a valid SIP installment amount.', 'info');
       return;
     }
+
+    const linkedAsset = this.sipFormLinkedAssetId
+      ? this.userAssets().find((a) => a.id === this.sipFormLinkedAssetId)
+      : undefined;
 
     const sipData = {
       name: this.sipFormName.trim(),
@@ -620,6 +768,7 @@ export class SipComponent implements OnInit {
           }
         : undefined,
       linkedAssetId: this.sipFormLinkedAssetId || undefined,
+      linkedAssetName: linkedAsset?.name || undefined,
       notes: this.sipFormNotes.trim() || undefined,
     };
 
@@ -630,6 +779,46 @@ export class SipComponent implements OnInit {
     }
 
     this.closeAddEditModal();
+  }
+
+  // ── Skip Installment Handlers ──
+  openSkipModal(sip: Sip) {
+    const nextDate = sip.nextExecutionDate;
+    const workingDays = nextDate
+      ? this.calendarService.getTradingDaysRemaining(nextDate)
+      : 0;
+
+    this.sipToSkip.set(sip);
+    this.skipWorkingDays.set(workingDays);
+    this.showSkipModal.set(true);
+  }
+
+  closeSkipModal() {
+    this.showSkipModal.set(false);
+    this.sipToSkip.set(null);
+    this.skipWorkingDays.set(0);
+  }
+
+  async confirmSkipSip() {
+    const sip = this.sipToSkip();
+    if (!sip) return;
+
+    const workingDays = this.skipWorkingDays();
+    const reason =
+      workingDays <= 3
+        ? `Skipped by user within 3 working days notice cutoff (${workingDays} working days remaining)`
+        : `Skipped by user (${workingDays} working days ahead)`;
+
+    await this.sipService.skipNextInstallment(sip.id, reason);
+    this.closeSkipModal();
+  }
+
+  dismissUrgentNotice(sipId: string) {
+    this.dismissedUrgentSipIds.update((set) => {
+      const updated = new Set(set);
+      updated.add(sipId);
+      return updated;
+    });
   }
 
   // ── Manual Allotment Confirmation Modal ──

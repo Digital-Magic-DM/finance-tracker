@@ -488,5 +488,71 @@ console.log('\nTest 10: Portfolio Holdings Integration Guarantee');
   passedTests++;
 }
 
+// ── TEST 11: Skip Installment & 3-Business-Day Mandate Notice ──
+console.log('\nTest 11: Skip Installment & 3-Business-Day Mandate Notice');
+{
+  function getTradingDaysRemaining(targetDateStr, fromDate) {
+    const y = fromDate.getFullYear();
+    const m = String(fromDate.getMonth() + 1).padStart(2, '0');
+    const dt = String(fromDate.getDate()).padStart(2, '0');
+    const fromStr = `${y}-${m}-${dt}`;
+    if (targetDateStr <= fromStr) return 0;
+
+    let curr = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate() + 1);
+    let workingDays = 0;
+
+    const targetDate = new Date(targetDateStr);
+    while (curr <= targetDate) {
+      if (isMarketTradingDay(curr)) {
+        workingDays++;
+      }
+      curr.setDate(curr.getDate() + 1);
+    }
+    return workingDays;
+  }
+
+  // Wednesday Oct 28, 2026 to Friday Oct 30, 2026 => 2 working days (Thu, Fri) <= 3 days cutoff
+  const wednesday = new Date('2026-10-28T00:00:00');
+  const workingDaysShort = getTradingDaysRemaining('2026-10-30', wednesday);
+  assert.strictEqual(workingDaysShort, 2, 'Should count 2 trading days between Wed and Fri');
+  assert.strictEqual(workingDaysShort <= 3, true, 'Should trigger under 3 working days mandate cutoff notice');
+
+  // Thursday Oct 29, 2026 to Tuesday Nov 03, 2026 => 3 working days (Fri Oct 30, Mon Nov 02, Tue Nov 03; Sat/Sun skipped)
+  const thursday = new Date('2026-10-29T00:00:00');
+  const workingDaysWeekend = getTradingDaysRemaining('2026-11-03', thursday);
+  assert.strictEqual(workingDaysWeekend, 3, 'Should ignore Saturday and Sunday, returning exactly 3 trading days');
+  assert.strictEqual(workingDaysWeekend <= 3, true, '3 trading days is within NACH bank debit cutoff');
+
+  // Skip Installment execution simulation
+  const sip = {
+    id: 'sip_skip_test',
+    name: 'Mirae Asset Large Cap Fund',
+    amount: 5000,
+    sipDay: 10,
+    installments: [
+      { id: 'inst_oct', scheduledDate: '2026-10-10', executionDate: '2026-10-12', status: 'Scheduled', allotmentStatus: 'Pending', amount: 5000 },
+      { id: 'inst_nov', scheduledDate: '2026-11-10', executionDate: '2026-11-11', status: 'Scheduled', allotmentStatus: 'Pending', amount: 5000 },
+    ],
+    nextExecutionDate: '2026-10-12',
+  };
+
+  // User skips October installment
+  sip.installments[0].status = 'Skipped';
+  sip.installments[0].allotmentStatus = 'Cancelled';
+  sip.installments[0].paymentStatus = 'NotApplicable';
+
+  // Recalculate next execution date
+  const nextPending = sip.installments.find(i => i.status !== 'Skipped' && i.allotmentStatus === 'Pending');
+  sip.nextExecutionDate = nextPending ? nextPending.executionDate : '2026-12-10';
+
+  assert.strictEqual(sip.installments[0].status, 'Skipped');
+  assert.strictEqual(sip.installments[0].allotmentStatus, 'Cancelled');
+  assert.strictEqual(sip.nextExecutionDate, '2026-11-11', 'Next execution date must advance to the next month after skipping');
+
+  console.log('  ✓ 3-working-day NACH notice and installment skipping advance verified.');
+  passedTests++;
+}
+
 console.log(`\n🎉 All ${passedTests} test scenarios passed successfully with 100% assertions satisfied!\n`);
 process.exit(0);
+

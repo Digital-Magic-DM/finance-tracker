@@ -151,6 +151,30 @@ export class MarketCalendarService {
   }
 
   /**
+   * Calculates the number of open trading/clearing working days between today (or fromDate)
+   * and the target execution date.
+   * Only counts days where isTradingDay(d) is true.
+   * If targetDate <= todayStr, returns 0.
+   */
+  getTradingDaysRemaining(targetDateStr: string, fromDate: Date = new Date()): number {
+    if (!targetDateStr) return 0;
+    const fromStr = this.formatDate(fromDate);
+    if (targetDateStr <= fromStr) return 0;
+
+    let curr = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate() + 1);
+    let workingDays = 0;
+
+    while (this.formatDate(curr) <= targetDateStr) {
+      if (this.isTradingDay(curr)) {
+        workingDays++;
+      }
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    return workingDays;
+  }
+
+  /**
    * Core Real-World SIP Resolution:
    * Takes the user's preferred scheduled date (e.g. 15th of month).
    * If it falls on Saturday, Sunday, or a Market Holiday,

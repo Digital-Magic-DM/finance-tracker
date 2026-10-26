@@ -378,6 +378,16 @@ export class SipService {
       updatedSip.nextExecutionDate = this.calculateNextExecutionDate(updatedSip);
     }
 
+    // If installment amount updated, also update future unconfirmed scheduled installments
+    if (updates.amount !== undefined && updates.amount > 0) {
+      updatedSip.installments = (updatedSip.installments || []).map((inst) => {
+        if (inst.allotmentStatus === 'Pending' && inst.status === 'Scheduled') {
+          return { ...inst, amount: updates.amount! };
+        }
+        return inst;
+      });
+    }
+
     const updated = [...list];
     updated[index] = updatedSip;
     await this.saveSips(updated);
@@ -566,7 +576,11 @@ export class SipService {
 
     // Look in scheduled installments
     const nextInst = (sip.installments || []).find(
-      (inst) => inst.executionDate >= todayStr && inst.allotmentStatus === 'Pending'
+      (inst) =>
+        inst.executionDate >= todayStr &&
+        inst.allotmentStatus === 'Pending' &&
+        inst.status !== 'Skipped' &&
+        inst.status !== 'Executed'
     );
     if (nextInst) return nextInst.executionDate;
 
@@ -580,13 +594,15 @@ export class SipService {
       const scheduledDate = new Date(year, month, clampedDay);
       const resolution = this.calendar.resolveTradingDay(scheduledDate);
 
-      const isAlreadyExecuted = (sip.installments || []).some(
+      const isAlreadyHandled = (sip.installments || []).some(
         (inst) =>
           inst.scheduledDate === resolution.scheduledDate &&
-          (inst.allotmentStatus === 'Confirmed' || inst.status === 'Executed')
+          (inst.allotmentStatus === 'Confirmed' ||
+            inst.status === 'Executed' ||
+            inst.status === 'Skipped')
       );
 
-      if (!isAlreadyExecuted && resolution.executionDate >= todayStr) {
+      if (!isAlreadyHandled && resolution.executionDate >= todayStr) {
         return resolution.executionDate;
       }
 
@@ -610,29 +626,48 @@ export class SipService {
     }
   }
 
-  async skipNextInstallment(id: string): Promise<void> {
+  async skipNextInstallment(id: string, notes?: string): Promise<void> {
     const list = [...this.sips()];
     const index = list.findIndex((s) => s.id === id);
     if (index === -1) return;
     const sip = list[index];
     const installments = [...(sip.installments || [])];
     const todayStr = this.calendar.formatDate(new Date());
-    const nextIdx = installments.findIndex(
-      (inst) => inst.executionDate >= todayStr && inst.allotmentStatus === 'Pending'
+
+    let nextIdx = installments.findIndex(
+      (inst) =>
+        inst.executionDate >= todayStr &&
+        inst.allotmentStatus === 'Pending' &&
+        inst.status !== 'Skipped'
     );
+    if (nextIdx === -1) {
+      nextIdx = installments.findIndex(
+        (inst) => inst.allotmentStatus === 'Pending' && inst.status !== 'Skipped'
+      );
+    }
+
     if (nextIdx !== -1) {
+      const skippedInst = installments[nextIdx];
       installments[nextIdx] = {
-        ...installments[nextIdx],
+        ...skippedInst,
         status: 'Skipped',
         paymentStatus: 'NotApplicable',
         allotmentStatus: 'Cancelled',
-        reconciliationNotes: 'Manually skipped by user.',
+        reconciliationNotes: notes || `Skipped by user on ${todayStr}`,
       };
       sip.installments = installments;
+      // Generate future installments so the next upcoming cycle is ready
+      sip.installments = this.generateExpectedInstallments(sip, 4);
       sip.nextExecutionDate = this.calculateNextExecutionDate(sip);
+      sip.updatedAt = new Date().toISOString();
+
       list[index] = sip;
       await this.saveSips(list);
-      this.snackbar.show('Next installment skipped.', 'info');
+      this.snackbar.show(
+        `Installment for "${sip.name}" skipped. Next execution date: ${this.calendar.formatReadableDate(sip.nextExecutionDate || '')}.`,
+        'info',
+        5000
+      );
     }
   }
 

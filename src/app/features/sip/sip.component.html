@@ -290,6 +290,46 @@
         </div>
       </div>
 
+      <!-- ── Urgent SIP Notice (Scheduled Within 3 Working Days) ── -->
+      @if (urgentUpcomingSips().length > 0) {
+        @let urgent = urgentUpcomingSips()[0];
+        <div class="urgent-sip-banner shadow-sm">
+          <div class="urgent-banner-left">
+            <div class="urgent-banner-icon-box">
+              <span class="material-icons">notification_important</span>
+            </div>
+            <div class="urgent-banner-text">
+              <div class="urgent-banner-header">
+                <span class="urgent-tag">
+                  @if (urgent.workingDays === 0) {
+                    DEBITING TODAY
+                  } @else {
+                    {{ urgent.workingDays }} TRADING DAY{{ urgent.workingDays > 1 ? 'S' : '' }} LEFT
+                  }
+                </span>
+                <span class="urgent-headline">
+                  Upcoming SIP: <strong>{{ urgent.sip.name }}</strong> ({{ urgent.sip.amount | currency:'INR':'symbol':'1.0-0' }})
+                </span>
+              </div>
+              <p class="urgent-desc">
+                Scheduled for market execution on <strong>{{ formatDateStr(urgent.sip.nextExecutionDate) }}</strong>.
+                Banks require at least 3 business days notice to pause auto-debits. Would you like to proceed or skip this month?
+              </p>
+            </div>
+          </div>
+          <div class="urgent-banner-actions">
+            <button class="btn btn-sm btn-skip-urgent" (click)="openSkipModal(urgent.sip)">
+              <span class="material-icons sm-icon">skip_next</span>
+              <span>Skip This Month</span>
+            </button>
+            <button class="btn btn-sm btn-ghost-dismiss" (click)="dismissUrgentNotice(urgent.sip.id)" title="Dismiss notice and keep scheduled">
+              <span class="material-icons sm-icon">check</span>
+              <span>Keep Scheduled</span>
+            </button>
+          </div>
+        </div>
+      }
+
       <!-- ── SIP Plans Display (Cards or Table) ── -->
       @if (filteredSips().length > 0) {
         @if (viewMode() === 'cards') {
@@ -414,6 +454,15 @@
                     title="View Past Installments Ledger">
                     <span class="material-icons">history</span>
                     <span>History</span>
+                  </button>
+
+                  <button
+                    class="btn btn-sm btn-ghost btn-skip"
+                    (click)="openSkipModal(sip)"
+                    [disabled]="sip.status !== 'Active'"
+                    title="Skip upcoming installment for this month">
+                    <span class="material-icons sm-icon">skip_next</span>
+                    <span>Skip</span>
                   </button>
 
                   <button
@@ -542,6 +591,9 @@
                         </button>
                         <button class="icon-btn" (click)="openEditModal(sip)" title="Edit">
                           <span class="material-icons">edit</span>
+                        </button>
+                        <button class="icon-btn btn-skip-icon" (click)="openSkipModal(sip)" [disabled]="sip.status !== 'Active'" title="Skip upcoming installment for this month">
+                          <span class="material-icons sm-icon">skip_next</span>
                         </button>
                         <button class="icon-btn" (click)="togglePause(sip)" [title]="sip.status === 'Active' ? 'Pause' : 'Resume'">
                           <span class="material-icons">{{ sip.status === 'Active' ? 'pause' : 'play_arrow' }}</span>
@@ -1314,26 +1366,138 @@
           }
 
           <div class="form-grid">
-            <!-- Scheme Search & Name -->
-            <div class="form-group full-width scheme-search-group">
-              <label class="required">Scheme / Asset Name</label>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Type to search AMFI scheme catalog (e.g. Parag Parikh Flexi Cap)..."
-                [(ngModel)]="sipFormName"
-                (ngModelChange)="onSearchSchemeInput($event)" />
+            <!-- 1. Category / Asset Type (At top of form) -->
+            <div class="form-group full-width category-select-group">
+              <label class="required">Investment Asset Type</label>
+              <div class="category-pills-row">
+                @for (cat of sipCategories; track cat) {
+                  <button
+                    type="button"
+                    class="category-pill-btn"
+                    [class.active]="sipFormCategory === cat"
+                    (click)="onCategoryChange(cat)">
+                    <span class="material-icons sm-icon">{{ SIP_CONFIG[cat].icon }}</span>
+                    <span>{{ SIP_CONFIG[cat].label }}</span>
+                  </button>
+                }
+              </div>
+            </div>
 
-              @if (schemeSearchResults().length > 0) {
-                <div class="scheme-dropdown">
-                  @for (item of schemeSearchResults(); track item.schemeCode) {
-                    <div class="scheme-item" (click)="selectScheme(item)">
-                      <span class="scheme-name font-semibold">{{ item.schemeName }}</span>
-                      <span class="scheme-code">Code: {{ item.schemeCode }}</span>
+            <!-- 2. Scheme / Asset Name with Dropdown of Portfolio Assets based on Type -->
+            <div class="form-group full-width scheme-selection-container">
+              <div class="scheme-mode-header">
+                <label class="required">Scheme / Asset Name</label>
+                <div class="scheme-mode-toggle">
+                  <button
+                    type="button"
+                    class="mode-toggle-btn"
+                    [class.active]="schemeSelectMode() === 'asset'"
+                    (click)="schemeSelectMode.set('asset')">
+                    <span class="material-icons sm-icon">inventory_2</span>
+                    <span>My Portfolio Assets ({{ categoryAssets().length }})</span>
+                  </button>
+                  @if (sipFormCategory === 'MutualFund' || sipFormCategory === 'ETF') {
+                    <button
+                      type="button"
+                      class="mode-toggle-btn"
+                      [class.active]="schemeSelectMode() === 'amfi'"
+                      (click)="schemeSelectMode.set('amfi')">
+                      <span class="material-icons sm-icon">search</span>
+                      <span>Search AMFI Catalog</span>
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="mode-toggle-btn"
+                    [class.active]="schemeSelectMode() === 'custom'"
+                    (click)="schemeSelectMode.set('custom')">
+                    <span class="material-icons sm-icon">edit</span>
+                    <span>Custom / Other</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mode 1: Dropdown of our portfolio assets based on type -->
+              @if (schemeSelectMode() === 'asset') {
+                <div class="asset-dropdown-box">
+                  @if (categoryAssets().length > 0) {
+                    <select
+                      class="form-control asset-select-dropdown"
+                      [ngModel]="sipFormLinkedAssetId"
+                      (ngModelChange)="onSelectExistingAsset($event)">
+                      <option value="">-- Select an existing {{ SIP_CONFIG[sipFormCategory].label }} from your portfolio --</option>
+                      @for (a of categoryAssets(); track a.id) {
+                        <option [value]="a.id">
+                          {{ a.name }} ({{ a.quantity | number:'1.2-2' }} units • ₹{{ ((a.quantity || 0) * (a.currentPrice || a.buyPrice || 0)) | number:'1.0-0' }})
+                        </option>
+                      }
+                    </select>
+                    @if (sipFormLinkedAssetId) {
+                      <div class="asset-linked-badge">
+                        <span class="material-icons sm-icon">link</span>
+                        <span>Linked to Portfolio Asset: <strong>{{ getLinkedAssetName() }}</strong></span>
+                      </div>
+                    }
+                  } @else {
+                    <div class="no-assets-notice">
+                      <div class="no-assets-text">
+                        <span class="material-icons sm-icon">info</span>
+                        <span>No existing {{ SIP_CONFIG[sipFormCategory].label }} holdings found in your portfolio.</span>
+                      </div>
+                      <button
+                        type="button"
+                        class="btn btn-xs btn-outline-primary"
+                        (click)="schemeSelectMode.set(sipFormCategory === 'MutualFund' || sipFormCategory === 'ETF' ? 'amfi' : 'custom')">
+                        Switch to {{ sipFormCategory === 'MutualFund' || sipFormCategory === 'ETF' ? 'Search Catalog' : 'Custom Name' }} ➔
+                      </button>
                     </div>
                   }
                 </div>
               }
+
+              <!-- Mode 2: Search AMFI Catalog (Live Autocomplete) -->
+              @if (schemeSelectMode() === 'amfi') {
+                <div class="scheme-search-group">
+                  <div class="search-input-wrapper">
+                    <span class="material-icons search-lead-icon">search</span>
+                    <input
+                      type="text"
+                      class="form-control with-lead-icon"
+                      placeholder="Type fund name or code to search (e.g. Parag Parikh, HDFC Top 100)..."
+                      [(ngModel)]="sipFormName"
+                      (ngModelChange)="onSearchSchemeInput($event)" />
+                    @if (isSearchingSchemes()) {
+                      <span class="material-icons spinning search-spin-icon">sync</span>
+                    }
+                  </div>
+
+                  @if (schemeSearchResults().length > 0) {
+                    <div class="scheme-dropdown shadow-lg">
+                      @for (item of schemeSearchResults(); track item.schemeCode) {
+                        <div class="scheme-item" (click)="selectScheme(item)">
+                          <div class="scheme-item-details">
+                            <span class="scheme-name font-semibold">{{ item.schemeName }}</span>
+                            <span class="scheme-code">AMFI Code: {{ item.schemeCode }}</span>
+                          </div>
+                          <span class="material-icons sm-icon scheme-pick-icon">add_circle_outline</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Mode 3 or Selected Name Confirmation -->
+              <div class="scheme-name-confirm-box" [class.mt-2]="schemeSelectMode() !== 'custom'">
+                @if (schemeSelectMode() !== 'custom') {
+                  <label class="sub-label">Scheme / Asset Display Name:</label>
+                }
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g. Parag Parikh Flexi Cap Fund - Direct Growth"
+                  [(ngModel)]="sipFormName" />
+              </div>
             </div>
 
             <!-- AMFI Scheme Code -->
@@ -1371,16 +1535,6 @@
               <select class="form-control" [(ngModel)]="sipFormOption">
                 <option value="Growth">Growth</option>
                 <option value="IDCW">IDCW / Dividend</option>
-              </select>
-            </div>
-
-            <!-- Category -->
-            <div class="form-group">
-              <label>Category</label>
-              <select class="form-control" [(ngModel)]="sipFormCategory">
-                @for (cat of sipCategories; track cat) {
-                  <option [value]="cat">{{ SIP_CONFIG[cat].label }}</option>
-                }
               </select>
             </div>
 
@@ -1729,6 +1883,100 @@
               <span class="material-icons sm-icon">delete</span>
               <span>Delete Plan</span>
             }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODAL: SKIP THIS MONTH'S INSTALLMENT                                    -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  @if (showSkipModal()) {
+    <div class="modal-backdrop" (click)="closeSkipModal()">
+      <div class="modal-card skip-warning-modal" (click)="$event.stopPropagation()">
+        <div class="skip-modal-icon" [class.warning-pulse]="skipWorkingDays() <= 3">
+          <span class="material-icons">
+            {{ skipWorkingDays() <= 3 ? 'warning_amber' : 'event_busy' }}
+          </span>
+        </div>
+
+        <h3 class="skip-modal-title">
+          {{ skipWorkingDays() <= 3 ? 'Skip Installment — Bank Notice' : 'Skip Next Installment' }}
+        </h3>
+
+        <p class="skip-modal-subtitle">
+          Pause tracking for this specific month's installment without cancelling your plan
+        </p>
+
+        @if (sipToSkip(); as sip) {
+          <!-- Plan Summary Box -->
+          <div class="skip-plan-summary">
+            <div class="skip-summary-row">
+              <span class="skip-summary-label">Plan Name:</span>
+              <span class="skip-summary-val font-semibold">{{ sip.name }}</span>
+            </div>
+            <div class="skip-summary-row">
+              <span class="skip-summary-label">Installment Amount:</span>
+              <span class="skip-summary-val amount-val">{{ sip.amount | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="skip-summary-row">
+              <span class="skip-summary-label">Scheduled Market Date:</span>
+              <span class="skip-summary-val date-val">{{ formatDateStr(sip.nextExecutionDate) }}</span>
+            </div>
+            <div class="skip-summary-row">
+              <span class="skip-summary-label">Trading Days Notice:</span>
+              <span class="skip-summary-val">
+                @if (skipWorkingDays() <= 3) {
+                  <span class="badge badge-warning">⚡ {{ skipWorkingDays() }} Working Day(s) Left</span>
+                } @else {
+                  <span class="badge badge-info">📅 {{ skipWorkingDays() }} Working Days Ahead</span>
+                }
+              </span>
+            </div>
+          </div>
+
+          <!-- Explanatory Notice depending on <= 3 days or > 3 days -->
+          @if (skipWorkingDays() <= 3) {
+            <div class="cutoff-warning-box">
+              <div class="warning-title">
+                <span class="material-icons sm-icon">info</span>
+                <strong>Under 3 Working Days — Bank Auto-Debit Notice</strong>
+              </div>
+              <p class="warning-text">
+                Your next installment is scheduled in <strong>{{ skipWorkingDays() }} trading day(s)</strong>.
+                Indian AMCs and clearing banks freeze NACH auto-debit presentation files 3 business days prior to the debit date.
+              </p>
+              <p class="warning-text mb-0">
+                If you skip in FinTracker now, your bank may still present the debit.
+                If debited and units are allotted, FinTracker will reconcile the allotment when your CAS statement is imported.
+              </p>
+            </div>
+          } @else {
+            <div class="cutoff-info-box">
+              <span class="material-icons sm-icon">check_circle</span>
+              <span>
+                You are within the 3+ working days window. Skipping this installment will advance your scheduled next execution date to next month. No auto-debit will be tracked for this cycle.
+              </span>
+            </div>
+          }
+
+          <p class="skip-confirm-prompt">
+            Do you want to proceed and mark this month's installment as <strong>Skipped</strong>?
+          </p>
+        }
+
+        <div class="modal-actions-grid">
+          <button class="btn btn-secondary" (click)="closeSkipModal()">
+            Keep Scheduled
+          </button>
+          <button
+            class="btn"
+            [class.btn-warning]="skipWorkingDays() <= 3"
+            [class.btn-primary]="skipWorkingDays() > 3"
+            (click)="confirmSkipSip()">
+            <span class="material-icons sm-icon">skip_next</span>
+            <span>Yes, Skip This Month</span>
           </button>
         </div>
       </div>
