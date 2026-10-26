@@ -1077,4 +1077,159 @@ export class ReportExportService {
             );
         }
     }
+
+    /**
+     * 7. SIPs & AUTO-INVEST MANDATES STATEMENT
+     */
+    async exportSipsReport(format: 'pdf' | 'excel', data: {
+        sips: any[];
+        metrics: {
+            totalMonthlyCommitment: number;
+            totalActiveSips: number;
+            totalExecutedInstallments?: number;
+            totalInvested?: number;
+        };
+        user?: any;
+        periodLabel?: string;
+    }) {
+        const meta: ReportMetadata = {
+            title: 'Systematic Investment Plans (SIP) Statement',
+            subtitle: 'Real-World Market Trading Day Execution & Mandate Ledger',
+            userName: data.user?.displayName,
+            userEmail: data.user?.email,
+            periodLabel: data.periodLabel || 'All Active Mandates'
+        };
+
+        const metrics: SummaryMetric[] = [
+            { label: 'Monthly SIP Outflow', value: this.formatCurrency(data.metrics.totalMonthlyCommitment), isPositive: true },
+            { label: 'Active SIP Plans', value: String(data.metrics.totalActiveSips) },
+            { label: 'Cumulative SIP Outflow', value: this.formatCurrency(data.metrics.totalInvested || 0) },
+            { label: 'Installments Executed', value: String(data.metrics.totalExecutedInstallments || 0) }
+        ];
+
+        const dateStr = new Date().toISOString().slice(0, 10);
+
+        if (format === 'pdf') {
+            const planRows = data.sips.map((s: any) => [
+                s.name || '-',
+                s.category || 'MutualFund',
+                s.frequency || 'Monthly',
+                s.sipDay ? `Day ${s.sipDay}` : '-',
+                this.formatCurrency(s.amount),
+                s.nextExecutionDate ? this.formatDate(s.nextExecutionDate) : '-',
+                s.stepUp?.enabled ? `+${s.stepUp.value}%/yr` : 'None',
+                s.status || 'Active'
+            ]);
+
+            // Collect all installments across SIPs
+            const ledgerRows: any[] = [];
+            data.sips.forEach((s: any) => {
+                const list = s.installments || s.installmentHistory;
+                if (list && Array.isArray(list)) {
+                    list.forEach((inst: any) => {
+                        ledgerRows.push([
+                            this.formatDate(inst.executionDate || inst.scheduledDate),
+                            s.name,
+                            inst.scheduledDate || '-',
+                            inst.status || 'Success',
+                            this.formatCurrency(inst.amount),
+                            inst.unitsAllotted ? Number(inst.unitsAllotted).toFixed(3) : '-',
+                            inst.navOrPrice ? this.formatCurrency(inst.navOrPrice) : '-'
+                        ]);
+                    });
+                }
+            });
+
+            const tables: Array<{
+                sectionTitle?: string;
+                columns: string[];
+                rows: (string | number)[][];
+                columnStyles?: { [key: number]: any };
+            }> = [
+                {
+                    sectionTitle: 'Active Systematic Investment Mandates',
+                    columns: ['Plan Name', 'Category', 'Freq', 'Debit Day', 'Amount', 'Next Date', 'Step-Up', 'Status'],
+                    rows: planRows,
+                    columnStyles: { 4: { halign: 'right' } }
+                }
+            ];
+
+            if (ledgerRows.length > 0) {
+                tables.push({
+                    sectionTitle: 'Auto-Debit Execution Audit Trail',
+                    columns: ['Execution Date', 'Plan Name', 'Scheduled Date', 'Status', 'Amount', 'Units', 'NAV / Price'],
+                    rows: ledgerRows.slice(0, 100),
+                    columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } }
+                });
+            }
+
+            await this.generatePdf(
+                meta,
+                metrics,
+                tables,
+                `FinTracker_SIP_Statement_${dateStr}.pdf`
+            );
+        } else {
+            const planCols = [
+                { header: 'Plan Name', key: 'name', width: 32 },
+                { header: 'Category', key: 'category', width: 16 },
+                { header: 'Frequency', key: 'frequency', width: 14 },
+                { header: 'Debit Day', key: 'sipDay', width: 12 },
+                { header: 'Installment Amount', key: 'amount', width: 18 },
+                { header: 'Next Execution Date', key: 'nextExecutionDate', width: 18 },
+                { header: 'Annual Step-Up', key: 'stepUp', width: 16 },
+                { header: 'Status', key: 'status', width: 14 }
+            ];
+
+            const planRows = data.sips.map((s: any) => ({
+                name: s.name || '',
+                category: s.category || '',
+                frequency: s.frequency || 'Monthly',
+                sipDay: s.sipDay || '',
+                amount: s.amount || 0,
+                nextExecutionDate: s.nextExecutionDate || '',
+                stepUp: s.stepUp?.enabled ? `+${s.stepUp.value}%` : 'None',
+                status: s.status || 'Active'
+            }));
+
+            const ledgerCols = [
+                { header: 'Execution Date', key: 'executionDate', width: 16 },
+                { header: 'Plan Name', key: 'planName', width: 30 },
+                { header: 'Scheduled Date', key: 'scheduledDate', width: 16 },
+                { header: 'Status', key: 'status', width: 14 },
+                { header: 'Amount Debited', key: 'amount', width: 16 },
+                { header: 'Units Allotted', key: 'units', width: 14 },
+                { header: 'NAV / Unit Price', key: 'price', width: 16 }
+            ];
+
+            const ledgerRows: any[] = [];
+            data.sips.forEach((s: any) => {
+                const list = s.installments || s.installmentHistory;
+                if (list && Array.isArray(list)) {
+                    list.forEach((inst: any) => {
+                        ledgerRows.push({
+                            executionDate: inst.executionDate || inst.scheduledDate || '',
+                            planName: s.name,
+                            scheduledDate: inst.scheduledDate || '',
+                            status: inst.status || 'Success',
+                            amount: inst.amount || 0,
+                            units: inst.unitsAllotted || 0,
+                            price: inst.navOrPrice || 0
+                        });
+                    });
+                }
+            });
+
+            await this.generateExcel(
+                meta,
+                metrics,
+                [
+                    { sheetName: 'SIP Mandates', columns: planCols, rows: planRows },
+                    { sheetName: 'Execution Ledger', columns: ledgerCols, rows: ledgerRows }
+                ],
+                `FinTracker_SIP_Statement_${dateStr}.xlsx`
+            );
+        }
+    }
 }
+

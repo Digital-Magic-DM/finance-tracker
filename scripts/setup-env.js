@@ -28,8 +28,20 @@ if (!fs.existsSync(envFile)) {
 
 const env = parseEnv(envFile);
 
+const pkgPath = path.join(__dirname, '../package.json');
+let appVersion = '1.0.0';
+if (fs.existsSync(pkgPath)) {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    if (pkg.version) appVersion = pkg.version;
+  } catch (e) {
+    console.warn('Could not read version from package.json:', e);
+  }
+}
+
 const config = {
   production: false,
+  appVersion: appVersion,
   firebase: {
     apiKey: env.FIREBASE_API_KEY || 'local-key',
     authDomain: env.FIREBASE_AUTH_DOMAIN || 'local-domain',
@@ -45,4 +57,4 @@ const content = `export const environment = ${JSON.stringify(config, null, 2)};
 `;
 
 fs.writeFileSync(targetFile, content);
-console.log('Successfully updated src/environments/environment.ts from .env');
+console.log(`Successfully updated src/environments/environment.ts from .env (version: ${appVersion})`);

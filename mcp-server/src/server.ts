@@ -10,6 +10,13 @@ import {
   addTransaction,
   getCashFlowSummary,
   getEmergencyRunway,
+  getLoansOverview,
+  simulateDebtPayoff,
+  recordLoanPayment,
+  getSipsOverview,
+  addSip,
+  getMarketCalendar,
+  recordSipExecution,
 } from './tools.js';
 
 export function createFinTrackerMcpServer(sessionUid?: string): McpServer {
@@ -372,6 +379,282 @@ export function createFinTrackerMcpServer(sessionUid?: string): McpServer {
         return {
           isError: true,
           content: [{ type: 'text', text: `Failed to compute emergency runway: ${err.message}` }],
+        };
+      }
+    }
+  );
+
+  // ---------------------------------------------------------------------------
+  // 9. Tool: get_loans_and_emi_overview
+  // ---------------------------------------------------------------------------
+  server.tool(
+    'get_loans_and_emi_overview',
+    'Provides complete overview of user loans, total outstanding balance, total monthly EMI outflow, total interest payable, upcoming due dates, and debt distribution across loan categories.',
+    {
+      uid: z.string().optional().describe('Firebase user ID'),
+    },
+    async ({ uid }) => {
+      try {
+        const resolvedUid = resolveUserId(uid, sessionUid);
+        const data = await getLoansOverview(resolvedUid);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(data, null, 2),
+            },
+          ],
+        };
+      } catch (err: any) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Failed to get loans overview: ${err.message}` }],
+        };
+      }
+    }
+  );
+
+  // ---------------------------------------------------------------------------
+  // 10. Tool: simulate_debt_payoff_strategy
+  // ---------------------------------------------------------------------------
+  server.tool(
+    'simulate_debt_payoff_strategy',
+    'Simulates accelerated debt repayment using Avalanche (highest interest rate first) or Snowball (smallest balance first) strategies with an optional extra monthly prepayment budget. Returns estimated interest saved and months shaved off.',
+    {
+      uid: z.string().optional().describe('Firebase user ID'),
+      extraMonthlyPayment: z
+        .number()
+        .nonnegative()
+        .default(5000)
+        .describe('Extra monthly prepayment budget in INR'),
+      method: z
+        .enum(['avalanche', 'snowball'])
+        .default('avalanche')
+        .describe('Repayment methodology: "avalanche" (highest interest rate first) or "snowball" (smallest balance first)'),
+    },
+    async ({ uid, extraMonthlyPayment, method }) => {
+      try {
+        const resolvedUid = resolveUserId(uid, sessionUid);
+        const data = await simulateDebtPayoff(resolvedUid, extraMonthlyPayment, method);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(data, null, 2),
+            },
+          ],
+        };
+      } catch (err: any) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Failed to simulate debt payoff: ${err.message}` }],
+        };
+      }
+    }
+  );
+
+  // ---------------------------------------------------------------------------
+  // 11. Tool: record_loan_emi_payment
+  // ---------------------------------------------------------------------------
+  server.tool(
+    'record_loan_emi_payment',
+    'Records a monthly EMI payment or a part-prepayment on a specific loan. Updates the loan progress and automatically logs an Expense transaction under "Debt / Loan Repayment".',
+    {
+      uid: z.string().optional().describe('Firebase user ID'),
+      loanId: z.string().describe('Firestore ID of the loan'),
+      amount: z.number().positive().optional().describe('Payment amount in INR (defaults to regular monthly EMI)'),
+      isPrepayment: z.boolean().default(false).describe('Whether this is an extra part-prepayment vs regular monthly EMI'),
+      notes: z.string().optional().describe('Optional payment notes or reference ID'),
+    },
+    async ({ uid, loanId, amount, isPrepayment, notes }) => {
+      try {
+        const resolvedUid = resolveUserId(uid, sessionUid);
+        const result = await recordLoanPayment(resolvedUid, loanId, amount, isPrepayment, notes);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (err: any) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Failed to record loan payment: ${err.message}` }],
+        };
+      }
+    }
+  );
+
+  // ---------------------------------------------------------------------------
+  // 12. Tool: get_sips_overview
+  // ---------------------------------------------------------------------------
+  server.tool(
+    'get_sips_overview',
+    'Calculates active SIPs, total monthly commitment, total invested via SIPs, upcoming installment dates (with market holiday and weekend roll-forward resolution), and live NSE/BSE market trading status.',
+    {
+      uid: z.string().optional().describe('Firebase user ID'),
+    },
+    async ({ uid }) => {
+      try {
+        const resolvedUid = resolveUserId(uid, sessionUid);
+        const data = await getSipsOverview(resolvedUid);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(data, null, 2),
+            },
+          ],
+        };
+      } catch (err: any) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Failed to get SIPs overview: ${err.message}` }],
+        };
+      }
+    }
+  );
+
+  // ---------------------------------------------------------------------------
+  // 13. Tool: add_sip
+  // ---------------------------------------------------------------------------
+  server.tool(
+    'add_sip',
+    'Schedules a new Systematic Investment Plan (SIP) for mutual funds, stocks, ETFs, or gold. Automatically calculates first market execution day accounting for exchange clearing holidays.',
+    {
+      uid: z.string().optional().describe('Firebase user ID'),
+      name: z.string().describe('Fund or asset name (e.g. "Parag Parikh Flexi Cap Fund", "UTI Nifty 50 Index Fund")'),
+      amount: z.number().positive().describe('Monthly installment amount in INR'),
+      category: z
+        .enum(['MutualFund', 'Stock', 'ETF', 'Gold', 'Crypto', 'Other'])
+        .default('MutualFund')
+        .describe('Investment category'),
+      frequency: z.enum(['Monthly', 'Weekly', 'Quarterly']).default('Monthly').describe('SIP frequency'),
+      sipDay: z.number().int().min(1).max(31).default(10).describe('Preferred day of the month (1-31)'),
+      fundHouse: z.string().optional().describe('Fund house or AMC name (e.g. PPFAS, UTI, Quant, HDFC)'),
+      folioNumber: z.string().optional().describe('Folio or investment account number'),
+      mandateAccount: z.string().optional().describe('Bank mandate / Autopay source (e.g. "HDFC Bank OTM Autopay")'),
+      startDate: z.string().optional().describe('Start date (YYYY-MM-DD, defaults to today)'),
+      autoExecute: z.boolean().default(true).describe('Whether to auto-execute installments on trading days'),
+      stepUp: z
+        .object({
+          enabled: z.boolean(),
+          type: z.enum(['percentage', 'fixed']),
+          value: z.number().positive(),
+        })
+        .optional()
+        .describe('Optional annual step-up configuration (e.g. +10% every year)'),
+      notes: z.string().optional().describe('Personal investment notes'),
+    },
+    async ({ uid, name, amount, category, frequency, sipDay, fundHouse, folioNumber, mandateAccount, startDate, autoExecute, stepUp, notes }) => {
+      try {
+        const resolvedUid = resolveUserId(uid, sessionUid);
+        const result = await addSip(resolvedUid, {
+          name,
+          amount,
+          category,
+          frequency,
+          sipDay,
+          fundHouse,
+          folioNumber,
+          mandateAccount,
+          startDate,
+          autoExecute,
+          stepUp,
+          notes,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  message: `SIP "${name}" scheduled successfully for day ${sipDay} of each month.`,
+                  sipId: result.id,
+                  initialExecutionDate: result.sip.nextExecutionDate,
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (err: any) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Failed to add SIP: ${err.message}` }],
+        };
+      }
+    }
+  );
+
+  // ---------------------------------------------------------------------------
+  // 14. Tool: get_market_trading_calendar
+  // ---------------------------------------------------------------------------
+  server.tool(
+    'get_market_trading_calendar',
+    'Inspects official NSE/BSE stock exchange holidays for a given year (2024-2027) and generates the real-world 12-month settlement schedule for any preferred SIP day (rolling weekends and holidays forward to next open trading day).',
+    {
+      year: z.number().int().min(2024).max(2027).default(new Date().getFullYear()).describe('Calendar year (2024-2027)'),
+      preferredDay: z
+        .number()
+        .int()
+        .min(1)
+        .max(31)
+        .optional()
+        .describe('Preferred SIP day of the month (1-31) to simulate 12-month execution dates'),
+    },
+    async ({ year, preferredDay }) => {
+      try {
+        const data = await getMarketCalendar(year, preferredDay);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(data, null, 2),
+            },
+          ],
+        };
+      } catch (err: any) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Failed to get market calendar: ${err.message}` }],
+        };
+      }
+    }
+  );
+
+  // ---------------------------------------------------------------------------
+  // 15. Tool: execute_sip_installment
+  // ---------------------------------------------------------------------------
+  server.tool(
+    'execute_sip_installment',
+    'Executes an investment SIP installment: allocates mutual fund/stock units into the user portfolio, updates average buy price, logs an Investment expense transaction, and records the installment in the SIP ledger.',
+    {
+      uid: z.string().optional().describe('Firebase user ID'),
+      sipId: z.string().describe('Firestore ID of the SIP'),
+      amount: z.number().positive().optional().describe('Installment amount in INR (defaults to scheduled SIP amount)'),
+      notes: z.string().optional().describe('Optional execution notes or reference ID'),
+    },
+    async ({ uid, sipId, amount, notes }) => {
+      try {
+        const resolvedUid = resolveUserId(uid, sessionUid);
+        const result = await recordSipExecution(resolvedUid, sipId, amount, notes);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      } catch (err: any) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Failed to execute SIP installment: ${err.message}` }],
         };
       }
     }

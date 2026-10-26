@@ -1,0 +1,531 @@
+<div class="dev-shell">
+
+  <!-- ═══════════════════════ NOT LOCALHOST GUARD ═══════════════════════ -->
+  @if (!isLocalhost()) {
+    <div class="not-local-banner">
+      <div class="nl-icon">🔒</div>
+      <h2>Developer Tool — Localhost Only</h2>
+      <p>This page is restricted to <code>localhost</code> / <code>127.0.0.1</code> for security &amp; privacy reasons.</p>
+      <p>It is not available in production builds or on public URLs.</p>
+      <a routerLink="/app/dashboard" class="btn-primary">← Back to Dashboard</a>
+    </div>
+  }
+
+  @if (isLocalhost()) {
+    <!-- ═══════════════════════ HEADER BAR ═══════════════════════ -->
+    <header class="dev-header">
+      <div class="dev-header-left">
+        <span class="dev-badge">DEV</span>
+        <div>
+          <h1 class="dev-title">CAS Parser Lab</h1>
+          <p class="dev-subtitle">eCAS PDF Inspector — CDSL · NSDL · CAMS/KFintech</p>
+        </div>
+      </div>
+      <div class="dev-header-right">
+        @if (parseResult()) {
+          <button class="btn-outline-sm" (click)="reset()">
+            <span class="btn-icon">↺</span> Reset
+          </button>
+          <button class="btn-outline-sm" (click)="copyJson()">
+            {{ copiedJson() ? '✓ Copied!' : '⎘ Copy JSON' }}
+          </button>
+          <button class="btn-outline-sm" (click)="downloadJson()">
+            ↓ Download JSON
+          </button>
+        }
+        <button class="btn-outline-sm" (click)="loadSampleData()">
+          ⚡ Load Sample
+        </button>
+      </div>
+    </header>
+
+    <!-- ═══════════════════════ UPLOAD AREA ═══════════════════════ -->
+    @if (!parseResult()) {
+      <div class="upload-section">
+        <div
+          class="upload-zone"
+          [class.dragging]="isDragging()"
+          [class.has-file]="selectedFile()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (click)="fileInput.click()"
+        >
+          @if (!selectedFile() && !isParsing()) {
+            <div class="upload-icon">📄</div>
+            <p class="upload-label">Drag &amp; drop your eCAS PDF here</p>
+            <p class="upload-hint">or click to browse · Supports CDSL / NSDL / CAMS / KFintech</p>
+            <p class="upload-security">🔒 Processed entirely in your browser — nothing is uploaded</p>
+          }
+          @if (selectedFile() && isParsing()) {
+            <div class="spinner"></div>
+            <p class="upload-label parsing-label">Parsing <strong>{{ selectedFile()!.name }}</strong>...</p>
+            <p class="upload-hint">Extracting text lines &amp; matching holdings</p>
+          }
+          @if (selectedFile() && !isParsing()) {
+            <div class="upload-icon">⚙️</div>
+            <p class="upload-label">{{ selectedFile()!.name }}</p>
+            <p class="upload-hint">{{ (selectedFile()!.size / 1024).toFixed(1) }} KB · Click to change</p>
+          }
+          <input
+            #fileInput
+            type="file"
+            accept=".pdf,application/pdf"
+            class="hidden-input"
+            (change)="onFileChange($event)"
+          />
+        </div>
+
+        @if (errorMessage()) {
+          <div class="error-bar">
+            <span class="error-icon">✕</span>
+            <span>{{ errorMessage() }}</span>
+            <button class="error-dismiss" (click)="errorMessage.set(null)">×</button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═══════════════════════ PASSWORD MODAL ═══════════════════════ -->
+    @if (showPasswordModal()) {
+      <div class="modal-overlay" (click)="closePasswordModal()">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <span class="modal-icon">🔑</span>
+            <div>
+              <h3>Password Protected PDF</h3>
+              <p>This eCAS statement is encrypted</p>
+            </div>
+          </div>
+          <div class="password-hints">
+            <div class="hint-item">
+              <span class="hint-badge">CDSL</span>
+              <span>Your 10-digit PAN in ALL CAPS (e.g., <code>ABCDE1234F</code>)</span>
+            </div>
+            <div class="hint-item">
+              <span class="hint-badge">NSDL</span>
+              <span>Your PAN or Date of Birth as <code>DDMMYYYY</code></span>
+            </div>
+            <div class="hint-item">
+              <span class="hint-badge">CAMS</span>
+              <span>Your PAN (usually lowercase)</span>
+            </div>
+          </div>
+          @if (passwordError()) {
+            <div class="pwd-error">{{ passwordError() }}</div>
+          }
+          <input
+            type="password"
+            class="pwd-input"
+            [(ngModel)]="password"
+            placeholder="Enter password / PAN..."
+            (keydown.enter)="submitPassword()"
+            autocomplete="off"
+          />
+          <div class="modal-actions">
+            <button class="btn-primary" (click)="submitPassword()" [disabled]="isParsing()">
+              {{ isParsing() ? 'Decrypting...' : 'Unlock & Parse' }}
+            </button>
+            <button class="btn-secondary" (click)="closePasswordModal()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════ RESULTS ═══════════════════════ -->
+    @if (parseResult(); as res) {
+      <div class="results-section">
+
+        <!-- ── Metadata Header ── -->
+        <div class="meta-strip">
+          <div class="meta-chip depo-chip">
+            <span class="meta-label">Depository</span>
+            <span class="meta-value depo-{{ res.metadata.depository.toLowerCase() }}">{{ res.metadata.depository }}</span>
+          </div>
+          <div class="meta-chip">
+            <span class="meta-label">Investor</span>
+            <span class="meta-value">{{ res.metadata.investorName || 'N/A' }}</span>
+          </div>
+          <div class="meta-chip" (click)="toggleMaskPan()" style="cursor:pointer" title="Click to reveal/hide PAN">
+            <span class="meta-label">PAN</span>
+            <span class="meta-value">{{ getMaskedPan(res.metadata.pan) }}</span>
+          </div>
+          <div class="meta-chip">
+            <span class="meta-label">Period</span>
+            <span class="meta-value">{{ res.metadata.statementPeriod || 'N/A' }}</span>
+          </div>
+          <div class="meta-chip">
+            <span class="meta-label">Email</span>
+            <span class="meta-value">{{ res.metadata.email || 'N/A' }}</span>
+          </div>
+          <div class="meta-chip">
+            <span class="meta-label">Parse Time</span>
+            <span class="meta-value">{{ res.parseDurationMs }} ms</span>
+          </div>
+        </div>
+
+        @if (res.metadata.dematAccounts.length > 0) {
+          <div class="demat-accounts">
+            <span class="demat-label">Demat Accounts:</span>
+            @for (acc of res.metadata.dematAccounts; track acc) {
+              <span class="demat-chip">{{ acc }}</span>
+            }
+          </div>
+        }
+
+        <!-- ── Official Statement Declared Summary (if detected) ── -->
+        @if (res.summary.declaredSummary; as ds) {
+          <div class="declared-summary-banner" [class.reconciled]="ds.isReconciled">
+            <div class="dsb-left">
+              <span class="dsb-badge">{{ ds.isReconciled ? '✓ RECONCILED' : 'ℹ DEPOSITORY SUMMARY' }}</span>
+              <span class="dsb-title">Statement Stated Portfolio Value:</span>
+              <strong class="dsb-val">₹{{ ds.totalValuation | number:'1.2-2' }}</strong>
+            </div>
+            <div class="dsb-right">
+              @if (ds.isReconciled) {
+                <span class="dsb-status success">{{ ds.reconciliationNote || 'Calculated holdings match depository statement within rounding difference' }}</span>
+              } @else {
+                <span class="dsb-status note">{{ ds.reconciliationNote || ('Calculated: ₹' + (res.summary.totalPortfolioValue | number:'1.2-2') + ' (Diff: ₹' + (ds.difference | number:'1.2-2') + ')') }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── Summary Cards ── -->
+        <div class="summary-cards">
+          <div class="scard scard-eq">
+            <div class="scard-icon">📈</div>
+            <div class="scard-body">
+              <div class="scard-label">Equities</div>
+              <div class="scard-count">{{ res.summary.equitiesCount }} holdings</div>
+              <div class="scard-value">₹{{ res.summary.totalEquityValue | number:'1.0-0' }}</div>
+            </div>
+          </div>
+          <div class="scard scard-mf">
+            <div class="scard-icon">🏦</div>
+            <div class="scard-body">
+              <div class="scard-label">Mutual Funds</div>
+              <div class="scard-count">{{ res.summary.mutualFundsCount }} records (Demat: {{ res.summary.dematMutualFundsCount }} · SOA: {{ res.summary.soaMutualFundsCount }})</div>
+              <div class="scard-value">₹{{ res.summary.totalMutualFundValue | number:'1.0-0' }}</div>
+            </div>
+          </div>
+          <div class="scard scard-bond">
+            <div class="scard-icon">🏛️</div>
+            <div class="scard-body">
+              <div class="scard-label">Other Assets (SGB / InvIT / Bonds)</div>
+              <div class="scard-count">{{ res.summary.otherCount }} holdings</div>
+              <div class="scard-value">₹{{ res.summary.totalOtherValue | number:'1.0-0' }}</div>
+            </div>
+          </div>
+          <div class="scard scard-total">
+            <div class="scard-icon">💼</div>
+            <div class="scard-body">
+              <div class="scard-label">Total Portfolio</div>
+              <div class="scard-count">{{ res.metadata.totalRecordsCount }} records</div>
+              <div class="scard-value total-value">₹{{ res.summary.totalPortfolioValue | number:'1.0-0' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Tab Bar ── -->
+        <div class="tab-bar">
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'equities'"
+            (click)="activeTab.set('equities')"
+          >
+            📈 Equities
+            <span class="tab-count">{{ res.equities.length }}</span>
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'mutualFunds'"
+            (click)="activeTab.set('mutualFunds')"
+          >
+            🏦 Mutual Funds
+            <span class="tab-count">{{ res.mutualFunds.length }}</span>
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'bonds'"
+            (click)="activeTab.set('bonds')"
+          >
+            🏛️ Bonds / SGBs
+            <span class="tab-count">{{ res.bonds.length }}</span>
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'rawLines'"
+            (click)="activeTab.set('rawLines')"
+          >
+            📝 Raw Lines
+            <span class="tab-count">{{ res.rawLines.length }}</span>
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'logs'"
+            (click)="activeTab.set('logs')"
+          >
+            🔍 Parser Logs
+            <span class="tab-count">{{ res.logs.length }}</span>
+          </button>
+        </div>
+
+        <!-- ── Search Bar (for data tabs) ── -->
+        @if (activeTab() !== 'rawLines' && activeTab() !== 'logs') {
+          <div class="search-bar">
+            <span class="search-icon">🔎</span>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Search by name, ISIN, symbol, folio..."
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+            />
+            @if (searchQuery()) {
+              <button class="search-clear" (click)="searchQuery.set('')">×</button>
+            }
+          </div>
+        }
+        @if (activeTab() === 'rawLines') {
+          <div class="search-bar">
+            <span class="search-icon">🔎</span>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Filter raw lines..."
+              [ngModel]="rawSearchQuery()"
+              (ngModelChange)="rawSearchQuery.set($event)"
+            />
+            @if (rawSearchQuery()) {
+              <button class="search-clear" (click)="rawSearchQuery.set('')">×</button>
+            }
+          </div>
+        }
+
+        <!-- ═══ EQUITIES TABLE ═══ -->
+        @if (activeTab() === 'equities') {
+          @if (filteredEquities().length === 0) {
+            <div class="empty-state">{{ searchQuery() ? 'No equities match your search.' : 'No equities found in this statement.' }}</div>
+          } @else {
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>ISIN</th>
+                    <th>Company / Scrip</th>
+                    <th>Type</th>
+                    <th class="num">Quantity</th>
+                    <th class="num">Face Value</th>
+                    <th class="num">Market Price</th>
+                    <th class="num">Total Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (eq of filteredEquities(); track eq.isin; let i = $index) {
+                    <tr>
+                      <td class="row-num">{{ i + 1 }}</td>
+                      <td class="isin-cell">
+                        <code>{{ eq.isin }}</code>
+                      </td>
+                      <td class="name-cell">
+                        <span class="name-primary">{{ eq.companyName }}</span>
+                        @if (eq.symbol) {
+                          <span class="name-badge">{{ eq.symbol }}</span>
+                        }
+                      </td>
+                      <td>
+                        <span class="type-badge type-{{ eq.holdingType.toLowerCase() }}">{{ eq.holdingType }}</span>
+                      </td>
+                      <td class="num">{{ eq.quantity | number:'1.0-0' }}</td>
+                      <td class="num">{{ eq.faceValue ? ('₹' + (eq.faceValue | number:'1.0-2')) : '—' }}</td>
+                      <td class="num">₹{{ eq.marketPrice | number:'1.2-2' }}</td>
+                      <td class="num value-cell">₹{{ eq.totalValue | number:'1.0-0' }}</td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="7" class="total-label">Total ({{ filteredEquities().length }} holdings)</td>
+                    <td class="num value-cell total-footer">
+                      ₹{{ equityTotal() | number:'1.0-0' }}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          }
+        }
+
+        <!-- ═══ MUTUAL FUNDS TABLE ═══ -->
+        @if (activeTab() === 'mutualFunds') {
+          @if (filteredMutualFunds().length === 0) {
+            <div class="empty-state">{{ searchQuery() ? 'No mutual funds match your search.' : 'No mutual funds found in this statement.' }}</div>
+          } @else {
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Location</th>
+                    <th>Folio / Account</th>
+                    <th>Scheme Name</th>
+                    <th>ISIN</th>
+                    <th>Plan</th>
+                    <th class="num">Units</th>
+                    <th class="num">NAV</th>
+                    <th class="num">Cost</th>
+                    <th class="num">Market Value</th>
+                    <th class="num">Gain / Loss</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (mf of filteredMutualFunds(); track mf.isin + mf.folio + mf.holdingLocation; let i = $index) {
+                    <tr>
+                      <td class="row-num">{{ i + 1 }}</td>
+                      <td>
+                        <span class="plan-badge" [class.plan-direct]="mf.holdingLocation === 'DEMAT'" [class.plan-regular]="mf.holdingLocation === 'SOA'">
+                          {{ mf.holdingLocation }}
+                        </span>
+                      </td>
+                      <td class="folio-cell"><code>{{ mf.folio }}</code></td>
+                      <td class="name-cell">
+                        <span class="name-primary">{{ mf.schemeName }}</span>
+                        @if (mf.amc) {
+                          <span class="amc-tag">{{ mf.amc }}</span>
+                        }
+                      </td>
+                      <td><code class="isin-sm">{{ mf.isin }}</code></td>
+                      <td>
+                        <span class="plan-badge plan-{{ mf.planType.toLowerCase() }}">{{ mf.planType }}</span>
+                      </td>
+                      <td class="num">{{ mf.units | number:'1.3-3' }}</td>
+                      <td class="num">₹{{ mf.nav | number:'1.2-4' }}</td>
+                      <td class="num">{{ mf.costValue ? ('₹' + (mf.costValue | number:'1.0-0')) : '—' }}</td>
+                      <td class="num value-cell">₹{{ mf.marketValue | number:'1.0-0' }}</td>
+                      <td class="num">
+                        @if (mf.gainLoss !== undefined && mf.gainLoss !== null) {
+                          <span [class.gain]="mf.gainLoss >= 0" [class.loss]="mf.gainLoss < 0">
+                            {{ mf.gainLoss >= 0 ? '+' : '' }}₹{{ mf.gainLoss | number:'1.0-0' }}
+                            @if (mf.gainLossPct !== undefined) {
+                              <br><small>{{ mf.gainLoss >= 0 ? '+' : '' }}{{ mf.gainLossPct | number:'1.2-2' }}%</small>
+                            }
+                          </span>
+                        } @else {
+                          <span>—</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="9" class="total-label">Total ({{ filteredMutualFunds().length }} schemes)</td>
+                    <td class="num value-cell total-footer">
+                      ₹{{ mfTotal() | number:'1.0-0' }}
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          }
+        }
+
+        <!-- ═══ BONDS TABLE ═══ -->
+        @if (activeTab() === 'bonds') {
+          @if (filteredBonds().length === 0) {
+            <div class="empty-state">{{ searchQuery() ? 'No bonds match your search.' : 'No bonds / SGBs found in this statement.' }}</div>
+          } @else {
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>ISIN</th>
+                    <th>Security Name</th>
+                    <th>Type</th>
+                    <th class="num">Quantity</th>
+                    <th class="num">Face Value</th>
+                    <th class="num">Market Price</th>
+                    <th class="num">Total Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (b of filteredBonds(); track b.isin; let i = $index) {
+                    <tr>
+                      <td class="row-num">{{ i + 1 }}</td>
+                      <td><code>{{ b.isin }}</code></td>
+                      <td class="name-cell"><span class="name-primary">{{ b.securityName }}</span></td>
+                      <td>
+                        <span class="type-badge type-reit">{{ b.assetSubtype || 'Other' }}</span>
+                      </td>
+                      <td class="num">{{ b.quantity | number:'1.0-0' }}</td>
+                      <td class="num">{{ b.faceValue ? ('₹' + (b.faceValue | number:'1.0-2')) : '—' }}</td>
+                      <td class="num">₹{{ b.marketPrice | number:'1.2-2' }}</td>
+                      <td class="num value-cell">₹{{ b.totalValue | number:'1.0-0' }}</td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="7" class="total-label">Total ({{ filteredBonds().length }} bonds)</td>
+                    <td class="num value-cell total-footer">
+                      ₹{{ bondTotal() | number:'1.0-0' }}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          }
+        }
+
+        <!-- ═══ RAW LINES VIEWER ═══ -->
+        @if (activeTab() === 'rawLines') {
+          <div class="raw-lines-wrap">
+            <div class="raw-stats">
+              Showing <strong>{{ filteredRawLines().length }}</strong> of <strong>{{ res.rawLines.length }}</strong> lines
+            </div>
+            <div class="raw-lines-scroll">
+              @for (item of filteredRawLines(); track item.idx) {
+                <div class="raw-line">
+                  <span class="line-num">{{ item.idx }}</span>
+                  <span class="line-text">{{ item.line }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ═══ PARSER LOGS ═══ -->
+        @if (activeTab() === 'logs') {
+          <div class="logs-wrap">
+            <div class="raw-stats">
+              <strong>{{ res.logs.length }}</strong> log entries · parsed in <strong>{{ res.parseDurationMs }}ms</strong>
+            </div>
+            <div class="logs-scroll">
+              @for (log of res.logs; track $index) {
+                <div class="log-line">
+                  <span class="log-text">{{ log }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    }
+
+    <!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+    <footer class="dev-footer">
+      <span class="dev-badge-sm">🧪 DEV TOOL</span>
+      CAS Parser Lab · Localhost Only · Finance Tracker
+      <span class="footer-sep">·</span>
+      PDF processed entirely in-browser via PDF.js
+      <span class="footer-sep">·</span>
+      <a routerLink="/app/dashboard" class="footer-link">← Back to App</a>
+    </footer>
+  }
+
+</div>

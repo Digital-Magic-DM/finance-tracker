@@ -208,6 +208,17 @@
             </button>
           </div>
 
+          <!-- Splash Screen Animation -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <h4>Splash Screen Animation</h4>
+              <p>Experience the high-end application launch animation</p>
+            </div>
+            <button class="btn btn-secondary" (click)="splashService.replay()" style="gap:6px">
+              <span class="material-icons" style="font-size:18px">play_circle</span> Preview Animation
+            </button>
+          </div>
+
           <!-- Import Portfolio -->
           <div class="setting-row">
             <div class="setting-info">
@@ -260,7 +271,7 @@
             <img src="/assets/applogo.png" alt="Logo" style="width: 28px; height: 28px; object-fit: contain;" />
             <span class="about-name brand-name"> <span class="black">FinTracker</span></span>
           </div>
-          <p>High-Precision Financial Dashboard · v1.0.0</p>
+          <p>High-Precision Financial Dashboard · v{{ appVersion }}</p>
           <p style="margin-top:4px">Built with Angular 20 · Firebase · Chart.js · Web Crypto PIN Security</p>
         </div>
       </div>
@@ -1426,6 +1437,21 @@
               <span class="tool-badge read-badge">Read</span>
               <strong>get_emergency_runway</strong>
               <p>Calculates exact liquid survival runway in months against monthly expenses.</p>
+            </div>
+            <div class="tool-item">
+              <span class="tool-badge read-badge">Read</span>
+              <strong>get_loans_and_emi_overview</strong>
+              <p>Active loans, monthly EMI outflows, debt balances, and upcoming due dates.</p>
+            </div>
+            <div class="tool-item">
+              <span class="tool-badge read-badge">Read</span>
+              <strong>simulate_debt_payoff_strategy</strong>
+              <p>Simulate Avalanche vs Snowball payoff and compound interest savings.</p>
+            </div>
+            <div class="tool-item">
+              <span class="tool-badge write-badge">Write</span>
+              <strong>record_loan_emi_payment</strong>
+              <p>Record monthly EMIs or prepayments with auto Expense logging.</p>
             </div>
             <div class="tool-item">
               <span class="tool-badge write-badge">Write</span>

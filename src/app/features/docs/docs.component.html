@@ -116,19 +116,31 @@
             class="filter-chip"
             [class.active]="toolCategoryFilter() === 'read'"
             (click)="toolCategoryFilter.set('read')">
-            Read (5)
+            Read
           </button>
           <button
             class="filter-chip"
             [class.active]="toolCategoryFilter() === 'write'"
             (click)="toolCategoryFilter.set('write')">
-            Write (3)
+            Write
           </button>
           <button
             class="filter-chip"
             [class.active]="toolCategoryFilter() === 'portfolio'"
             (click)="toolCategoryFilter.set('portfolio')">
             Portfolio
+          </button>
+          <button
+            class="filter-chip"
+            [class.active]="toolCategoryFilter() === 'loans'"
+            (click)="toolCategoryFilter.set('loans')">
+            Loans &amp; EMI
+          </button>
+          <button
+            class="filter-chip"
+            [class.active]="toolCategoryFilter() === 'sips'"
+            (click)="toolCategoryFilter.set('sips')">
+            SIPs
           </button>
           <button
             class="filter-chip"
@@ -383,6 +395,12 @@
               [class.active]="toolCategoryFilter() === 'transactions'"
               (click)="toolCategoryFilter.set('transactions')">
               Transactions &amp; Cashflow
+            </button>
+            <button
+              class="pill-btn"
+              [class.active]="toolCategoryFilter() === 'sips'"
+              (click)="toolCategoryFilter.set('sips')">
+              SIPs &amp; Calendar (4)
             </button>
           </div>
           <div class="results-count">

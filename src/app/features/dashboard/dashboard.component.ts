@@ -16,6 +16,8 @@ import { PortfolioChartComponent } from '../../shared/portfolio-chart/portfolio-
 import { NetworthChartComponent } from '../../shared/networth-chart/networth-chart.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EssentialsService } from '../../services/essentials.service';
+import { EmiService } from '../../services/emi.service';
+import { SipService } from '../../services/sip.service';
 import quotesDataFile from '../../../assets/quotes.json';
 
 @Component({
@@ -33,10 +35,16 @@ export class DashboardComponent implements OnInit {
     public googleFinance = inject(GoogleFinanceService);
     public priceService = inject(PriceService);
     public essentialsService = inject(EssentialsService);
+    public emiService = inject(EmiService);
+    public sipService = inject(SipService);
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });
     snapshots = toSignal(this.snapshotService.getSnapshots(), { initialValue: [] });
+
+    totalLiabilities = computed(() => this.emiService.summaryMetrics().totalOutstandingBalance);
+    totalMonthlyEmi = computed(() => this.emiService.summaryMetrics().totalMonthlyEmi);
+    netWorthAfterDebt = computed(() => Math.max(0, this.totalNetWorth() - this.totalLiabilities()));
 
     isRefreshing = signal(false);
     lastRefreshed = signal<string | null>(null);

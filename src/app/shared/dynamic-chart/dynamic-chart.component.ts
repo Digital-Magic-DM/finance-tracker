@@ -25,7 +25,7 @@ export interface DynamicChartDataset {
 })
 export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     @ViewChild('canvas') canvasRef?: ElementRef<HTMLCanvasElement>;
-    
+
     @Input() chartType: ChartType = 'bar';
     @Input() labels: string[] = [];
     @Input() dataset: number[] = [];
@@ -46,22 +46,22 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
         });
     }
 
-    ngAfterViewInit() { 
-        if (this.hasData()) this.buildChart(); 
+    ngAfterViewInit() {
+        if (this.hasData()) this.buildChart();
     }
-    
-    ngOnChanges() { 
+
+    ngOnChanges() {
         if (this.chart) {
-            this.chart.destroy(); 
+            this.chart.destroy();
             this.chart = undefined;
         }
         if (this.hasData()) {
             setTimeout(() => this.buildChart(), 0);
         }
     }
-    
-    ngOnDestroy() { 
-        this.chart?.destroy(); 
+
+    ngOnDestroy() {
+        this.chart?.destroy();
     }
 
     public hasData(): boolean {
@@ -125,8 +125,8 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
         const isArea = this.chartType === 'area';
         const actualType = (isArea ? 'line' : this.chartType) as keyof import('chart.js').ChartTypeRegistry;
 
-        const shouldDisplayLegend = this.showLegend !== undefined 
-            ? this.showLegend 
+        const shouldDisplayLegend = this.showLegend !== undefined
+            ? this.showLegend
             : (isCircular || isRadial || (this.datasets && this.datasets.length > 1));
 
         let chartDatasets: any[] = [];
@@ -191,11 +191,11 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
             scalesConfig = {
                 x: {
                     grid: { color: borderColor, display: false },
-                    ticks: { 
-                        color: textColor, 
-                        font: { family: 'Inter', size: 10, weight: 600 }, 
-                        maxRotation: 45, 
-                        minRotation: 0 
+                    ticks: {
+                        color: textColor,
+                        font: { family: 'Inter', size: 10, weight: 600 },
+                        maxRotation: 45,
+                        minRotation: 0
                     },
                     border: { display: true, color: borderColor }
                 },
@@ -228,11 +228,11 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { 
+                    legend: {
                         display: shouldDisplayLegend,
                         position: isCircular || isRadial ? 'right' : 'top',
-                        labels: { 
-                            color: legendColor, 
+                        labels: {
+                            color: legendColor,
                             font: { family: 'Inter', size: 11, weight: 600 },
                             usePointStyle: true,
                             boxWidth: 8
@@ -258,12 +258,12 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
                 },
                 scales: scalesConfig,
                 elements: actualType === 'line' || isArea ? {
-                    point: { 
-                        radius: 2, 
-                        hoverRadius: 6, 
-                        backgroundColor: primaryColor, 
-                        borderWidth: 2, 
-                        borderColor: bgCard 
+                    point: {
+                        radius: 2,
+                        hoverRadius: 6,
+                        backgroundColor: primaryColor,
+                        borderWidth: 2,
+                        borderColor: bgCard
                     },
                     line: { tension: 0.3 }
                 } : {},
@@ -274,6 +274,6 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
     private updateChart() {
         if (!this.chart) return;
         this.chart.destroy();
-        this.buildChart(); 
+        this.buildChart();
     }
 }

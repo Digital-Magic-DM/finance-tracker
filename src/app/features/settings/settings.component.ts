@@ -20,6 +20,9 @@ import { ImportDataComponent } from './import-data/import-data.component';
 import { CustomSelectDirective } from '../../shared/directives/custom-select.directive';
 import { AssetType, TransactionType, getAssetAppSource } from '../../models/finance.models';
 import { McpAuthService } from '../../services/mcp-auth.service';
+import { SplashScreenService } from '../../services/splash-screen.service';
+import { SipService } from '../../services/sip.service';
+import { environment } from '../../../environments/environment';
 
 export type SettingsSubPage = 'basic' | 'reports' | 'pin' | 'devices' | 'mcp';
 export type ReportCategory = 'all' | 'portfolio' | 'stocks' | 'mf' | 'fixed_income' | 'transactions';
@@ -42,12 +45,15 @@ export class SettingsComponent implements OnInit {
     deviceService = inject(DeviceSessionService);
     reportExport = inject(ReportExportService);
     mcpAuth = inject(McpAuthService);
+    splashService = inject(SplashScreenService);
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
+    sipService = inject(SipService);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
 
     // Sub-page navigation
+    readonly appVersion = (environment as any).appVersion || '1.0.0';
     activeSubPage = signal<SettingsSubPage>('basic');
     reportCategory = signal<ReportCategory>('all');
 
@@ -967,10 +973,34 @@ export class SettingsComponent implements OnInit {
             exportedAt: new Date().toISOString(),
             portfolioSummary: this.portfolioSummary(),
             assets: this.assets(),
-            transactions: this.transactions()
+            transactions: this.transactions(),
+            sips: this.sipService.sips()
         };
         const json = JSON.stringify(data, null, 2);
         this.downloadFile(json, `fintracker_data_${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
+    }
+
+    exportSipsCSV() {
+        const sips = this.sipService.sips();
+        const rows: (string | number)[][] = [
+            [`# FinTracker Systematic Investment Plans (SIP) Export`],
+            [`# Exported: ${new Date().toLocaleString('en-IN')}`],
+            [],
+            ['Name', 'Category', 'Frequency', 'Debit Day', 'Amount (INR)', 'Status', 'Next Execution Date', 'Annual Step-Up']
+        ];
+        sips.forEach(s => {
+            rows.push([
+                `"${(s.name || '').replace(/"/g, '""')}"`,
+                s.category,
+                s.frequency,
+                s.sipDay,
+                s.amount,
+                s.status,
+                s.nextExecutionDate || '',
+                s.stepUp?.enabled ? `${s.stepUp.value}%` : 'None'
+            ]);
+        });
+        this.downloadFile(rows.map(r => r.join(',')).join('\n'), `sips_export_${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv');
     }
 
     printReport() {

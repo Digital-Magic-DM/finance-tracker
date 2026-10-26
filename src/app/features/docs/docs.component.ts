@@ -38,7 +38,7 @@ export class DocsComponent implements OnInit, OnDestroy {
   private doc = inject(DOCUMENT);
 
   searchQuery = signal<string>('');
-  toolCategoryFilter = signal<'all' | 'read' | 'write' | 'portfolio' | 'transactions'>('all');
+  toolCategoryFilter = signal<'all' | 'read' | 'write' | 'portfolio' | 'transactions' | 'loans' | 'sips'>('all');
   activeSection = signal<string>('client-setup');
   clientTab = signal<'antigravity' | 'claude' | 'cursor' | 'curl'>('antigravity');
   copiedSnippetId = signal<string | null>(null);
@@ -372,6 +372,278 @@ export class DocsComponent implements OnInit, OnDestroy {
         status: 'safe',
       },
     },
+    {
+      id: 'get_loans_and_emi_overview',
+      name: 'get_loans_and_emi_overview',
+      type: 'read',
+      description:
+        'Provides complete overview of user loans, total outstanding balance, total monthly EMI outflow, total interest payable, upcoming due dates, and debt distribution across loan categories.',
+      aiPromptExample: '"What are my active loans, total monthly EMI outflows, and upcoming due dates?"',
+      parameters: [
+        { name: 'uid', type: 'string', required: false, description: 'Firebase user ID' },
+      ],
+      requestExample: {
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'get_loans_and_emi_overview',
+          arguments: {},
+        },
+        id: 9,
+      },
+      responseExample: {
+        totalActiveLoans: 2,
+        totalOutstandingBalance: 3950000,
+        totalMonthlyEmi: 46200,
+        totalOriginalPrincipal: 4800000,
+        totalInterestPayable: 1420000,
+        totalInterestPaid: 340000,
+        totalAmountPayable: 6220000,
+        totalPaidSoFar: 1850000,
+        overallProgressPct: 29.7,
+        debtByType: {
+          Home: { balance: 3600000, monthlyEmi: 39049, count: 1 },
+          Car: { balance: 350000, monthlyEmi: 7151, count: 1 },
+        },
+        nextDue: {
+          loanName: 'HDFC Smart Home Loan',
+          lender: 'HDFC Bank',
+          amount: 39049,
+          dueDay: 5,
+        },
+      },
+    },
+    {
+      id: 'simulate_debt_payoff_strategy',
+      name: 'simulate_debt_payoff_strategy',
+      type: 'read',
+      description:
+        'Simulates accelerated debt repayment using Avalanche (highest interest rate first) or Snowball (smallest balance first) strategies with an optional extra monthly prepayment budget. Returns estimated interest saved and months shaved off.',
+      aiPromptExample: '"If I pay an extra ₹10,000 every month, how much interest will I save using the Avalanche method?"',
+      parameters: [
+        { name: 'uid', type: 'string', required: false, description: 'Firebase user ID' },
+        { name: 'extraMonthlyPayment', type: 'number', required: false, description: 'Extra monthly prepayment budget in INR (default: 5000)' },
+        { name: 'method', type: 'string', required: false, description: '"avalanche" (highest interest rate first) or "snowball" (smallest balance first)' },
+      ],
+      requestExample: {
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'simulate_debt_payoff_strategy',
+          arguments: {
+            extraMonthlyPayment: 10000,
+            method: 'avalanche',
+          },
+        },
+        id: 10,
+      },
+      responseExample: {
+        method: 'avalanche',
+        extraMonthlyPayment: 10000,
+        totalCurrentDebt: 3950000,
+        totalMonthlyCommitment: 56200,
+        estimatedInterestSaved: 385000,
+        estimatedMonthsSaved: 28,
+        strategyAdvice: 'Debt Avalanche prioritizes mathematically superior loans. By directing your extra ₹10,000/mo toward your highest-rate loan, you could save approximately ₹3,85,000 in compound interest and be debt-free ~28 months earlier.',
+      },
+    },
+    {
+      id: 'record_loan_emi_payment',
+      name: 'record_loan_emi_payment',
+      type: 'write',
+      description:
+        'Records a monthly EMI payment or a part-prepayment on a specific loan. Updates the loan progress and automatically logs an Expense transaction under "Debt / Loan Repayment".',
+      aiPromptExample: '"Record this month\'s EMI payment for my HDFC Home Loan."',
+      parameters: [
+        { name: 'uid', type: 'string', required: false, description: 'Firebase user ID' },
+        { name: 'loanId', type: 'string', required: true, description: 'Firestore ID of the loan' },
+        { name: 'amount', type: 'number', required: false, description: 'Payment amount in INR (defaults to regular EMI)' },
+        { name: 'isPrepayment', type: 'boolean', required: false, description: 'Set true for part-prepayment vs regular EMI' },
+        { name: 'notes', type: 'string', required: false, description: 'Optional payment notes or transaction reference' },
+      ],
+      requestExample: {
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'record_loan_emi_payment',
+          arguments: {
+            loanId: 'loan_hdfc_home',
+            amount: 39049,
+            isPrepayment: false,
+          },
+        },
+        id: 11,
+      },
+      responseExample: {
+        success: true,
+        message: 'Monthly EMI payment of ₹39,049 recorded for HDFC Smart Home Loan. Transaction logged.',
+        transactionId: 'tx_emi_4901a',
+      },
+    },
+    {
+      id: 'get_sips_overview',
+      name: 'get_sips_overview',
+      type: 'read',
+      description:
+        'Fetches user active SIP commitments, monthly outflow, next execution dates resolved with market calendar, rollover flags, and complete auto-debit audit ledger.',
+      aiPromptExample: '"What are my active SIP investments and when is my next auto-debit?"',
+      parameters: [
+        {
+          name: 'uid',
+          type: 'string',
+          required: false,
+          description: 'Firebase user ID. Defaults to DEFAULT_USER_UID.',
+        },
+        {
+          name: 'status',
+          type: 'string',
+          required: false,
+          description: 'Optional filter: Active | Paused | Completed | Cancelled',
+        },
+      ],
+      requestExample: {
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'get_sips_overview',
+          arguments: {
+            status: 'Active',
+          },
+        },
+        id: 12,
+      },
+      responseExample: {
+        totalSips: 3,
+        activeSipsCount: 3,
+        totalMonthlyCommitment: 25000,
+        totalInvestedToDate: 175000,
+        nextUpcomingSip: {
+          name: 'Parag Parikh Flexi Cap Fund',
+          amount: 10000,
+          scheduledDate: '2026-11-01',
+          executionDate: '2026-11-02',
+          rolledOver: true,
+          rolloverReason: 'Sunday Market Holiday (NSE/BSE Closed)',
+        },
+        sips: [
+          {
+            id: 'sip_ppfc_01',
+            name: 'Parag Parikh Flexi Cap Fund',
+            category: 'MutualFund',
+            amount: 10000,
+            frequency: 'Monthly',
+            dayOfMonth: 1,
+            nextExecutionDate: '2026-11-02',
+            status: 'Active',
+            stepUpConfig: { enabled: true, percentage: 10, frequency: 'Yearly' },
+          },
+        ],
+      },
+    },
+    {
+      id: 'add_sip',
+      name: 'add_sip',
+      type: 'write',
+      description:
+        'Registers a new systematic investment plan (Mutual Fund, Stock, ETF, Gold) with preferred day of the month, frequency, bank account, and optional annual step-up.',
+      aiPromptExample: '"Set up a new monthly SIP of ₹10,000 in Parag Parikh Flexi Cap Fund on the 10th of every month with 10% annual step-up."',
+      parameters: [
+        { name: 'name', type: 'string', required: true, description: 'Investment plan name (e.g. Parag Parikh Flexi Cap Fund)' },
+        { name: 'amount', type: 'number', required: true, description: 'Installment amount in INR' },
+        { name: 'dayOfMonth', type: 'number', required: true, description: 'Debit day of month (1 to 28)' },
+        { name: 'category', type: 'string', required: false, description: 'MutualFund | Stock | ETF | Gold | Crypto | Other' },
+        { name: 'frequency', type: 'string', required: false, description: 'Monthly | Weekly | Quarterly' },
+        { name: 'stepUpPercentage', type: 'number', required: false, description: 'Optional annual step-up percentage (e.g. 10)' },
+      ],
+      requestExample: {
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'add_sip',
+          arguments: {
+            name: 'UTI Nifty 50 Index Fund',
+            amount: 5000,
+            dayOfMonth: 15,
+            category: 'MutualFund',
+            frequency: 'Monthly',
+            stepUpPercentage: 10,
+          },
+        },
+        id: 13,
+      },
+      responseExample: {
+        success: true,
+        message: 'SIP for UTI Nifty 50 Index Fund registered successfully. First scheduled execution on 2026-11-17 (clearing rollover from holiday).',
+        sipId: 'sip_uti_n50_91',
+        nextExecutionDate: '2026-11-17',
+      },
+    },
+    {
+      id: 'get_market_trading_calendar',
+      name: 'get_market_trading_calendar',
+      type: 'read',
+      description:
+        'Checks official NSE/BSE trading holidays, weekend settlement rules, live market hours, and resolves exact trading dates for any month/year.',
+      aiPromptExample: '"Is the Indian stock market open on November 1st, and when will my 1st of the month SIP get debited?"',
+      parameters: [
+        { name: 'year', type: 'number', required: false, description: 'Calendar year to query (defaults to current year)' },
+        { name: 'month', type: 'number', required: false, description: 'Specific month (1-12) to inspect' },
+        { name: 'testDate', type: 'string', required: false, description: 'Optional date YYYY-MM-DD to resolve next trading day' },
+      ],
+      requestExample: {
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'get_market_trading_calendar',
+          arguments: {
+            year: 2026,
+            testDate: '2026-11-01',
+          },
+        },
+        id: 14,
+      },
+      responseExample: {
+        targetDate: '2026-11-01',
+        isOpen: false,
+        reason: 'Weekend (Sunday)',
+        nextTradingDay: '2026-11-02',
+        holidaysCount: 16,
+        isMarketCurrentlyOpen: true,
+      },
+    },
+    {
+      id: 'execute_sip_installment',
+      name: 'execute_sip_installment',
+      type: 'write',
+      description:
+        'Executes or logs a SIP installment, records an expense transaction, credits unit holdings in portfolio assets, and advances the next execution date.',
+      aiPromptExample: '"Execute today scheduled SIP of ₹5,000 for UTI Nifty 50 Index Fund at NAV 142.5."',
+      parameters: [
+        { name: 'sipId', type: 'string', required: true, description: 'Target SIP ID' },
+        { name: 'amount', type: 'number', required: false, description: 'Installment amount in INR (defaults to registered SIP amount)' },
+        { name: 'navOrPrice', type: 'number', required: false, description: 'Actual allotment NAV or market unit price' },
+        { name: 'notes', type: 'string', required: false, description: 'Optional notes or mandate reference' },
+      ],
+      requestExample: {
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'execute_sip_installment',
+          arguments: {
+            sipId: 'sip_uti_n50_91',
+            amount: 5000,
+            navOrPrice: 142.5,
+          },
+        },
+        id: 15,
+      },
+      responseExample: {
+        success: true,
+        message: 'SIP installment of ₹5,000 executed. 35.088 units credited to portfolio. Next execution scheduled for 2026-12-15.',
+        transactionId: 'tx_sip_9281a',
+        nextExecutionDate: '2026-12-15',
+      },
+    },
   ];
 
   readonly antigravityConfigCode = `{
@@ -422,6 +694,18 @@ curl -N -H "Authorization: Bearer YOUR_PERSONAL_AI_KEY" \\
       if (
         filter === 'transactions' &&
         !['list_transactions', 'add_transaction', 'get_cashflow_summary'].includes(t.id)
+      ) {
+        return false;
+      }
+      if (
+        filter === 'loans' &&
+        !['get_loans_and_emi_overview', 'simulate_debt_payoff_strategy', 'record_loan_emi_payment'].includes(t.id)
+      ) {
+        return false;
+      }
+      if (
+        filter === 'sips' &&
+        !['get_sips_overview', 'add_sip', 'get_market_trading_calendar', 'execute_sip_installment'].includes(t.id)
       ) {
         return false;
       }

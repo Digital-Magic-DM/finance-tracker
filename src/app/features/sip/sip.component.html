@@ -1,0 +1,1327 @@
+<div class="sip-page-container">
+  <!-- ── Top Header ── -->
+  <header class="sip-header">
+    <div class="header-left">
+      <div class="header-badge">
+        <span class="material-icons-outlined pulse-icon">autorenew</span>
+        <span>REAL-WORLD MARKET ENGINE</span>
+      </div>
+      <h1 class="header-title">Systematic Investment Plans (SIP)</h1>
+      <p class="header-desc">
+        Auto-executes investments on actual stock exchange trading days. Automatically accounts for weekends,
+        clearing holidays, and AMFI / SEBI mutual fund NAV allocation rules.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <!-- Export Statements -->
+      <button
+        class="btn btn-secondary"
+        (click)="exportStatement('pdf')"
+        title="Download official PDF SIP statement & audit trail">
+        <span class="material-icons">picture_as_pdf</span>
+        <span>PDF</span>
+      </button>
+
+      <button
+        class="btn btn-secondary"
+        (click)="exportStatement('excel')"
+        title="Download Excel spreadsheet of active SIPs & execution history">
+        <span class="material-icons">table_view</span>
+        <span>Excel</span>
+      </button>
+
+      <!-- Sync / Auto-Debit Trigger -->
+      <button
+        class="btn btn-secondary sync-btn"
+        (click)="runAutoDebitCheck()"
+        [disabled]="sipService.autoExecuting()"
+        title="Check and auto-execute pending SIPs based on market calendar">
+        <span class="material-icons" [class.spinning]="sipService.autoExecuting()">sync</span>
+        <span>{{ sipService.autoExecuting() ? 'Syncing...' : 'Sync Auto-Debits' }}</span>
+      </button>
+
+      <!-- Add SIP Button -->
+      <button class="btn btn-primary" (click)="openAddModal()">
+        <span class="material-icons">add_circle</span>
+        <span>New SIP</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Hero KPI Metric Cards ── -->
+  <section class="kpi-grid">
+    <!-- Monthly SIP Commitment -->
+    <div class="kpi-card gradient-violet">
+      <div class="kpi-header">
+        <span class="kpi-label">Monthly SIP Outflow</span>
+        <div class="kpi-icon-wrapper">
+          <span class="material-icons">payments</span>
+        </div>
+      </div>
+      <div class="kpi-value">
+        {{ sipService.summaryMetrics().totalMonthlyCommitment | currency:'INR':'symbol':'1.0-0' }}
+      </div>
+      <div class="kpi-subtext">
+        Across <strong>{{ sipService.summaryMetrics().totalActiveSips }}</strong> active investments
+      </div>
+    </div>
+
+    <!-- Total Invested via SIPs -->
+    <div class="kpi-card gradient-emerald">
+      <div class="kpi-header">
+        <span class="kpi-label">Total Invested via SIPs</span>
+        <div class="kpi-icon-wrapper">
+          <span class="material-icons">account_balance_wallet</span>
+        </div>
+      </div>
+      <div class="kpi-value">
+        {{ sipService.summaryMetrics().totalInvested | currency:'INR':'symbol':'1.0-0' }}
+      </div>
+      <div class="kpi-subtext">
+        <strong>{{ sipService.summaryMetrics().totalExecutedInstallments }}</strong> installments executed
+      </div>
+    </div>
+
+    <!-- Next Upcoming SIP -->
+    <div class="kpi-card gradient-blue">
+      <div class="kpi-header">
+        <span class="kpi-label">Next Upcoming SIP</span>
+        <div class="kpi-icon-wrapper">
+          <span class="material-icons">event_upcoming</span>
+        </div>
+      </div>
+      @if (sipService.summaryMetrics().nextUpcomingSip; as nextSip) {
+        <div class="kpi-value text-truncate" [title]="nextSip.sipName">
+          {{ nextSip.amount | currency:'INR':'symbol':'1.0-0' }}
+        </div>
+        <div class="kpi-subtext upcoming-subtext">
+          <span class="fund-name-pill text-truncate">{{ nextSip.sipName }}</span>
+          <div class="due-badge" [class.due-soon]="nextSip.daysRemaining <= 3">
+            <span class="material-icons">schedule</span>
+            @if (nextSip.daysRemaining === 0) {
+              <span>Debiting Today!</span>
+            } @else if (nextSip.daysRemaining === 1) {
+              <span>Tomorrow ({{ formatDateStr(nextSip.executionDate) }})</span>
+            } @else {
+              <span>In {{ nextSip.daysRemaining }} days ({{ formatDateStr(nextSip.executionDate) }})</span>
+            }
+          </div>
+          @if (nextSip.wasShifted) {
+            <div class="shift-mini-pill" [title]="nextSip.shiftReason">
+              <span class="material-icons">swap_horiz</span>
+              <span>Market Holiday Shifted</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="kpi-value text-muted">—</div>
+        <div class="kpi-subtext text-muted">No upcoming SIPs scheduled</div>
+      }
+    </div>
+
+    <!-- Market Calendar & Trading Status -->
+    <div class="kpi-card gradient-amber">
+      <div class="kpi-header">
+        <span class="kpi-label">NSE / BSE Trading Status</span>
+        <div class="kpi-icon-wrapper">
+          <span class="material-icons">candlestick_chart</span>
+        </div>
+      </div>
+      <div class="market-status-badge" [class.open]="sipService.summaryMetrics().marketStatus.isOpen">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ sipService.summaryMetrics().marketStatus.statusText }}</span>
+      </div>
+      <div class="kpi-subtext market-time-subtext">
+        {{ sipService.summaryMetrics().marketStatus.nextSessionText }}
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Navigation Tabs ── -->
+  <nav class="sip-nav-tabs">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'active'"
+      (click)="activeTab.set('active')">
+      <span class="material-icons">format_list_bulleted</span>
+      <span>Active SIPs ({{ filteredSips().length }})</span>
+    </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'calendar'"
+      (click)="activeTab.set('calendar')">
+      <span class="material-icons">calendar_month</span>
+      <span>Yearly Market Calendar & Date Simulator</span>
+      <span class="pill-badge">Holidays</span>
+    </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'history'"
+      (click)="activeTab.set('history')">
+      <span class="material-icons">history</span>
+      <span>Auto-Debit Audit Ledger</span>
+      <span class="pill-badge">{{ allExecutedInstallments().length }}</span>
+    </button>
+
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'calculator'"
+      (click)="activeTab.set('calculator')">
+      <span class="material-icons">calculate</span>
+      <span>SIP Wealth & Step-Up Calculator</span>
+    </button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 1: ACTIVE SIPS VIEW                                                -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'active') {
+    <div class="tab-content active-sips-view">
+      <!-- Filter & Search Toolbar -->
+      <div class="toolbar-row">
+        <!-- Category Chips -->
+        <div class="category-chips">
+          <button
+            class="chip-btn"
+            [class.active]="selectedCategory() === 'All'"
+            (click)="selectedCategory.set('All')">
+            All ({{ sipService.sips().length }})
+          </button>
+          @for (cat of sipCategories; track cat) {
+            <button
+              class="chip-btn"
+              [class.active]="selectedCategory() === cat"
+              (click)="selectedCategory.set(cat)">
+              <span class="material-icons chip-icon">{{ SIP_CONFIG[cat].icon }}</span>
+              <span>{{ SIP_CONFIG[cat].label }}</span>
+            </button>
+          }
+        </div>
+
+        <div class="toolbar-right">
+          <!-- Search Box -->
+          <div class="search-box">
+            <span class="material-icons search-icon">search</span>
+            <input
+              type="text"
+              placeholder="Search by fund, house, folio..."
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)" />
+            @if (searchQuery()) {
+              <button class="clear-search" (click)="searchQuery.set('')">
+                <span class="material-icons">close</span>
+              </button>
+            }
+          </div>
+
+          <!-- View Mode Toggle (Cards / Table) -->
+          <div class="view-toggle">
+            <button
+              class="toggle-btn"
+              [class.active]="viewMode() === 'cards'"
+              (click)="viewMode.set('cards')"
+              title="Card Grid View">
+              <span class="material-icons">grid_view</span>
+            </button>
+            <button
+              class="toggle-btn"
+              [class.active]="viewMode() === 'table'"
+              (click)="viewMode.set('table')"
+              title="Table View">
+              <span class="material-icons">table_rows</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Auto-Execute Engine Notice Banner -->
+      <div class="auto-engine-card">
+        <div class="engine-icon-wrapper">
+          <span class="material-icons">cloud_done</span>
+        </div>
+        <div class="engine-text">
+          <strong>Auto-Debit Background Engine Active:</strong>
+          Investments automatically synchronize with actual stock exchange open days. If an installment
+          lands on a weekend or trading holiday, units are debited and allocated on the next business day without requiring manual intervention.
+        </div>
+        <div class="engine-action">
+          <button class="btn btn-sm btn-ghost" (click)="activeTab.set('calendar')">
+            <span class="material-icons">visibility</span>
+            <span>View Market Calendar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── SIP Cards Grid ── -->
+      @if (viewMode() === 'cards') {
+        @if (filteredSips().length > 0) {
+          <div class="sips-grid">
+            @for (sip of filteredSips(); track sip.id) {
+              <div class="sip-card" [class.paused]="sip.status === 'Paused'">
+                <!-- Card Header -->
+                <div class="sip-card-header">
+                  <div class="cat-badge" [style.background]="SIP_CONFIG[sip.category].badgeBg" [style.color]="SIP_CONFIG[sip.category].color">
+                    <span class="material-icons">{{ SIP_CONFIG[sip.category].icon }}</span>
+                    <span>{{ SIP_CONFIG[sip.category].label }}</span>
+                  </div>
+
+                  <div class="header-badges">
+                    @if (sip.autoExecute) {
+                      <span class="auto-badge" title="Automatically updates on market trading days">
+                        <span class="material-icons">bolt</span>
+                        <span>Auto-Invest</span>
+                      </span>
+                    }
+                    <span class="status-pill" [class.active]="sip.status === 'Active'" [class.paused]="sip.status === 'Paused'">
+                      {{ sip.status }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Fund Info -->
+                <div class="sip-card-body">
+                  <h3 class="sip-fund-name" [title]="sip.name">{{ sip.name }}</h3>
+                  @if (sip.fundHouse) {
+                    <div class="sip-fund-house">{{ sip.fundHouse }}</div>
+                  }
+
+                  <div class="amount-row">
+                    <div class="amount-main">
+                      <span class="amount-num">{{ sip.amount | currency:'INR':'symbol':'1.0-0' }}</span>
+                      <span class="freq-tag">/ {{ sip.frequency }}</span>
+                    </div>
+
+                    @if (sip.stepUp?.enabled) {
+                      <div class="step-up-pill" title="Annual Step-Up Active">
+                        <span class="material-icons">trending_up</span>
+                        <span>+{{ sip.stepUp?.value }}{{ sip.stepUp?.type === 'percentage' ? '%' : '₹' }}/yr</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Next Execution & Market Shift Notice -->
+                  <div class="execution-info-box">
+                    <div class="exec-row">
+                      <span class="exec-label">Preferred SIP Day:</span>
+                      <span class="exec-val font-semibold">{{ sip.sipDay }}th of every month</span>
+                    </div>
+
+                    <div class="exec-row">
+                      <span class="exec-label">Next Market Execution:</span>
+                      <span class="exec-val next-date font-semibold">
+                        {{ formatDateStr(sip.nextExecutionDate) }}
+                      </span>
+                    </div>
+
+                    <!-- Market Calendar Resolution details -->
+                    @let res = calendarService.resolveTradingDay(sip.nextExecutionDate || '');
+                    @if (res.wasShifted) {
+                      <div class="shift-alert-box" [title]="res.reason">
+                        <span class="material-icons">info</span>
+                        <span>{{ res.reason }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Mandate & Folio -->
+                  <div class="meta-details">
+                    @if (sip.mandateAccount) {
+                      <div class="meta-item">
+                        <span class="material-icons">account_balance</span>
+                        <span class="text-truncate">{{ sip.mandateAccount }}</span>
+                      </div>
+                    }
+                    @if (sip.folioNumber) {
+                      <div class="meta-item">
+                        <span class="material-icons">badge</span>
+                        <span>Folio: {{ sip.folioNumber }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Progress Bar / Invested Summary -->
+                  <div class="investment-summary-box">
+                    <div class="summary-line">
+                      <span>Total Invested</span>
+                      <span class="sum-amount">{{ sip.totalInvested | currency:'INR':'symbol':'1.0-0' }}</span>
+                    </div>
+                    <div class="summary-line-sub">
+                      <span>{{ sip.installmentsPaid }} installments completed</span>
+                      @if (sip.lastExecutionDate) {
+                        <span>Last: {{ formatDateStr(sip.lastExecutionDate) }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="sip-card-footer">
+                  <div class="primary-actions">
+                    <button
+                      class="btn btn-sm btn-outline-primary"
+                      (click)="executeNow(sip)"
+                      title="Instantly execute an installment now">
+                      <span class="material-icons">play_circle</span>
+                      <span>Execute</span>
+                    </button>
+
+                    <button
+                      class="btn btn-sm btn-ghost"
+                      (click)="togglePause(sip)"
+                      [title]="sip.status === 'Active' ? 'Pause SIP' : 'Resume SIP'">
+                      <span class="material-icons">{{ sip.status === 'Active' ? 'pause_circle' : 'play_arrow' }}</span>
+                      <span>{{ sip.status === 'Active' ? 'Pause' : 'Resume' }}</span>
+                    </button>
+
+                    <button
+                      class="btn btn-sm btn-ghost"
+                      (click)="openScheduleModal(sip)"
+                      title="Inspect 12-Month Market Calendar Schedule">
+                      <span class="material-icons">calendar_today</span>
+                      <span>Schedule</span>
+                    </button>
+                  </div>
+
+                  <div class="secondary-actions">
+                    <button
+                      class="icon-btn"
+                      (click)="openHistoryModal(sip)"
+                      title="View Installment History">
+                      <span class="material-icons">receipt_long</span>
+                    </button>
+                    <button
+                      class="icon-btn"
+                      (click)="openEditModal(sip)"
+                      title="Edit SIP Details">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button
+                      class="icon-btn danger"
+                      (click)="deleteSip(sip)"
+                      title="Delete SIP">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Empty State -->
+          <div class="empty-state-card">
+            <div class="empty-icon-circle">
+              <span class="material-icons">savings</span>
+            </div>
+            <h3>No SIPs Found</h3>
+            <p>You haven't created any Systematic Investment Plans matching your current filters.</p>
+            <button class="btn btn-primary" (click)="openAddModal()">
+              <span class="material-icons">add</span>
+              <span>Create Your First SIP</span>
+            </button>
+          </div>
+        }
+      } @else {
+        <!-- ── Table View ── -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fund / Investment</th>
+                <th>Category</th>
+                <th>Installment</th>
+                <th>Preferred Day</th>
+                <th>Next Market Execution</th>
+                <th>Total Invested</th>
+                <th>Auto-Debit</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sip of filteredSips(); track sip.id) {
+                <tr>
+                  <td>
+                    <div class="table-fund-cell">
+                      <span class="fund-title">{{ sip.name }}</span>
+                      <span class="fund-sub">{{ sip.fundHouse || sip.mandateAccount || '—' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="table-cat-badge" [style.color]="SIP_CONFIG[sip.category].color">
+                      {{ SIP_CONFIG[sip.category].label }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="table-amount">
+                      <strong>{{ sip.amount | currency:'INR':'symbol':'1.0-0' }}</strong>
+                      <span class="text-muted">/ {{ sip.frequency }}</span>
+                    </div>
+                  </td>
+                  <td>{{ sip.sipDay }}th of month</td>
+                  <td>
+                    <div class="table-next-exec">
+                      <span class="exec-date-highlight">{{ formatDateStr(sip.nextExecutionDate) }}</span>
+                      @let res = calendarService.resolveTradingDay(sip.nextExecutionDate || '');
+                      @if (res.wasShifted) {
+                        <span class="table-shift-pill" [title]="res.reason">Shifted</span>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <strong>{{ sip.totalInvested | currency:'INR':'symbol':'1.0-0' }}</strong>
+                    <div class="text-muted text-xs">{{ sip.installmentsPaid }} installments</div>
+                  </td>
+                  <td>
+                    @if (sip.autoExecute) {
+                      <span class="badge-success">Active</span>
+                    } @else {
+                      <span class="badge-neutral">Manual</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="status-pill" [class.active]="sip.status === 'Active'" [class.paused]="sip.status === 'Paused'">
+                      {{ sip.status }}
+                    </span>
+                  </td>
+                  <td class="text-right">
+                    <div class="table-actions">
+                      <button class="icon-btn" (click)="openScheduleModal(sip)" title="Calendar Schedule">
+                        <span class="material-icons">calendar_today</span>
+                      </button>
+                      <button class="icon-btn" (click)="openHistoryModal(sip)" title="History">
+                        <span class="material-icons">history</span>
+                      </button>
+                      <button class="icon-btn" (click)="openEditModal(sip)" title="Edit">
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button class="icon-btn danger" (click)="deleteSip(sip)" title="Delete">
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 2: YEARLY MARKET CALENDAR & DATE SIMULATOR                         -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'calendar') {
+    <div class="tab-content calendar-simulator-view">
+      <!-- Real-World SEBI/AMFI Rule Explainer Card -->
+      <div class="sebi-rule-banner">
+        <div class="banner-badge">
+          <span class="material-icons">verified</span>
+          <span>SEBI & AMFI REGULATORY RULE</span>
+        </div>
+        <h2>Real-World Market Open & Settlement Mechanics</h2>
+        <p>
+          In the Indian mutual fund and capital market ecosystem, bank mandates (e-mandate / OTM) and unit allotments
+          cannot process on Saturdays, Sundays, or declared stock exchange clearing holidays.
+          <strong>When your chosen SIP day falls on a non-trading day, execution automatically shifts to the NEXT working business day at that day's official NAV.</strong>
+        </p>
+      </div>
+
+      <!-- Simulator Controls -->
+      <div class="simulator-controls-card">
+        <div class="sim-row">
+          <div class="sim-group">
+            <label class="control-label">Select Year</label>
+            <div class="year-pills">
+              @for (yr of availableYears; track yr) {
+                <button
+                  class="pill-btn"
+                  [class.active]="calendarYear() === yr"
+                  (click)="setCalendarYear(yr)">
+                  {{ yr }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="sim-group">
+            <label class="control-label">Test Against Existing SIP or Custom Day</label>
+            <select
+              class="form-select"
+              [ngModel]="selectedSipInCalendar()"
+              (ngModelChange)="onSimulatorSipChange($event)">
+              <option value="custom">Custom Date Simulation</option>
+              @for (s of sipService.sips(); track s.id) {
+                <option [value]="s.id">{{ s.name }} ({{ s.sipDay }}th of month)</option>
+              }
+            </select>
+          </div>
+
+          <div class="sim-group flex-1">
+            <label class="control-label">Preferred SIP Day: <strong>{{ calendarSimulatorDay() }}th of Month</strong></label>
+            <div class="day-chips-row">
+              @for (day of commonSipDays; track day) {
+                <button
+                  class="day-chip"
+                  [class.active]="calendarSimulatorDay() === day"
+                  (click)="setSimulatorDay(day)">
+                  {{ day }}th
+                </button>
+              }
+              <input
+                type="number"
+                min="1"
+                max="31"
+                class="custom-day-input"
+                title="Enter custom day (1-31)"
+                [ngModel]="calendarSimulatorDay()"
+                (ngModelChange)="setSimulatorDay($event)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulator Statistics Summary -->
+        <div class="sim-stats-grid">
+          <div class="stat-box">
+            <span class="stat-num text-success">{{ simulatorStats().onTimeCount }} / 12</span>
+            <span class="stat-desc">Exact Day Executions (Market Open)</span>
+          </div>
+
+          <div class="stat-box">
+            <span class="stat-num text-warning">{{ simulatorStats().shiftedCount }} / 12</span>
+            <span class="stat-desc">Shifted due to Weekends / Holidays</span>
+          </div>
+
+          <div class="stat-box">
+            <span class="stat-num text-primary">+{{ simulatorStats().avgDelayDays }} Days</span>
+            <span class="stat-desc">Average Settlement Rollover Delay</span>
+          </div>
+
+          <div class="stat-box">
+            <span class="stat-num text-accent">{{ yearHolidays().length }}</span>
+            <span class="stat-desc">Declared Exchange Holidays in {{ calendarYear() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12-Month Schedule Table & Breakdown -->
+      <div class="schedule-section">
+        <div class="section-title-row">
+          <h3>
+            <span class="material-icons">event_note</span>
+            <span>12-Month Real-World Execution Schedule for Day {{ calendarSimulatorDay() }} (Year {{ calendarYear() }})</span>
+          </h3>
+          <span class="badge-info">Automatic Holiday Roll-Forward</span>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Scheduled Date</th>
+                <th>Actual Market Trading Day</th>
+                <th>Status</th>
+                <th>Adjustment Reason</th>
+                <th>Timeline</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of simulatorSchedule(); track entry.monthIndex) {
+                <tr [class.highlight-row]="entry.isNextUpcoming" [class.past-row]="entry.isPast">
+                  <td>
+                    <strong>{{ entry.monthName }} {{ calendarYear() }}</strong>
+                  </td>
+                  <td>
+                    <span class="font-mono">{{ formatDateStr(entry.scheduledDateStr) }}</span>
+                  </td>
+                  <td>
+                    <span class="font-mono font-semibold" [class.text-accent]="entry.wasShifted">
+                      {{ formatDateStr(entry.executionDateStr) }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (entry.wasShifted) {
+                      <span class="badge-warning">
+                        <span class="material-icons">swap_horiz</span>
+                        <span>Shifted (+{{ entry.shiftDays }}d)</span>
+                      </span>
+                    } @else {
+                      <span class="badge-success">
+                        <span class="material-icons">check_circle</span>
+                        <span>Exact Day</span>
+                      </span>
+                    }
+                  </td>
+                  <td>
+                    <span class="reason-text">{{ entry.reason }}</span>
+                  </td>
+                  <td>
+                    @if (entry.isNextUpcoming) {
+                      <span class="badge-pulse">NEXT UPCOMING</span>
+                    } @else if (entry.isPast) {
+                      <span class="badge-past">Completed</span>
+                    } @else {
+                      <span class="badge-scheduled">Scheduled</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Declared Market Holidays Directory -->
+      <div class="holidays-section">
+        <div class="section-title-row">
+          <h3>
+            <span class="material-icons">beach_access</span>
+            <span>NSE / BSE Declared Exchange Holidays ({{ calendarYear() }})</span>
+          </h3>
+          <span class="text-muted">{{ yearHolidays().length }} declared market closures</span>
+        </div>
+
+        <div class="holidays-grid">
+          @for (hol of yearHolidays(); track hol.date) {
+            <div class="holiday-card">
+              <div class="hol-date-col">
+                <span class="hol-day">{{ hol.day.substring(0, 3) }}</span>
+                <span class="hol-num">{{ hol.date.split('-')[2] }}</span>
+                <span class="hol-mon">{{ hol.date.split('-')[1] }}</span>
+              </div>
+              <div class="hol-info-col">
+                <h4 class="hol-name">{{ hol.name }}</h4>
+                <div class="hol-date-full">{{ formatDateStr(hol.date) }}</div>
+                <span class="hol-badge">Trading & Clearing Closed</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 3: AUTO-EXECUTION HISTORY AUDIT TRAIL                              -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'history') {
+    <div class="tab-content history-view">
+      <div class="section-title-row">
+        <div>
+          <h2>Auto-Debit Audit Ledger</h2>
+          <p class="section-subtitle">
+            Complete verifiable log of all installments auto-debited and processed according to market trading days.
+          </p>
+        </div>
+        <button class="btn btn-sm btn-secondary" (click)="runAutoDebitCheck()">
+          <span class="material-icons">refresh</span>
+          <span>Refresh Ledger</span>
+        </button>
+      </div>
+
+      @if (allExecutedInstallments().length > 0) {
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Execution Date</th>
+                <th>Scheduled Date</th>
+                <th>Fund / Investment</th>
+                <th>Installment #</th>
+                <th>Amount</th>
+                <th>Allotted NAV</th>
+                <th>Units Added</th>
+                <th>Market Shift Status</th>
+                <th>Execution Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of allExecutedInstallments(); track item.installment.id) {
+                <tr>
+                  <td>
+                    <strong>{{ formatDateStr(item.installment.executionDate) }}</strong>
+                  </td>
+                  <td>
+                    <span class="text-muted font-mono">{{ formatDateStr(item.installment.scheduledDate) }}</span>
+                  </td>
+                  <td>
+                    <div class="table-fund-cell">
+                      <span class="fund-title">{{ item.sip.name }}</span>
+                      <span class="fund-sub">{{ item.sip.mandateAccount || 'Bank Mandate' }}</span>
+                    </div>
+                  </td>
+                  <td>#{{ item.installment.installmentNumber }}</td>
+                  <td>
+                    <strong>{{ item.installment.amount | currency:'INR':'symbol':'1.0-0' }}</strong>
+                  </td>
+                  <td>
+                    @if (item.installment.nav) {
+                      <span>₹{{ item.installment.nav | number:'1.2-2' }}</span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (item.installment.units) {
+                      <span class="font-semibold text-success">+{{ item.installment.units | number:'1.3-3' }}</span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td>
+                    @if (item.installment.isMarketShifted) {
+                      <span class="badge-warning" [title]="item.installment.shiftReason || 'Shifted'">
+                        <span class="material-icons">swap_horiz</span>
+                        <span>Holiday Shifted</span>
+                      </span>
+                    } @else {
+                      <span class="badge-success">
+                        <span class="material-icons">check</span>
+                        <span>On-Time</span>
+                      </span>
+                    }
+                  </td>
+                  <td>
+                    @if (item.installment.autoExecuted) {
+                      <span class="badge-info">
+                        <span class="material-icons">smart_toy</span>
+                        <span>Auto-Executed</span>
+                      </span>
+                    } @else {
+                      <span class="badge-neutral">Manual</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state-card">
+          <div class="empty-icon-circle">
+            <span class="material-icons">history_edu</span>
+          </div>
+          <h3>No Installments Executed Yet</h3>
+          <p>Once your SIPs reach their scheduled market trading days, their debits and allotted units will appear here automatically.</p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 4: SIP WEALTH CALCULATOR                                           -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'calculator') {
+    <div class="tab-content calculator-view">
+      <div class="calc-grid">
+        <!-- Input Controls Form -->
+        <div class="calc-card inputs-card">
+          <div class="calc-header">
+            <span class="material-icons text-primary">analytics</span>
+            <h2>SIP Growth & Compounding Simulator</h2>
+          </div>
+          <p class="calc-desc">
+            Simulate your long-term wealth creation with the power of compounding and optional annual step-up.
+          </p>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label>Monthly Investment</label>
+              <span class="val-pill">{{ calcMonthlyInvestment | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
+            <input
+              type="range"
+              min="500"
+              max="200000"
+              step="500"
+              class="range-slider"
+              [(ngModel)]="calcMonthlyInvestment" />
+          </div>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label>Expected Annual Return Rate (% p.a.)</label>
+              <span class="val-pill">{{ calcExpectedReturnPct }}%</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="30"
+              step="0.5"
+              class="range-slider"
+              [(ngModel)]="calcExpectedReturnPct" />
+          </div>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label>Time Period (Years)</label>
+              <span class="val-pill">{{ calcTenureYears }} Years</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="40"
+              step="1"
+              class="range-slider"
+              [(ngModel)]="calcTenureYears" />
+          </div>
+
+          <!-- Step-Up Toggle -->
+          <div class="step-up-box">
+            <div class="step-up-header">
+              <label class="switch-container">
+                <input type="checkbox" [(ngModel)]="calcStepUpEnabled" />
+                <span class="switch-slider"></span>
+              </label>
+              <div class="switch-label">
+                <strong>Annual Step-Up SIP</strong>
+                <span>Increase monthly investment every year as your income grows</span>
+              </div>
+            </div>
+
+            @if (calcStepUpEnabled) {
+              <div class="step-up-controls">
+                <div class="label-row">
+                  <label>Annual Increase Rate</label>
+                  <span class="val-pill">+{{ calcStepUpPct }}% per year</span>
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="25"
+                  step="1"
+                  class="range-slider"
+                  [(ngModel)]="calcStepUpPct" />
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Wealth Output & Compounding Breakdown -->
+        <div class="calc-card results-card">
+          <h3>Projected Corpus at Maturity</h3>
+
+          <div class="corpus-highlight">
+            <span class="corpus-amount">
+              {{ calculatorResults().futureValue | currency:'INR':'symbol':'1.0-0' }}
+            </span>
+            <span class="corpus-sub">
+              <strong>{{ calculatorResults().wealthMultiplier }}x</strong> your total investment
+            </span>
+          </div>
+
+          <!-- Dual Progress Bar -->
+          <div class="dual-progress-bar">
+            @let total = calculatorResults().futureValue;
+            @let invPct = total > 0 ? (calculatorResults().totalInvested / total) * 100 : 50;
+            @let gainPct = 100 - invPct;
+            <div class="bar-segment invested" [style.width.%]="invPct" title="Invested Amount"></div>
+            <div class="bar-segment gains" [style.width.%]="gainPct" title="Estimated Wealth Gain"></div>
+          </div>
+
+          <div class="breakdown-grid">
+            <div class="breakdown-item">
+              <div class="legend-dot dot-invested"></div>
+              <div>
+                <span class="breakdown-label">Total Amount Invested</span>
+                <div class="breakdown-val">
+                  {{ calculatorResults().totalInvested | currency:'INR':'symbol':'1.0-0' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="breakdown-item">
+              <div class="legend-dot dot-gains"></div>
+              <div>
+                <span class="breakdown-label">Estimated Wealth Gain</span>
+                <div class="breakdown-val text-success">
+                  +{{ calculatorResults().estimatedWealthGain | currency:'INR':'symbol':'1.0-0' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="insight-box">
+            <span class="material-icons">tips_and_updates</span>
+            <p>
+              By investing <strong>{{ calcMonthlyInvestment | currency:'INR':'symbol':'1.0-0' }}</strong> monthly for
+              <strong>{{ calcTenureYears }} years</strong> at <strong>{{ calcExpectedReturnPct }}%</strong> returns
+              @if (calcStepUpEnabled) { with a <strong>{{ calcStepUpPct }}%</strong> annual step-up }
+              , your money grows to
+              <strong>{{ calculatorResults().futureValue | currency:'INR':'symbol':'1.0-0' }}</strong>!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODAL: ADD / EDIT SIP                                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  @if (showAddEditModal()) {
+    <div class="modal-backdrop" (click)="closeAddEditModal()">
+      <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>{{ editingSipId() ? 'Edit Systematic Investment Plan' : 'Create New SIP' }}</h3>
+            <p class="modal-subtitle">Configure investment fund, monthly installment, and market execution calendar</p>
+          </div>
+          <button class="close-btn" (click)="closeAddEditModal()">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Quick Popular Presets (Only when adding) -->
+          @if (!editingSipId()) {
+            <div class="presets-section">
+              <label class="section-label">Popular Investment Presets</label>
+              <div class="presets-chips">
+                @for (preset of popularFundPresets; track preset.name) {
+                  <button
+                    type="button"
+                    class="preset-btn"
+                    [class.selected]="sipFormName === preset.name"
+                    (click)="selectFundPreset(preset)">
+                    <span class="material-icons">{{ SIP_CONFIG[preset.cat].icon }}</span>
+                    <span>{{ preset.name.split(' - ')[0] }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="form-grid">
+            <!-- Fund Name -->
+            <div class="form-group full-width">
+              <label class="required">Fund / Asset Name</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="e.g. Parag Parikh Flexi Cap Fund - Direct Growth"
+                [(ngModel)]="sipFormName" />
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+              <label>Investment Category</label>
+              <select class="form-control" [(ngModel)]="sipFormCategory">
+                @for (cat of sipCategories; track cat) {
+                  <option [value]="cat">{{ SIP_CONFIG[cat].label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Fund House / AMC -->
+            <div class="form-group">
+              <label>Fund House / AMC</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="e.g. PPFAS Mutual Fund"
+                [(ngModel)]="sipFormFundHouse" />
+            </div>
+
+            <!-- Amount -->
+            <div class="form-group">
+              <label class="required">Installment Amount (₹)</label>
+              <input
+                type="number"
+                class="form-control"
+                min="100"
+                step="500"
+                [(ngModel)]="sipFormAmount" />
+            </div>
+
+            <!-- Frequency -->
+            <div class="form-group">
+              <label>Frequency</label>
+              <select class="form-control" [(ngModel)]="sipFormFrequency">
+                <option value="Monthly">Monthly</option>
+                <option value="Weekly">Weekly</option>
+                <option value="Quarterly">Quarterly</option>
+              </select>
+            </div>
+
+            <!-- Preferred Day of Month -->
+            <div class="form-group">
+              <label class="required">
+                Preferred SIP Day (1 - 31)
+              </label>
+              <div class="day-input-group">
+                <input
+                  type="number"
+                  class="form-control"
+                  min="1"
+                  max="31"
+                  [(ngModel)]="sipFormDay" />
+                <button
+                  type="button"
+                  class="btn btn-sm btn-ghost"
+                  (click)="setSimulatorDay(sipFormDay); activeTab.set('calendar'); closeAddEditModal();"
+                  title="Open market calendar to test this date">
+                  <span class="material-icons">calendar_month</span>
+                  <span>Test Calendar</span>
+                </button>
+              </div>
+
+              <!-- Live Resolution Indicator -->
+              <div class="live-date-preview" [class.shifted]="modalDateResolution().wasShifted">
+                <span class="material-icons">{{ modalDateResolution().wasShifted ? 'swap_horiz' : 'event_available' }}</span>
+                <span>
+                  Next execution: <strong>{{ formatDateStr(modalDateResolution().executionDate) }}</strong>
+                  @if (modalDateResolution().wasShifted) {
+                    ({{ modalDateResolution().reason }})
+                  }
+                </span>
+              </div>
+            </div>
+
+            <!-- Start Date -->
+            <div class="form-group">
+              <label class="required">Start Date</label>
+              <input
+                type="date"
+                class="form-control"
+                [(ngModel)]="sipFormStartDate" />
+            </div>
+
+            <!-- Bank / Mandate Account -->
+            <div class="form-group">
+              <label>Payment Source / Mandate</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="e.g. HDFC Bank - OTM Autopay (...4819)"
+                [(ngModel)]="sipFormMandate" />
+            </div>
+
+            <!-- Folio Number -->
+            <div class="form-group">
+              <label>Folio / Account Number</label>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="e.g. 1029481928"
+                [(ngModel)]="sipFormFolio" />
+            </div>
+
+            <!-- Link to Existing Portfolio Asset -->
+            <div class="form-group">
+              <label>Link to Portfolio Asset Holding (Optional)</label>
+              <select class="form-control" [(ngModel)]="sipFormLinkedAssetId">
+                <option value="">Auto-create / Auto-match by name</option>
+                @for (a of userAssets(); track a.id) {
+                  <option [value]="a.id">{{ a.name }} ({{ a.type }})</option>
+                }
+              </select>
+            </div>
+
+            <!-- Auto-Execute Toggle -->
+            <div class="form-group full-width switch-field">
+              <label class="switch-container">
+                <input type="checkbox" [(ngModel)]="sipFormAutoExecute" />
+                <span class="switch-slider"></span>
+              </label>
+              <div class="switch-label">
+                <strong>Auto-Debit Background Execution (Recommended)</strong>
+                <span>
+                  Automatically debits and allocates units when the market opens on scheduled trading days.
+                </span>
+              </div>
+            </div>
+
+            <!-- Step-Up SIP Toggle & Configuration -->
+            <div class="form-group full-width step-up-config-box">
+              <div class="step-up-toggle-row">
+                <label class="switch-container">
+                  <input type="checkbox" [(ngModel)]="sipFormStepUpEnabled" />
+                  <span class="switch-slider"></span>
+                </label>
+                <div class="switch-label">
+                  <strong>Annual Step-Up SIP</strong>
+                  <span>Automatically increase installment amount every 12 months</span>
+                </div>
+              </div>
+
+              @if (sipFormStepUpEnabled) {
+                <div class="step-up-inputs">
+                  <div class="form-group">
+                    <label>Step-Up Type</label>
+                    <select class="form-control" [(ngModel)]="sipFormStepUpType">
+                      <option value="percentage">Percentage (%)</option>
+                      <option value="fixed">Fixed Amount (₹)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Increase Value</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      min="1"
+                      [(ngModel)]="sipFormStepUpValue" />
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group full-width">
+              <label>Personal Notes</label>
+              <textarea
+                class="form-control"
+                rows="2"
+                placeholder="Add goal, investment reason, or mandate details..."
+                [(ngModel)]="sipFormNotes"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeAddEditModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveSip()">
+            <span class="material-icons">check</span>
+            <span>{{ editingSipId() ? 'Save Changes' : 'Create SIP' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODAL: SINGLE SIP YEARLY SCHEDULE                                      -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  @if (showScheduleModal() && selectedSipForSchedule(); as sip) {
+    <div class="modal-backdrop" (click)="closeScheduleModal()">
+      <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>{{ sip.name }}</h3>
+            <p class="modal-subtitle">
+              12-Month Real-World Market Schedule for Day {{ sip.sipDay }}th (Year {{ calendarYear() }})
+            </p>
+          </div>
+          <button class="close-btn" (click)="closeScheduleModal()">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          @let schedule = calendarService.generateYearlySchedule(sip.sipDay, calendarYear());
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Scheduled Day</th>
+                  <th>Market Execution Day</th>
+                  <th>Status</th>
+                  <th>Adjustment Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (entry of schedule; track entry.monthIndex) {
+                  <tr [class.highlight-row]="entry.isNextUpcoming" [class.past-row]="entry.isPast">
+                    <td><strong>{{ entry.monthName }} {{ calendarYear() }}</strong></td>
+                    <td>{{ formatDateStr(entry.scheduledDateStr) }}</td>
+                    <td>
+                      <strong [class.text-accent]="entry.wasShifted">{{ formatDateStr(entry.executionDateStr) }}</strong>
+                    </td>
+                    <td>
+                      @if (entry.wasShifted) {
+                        <span class="badge-warning">Shifted (+{{ entry.shiftDays }}d)</span>
+                      } @else {
+                        <span class="badge-success">Exact Day</span>
+                      }
+                    </td>
+                    <td><span class="reason-text">{{ entry.reason }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" (click)="closeScheduleModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- MODAL: SINGLE SIP INSTALLMENTS HISTORY                                 -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  @if (showHistoryModal() && selectedSipForHistory(); as sip) {
+    <div class="modal-backdrop" (click)="closeHistoryModal()">
+      <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h3>{{ sip.name }} — Installments Ledger</h3>
+            <p class="modal-subtitle">
+              Total Invested: {{ sip.totalInvested | currency:'INR':'symbol':'1.0-0' }} across {{ sip.installmentsPaid }} installments
+            </p>
+          </div>
+          <button class="close-btn" (click)="closeHistoryModal()">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          @if ((sip.installments || []).length > 0) {
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Execution Date</th>
+                    <th>Scheduled Date</th>
+                    <th>Amount</th>
+                    <th>NAV</th>
+                    <th>Units</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (inst of sip.installments || []; track inst.id) {
+                    <tr>
+                      <td>#{{ inst.installmentNumber }}</td>
+                      <td><strong>{{ formatDateStr(inst.executionDate) }}</strong></td>
+                      <td>{{ formatDateStr(inst.scheduledDate) }}</td>
+                      <td>{{ inst.amount | currency:'INR':'symbol':'1.0-0' }}</td>
+                      <td>{{ inst.nav ? ('₹' + (inst.nav | number:'1.2-2')) : '—' }}</td>
+                      <td class="text-success font-semibold">{{ inst.units ? ('+' + (inst.units | number:'1.3-3')) : '—' }}</td>
+                      <td>
+                        @if (inst.isMarketShifted) {
+                          <span class="badge-warning" [title]="inst.shiftReason || ''">Shifted</span>
+                        } @else {
+                          <span class="badge-success">Executed</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="empty-state-card">
+              <span class="material-icons">receipt_long</span>
+              <h4>No Installments Logged Yet</h4>
+              <p>Future installments will auto-populate as market trading dates arrive.</p>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" (click)="closeHistoryModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

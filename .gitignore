@@ -84,3 +84,7 @@ mcp-server/.env.*
 
 #task
 TASKS.md
+
+# CAS Specs & Notes
+docs/CAS_ISSUES.md
+docs/CAS_PARSER_TECHNICAL_SPEC.md

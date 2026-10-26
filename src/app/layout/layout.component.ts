@@ -9,6 +9,7 @@ import { PinLockComponent } from '../shared/pin-lock/pin-lock.component';
 import { SecurityRemediationModalComponent } from '../shared/security-remediation-modal/security-remediation-modal.component';
 import { PinSecurityService } from '../services/pin-security.service';
 import { DeviceSessionService } from '../services/device-session.service';
+import { SipService } from '../services/sip.service';
 
 @Component({
     selector: 'app-layout',
@@ -28,7 +29,7 @@ export class LayoutComponent implements OnInit {
     private meta = inject(Meta);
     pinSecurity = inject(PinSecurityService);
     deviceSessionService = inject(DeviceSessionService);
-    // constructor() { inject(MarketService); } // Eagerly start market data fetching
+    sipService = inject(SipService); // Eagerly trigger market-aware auto-update engine
     sidebarOpen = signal(false);
     sidebarCollapsed = signal(localStorage.getItem('fintracker_sidebar_collapsed') === 'true');
 

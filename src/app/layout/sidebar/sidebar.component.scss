@@ -19,7 +19,8 @@
             .version,
             .sign-out-text,
             .toggle-footer-text,
-            .nav-label {
+            .nav-label,
+            .dev-nav-pill {
                 display: none !important;
             }
 
@@ -255,6 +256,18 @@
         white-space: nowrap;
     }
 
+    .dev-nav-pill {
+        font-size: 9px;
+        font-weight: 700;
+        padding: 2px 5px;
+        border-radius: 4px;
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        letter-spacing: 0.05em;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
     .nav-arrow {
         font-size: 15px;
         opacity: 0;
@@ -282,6 +295,11 @@
 
         .nav-arrow {
             opacity: 0.7;
+            color: var(--bg-primary);
+        }
+
+        .dev-nav-pill {
+            background: rgba(255, 255, 255, 0.2);
             color: var(--bg-primary);
         }
     }

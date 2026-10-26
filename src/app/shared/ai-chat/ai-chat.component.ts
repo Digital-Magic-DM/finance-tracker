@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AiService } from '../../services/ai.service';
 import { AssetService } from '../../services/asset.service';
 import { TransactionService } from '../../services/transaction.service';
+import { SipService } from '../../services/sip.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 interface ChatMessage {
@@ -213,6 +214,7 @@ export class AiChatComponent {
   aiService = inject(AiService);
   private assetService = inject(AssetService);
   private txService = inject(TransactionService);
+  private sipService = inject(SipService);
 
   @ViewChild('chatContainer') chatContainer!: ElementRef;
 
@@ -225,6 +227,10 @@ export class AiChatComponent {
   transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });
 
   contextPayload = computed(() => {
+    const sips = this.sipService.sips();
+    const activeSips = sips.filter((s) => s.status === 'Active');
+    const summary = this.sipService.summaryMetrics();
+
     return {
       totalAssetsCount: this.assets().length,
       assets: this.assets().map((a: any) => ({
@@ -238,7 +244,21 @@ export class AiChatComponent {
         type: t.type,
         category: t.category,
         date: t.date?.seconds ? new Date(t.date.seconds * 1000).toISOString().split('T')[0] : String(t.date).split('T')[0]
-      }))
+      })),
+      sipCommitments: {
+        totalActiveSips: summary.totalActiveSips,
+        monthlySipOutflow: summary.totalMonthlyCommitment,
+        totalInvestedToDate: summary.totalInvested,
+        activePlans: activeSips.map((s) => ({
+          name: s.name,
+          category: s.category,
+          amount: s.amount,
+          frequency: s.frequency,
+          sipDay: s.sipDay,
+          nextExecutionDate: s.nextExecutionDate,
+          stepUp: s.stepUp?.enabled ? `+${s.stepUp.value}% annual` : 'None'
+        }))
+      }
     };
   });
 

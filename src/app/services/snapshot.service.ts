@@ -11,6 +11,7 @@ import { Observable } from 'rxjs';
 import { PortfolioSnapshot, Asset, AssetType, NetWorthPoint } from '../models/finance.models';
 import { PriceService } from './price.service';
 import { GoogleFinanceService } from './google-finance.service';
+import { EmiService } from './emi.service';
 
 @Injectable({ providedIn: 'root' })
 export class SnapshotService {
@@ -19,6 +20,7 @@ export class SnapshotService {
     private injector = inject(Injector);
     private priceService = inject(PriceService);
     private googleFinance = inject(GoogleFinanceService);
+    private emiService = inject(EmiService);
 
     async saveSnapshot(assets: Asset[]): Promise<void> {
         const uid = this.auth.currentUser?.uid;
@@ -39,11 +41,12 @@ export class SnapshotService {
             totalInvested += cost;
         }
 
+        const totalLiabilities = this.emiService.summaryMetrics().totalOutstandingBalance || 0;
         const snapshot: PortfolioSnapshot = {
             date: today,
-            netWorth: totalAssets,
+            netWorth: Math.max(0, totalAssets - totalLiabilities),
             totalAssets,
-            totalLiabilities: 0,
+            totalLiabilities,
             totalInvested,
             totalProfit: totalAssets - totalInvested,
             breakdown,

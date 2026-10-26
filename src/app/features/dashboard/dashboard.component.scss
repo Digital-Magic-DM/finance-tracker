@@ -335,6 +335,16 @@
     }
 }
 
+.emi-debt-card {
+    border-top: 2px solid #ef4444;
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(239, 68, 68, 0.14);
+    }
+}
+
 /* Charts Grid */
 .charts-grid {
     display: grid;

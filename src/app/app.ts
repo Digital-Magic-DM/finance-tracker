@@ -4,14 +4,15 @@ import { ThemeService } from './services/theme.service';
 import { PwaService } from './services/pwa.service';
 import { Title } from '@angular/platform-browser';
 import { SnackbarComponent } from './shared/snackbar/snackbar.component';
+import { SplashScreenComponent } from './shared/splash-screen/splash-screen.component';
 import { GoogleAnalyticsService } from './services/google-analytics.service';
 import { effect } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SnackbarComponent],
-  template: `<router-outlet /><app-snackbar />`,
+  imports: [RouterOutlet, SnackbarComponent, SplashScreenComponent],
+  template: `<router-outlet /><app-snackbar /><app-splash-screen />`,
   styles: [
     `
       :host {

@@ -1,0 +1,306 @@
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 999999;
+  background-color: var(--bg-primary, #000000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+  cursor: pointer;
+  will-change: opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1200px;
+
+  /* ── Background Exit Fade ── */
+  &.is-exiting {
+    animation: splashBgExit 0.56s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    pointer-events: none;
+
+    .hero-brand {
+      animation: heroZoomBigExit 0.56s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform-origin: center center;
+    }
+
+    .focal-glow {
+      animation: glowZoomBigExit 0.56s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .brand-name {
+      animation: brandZoomExit 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+  }
+}
+
+@keyframes splashBgExit {
+  0% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* ── Ambient Radial Focal Glow (Netlify Teal / Cyan & Emerald Aura) ── */
+.focal-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 480px;
+  height: 480px;
+  transform: translate3d(-50%, -50%, 0);
+  background: radial-gradient(
+    circle,
+    rgba(0, 229, 191, 0.12) 0%,
+    rgba(16, 185, 129, 0.08) 25%,
+    rgba(255, 255, 255, 0.04) 45%,
+    transparent 70%
+  );
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: glowEntrancePulse 2.4s ease-in-out infinite alternate;
+
+  [data-theme="light"] & {
+    background: radial-gradient(
+      circle,
+      rgba(0, 180, 150, 0.12) 0%,
+      rgba(0, 0, 0, 0.04) 40%,
+      transparent 70%
+    );
+  }
+}
+
+@keyframes glowEntrancePulse {
+  0% {
+    transform: translate3d(-50%, -50%, 0) scale3d(0.85, 0.85, 1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(-50%, -50%, 0) scale3d(1.1, 1.1, 1);
+    opacity: 1;
+  }
+}
+
+@keyframes glowZoomBigExit {
+  0% {
+    transform: translate3d(-50%, -50%, 0) scale3d(1, 1, 1);
+    opacity: 0.9;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-50%, -50%, 0) scale3d(14, 14, 1);
+    opacity: 0;
+  }
+}
+
+/* ── Center Hero Brand Group (In: Small to Normal | Out: Normal to Big Screen Fill) ── */
+.hero-brand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  z-index: 10;
+  will-change: transform, opacity, filter;
+  transform: translate3d(0, 0, 0);
+  animation: heroSmallToNormalEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* "In" Animation: Scales smoothly from small (0.68) to normal (1.0) with organic settle */
+@keyframes heroSmallToNormalEntrance {
+  0% {
+    transform: scale3d(0.68, 0.68, 1) translate3d(0, 12px, 0);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  85% {
+    transform: scale3d(1.025, 1.025, 1) translate3d(0, -1px, 0);
+  }
+  100% {
+    transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+/* "Out" Animation: Accelerates forward to 28x to engulf and fill the entire screen seamlessly */
+@keyframes heroZoomBigExit {
+  0% {
+    transform: scale3d(1, 1, 1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  20% {
+    transform: scale3d(1.3, 1.3, 1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  50% {
+    transform: scale3d(4, 4, 1);
+    opacity: 0.95;
+    filter: blur(0.5px);
+  }
+  80% {
+    transform: scale3d(14, 14, 1);
+    opacity: 0.5;
+    filter: blur(1.5px);
+  }
+  100% {
+    transform: scale3d(28, 28, 1);
+    opacity: 0;
+    filter: blur(3px);
+  }
+}
+
+/* ── Favicon Icon Pod ── */
+.icon-pod {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 24px;
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 18px 44px rgba(0, 0, 0, 0.75),
+    0 0 32px rgba(0, 229, 191, 0.12),
+    0 0 50px rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+
+  [data-theme="light"] & {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.14);
+    box-shadow: 
+      0 18px 36px rgba(0, 0, 0, 0.09),
+      0 0 24px rgba(0, 180, 150, 0.1);
+  }
+}
+
+.favicon-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 15px;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Specular Light Gleam Sweep (Signature Sheen) */
+.light-gleam {
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.4) 48%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(255, 255, 255, 0.4) 52%,
+    transparent 65%
+  );
+  pointer-events: none;
+  will-change: transform;
+  transform: translate3d(-130%, 0, 0) rotate(25deg);
+  animation: gleamSweep 1s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+
+  [data-theme="light"] & {
+    background: linear-gradient(
+      115deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.7) 48%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.7) 52%,
+      transparent 65%
+    );
+  }
+}
+
+@keyframes gleamSweep {
+  0% {
+    transform: translate3d(-130%, 0, 0) rotate(25deg);
+  }
+  100% {
+    transform: translate3d(130%, 0, 0) rotate(25deg);
+  }
+}
+
+/* ── Typographic Wordmark ── */
+.brand-name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  will-change: opacity, transform;
+  animation: brandReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+
+@keyframes brandReveal {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.9, 0.9, 1) translate3d(0, 6px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
+  }
+}
+
+@keyframes brandZoomExit {
+  0% {
+    transform: scale3d(1, 1, 1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale3d(1.8, 1.8, 1);
+    opacity: 0;
+  }
+}
+
+.letter-glow {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--text-primary, #ffffff);
+  padding-left: 0.34em; /* optical centering */
+  text-shadow: 0 2px 14px rgba(255, 255, 255, 0.14);
+
+  [data-theme="light"] & {
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* ── Reduced Motion Accessibility ── */
+@media (prefers-reduced-motion: reduce) {
+  .splash-screen,
+  .hero-brand,
+  .icon-pod,
+  .focal-glow,
+  .light-gleam,
+  .brand-name {
+    animation: none !important;
+    transition: opacity 0.2s ease !important;
+  }
+}

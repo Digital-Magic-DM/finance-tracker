@@ -8,6 +8,7 @@ interface NavItem {
     label: string;
     icon: string;
     route: string;
+    isDev?: boolean;
 }
 
 @Component({
@@ -25,15 +26,25 @@ export class SidebarComponent {
     toggleCollapse = output<void>();
     appVersion = VERSION;
 
-    navItems: NavItem[] = [
-        // { label: 'Live Market', icon: 'bolt', route: '/app/market' },
-        { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard' },
-        { label: 'Assets', icon: 'account_balance_wallet', route: '/app/assets' },
-        { label: 'Transactions', icon: 'receipt_long', route: '/app/transactions' },
-        { label: 'Analytics', icon: 'analytics', route: '/app/analytics' },
-        { label: 'Essentials', icon: 'health_and_safety', route: '/app/essentials' },
-        { label: 'Settings', icon: 'settings', route: '/app/settings' },
-    ];
+    readonly isLocalhost =
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.startsWith('192.168.'));
+
+    get navItems(): NavItem[] {
+        return [
+            // { label: 'Live Market', icon: 'bolt', route: '/app/market' },
+            { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard' },
+            { label: 'Assets', icon: 'account_balance_wallet', route: '/app/assets' },
+            { label: 'Transactions', icon: 'receipt_long', route: '/app/transactions' },
+            { label: 'SIPs & Auto-Invest', icon: 'autorenew', route: '/app/sip' },
+            { label: 'Analytics', icon: 'analytics', route: '/app/analytics' },
+            { label: 'Essentials', icon: 'health_and_safety', route: '/app/essentials' },
+            { label: 'EMI & Loans', icon: 'credit_score', route: '/app/emi' },
+            { label: 'Settings', icon: 'settings', route: '/app/settings' },
+        ];
+    }
 
     signOut() {
         this.authService.signOut().subscribe();

@@ -1,0 +1,1539 @@
+<div class="emi-page">
+  
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="title-row">
+        <h1 class="page-title">EMI &amp; Loan Manager</h1>
+      </div>
+      <p class="page-subtitle">Track loans, monthly EMI cash outflows, prepayments &amp; amortization schedules</p>
+    </div>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary action-tool-btn" (click)="loadSampleLoans()" title="Load sample loans for preview">
+          <span class="material-icons sm-icon">auto_fix_high</span>
+          <span class="btn-text">Sample Data</span>
+        </button>
+
+        <button class="btn btn-secondary action-tool-btn" (click)="exportDataJson()" title="Export loans data as JSON">
+          <span class="material-icons sm-icon">download</span>
+          <span class="btn-text">Export</span>
+        </button>
+
+        <button class="btn btn-primary" (click)="openAddModal()" title="Add New Loan or EMI">
+          <span class="plus-icon">+</span>
+          <span class="btn-text">Add Loan</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Executive Summary Cards ── -->
+    @if (emiService.summaryMetrics(); as metrics) {
+      <div class="summary-grid">
+        <!-- Monthly EMI Card -->
+        <div class="card summary-card emi-highlight">
+          <div class="card-icon-wrap" style="color: #ef4444; background: rgba(239, 68, 68, 0.1);">
+            <span class="material-icons">credit_card</span>
+          </div>
+          <div class="card-content">
+            <div class="s-label">Monthly EMI Outflow</div>
+            <div class="s-value emi-val">
+              {{ metrics.totalMonthlyEmi | currency:'INR':'symbol':'1.0-0' }}
+              <span class="per-month">/ month</span>
+            </div>
+            <div class="s-sub">
+              Across <strong>{{ metrics.totalActiveLoans }}</strong> active loan{{ metrics.totalActiveLoans === 1 ? '' : 's' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Outstanding Card -->
+        <div class="card summary-card">
+          <div class="card-icon-wrap" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1);">
+            <span class="material-icons">account_balance</span>
+          </div>
+          <div class="card-content">
+            <div class="s-label">Outstanding Principal</div>
+            <div class="s-value text-blue">
+              {{ metrics.totalOutstandingBalance | currency:'INR':'symbol':'1.0-0' }}
+            </div>
+            <div class="s-sub">
+              Total Borrowed: {{ metrics.totalOriginalPrincipal | currency:'INR':'symbol':'1.0-0' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Interest Card -->
+        <div class="card summary-card">
+          <div class="card-icon-wrap" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);">
+            <span class="material-icons">trending_up</span>
+          </div>
+          <div class="card-content">
+            <div class="s-label">Total Interest Cost</div>
+            <div class="s-value text-amber">
+              {{ metrics.totalInterestPayable | currency:'INR':'symbol':'1.0-0' }}
+            </div>
+            <div class="s-sub">
+              Paid so far: {{ metrics.totalInterestPaid | currency:'INR':'symbol':'1.0-0' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Next EMI Countdown Card -->
+        <div class="card summary-card">
+          <div class="card-icon-wrap" style="color: #10b981; background: rgba(16, 185, 129, 0.1);">
+            <span class="material-icons">event_upcoming</span>
+          </div>
+          <div class="card-content">
+            <div class="s-label">Next Payment Due</div>
+            @if (metrics.nextUpcomingEmi; as next) {
+              <div class="s-value text-green">{{ next.amount | currency:'INR':'symbol':'1.0-0' }}</div>
+              <div class="s-sub">
+                {{ next.loanName }} · <strong>{{ next.dueDateStr }}</strong>
+                @if (next.daysRemaining === 0) {
+                  <span class="due-pill due-today">Due Today</span>
+                } @else if (next.daysRemaining <= 5) {
+                  <span class="due-pill due-soon">In {{ next.daysRemaining }}d</span>
+                }
+              </div>
+            } @else {
+              <div class="s-value text-muted">—</div>
+              <div class="s-sub">No active loans due</div>
+            }
+          </div>
+        </div>
+
+        <!-- FOIR / Debt-to-Income Health Card -->
+        @if (emiService.foirMetrics(); as foir) {
+          <div class="card summary-card foir-card" (click)="openEditIncomeModal()" title="Click to configure monthly income">
+            @if (!foir.isConfigured) {
+              <div class="card-icon-wrap" style="color: var(--text-muted); background: var(--bg-secondary);">
+                <span class="material-icons">account_balance_wallet</span>
+              </div>
+              <div class="card-content">
+                <div class="s-label foir-label-row">
+                  <span>Debt-To-Income (FOIR)</span>
+                  <span class="material-icons sm-edit-icon">add_circle_outline</span>
+                </div>
+                <div class="s-value foir-not-configured">
+                  Not Set
+                  <span class="foir-tag neutral">Optional</span>
+                </div>
+                <div class="s-sub">
+                  Tap to set monthly salary &amp; check borrowing health
+                </div>
+              </div>
+            } @else {
+              <div class="card-icon-wrap" [style.color]="foir.status === 'healthy' ? '#10b981' : foir.status === 'moderate' ? '#f59e0b' : '#ef4444'" [style.background]="foir.status === 'healthy' ? 'rgba(16, 185, 129, 0.1)' : foir.status === 'moderate' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)'">
+                <span class="material-icons">health_and_safety</span>
+              </div>
+              <div class="card-content">
+                <div class="s-label foir-label-row">
+                  <span>Debt-To-Income (FOIR)</span>
+                  <span class="material-icons sm-edit-icon">edit</span>
+                </div>
+                <div class="s-value" [class.text-green]="foir.status === 'healthy'" [class.text-amber]="foir.status === 'moderate'" [class.text-danger]="foir.status === 'risky'">
+                  {{ foir.foirPct }}%
+                  <span class="foir-tag" [class.healthy]="foir.status === 'healthy'" [class.moderate]="foir.status === 'moderate'" [class.risky]="foir.status === 'risky'">
+                    {{ foir.status === 'healthy' ? 'Healthy' : foir.status === 'moderate' ? 'Moderate' : 'High Risk' }}
+                  </span>
+                </div>
+                <div class="s-sub">
+                  Income: {{ foir.monthlyIncome | currency:'INR':'symbol':'1.0-0' }} · Headroom: {{ foir.remainingBorrowingCapacity | currency:'INR':'symbol':'1.0-0' }}
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── Tax Relief Insight Banner ── -->
+    @if (emiService.taxDeductionSummary(); as tax) {
+      @if (tax.eligibleLoansCount > 0) {
+        <div class="tax-insight-banner card">
+          <div class="tax-header-row">
+            <div class="tax-badge-wrap">
+              <span class="material-icons tax-icon">verified</span>
+              <div>
+                <div class="tax-title">Tax Deduction Analysis</div>
+                <div class="tax-sub">Indian Income Tax (Sec 24b, 80C &amp; 80E) on active loans</div>
+              </div>
+            </div>
+
+            <!-- Tax Regime Toggle -->
+            <div class="tax-regime-selector">
+              <span class="regime-lbl">Tax Regime:</span>
+              <div class="regime-toggle-pills">
+                <button
+                  type="button"
+                  class="regime-pill"
+                  [class.active]="tax.regime === 'old'"
+                  (click)="setTaxRegime('old')">
+                  Old Regime
+                </button>
+                <button
+                  type="button"
+                  class="regime-pill"
+                  [class.active]="tax.regime === 'new'"
+                  (click)="setTaxRegime('new')">
+                  New Regime (115BAC)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- OLD REGIME VIEW -->
+          @if (tax.regime === 'old') {
+            <!-- Tax Slab Assumption Strip -->
+            <div class="tax-slab-bar">
+              <span class="slab-hint">Marginal Tax Slab Rate:</span>
+              <div class="slab-pill-group">
+                <button
+                  type="button"
+                  class="slab-pill"
+                  [class.active]="tax.taxSlabRate === 0.10"
+                  (click)="setTaxSlabRate(0.10)">
+                  10% Slab
+                </button>
+                <button
+                  type="button"
+                  class="slab-pill"
+                  [class.active]="tax.taxSlabRate === 0.20"
+                  (click)="setTaxSlabRate(0.20)">
+                  20% Slab
+                </button>
+                <button
+                  type="button"
+                  class="slab-pill"
+                  [class.active]="tax.taxSlabRate === 0.30"
+                  (click)="setTaxSlabRate(0.30)">
+                  30% Slab (Standard)
+                </button>
+              </div>
+            </div>
+
+            <div class="tax-stats-row">
+              <div class="tax-stat">
+                <span class="tax-stat-label">Sec 24(b) Interest (Home)</span>
+                <span class="tax-stat-val">{{ tax.sec24bInterest | currency:'INR':'symbol':'1.0-0' }}</span>
+                <span class="tax-cap">Max ₹2,00,000/yr</span>
+              </div>
+              <div class="tax-stat">
+                <span class="tax-stat-label">Sec 80C Principal (Home)</span>
+                <span class="tax-stat-val">{{ tax.sec80cPrincipal | currency:'INR':'symbol':'1.0-0' }}</span>
+                <span class="tax-cap">Max ₹1,50,000/yr (Shared)</span>
+              </div>
+              @if (tax.sec80eInterest > 0) {
+                <div class="tax-stat">
+                  <span class="tax-stat-label">Sec 80E Interest (Education)</span>
+                  <span class="tax-stat-val">{{ tax.sec80eInterest | currency:'INR':'symbol':'1.0-0' }}</span>
+                  <span class="tax-cap">No Upper Limit</span>
+                </div>
+              }
+              <div class="tax-stat highlight">
+                <span class="tax-stat-label">Est. Tax Saved (@{{ (tax.taxSlabRate * 100) | number:'1.0-0' }}% slab)</span>
+                <span class="tax-stat-val text-green">~{{ tax.estimatedTaxSaved | currency:'INR':'symbol':'1.0-0' }}</span>
+                <span class="tax-cap">Total Deduction: {{ tax.totalEligibleDeduction | currency:'INR':'symbol':'1.0-0' }}</span>
+              </div>
+            </div>
+
+            <div class="tax-disclaimer-note">
+              <span class="material-icons sm-info">info</span>
+              <span>Available under the Old Tax Regime. Actual tax savings depend on your personal income slab. Section 80C limit (₹1.5L) is shared with EPF, PPF, and ELSS.</span>
+            </div>
+          } @else {
+            <!-- NEW REGIME (115BAC) VIEW -->
+            <div class="new-regime-banner-box">
+              <div class="nr-info-row">
+                <span class="material-icons nr-icon">info</span>
+                <div class="nr-text">
+                  <div class="nr-title">No Loan Deductions under New Tax Regime (Section 115BAC)</div>
+                  <div class="nr-desc">
+                    Under the default New Tax Regime, exemptions under Section 24(b) (self-occupied home loan interest), Section 80C (principal repayment), and Section 80E (education loan interest) are <strong>not permitted</strong>. In return, you benefit from lower flat tax rates without needing investment declarations.
+                  </div>
+                </div>
+              </div>
+
+              <div class="nr-comparison-card">
+                <div class="nr-comp-left">
+                  <span class="comp-tag">Old Regime Comparison</span>
+                  <span class="comp-desc">If you file taxes under the Old Regime, your active loans qualify for up to <strong>{{ tax.potentialOldRegimeDeduction | currency:'INR':'symbol':'1.0-0' }}</strong> in gross deductions.</span>
+                </div>
+                <div class="nr-comp-right">
+                  <div class="comp-saving-label">Potential Tax Saved (@30%)</div>
+                  <div class="comp-saving-val">~{{ tax.potentialOldRegimeTaxSaved | currency:'INR':'symbol':'1.0-0' }}</div>
+                  <button type="button" class="btn-switch-regime" (click)="setTaxRegime('old')">
+                    Switch to Old Regime
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ── Monthly Payment Timeline Strip ── -->
+    @if (emiService.monthlyTimeline(); as timeline) {
+      @if (timeline.length > 0) {
+        <div class="monthly-timeline-card card">
+          <div class="timeline-header">
+            <div class="timeline-title-wrap">
+              <span class="material-icons cal-icon">calendar_month</span>
+              <span class="timeline-title">Monthly EMI Schedule</span>
+              <span class="timeline-count-badge">{{ timeline.length }} active due this month</span>
+            </div>
+          </div>
+          <div class="timeline-strip-scroll">
+            <div class="timeline-strip">
+              @for (item of timeline; track item.loan.id) {
+                <div class="timeline-node" [class.is-paid]="item.status === 'paid'" [class.is-due-today]="item.status === 'due_today'" [class.is-due-soon]="item.status === 'due_soon'">
+                  <div class="node-date-badge">
+                    <span class="node-day">{{ item.dueDay }}</span>
+                    <span class="node-month">{{ item.dueDateStr.slice(3) }}</span>
+                  </div>
+                  <div class="node-info">
+                    <div class="node-loan-name" [title]="item.loan.name">
+                      <span class="material-icons node-cat-icon" [style.color]="LOAN_CONFIG[item.loan.loanType].color">{{ LOAN_CONFIG[item.loan.loanType].icon }}</span>
+                      {{ item.loan.name }}
+                    </div>
+                    <div class="node-amount">{{ item.amount | currency:'INR':'symbol':'1.0-0' }}</div>
+                    <div class="node-status">
+                      @if (item.status === 'paid') {
+                        <span class="status-pill pill-paid"><span class="material-icons sm-check">check</span> Paid</span>
+                      } @else if (item.status === 'due_today') {
+                        <span class="status-pill pill-today">Due Today</span>
+                      } @else if (item.status === 'overdue') {
+                        <span class="status-pill pill-overdue">{{ item.daysRemaining }}d ago</span>
+                      } @else if (item.status === 'due_soon') {
+                        <span class="status-pill pill-soon">In {{ item.daysRemaining }}d</span>
+                      } @else {
+                        <span class="status-pill pill-upcoming">In {{ item.daysRemaining }}d</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="node-actions">
+                    @if (item.status === 'paid') {
+                      <button class="btn-micro btn-undo" (click)="undoPayment(item.loan)" title="Undo payment">
+                        <span class="material-icons" style="font-size:13px">undo</span>
+                      </button>
+                    } @else {
+                      <button class="btn-micro btn-pay" (click)="recordPayment(item.loan)" title="Record payment for this month">
+                        <span class="material-icons" style="font-size:13px">check</span> Pay
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ── Debt Distribution Bar ── -->
+    @if (categoryBreakdown(); as cats) {
+      @if (cats.length > 0) {
+        <div class="distribution-card card">
+          <div class="dist-header">
+            <span class="dist-title">Debt Portfolio Allocation</span>
+            <span class="dist-total">Total Outstanding: {{ emiService.summaryMetrics().totalOutstandingBalance | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+          <!-- Segmented Progress Bar -->
+          <div class="segmented-bar">
+            @for (c of cats; track c.category) {
+              <div class="bar-segment" [style.width.%]="c.pct" [style.background-color]="c.color" [title]="c.label + ': ' + c.pct + '%'"></div>
+            }
+          </div>
+          <!-- Legend Chips -->
+          <div class="dist-legend">
+            @for (c of cats; track c.category) {
+              <div class="legend-chip">
+                <span class="legend-color-dot" [style.background-color]="c.color"></span>
+                <span class="legend-label">{{ c.label }}</span>
+                <span class="legend-pct">{{ c.pct }}%</span>
+                <span class="legend-amount">({{ c.amount | currency:'INR':'symbol':'1.0-0' }})</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ── Navigation Tabs & Toolbar ── -->
+    <div class="toolbar-section">
+      <div class="tabs-scroll-container">
+        <div class="tabs-group">
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'active'"
+            (click)="activeTab.set('active')">
+            <span class="material-icons tab-icon">check_circle</span>
+            <span>Active</span>
+            <span class="tab-badge">{{ emiService.summaryMetrics().totalActiveLoans }}</span>
+          </button>
+
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'closed'"
+            (click)="activeTab.set('closed')">
+            <span class="material-icons tab-icon">task_alt</span>
+            <span>Closed</span>
+          </button>
+
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'all'"
+            (click)="activeTab.set('all')">
+            <span class="material-icons tab-icon">list_alt</span>
+            <span>All ({{ emiService.loans().length }})</span>
+          </button>
+
+          <button
+            class="tab-btn"
+            [class.active]="activeTab() === 'strategies'"
+            (click)="activeTab.set('strategies')">
+            <span class="material-icons tab-icon">trending_down</span>
+            <span>Payoff Strategies</span>
+          </button>
+
+          <button
+            class="tab-btn calc-tab-btn"
+            [class.active]="activeTab() === 'calculator'"
+            (click)="activeTab.set('calculator')">
+            <span class="material-icons tab-icon">calculate</span>
+            <span>EMI Simulator</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters & Views (shown when not on calculator or strategies tab) -->
+      @if (activeTab() !== 'calculator' && activeTab() !== 'strategies') {
+        <div class="filters-wrap">
+          <div class="filter-inputs-row">
+            <!-- Category Filter -->
+            <div class="category-select-wrap">
+              <select
+                class="form-control category-select"
+                [ngModel]="selectedCategory()"
+                (ngModelChange)="selectedCategory.set($event)">
+                <option value="All">All Categories</option>
+                @for (cat of loanCategories; track cat) {
+                  <option [value]="cat">{{ LOAN_CONFIG[cat].label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Search Box -->
+            <div class="search-box">
+              <span class="material-icons search-icon">search</span>
+              <input
+                class="form-control search-input"
+                type="text"
+                placeholder="Search loans, bank..."
+                [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)"
+              />
+              @if (searchQuery()) {
+                <button class="clear-search-btn" (click)="searchQuery.set('')">×</button>
+              }
+            </div>
+          </div>
+
+          <!-- View Mode Toggle -->
+          <div class="view-toggle">
+            <button
+              class="toggle-btn"
+              [class.active]="viewMode() === 'cards'"
+              (click)="viewMode.set('cards')"
+              title="Card Grid View">
+              <span class="material-icons">grid_view</span>
+            </button>
+            <button
+              class="toggle-btn"
+              [class.active]="viewMode() === 'table'"
+              (click)="viewMode.set('table')"
+              title="Table View">
+              <span class="material-icons">table_rows</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ═══════════════════════ MAIN CONTENT ═══════════════════════ -->
+
+    <!-- TAB 1, 2, 3: LOAN LIST (CARDS OR TABLE) -->
+    @if (activeTab() !== 'calculator' && activeTab() !== 'strategies') {
+      @if (filteredLoans().length === 0) {
+        <div class="empty-state card">
+          <div class="empty-icon-wrap">
+            <span class="material-icons">account_balance_wallet</span>
+          </div>
+          <h3>No loans found</h3>
+          <p>
+            {{ searchQuery() || selectedCategory() !== 'All' ? 'No loans match your search or filter criteria.' : 'You have not added any active loans or EMIs yet.' }}
+          </p>
+          <div class="empty-actions">
+            @if (searchQuery() || selectedCategory() !== 'All') {
+              <button class="btn btn-ghost" (click)="searchQuery.set(''); selectedCategory.set('All')">Clear Filters</button>
+            } @else {
+              <button class="btn btn-primary" (click)="openAddModal()">
+                <span class="plus-icon">+</span> Add Your First Loan
+              </button>
+              <button class="btn btn-secondary" (click)="loadSampleLoans()">
+                <span class="material-icons sm-icon">auto_fix_high</span> Load Sample Loans
+              </button>
+            }
+          </div>
+        </div>
+      } @else if (viewMode() === 'cards') {
+        <!-- ── Cards Grid View ── -->
+        <div class="loans-grid">
+          @for (loan of filteredLoans(); track loan.id) {
+            <div class="card loan-card" [class.closed-card]="loan.status === 'Closed'">
+              
+              <!-- Card Top Header -->
+              <div class="loan-card-header">
+                <div class="header-identity">
+                  <div class="category-icon-box" [style.color]="LOAN_CONFIG[loan.loanType].color" [style.background]="LOAN_CONFIG[loan.loanType].color + '18'">
+                    <span class="material-icons">{{ LOAN_CONFIG[loan.loanType].icon }}</span>
+                  </div>
+                  <div class="identity-text">
+                    <h3 class="loan-title" [title]="loan.name">{{ loan.name }}</h3>
+                    <div class="lender-name">
+                      {{ loan.lender }}
+                      @if (loan.accountNumber) {
+                        <span class="acc-badge">Acc: {{ loan.accountNumber }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <div class="status-wrap">
+                  <span class="status-pill" [class.status-active]="loan.status === 'Active'" [class.status-closed]="loan.status === 'Closed'">
+                    {{ loan.status }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Card Body: EMI & Due Badge -->
+              <div class="loan-emi-banner">
+                <div class="emi-amount-group">
+                  <span class="emi-label">Monthly EMI</span>
+                  <div class="emi-big-amount">
+                    {{ loan.emiAmount | currency:'INR':'symbol':'1.0-0' }}
+                  </div>
+                </div>
+
+                <div class="due-info-box">
+                  <span class="due-title">Due Cycle</span>
+                  <span class="due-date-str">
+                    {{ loan.dueDay }}th of month
+                  </span>
+                  @if (loan.status === 'Active') {
+                    <span class="next-due-tag">Next: {{ getNextDueDateStr(loan) }}</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="progress-section">
+                <div class="progress-labels">
+                  <span>Tenure Progress: <strong>{{ loan.paidEmis }} / {{ loan.tenureMonths }}</strong> EMIs</span>
+                  <span class="pct-text">{{ getProgressPct(loan) }}%</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill" [style.width.%]="getProgressPct(loan)" [style.background]="loan.status === 'Closed' ? '#10b981' : LOAN_CONFIG[loan.loanType].color"></div>
+                </div>
+              </div>
+
+              <!-- Metrics Two-Column Breakdown -->
+              <div class="metrics-grid">
+                <div class="metric-item">
+                  <span class="m-label">Outstanding Balance</span>
+                  <span class="m-val highlight-val">
+                    {{ getOutstandingBalance(loan) | currency:'INR':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+
+                <div class="metric-item">
+                  <span class="m-label">Original Principal</span>
+                  <span class="m-val">
+                    {{ loan.principalAmount | currency:'INR':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+
+                <div class="metric-item">
+                  <span class="m-label">Interest Rate</span>
+                  <span class="m-val">
+                    {{ loan.interestRate }}% <small>p.a.</small>
+                  </span>
+                </div>
+
+                <div class="metric-item">
+                  <span class="m-label">Remaining Tenure</span>
+                  <span class="m-val">
+                    {{ getRemainingMonths(loan) }} mos
+                    <small>({{ (getRemainingMonths(loan) / 12) | number:'1.1-1' }}y)</small>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Card Footer Actions -->
+              <div class="loan-card-footer">
+                @if (loan.status === 'Active') {
+                  <div class="primary-actions">
+                    <button class="btn btn-action-pay" (click)="recordPayment(loan)" title="Record payment for this month">
+                      <span class="material-icons">check</span>
+                      <span>Pay EMI</span>
+                    </button>
+
+                    <button class="btn btn-action-tool" (click)="openPrepaymentModal(loan)" title="Make a part-payment / prepayment">
+                      <span class="material-icons">savings</span>
+                      <span>Prepay</span>
+                    </button>
+                  </div>
+                }
+
+                <div class="secondary-actions">
+                  <button class="btn btn-action-tool btn-schedule" (click)="openSchedule(loan)" title="View complete amortization schedule">
+                    <span class="material-icons">calendar_month</span>
+                    <span class="schedule-text">Schedule</span>
+                  </button>
+
+                  <div class="more-actions-menu">
+                    @if (loan.status === 'Active') {
+                      <button class="btn-icon text-amber" (click)="forecloseLoan(loan)" title="Foreclose / Settle Loan">
+                        <span class="material-icons">lock_clock</span>
+                      </button>
+                    }
+                    @if (loan.paidEmis > 0 && loan.status === 'Active') {
+                      <button class="btn-icon" (click)="undoPayment(loan)" title="Undo last payment">
+                        <span class="material-icons">undo</span>
+                      </button>
+                    }
+                    <button class="btn-icon" (click)="openEditModal(loan)" title="Edit loan details">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button class="btn-icon text-danger" (click)="deleteLoan(loan)" title="Delete loan">
+                      <span class="material-icons">delete_outline</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- ── Table View ── -->
+        <div class="table-wrap card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Loan / Scrip</th>
+                <th>Category</th>
+                <th>Lender / Bank</th>
+                <th class="num">Principal</th>
+                <th class="num">Interest Rate</th>
+                <th class="num">Monthly EMI</th>
+                <th class="num">Progress</th>
+                <th class="num">Outstanding</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (loan of filteredLoans(); track loan.id; let i = $index) {
+                <tr>
+                  <td class="row-num">{{ i + 1 }}</td>
+                  <td class="name-cell">
+                    <strong>{{ loan.name }}</strong>
+                    @if (loan.accountNumber) {
+                      <div class="sub-acc">{{ loan.accountNumber }}</div>
+                    }
+                  </td>
+                  <td>
+                    <span class="category-pill" [style.color]="LOAN_CONFIG[loan.loanType].color">
+                      <span class="material-icons sm-icon">{{ LOAN_CONFIG[loan.loanType].icon }}</span>
+                      {{ LOAN_CONFIG[loan.loanType].label }}
+                    </span>
+                  </td>
+                  <td>{{ loan.lender }}</td>
+                  <td class="num">{{ loan.principalAmount | currency:'INR':'symbol':'1.0-0' }}</td>
+                  <td class="num">{{ loan.interestRate }}%</td>
+                  <td class="num emi-cell">{{ loan.emiAmount | currency:'INR':'symbol':'1.0-0' }}</td>
+                  <td class="num">
+                    <div class="tbl-progress">
+                      <span class="tbl-progress-text">{{ loan.paidEmis }}/{{ loan.tenureMonths }}</span>
+                      <div class="tbl-track">
+                        <div class="tbl-fill" [style.width.%]="getProgressPct(loan)"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="num highlight-val">{{ getOutstandingBalance(loan) | currency:'INR':'symbol':'1.0-0' }}</td>
+                  <td>
+                    <span class="status-pill" [class.status-active]="loan.status === 'Active'" [class.status-closed]="loan.status === 'Closed'">
+                      {{ loan.status }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    @if (loan.status === 'Active') {
+                      <button class="tbl-btn" (click)="recordPayment(loan)" title="Record payment">
+                        <span class="material-icons">check</span>
+                      </button>
+                      <button class="tbl-btn text-amber" (click)="forecloseLoan(loan)" title="Foreclose loan">
+                        <span class="material-icons">lock_clock</span>
+                      </button>
+                    }
+                    <button class="tbl-btn" (click)="openSchedule(loan)" title="View schedule">
+                      <span class="material-icons">calendar_month</span>
+                    </button>
+                    <button class="tbl-btn" (click)="openEditModal(loan)" title="Edit">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button class="tbl-btn text-danger" (click)="deleteLoan(loan)" title="Delete">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    <!-- ═══════════════════════ TAB 4: PAYOFF STRATEGIES (AVALANCHE VS SNOWBALL) ═══════════════════════ -->
+    @if (activeTab() === 'strategies') {
+      <div class="strategies-panel">
+        <div class="card strategy-control-card">
+          <div class="strategy-selector-row">
+            <div>
+              <h3 class="strategy-heading">Debt Acceleration Optimizer</h3>
+              <p class="strategy-desc">Simulate proven repayment methodologies and observe how extra monthly prepayments collapse your loan tenures and save interest.</p>
+            </div>
+            <div class="method-toggle-group">
+              <button
+                class="method-btn"
+                [class.active]="strategyMethod() === 'avalanche'"
+                (click)="strategyMethod.set('avalanche')">
+                <span class="material-icons">trending_down</span>
+                <div>
+                  <div class="m-title">Debt Avalanche</div>
+                  <div class="m-sub">Highest Interest First (Saves Most Money)</div>
+                </div>
+              </button>
+              <button
+                class="method-btn"
+                [class.active]="strategyMethod() === 'snowball'"
+                (click)="strategyMethod.set('snowball')">
+                <span class="material-icons">ac_unit</span>
+                <div>
+                  <div class="m-title">Debt Snowball</div>
+                  <div class="m-sub">Lowest Balance First (Fastest Closures)</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Extra Monthly Payment Slider -->
+          <div class="extra-prepay-box">
+            <div class="prepay-slider-header">
+              <span class="slider-label">Simulate Extra Monthly Prepayment:</span>
+              <span class="slider-value text-green">{{ extraMonthlyPayment() | currency:'INR':'symbol':'1.0-0' }} / month</span>
+            </div>
+            <input
+              type="range"
+              class="range-slider"
+              min="0"
+              max="50000"
+              step="1000"
+              [ngModel]="extraMonthlyPayment()"
+              (ngModelChange)="extraMonthlyPayment.set($event)"
+            />
+            <div class="slider-ticks">
+              <span>₹0</span>
+              <span>₹10,000</span>
+              <span>₹25,000</span>
+              <span>₹50,000</span>
+            </div>
+          </div>
+
+          <!-- Strategy Savings Highlight -->
+          @if (strategySavings(); as sav) {
+            <div class="strategy-impact-grid">
+              <div class="impact-item">
+                <span class="material-icons impact-icon text-green">timer</span>
+                <div>
+                  <div class="impact-val text-green">{{ sav.monthsSaved }} Months Earlier</div>
+                  <div class="impact-lbl">Tenure Reduction on Priority #1 Target Loan</div>
+                </div>
+              </div>
+              <div class="impact-item">
+                <span class="material-icons impact-icon text-amber">savings</span>
+                <div>
+                  <div class="impact-val text-amber">{{ sav.interestSaved | currency:'INR':'symbol':'1.0-0' }}</div>
+                  <div class="impact-lbl">Direct Interest Outflow Saved</div>
+                </div>
+              </div>
+              <div class="impact-item">
+                <span class="material-icons impact-icon text-blue">verified</span>
+                <div>
+                  <div class="impact-val text-blue">{{ strategyMethod() === 'avalanche' ? 'Optimal ROI' : 'Quick Wins' }}</div>
+                  <div class="impact-lbl">{{ strategyMethod() === 'avalanche' ? 'Mathematical Minimum Interest' : 'Psychological Momentum' }}</div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Strategy Priority Queue Cards -->
+        <div class="priority-queue-header">
+          <h4>Recommended Payoff Sequence ({{ strategyMethod() === 'avalanche' ? 'Avalanche Order' : 'Snowball Order' }})</h4>
+          <span class="queue-sub">Apply extra funds to Target Loan #1 first while paying regular minimum EMIs on the remaining loans</span>
+        </div>
+
+        <div class="priority-cards-list">
+          @for (item of payoffStrategyItems(); track item.loan.id) {
+            <div class="card priority-card" [class.is-top-priority]="item.rank === 1">
+              <div class="rank-badge" [class.rank-one]="item.rank === 1">
+                #{{ item.rank }}
+              </div>
+              <div class="p-loan-icon" [style.color]="LOAN_CONFIG[item.loan.loanType].color">
+                <span class="material-icons">{{ LOAN_CONFIG[item.loan.loanType].icon }}</span>
+              </div>
+              <div class="p-loan-details">
+                <div class="p-loan-name">
+                  {{ item.loan.name }}
+                  @if (item.rank === 1) {
+                    <span class="top-tag">Target Loan</span>
+                  }
+                </div>
+                <div class="p-loan-lender">{{ item.loan.lender }} · {{ LOAN_CONFIG[item.loan.loanType].label }}</div>
+                <div class="p-reason">
+                  <span class="material-icons reason-icon">info</span>
+                  {{ item.strategyReason }}
+                </div>
+              </div>
+              <div class="p-loan-numbers">
+                <div class="p-num-item">
+                  <span class="p-lbl">Outstanding</span>
+                  <span class="p-val">{{ item.outstandingBalance | currency:'INR':'symbol':'1.0-0' }}</span>
+                </div>
+                <div class="p-num-item">
+                  <span class="p-lbl">Interest Rate</span>
+                  <span class="p-val rate-val">{{ item.interestRate }}% p.a.</span>
+                </div>
+                <div class="p-num-item">
+                  <span class="p-lbl">Monthly EMI</span>
+                  <span class="p-val">{{ item.monthlyEmi | currency:'INR':'symbol':'1.0-0' }}</span>
+                </div>
+              </div>
+              <div class="p-action">
+                <button class="btn btn-secondary btn-sm" (click)="openPrepaymentModal(item.loan)">
+                  <span class="material-icons" style="font-size:16px">payments</span> Prepay
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- TAB 5: STANDALONE EMI CALCULATOR & SIMULATOR -->
+    @if (activeTab() === 'calculator') {
+      <div class="calc-page-layout">
+        <!-- Left: Sliders & Controls -->
+        <div class="card calc-controls-card">
+          <div class="calc-card-header">
+            <span class="material-icons calc-header-icon">calculate</span>
+            <div>
+              <h3>Interactive Loan EMI Simulator</h3>
+              <p>Simulate new loan repayments, adjust interest rates and evaluate borrowing costs</p>
+            </div>
+          </div>
+
+          <!-- Principal Slider -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <label>Loan Amount (Principal)</label>
+              <div class="input-with-currency">
+                <span class="curr-sign">₹</span>
+                <input
+                  type="number"
+                  class="form-control val-input"
+                  [ngModel]="calcPrincipal()"
+                  (ngModelChange)="calcPrincipal.set($event)"
+                  min="10000"
+                  max="100000000"
+                  step="50000"
+                />
+              </div>
+            </div>
+            <input
+              type="range"
+              class="slider-range"
+              [ngModel]="calcPrincipal()"
+              (ngModelChange)="calcPrincipal.set($event)"
+              min="50000"
+              max="20000000"
+              step="50000"
+            />
+            <div class="slider-ticks">
+              <span>₹50K</span>
+              <span>₹50L</span>
+              <span>₹1 Cr</span>
+              <span>₹2 Cr</span>
+            </div>
+          </div>
+
+          <!-- Interest Rate Slider -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <label>Interest Rate (% per annum)</label>
+              <div class="input-with-currency">
+                <input
+                  type="number"
+                  class="form-control val-input"
+                  [ngModel]="calcRate()"
+                  (ngModelChange)="calcRate.set($event)"
+                  min="0"
+                  max="30"
+                  step="0.1"
+                />
+                <span class="curr-sign">%</span>
+              </div>
+            </div>
+            <input
+              type="range"
+              class="slider-range"
+              [ngModel]="calcRate()"
+              (ngModelChange)="calcRate.set($event)"
+              min="5"
+              max="24"
+              step="0.25"
+            />
+            <div class="slider-ticks">
+              <span>5%</span>
+              <span>8.5% (Home)</span>
+              <span>12% (Personal)</span>
+              <span>24%</span>
+            </div>
+          </div>
+
+          <!-- Tenure Slider -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <label>Tenure (Years)</label>
+              <div class="input-with-currency">
+                <input
+                  type="number"
+                  class="form-control val-input"
+                  [ngModel]="calcTenureYears()"
+                  (ngModelChange)="calcTenureYears.set($event)"
+                  min="1"
+                  max="30"
+                  step="1"
+                />
+                <span class="curr-sign">yrs</span>
+              </div>
+            </div>
+            <input
+              type="range"
+              class="slider-range"
+              [ngModel]="calcTenureYears()"
+              (ngModelChange)="calcTenureYears.set($event)"
+              min="1"
+              max="30"
+              step="1"
+            />
+            <div class="slider-ticks">
+              <span>1 Year</span>
+              <span>5 Years</span>
+              <span>15 Years</span>
+              <span>30 Years</span>
+            </div>
+          </div>
+
+          <div class="calc-quick-actions">
+            <button class="btn btn-primary" (click)="openAddModal()">
+              <span class="plus-icon">+</span> Save as New Loan
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Real-time Calculated Results & Visual Breakdown -->
+        <div class="card calc-results-card">
+          <div class="results-top">
+            <span class="results-tag">PROJECTED MONTHLY OUTFLOW</span>
+            <div class="big-emi-figure">
+              {{ calcEmi() | currency:'INR':'symbol':'1.0-0' }}
+              <span class="per-month-text">/ month</span>
+            </div>
+          </div>
+
+          <!-- Split Visual Bar -->
+          <div class="split-bar-section">
+            <div class="split-labels">
+              <span>
+                <span class="legend-dot" style="background:#3b82f6"></span>
+                Principal: <strong>{{ calcPrincipal() | currency:'INR':'symbol':'1.0-0' }}</strong> ({{ calcPrincipalSharePct() }}%)
+              </span>
+              <span>
+                <span class="legend-dot" style="background:#f59e0b"></span>
+                Interest: <strong>{{ calcTotalInterest() | currency:'INR':'symbol':'1.0-0' }}</strong> ({{ 100 - calcPrincipalSharePct() }}%)
+              </span>
+            </div>
+            <div class="visual-split-track">
+              <div class="split-fill principal-fill" [style.width.%]="calcPrincipalSharePct()"></div>
+              <div class="split-fill interest-fill" [style.width.%]="100 - calcPrincipalSharePct()"></div>
+            </div>
+          </div>
+
+          <div class="results-metrics-grid">
+            <div class="res-item">
+              <span class="res-label">Total Principal Borrowed</span>
+              <span class="res-val">{{ calcPrincipal() | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="res-item">
+              <span class="res-label">Total Interest Payable</span>
+              <span class="res-val text-amber">{{ calcTotalInterest() | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="res-item">
+              <span class="res-label">Total Amount Payable</span>
+              <span class="res-val text-blue">{{ calcTotalPayable() | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="res-item">
+              <span class="res-label">Total Installments</span>
+              <span class="res-val">{{ calcTenureYears() * 12 }} EMIs</span>
+            </div>
+          </div>
+
+          <div class="prepay-tip-box">
+            <span class="material-icons tip-icon">lightbulb</span>
+            <div>
+              <strong>Pro Prepayment Strategy:</strong>
+              Paying just 1 extra EMI every year on a 20-year home loan can reduce your tenure by nearly <strong>4.5 years</strong> and save lakhs in compound interest.
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+
+<!-- ═══════════════════════ MODALS ═══════════════════════ -->
+
+<!-- ── 1. ADD / EDIT LOAN MODAL ── -->
+@if (showAddEditModal()) {
+  <div class="modal-overlay" (click)="closeAddEditModal()">
+    <div class="modal-box modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-icon-box">
+          <span class="material-icons">{{ editingLoanId() ? 'edit_note' : 'add_card' }}</span>
+        </div>
+        <div>
+          <h3>{{ editingLoanId() ? 'Edit Loan Details' : 'Add New Loan or EMI' }}</h3>
+          <p>Configure borrowing details, interest rate, and payment schedule</p>
+        </div>
+        <button class="modal-close-btn" (click)="closeAddEditModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <!-- Loan Name -->
+          <div class="form-field full-width">
+            <label>Loan Title / Name <span class="required">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="e.g. HDFC Home Loan, Nexon EV Car Loan, MacBook No-Cost EMI"
+              [ngModel]="formModel().name"
+              (ngModelChange)="formModel().name = $event"
+            />
+          </div>
+
+          <!-- Lender / Bank -->
+          <div class="form-field">
+            <label>Lender / Bank / NBFC <span class="required">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="e.g. HDFC Bank, SBI, ICICI, Bajaj Finserv"
+              [ngModel]="formModel().lender"
+              (ngModelChange)="formModel().lender = $event"
+            />
+          </div>
+
+          <!-- Loan Category -->
+          <div class="form-field">
+            <label>Loan Category</label>
+            <select
+              class="form-control"
+              [ngModel]="formModel().loanType"
+              (ngModelChange)="formModel().loanType = $event">
+              @for (cat of loanCategories; track cat) {
+                <option [value]="cat">{{ LOAN_CONFIG[cat].label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Principal Amount -->
+          <div class="form-field">
+            <label>Principal Amount (₹) <span class="required">*</span></label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="e.g. 2500000"
+              [ngModel]="formModel().principalAmount"
+              (ngModelChange)="formModel().principalAmount = $event"
+              min="1000"
+            />
+          </div>
+
+          <!-- Interest Rate -->
+          <div class="form-field">
+            <label>Interest Rate (% p.a.)</label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="e.g. 8.5 (or 0 for No-Cost EMI)"
+              [ngModel]="formModel().interestRate"
+              (ngModelChange)="formModel().interestRate = $event"
+              step="0.05"
+              min="0"
+              max="40"
+            />
+          </div>
+
+          <!-- Tenure Unit Toggle & Input -->
+          <div class="form-field">
+            <div class="label-with-toggle">
+              <label>Tenure</label>
+              <div class="unit-toggle">
+                <button
+                  type="button"
+                  [class.active]="formModel().tenureUnit === 'years'"
+                  (click)="formModel().tenureUnit = 'years'">Years</button>
+                <button
+                  type="button"
+                  [class.active]="formModel().tenureUnit === 'months'"
+                  (click)="formModel().tenureUnit = 'months'">Months</button>
+              </div>
+            </div>
+            @if (formModel().tenureUnit === 'years') {
+              <input
+                type="number"
+                class="form-control"
+                placeholder="Years (e.g. 20)"
+                [ngModel]="formModel().tenureYears"
+                (ngModelChange)="formModel().tenureYears = $event"
+                min="1"
+                max="35"
+              />
+            } @else {
+              <input
+                type="number"
+                class="form-control"
+                placeholder="Months (e.g. 60)"
+                [ngModel]="formModel().tenureMonths"
+                (ngModelChange)="formModel().tenureMonths = $event"
+                min="1"
+                max="420"
+              />
+            }
+          </div>
+
+          <!-- Due Day of Month -->
+          <div class="form-field">
+            <label>EMI Due Day of Month</label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="Day (1-28)"
+              [ngModel]="formModel().dueDay"
+              (ngModelChange)="formModel().dueDay = $event"
+              min="1"
+              max="28"
+            />
+          </div>
+
+          <!-- Start Date -->
+          <div class="form-field">
+            <label>Loan Start Date</label>
+            <input
+              type="date"
+              class="form-control"
+              [ngModel]="formModel().startDate"
+              (ngModelChange)="formModel().startDate = $event"
+            />
+          </div>
+
+          <!-- Number of EMIs already paid -->
+          <div class="form-field">
+            <label>Already Paid EMIs (Count)</label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="0"
+              [ngModel]="formModel().paidEmis"
+              (ngModelChange)="formModel().paidEmis = $event"
+              min="0"
+            />
+          </div>
+
+          <!-- Account Number / Reference -->
+          <div class="form-field">
+            <label>Loan Account Number (Optional)</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="e.g. HL-8491028401"
+              [ngModel]="formModel().accountNumber"
+              (ngModelChange)="formModel().accountNumber = $event"
+            />
+          </div>
+
+          <!-- Notes -->
+          <div class="form-field">
+            <label>Notes / Remarks (Optional)</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="e.g. Prepayment allowed, zero foreclosure fee"
+              [ngModel]="formModel().notes"
+              (ngModelChange)="formModel().notes = $event"
+            />
+          </div>
+        </div>
+
+        <!-- Dynamic Live Calculator Preview Strip -->
+        <div class="modal-calculator-preview">
+          <div class="preview-item highlight">
+            <span class="p-label">Calculated Monthly EMI</span>
+            <span class="p-val">{{ modalCalculatedEmi() | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="preview-item">
+            <span class="p-label">Total Interest</span>
+            <span class="p-val text-amber">{{ modalTotalInterest() | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="preview-item">
+            <span class="p-label">Total Payable</span>
+            <span class="p-val text-blue">{{ modalTotalPayable() | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="closeAddEditModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveLoan()">
+          <span class="material-icons">save</span>
+          {{ editingLoanId() ? 'Save Changes' : 'Create Loan' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── 2. AMORTIZATION SCHEDULE MODAL ── -->
+@if (showAmortizationModal() && selectedLoanForSchedule(); as loan) {
+  <div class="modal-overlay" (click)="closeSchedule()">
+    <div class="modal-box modal-xl" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-icon-box" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1);">
+          <span class="material-icons">calendar_month</span>
+        </div>
+        <div>
+          <h3>Amortization Schedule: {{ loan.name }}</h3>
+          <p>{{ loan.lender }} · {{ loan.tenureMonths }} Total Installments · {{ loan.interestRate }}% p.a.</p>
+        </div>
+        <button class="modal-close-btn" (click)="closeSchedule()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Schedule Metrics Strip -->
+        <div class="schedule-summary-strip">
+          <div class="s-metric">
+            <span class="s-met-label">Monthly EMI</span>
+            <span class="s-met-val">{{ loan.emiAmount | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="s-metric">
+            <span class="s-met-label">Principal Amount</span>
+            <span class="s-met-val">{{ loan.principalAmount | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="s-metric">
+            <span class="s-met-label">Total Interest</span>
+            <span class="s-met-val text-amber">{{ getTotalInterest(loan) | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="s-metric">
+            <span class="s-met-label">Remaining Balance</span>
+            <span class="s-met-val text-blue">{{ getOutstandingBalance(loan) | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="s-metric">
+            <span class="s-met-label">Paid Installments</span>
+            <span class="s-met-val text-green">{{ loan.paidEmis }} of {{ loan.tenureMonths }}</span>
+          </div>
+        </div>
+
+        <!-- Amortization Table -->
+        <div class="table-wrap schedule-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th># Month</th>
+                <th>Payment Date</th>
+                <th class="num">Beginning Balance</th>
+                <th class="num">EMI Amount</th>
+                <th class="num">Principal Part</th>
+                <th class="num">Interest Part</th>
+                <th class="num">Ending Balance</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of getAmortizationSchedule(loan); track entry.monthIndex) {
+                <tr [class.paid-row]="entry.isPaid">
+                  <td class="row-num">{{ entry.monthIndex }}</td>
+                  <td>{{ entry.dateStr }}</td>
+                  <td class="num">{{ entry.beginningBalance | currency:'INR':'symbol':'1.0-0' }}</td>
+                  <td class="num font-semibold">{{ entry.emi | currency:'INR':'symbol':'1.0-0' }}</td>
+                  <td class="num text-blue">{{ entry.principal | currency:'INR':'symbol':'1.0-0' }}</td>
+                  <td class="num text-amber">{{ entry.interest | currency:'INR':'symbol':'1.0-0' }}</td>
+                  <td class="num">{{ entry.endingBalance | currency:'INR':'symbol':'1.0-0' }}</td>
+                  <td>
+                    @if (entry.isPaid) {
+                      <span class="badge badge-success">✓ Paid</span>
+                    } @else {
+                      <span class="badge badge-muted">Upcoming</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="exportScheduleCsv(loan)">
+          <span class="material-icons">download</span> Export Schedule (CSV)
+        </button>
+        <button class="btn btn-primary" (click)="closeSchedule()">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── 3. PREPAYMENT SIMULATION MODAL ── -->
+@if (showPrepaymentModal() && selectedLoanForPrepayment(); as loan) {
+  <div class="modal-overlay" (click)="closePrepaymentModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-icon-box" style="color: #10b981; background: rgba(16, 185, 129, 0.1);">
+          <span class="material-icons">savings</span>
+        </div>
+        <div>
+          <h3>Log Prepayment / Part-Payment</h3>
+          <p>{{ loan.name }} · Outstanding: {{ getOutstandingBalance(loan) | currency:'INR':'symbol':'1.0-0' }}</p>
+        </div>
+        <button class="modal-close-btn" (click)="closePrepaymentModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <!-- Prepayment Amount -->
+          <div class="form-field full-width">
+            <label>Prepayment Amount (₹) <span class="required">*</span></label>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="e.g. 50000"
+              [ngModel]="prepayAmount()"
+              (ngModelChange)="prepayAmount.set($event)"
+              min="1000"
+              [max]="getOutstandingBalance(loan)"
+            />
+          </div>
+
+          <!-- Prepayment Strategy -->
+          <div class="form-field full-width">
+            <label>Prepayment Benefit Strategy</label>
+            <div class="strategy-selector">
+              <label class="strategy-radio-card" [class.selected]="prepayOption() === 'reduce_tenure'">
+                <input
+                  type="radio"
+                  name="prepayOption"
+                  value="reduce_tenure"
+                  [checked]="prepayOption() === 'reduce_tenure'"
+                  (change)="prepayOption.set('reduce_tenure')"
+                />
+                <div class="radio-card-content">
+                  <div class="card-title">Reduce Loan Tenure (Recommended)</div>
+                  <div class="card-desc">Keep your monthly EMI same, close the loan months earlier & maximize interest savings.</div>
+                </div>
+              </label>
+
+              <label class="strategy-radio-card" [class.selected]="prepayOption() === 'reduce_emi'">
+                <input
+                  type="radio"
+                  name="prepayOption"
+                  value="reduce_emi"
+                  [checked]="prepayOption() === 'reduce_emi'"
+                  (change)="prepayOption.set('reduce_emi')"
+                />
+                <div class="radio-card-content">
+                  <div class="card-title">Reduce Monthly EMI</div>
+                  <div class="card-desc">Keep loan duration same, immediately lower your monthly EMI cash outflow.</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Date -->
+          <div class="form-field">
+            <label>Payment Date</label>
+            <input
+              type="date"
+              class="form-control"
+              [ngModel]="prepayDate()"
+              (ngModelChange)="prepayDate.set($event)"
+            />
+          </div>
+
+          <!-- Note -->
+          <div class="form-field">
+            <label>Notes</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="e.g. Festival bonus / tax refund"
+              [ngModel]="prepayNote()"
+              (ngModelChange)="prepayNote.set($event)"
+            />
+          </div>
+        </div>
+
+        <!-- Simulation Result Card -->
+        @if (prepaySimulation(); as sim) {
+          <div class="simulation-result-box">
+            <div class="sim-header">
+              <span class="material-icons">auto_graph</span>
+              <span>Projected Savings with ₹{{ prepayAmount() | number:'1.0-0' }} Prepayment</span>
+            </div>
+            <div class="sim-metrics">
+              <div class="sim-item">
+                <span class="sim-label">Total Interest Saved</span>
+                <span class="sim-val text-green">₹{{ sim.interestSaved | number:'1.0-0' }}</span>
+              </div>
+              @if (prepayOption() === 'reduce_tenure') {
+                <div class="sim-item">
+                  <span class="sim-label">Months Saved (Earlier Closure)</span>
+                  <span class="sim-val text-blue">{{ sim.monthsSaved }} Months</span>
+                </div>
+              } @else {
+                <div class="sim-item">
+                  <span class="sim-label">New Lower Monthly EMI</span>
+                  <span class="sim-val text-blue">₹{{ sim.newEmi | number:'1.0-0' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="closePrepaymentModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="applyPrepayment()">
+          <span class="material-icons">check</span> Apply Prepayment
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════ 4. EDIT MONTHLY INCOME (FOIR) MODAL ═══════════════════════ -->
+@if (showEditIncomeModal()) {
+  <div class="modal-overlay" (click)="closeEditIncomeModal()">
+    <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+          <span class="material-icons">payments</span>
+        </div>
+        <div>
+          <h3>Monthly Net Income</h3>
+          <p>Configure your take-home income to calculate your FOIR / Debt-to-Income ratio</p>
+        </div>
+        <button class="modal-close-btn" (click)="closeEditIncomeModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Monthly Take-Home / In-Hand Income (₹)</label>
+          <div class="input-with-currency">
+            <span class="curr-sign">₹</span>
+            <input
+              type="number"
+              class="form-control val-input"
+              [ngModel]="incomeInput()"
+              (ngModelChange)="incomeInput.set($event)"
+              min="5000"
+              step="5000"
+              placeholder="e.g. 150000"
+            />
+          </div>
+          <span class="field-hint">Your net salary or business profit received per month after taxes. 100% private and stored on your device.</span>
+
+          <!-- Quick Presets -->
+          <div class="income-presets-row">
+            <span class="preset-label">Quick Presets:</span>
+            <div class="preset-btn-group">
+              <button type="button" class="btn-preset" (click)="setPresetIncome(50000)">₹50K</button>
+              <button type="button" class="btn-preset" (click)="setPresetIncome(100000)">₹1.0L</button>
+              <button type="button" class="btn-preset" (click)="setPresetIncome(150000)">₹1.5L</button>
+              <button type="button" class="btn-preset" (click)="setPresetIncome(250000)">₹2.5L</button>
+            </div>
+          </div>
+        </div>
+
+        @if (incomeInput() > 0) {
+          <div class="income-foir-preview card">
+            <div class="ip-row">
+              <span class="ip-lbl">Total Monthly EMIs:</span>
+              <strong class="ip-val">{{ emiService.summaryMetrics().totalMonthlyEmi | currency:'INR':'symbol':'1.0-0' }}</strong>
+            </div>
+            <div class="ip-row">
+              <span class="ip-lbl">Projected FOIR:</span>
+              <strong class="ip-val" [class.text-green]="(emiService.summaryMetrics().totalMonthlyEmi / incomeInput()) < 0.35" [class.text-amber]="(emiService.summaryMetrics().totalMonthlyEmi / incomeInput()) >= 0.35 && (emiService.summaryMetrics().totalMonthlyEmi / incomeInput()) <= 0.5" [class.text-danger]="(emiService.summaryMetrics().totalMonthlyEmi / incomeInput()) > 0.5">
+                {{ ((emiService.summaryMetrics().totalMonthlyEmi / incomeInput()) * 100) | number:'1.1-1' }}%
+              </strong>
+            </div>
+            <div class="ip-row">
+              <span class="ip-lbl">Bank Standard Safe Limit (40%):</span>
+              <span class="ip-val">{{ (incomeInput() * 0.4) | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal-actions" style="justify-content: space-between;">
+        <div>
+          @if (emiService.foirMetrics().isConfigured) {
+            <button type="button" class="btn btn-outline text-danger" (click)="clearIncome()" title="Remove saved income">
+              <span class="material-icons" style="font-size: 15px;">delete_outline</span> Remove
+            </button>
+          }
+        </div>
+        <div style="display:flex; gap: 8px;">
+          <button class="btn btn-secondary" (click)="closeEditIncomeModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveIncome()">
+            <span class="material-icons">check</span> Save Income
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

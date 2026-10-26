@@ -1,0 +1,27 @@
+@if (splashService.isVisible()) {
+  <div
+    class="splash-screen"
+    [class.is-exiting]="splashService.isExiting()"
+    (click)="splashService.dismiss()"
+    role="presentation"
+    aria-hidden="true">
+
+    <!-- Ambient Focal Glow (Netflix / YouTube Style) -->
+    <div class="focal-glow"></div>
+
+    <!-- Center Iconic Emblem & Brand -->
+    <div class="hero-brand">
+      <div class="icon-pod">
+        <img
+          src="/icons/favicon-196.png"
+          alt="FinTracker"
+          class="favicon-logo" />
+        <div class="light-gleam"></div>
+      </div>
+
+      <div class="brand-name">
+        <span class="letter-glow">FINTRACKER</span>
+      </div>
+    </div>
+  </div>
+}

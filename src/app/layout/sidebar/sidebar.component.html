@@ -27,6 +27,9 @@
         [title]="collapsed() ? item.label : ''">
         <span class="nav-icon material-icons">{{ item.icon }}</span>
         <span class="nav-text">{{ item.label }}</span>
+        @if (item.isDev) {
+          <span class="dev-nav-pill">DEV</span>
+        }
         <span class="nav-arrow material-icons">chevron_right</span>
       </a>
     }

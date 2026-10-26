@@ -20,12 +20,44 @@
 
   <!-- Stats Row -->
   <div class="stats-grid">
-    <div class="card stat-card net-worth-card">
-      <div class="material-icons stat-icon">inventory_2</div>
-      <p class="stat-label">Total Assets</p>
-      <div class="stat-value">₹{{ totalNetWorth() | number:'1.0-0' }}</div>
-      <div class="stat-change positive">Across {{ allocations().length }} categories</div>
+    <div class="card stat-card net-worth-card" [title]="totalLiabilities() > 0 ? 'Net Worth = Total Assets - Total Loan Debt' : 'Total Asset Portfolio Value'">
+      <div class="material-icons stat-icon">{{ totalLiabilities() > 0 ? 'account_balance' : 'inventory_2' }}</div>
+      <p class="stat-label">{{ totalLiabilities() > 0 ? 'Net Worth (Assets - Debt)' : 'Total Assets' }}</p>
+      <div class="stat-value">₹{{ (totalLiabilities() > 0 ? netWorthAfterDebt() : totalNetWorth()) | number:'1.0-0' }}</div>
+      <div class="stat-change positive">
+        @if (totalLiabilities() > 0) {
+          ₹{{ totalNetWorth() | number:'1.0-0' }} assets · ₹{{ totalLiabilities() | number:'1.0-0' }} debt
+        } @else {
+          Across {{ allocations().length }} categories
+        }
+      </div>
     </div>
+
+    @if (totalLiabilities() > 0) {
+      <div class="card stat-card emi-debt-card" routerLink="/app/emi" style="cursor: pointer;" title="Manage Loans & EMIs">
+        <div class="material-icons stat-icon" style="color: #ef4444;">credit_card</div>
+        <p class="stat-label">Loan Liabilities</p>
+        <div class="stat-value text-danger">₹{{ totalLiabilities() | number:'1.0-0' }}</div>
+        <div class="stat-change" style="color: #ef4444;">
+          ₹{{ totalMonthlyEmi() | number:'1.0-0' }}/mo EMI outflow →
+        </div>
+      </div>
+    }
+
+    @if (sipService.summaryMetrics().totalActiveSips > 0) {
+      <div class="card stat-card sip-dashboard-card" routerLink="/app/sip" style="cursor: pointer;" title="Manage SIPs & Market Auto-Invest">
+        <div class="material-icons stat-icon" style="color: #8b5cf6;">autorenew</div>
+        <p class="stat-label">Monthly SIP Commitment</p>
+        <div class="stat-value" style="color: #8b5cf6;">₹{{ sipService.summaryMetrics().totalMonthlyCommitment | number:'1.0-0' }}</div>
+        <div class="stat-change" style="color: #8b5cf6;">
+          @if (sipService.summaryMetrics().nextUpcomingSip; as nextSip) {
+            Next: {{ nextSip.daysRemaining === 0 ? 'Debiting Today' : ('In ' + nextSip.daysRemaining + 'd') }} (₹{{ nextSip.amount | number:'1.0-0' }}) →
+          } @else {
+            {{ sipService.summaryMetrics().totalActiveSips }} active SIPs →
+          }
+        </div>
+      </div>
+    }
 
     <div class="card stat-card">
       <div class="material-icons stat-icon">paid</div>

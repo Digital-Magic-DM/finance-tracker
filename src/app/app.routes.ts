@@ -81,6 +81,11 @@ export const routes: Routes = [
                     import('./features/transactions/transactions.component').then((m) => m.TransactionsComponent),
             },
             {
+                path: 'sip',
+                loadComponent: () =>
+                    import('./features/sip/sip.component').then((m) => m.SipComponent),
+            },
+            {
                 path: 'analytics',
                 loadComponent: () =>
                     import('./features/analytics/analytics.component').then((m) => m.AnalyticsComponent),
@@ -89,6 +94,11 @@ export const routes: Routes = [
                 path: 'essentials',
                 loadComponent: () =>
                     import('./features/essentials/essentials.component').then((m) => m.EssentialsComponent),
+            },
+            {
+                path: 'emi',
+                loadComponent: () =>
+                    import('./features/emi/emi.component').then((m) => m.EmiComponent),
             },
             {
                 path: 'settings',
@@ -100,6 +110,21 @@ export const routes: Routes = [
                 component: MarketDashboardComponent,
             }, */
         ],
+    },
+    // ── Developer Tools (localhost only, not linked in public navigation) ──
+    {
+        path: 'dev/cas-parser',
+        loadComponent: () =>
+            import('./features/dev/cas-parser-test/cas-parser-test.component').then(
+                (m) => m.CasParserTestComponent
+            ),
+    },
+    {
+        path: 'dev/cas-parser-test',
+        loadComponent: () =>
+            import('./features/dev/cas-parser-test/cas-parser-test.component').then(
+                (m) => m.CasParserTestComponent
+            ),
     },
     { path: '**', redirectTo: '' },
 ];

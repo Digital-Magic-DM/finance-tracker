@@ -98,10 +98,76 @@
         window.deferredPrompt = e;
       });
     </script>
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('theme');
+          var dark = saved ? saved === 'dark' : false;
+          if (dark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <style>
+      #app-splash-preboot {
+        position: fixed;
+        inset: 0;
+        z-index: 999998;
+        background: #000000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        user-select: none;
+        will-change: opacity;
+        transform: translate3d(0, 0, 0);
+      }
+      [data-theme="light"] #app-splash-preboot {
+        background: #ffffff;
+      }
+      .preboot-logo-box {
+        width: 92px;
+        height: 92px;
+        border-radius: 24px;
+        background: #000000;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.75), 0 0 32px rgba(0, 229, 191, 0.12);
+        will-change: transform;
+        transform: translate3d(0, 0, 0);
+      }
+      [data-theme="light"] .preboot-logo-box {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.14);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.09);
+      }
+      .preboot-title {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif;
+        font-size: 21px;
+        font-weight: 800;
+        letter-spacing: 0.34em;
+        padding-left: 0.34em;
+        text-transform: uppercase;
+        color: #ffffff;
+      }
+      [data-theme="light"] .preboot-title {
+        color: #000000;
+      }
+    </style>
     <link rel="icon" type="image/png" sizes="196x196" href="icons/favicon-196.png" />
     <link rel="apple-touch-icon" href="icons/apple-icon-180.png" />
   </head>
   <body>
+    <div id="app-splash-preboot" aria-hidden="true">
+      <div class="preboot-logo-box">
+        <img src="/icons/favicon-196.png" alt="Logo" width="62" height="62" style="object-fit: contain; border-radius: 14px;" />
+      </div>
+      <div class="preboot-title">FINTRACKER</div>
+    </div>
     <app-root></app-root>
     <noscript>Please enable JavaScript to continue using this application.</noscript>
   </body>
