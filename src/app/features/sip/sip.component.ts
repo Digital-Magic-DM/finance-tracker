@@ -780,6 +780,31 @@ export class SipComponent implements OnInit {
     return this.calendarService.formatReadableDate(str);
   }
 
+  getOrdinal(n: number): string {
+    if (!n) return '';
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  getOrdinalSuffix(n: number): string {
+    if (!n) return 'th';
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return s[(v - 20) % 10] || s[v] || s[0];
+  }
+
+  getHolidayDayName(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'short' });
+  }
+
+  getHolidayDayNum(dateStr: string): string {
+    if (!dateStr) return '';
+    return dateStr.split('-')[2] || '';
+  }
+
   // ── Export Statements (PDF, Excel, CSV) ──
   async exportStatement(format: 'pdf' | 'excel') {
     try {

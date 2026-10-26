@@ -813,23 +813,32 @@
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
   @if (activeTab() === 'calendar') {
     <div class="tab-content calendar-simulator-view">
+      <!-- Sebi Rule Banner -->
+      <div class="sebi-rule-banner">
+        <span class="banner-badge">
+          <span class="material-icons">gavel</span>
+          AMFI &amp; SEBI SETTLEMENT RULE
+        </span>
+        <h2>NSE / BSE Trading Calendar &amp; Date Simulator</h2>
+        <p>
+          Experience how AMFI / SEBI mutual fund settlement cycles automatically adapt when your preferred SIP day falls on a Saturday, Sunday, or national clearing holiday.
+        </p>
+      </div>
+
       <!-- Simulator Controls Header -->
       <div class="simulator-controls-card">
-        <div class="controls-left">
-          <h2>NSE / BSE Trading Calendar & Date Simulator</h2>
-          <p>
-            Experience how AMFI / SEBI mutual fund settlement cycles automatically adapt when your preferred SIP day falls on a Saturday, Sunday, or national clearing holiday.
-          </p>
-        </div>
-
-        <div class="controls-right">
+        <div class="sim-row">
           <!-- Year Selector -->
-          <div class="selector-group">
-            <label>Calendar Year:</label>
-            <div class="btn-group-segmented">
+          <div class="sim-group">
+            <span class="control-label">
+              <span class="material-icons sm-icon">calendar_today</span>
+              Calendar Year
+            </span>
+            <div class="year-pills">
               @for (yr of availableYears; track yr) {
                 <button
-                  class="btn-segment"
+                  type="button"
+                  class="pill-btn"
                   [class.active]="calendarYear() === yr"
                   (click)="calendarYear.set(yr)">
                   {{ yr }}
@@ -839,50 +848,83 @@
           </div>
 
           <!-- Select SIP to Simulate -->
-          <div class="selector-group">
-            <label>Simulate Plan:</label>
-            <select
-              class="form-control form-control-sm"
-              [ngModel]="selectedSipInCalendar()"
-              (ngModelChange)="onSimulatorSipChange($event)">
-              <option value="custom">Custom Preferred Day</option>
-              @for (sip of sipService.sips(); track sip.id) {
-                <option [value]="sip.id">{{ sip.name }} (Day {{ sip.sipDay }})</option>
+          <div class="sim-group flex-1">
+            <span class="control-label">
+              <span class="material-icons sm-icon">tune</span>
+              Simulate From Plan
+            </span>
+            <div class="select-plan-wrapper">
+              <select
+                class="form-control select-plan-dropdown"
+                [ngModel]="selectedSipInCalendar()"
+                (ngModelChange)="onSimulatorSipChange($event)">
+                <option value="custom">Custom Preferred Day</option>
+                @for (sip of sipService.sips(); track sip.id) {
+                  <option [value]="sip.id">{{ sip.name }} (Day {{ sip.sipDay }})</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Preferred Day Picker Chips -->
+          <div class="sim-group">
+            <span class="control-label">
+              <span class="material-icons sm-icon">event_repeat</span>
+              Test Preferred Day of Month
+            </span>
+            <div class="day-chips-row">
+              @for (d of commonSipDays; track d) {
+                <button
+                  type="button"
+                  class="day-chip"
+                  [class.active]="calendarSimulatorDay() === d"
+                  (click)="calendarSimulatorDay.set(d); selectedSipInCalendar.set('custom')">
+                  {{ getOrdinal(d) }}
+                </button>
               }
-            </select>
+              <div class="custom-day-wrapper">
+                <input
+                  type="number"
+                  min="1"
+                  max="31"
+                  class="custom-day-input"
+                  [ngModel]="calendarSimulatorDay()"
+                  (ngModelChange)="calendarSimulatorDay.set($event); selectedSipInCalendar.set('custom')"
+                  title="Custom Day of Month (1-31)" />
+                <span class="input-suffix">{{ getOrdinalSuffix(calendarSimulatorDay()) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulator Statistics Grid -->
+        <div class="sim-stats-grid">
+          <div class="stat-box">
+            <span class="stat-num text-primary">{{ simulatorStats().totalInstallments }}</span>
+            <span class="stat-desc">Scheduled Months</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num text-success">{{ simulatorStats().onTimeCount }}</span>
+            <span class="stat-desc">Regular Open Trading Days</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num text-warning">{{ simulatorStats().shiftedCount }}</span>
+            <span class="stat-desc">Holiday / Weekend Rollovers</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num text-accent">+{{ simulatorStats().avgDelayDays }}d</span>
+            <span class="stat-desc">Avg Settlement Shift</span>
           </div>
         </div>
       </div>
 
-      <!-- Preferred Day Picker Chips -->
-      <div class="day-picker-toolbar">
-        <span class="picker-label">Test Preferred Day of Month:</span>
-        <div class="day-chips">
-          @for (d of commonSipDays; track d) {
-            <button
-              class="day-chip"
-              [class.active]="calendarSimulatorDay() === d"
-              (click)="calendarSimulatorDay.set(d); selectedSipInCalendar.set('custom')">
-              {{ d }}th
-            </button>
-          }
-        </div>
-        <div class="custom-day-input">
-          <input
-            type="number"
-            min="1"
-            max="31"
-            [ngModel]="calendarSimulatorDay()"
-            (ngModelChange)="calendarSimulatorDay.set($event); selectedSipInCalendar.set('custom')"
-            title="Custom Day" />
-          <span>th</span>
-        </div>
-      </div>
-
-      <!-- Schedule Table -->
-      <div class="schedule-table-card">
-        <div class="table-header-title">
-          <h3>12-Month Market Execution Schedule for Year {{ calendarYear() }} (Preferred Day {{ calendarSimulatorDay() }}th)</h3>
+      <!-- Schedule Table Section -->
+      <div class="schedule-section">
+        <div class="section-title-row">
+          <h3>
+            <span class="material-icons">event_note</span>
+            12-Month Market Execution Schedule for Year {{ calendarYear() }} (Preferred Day: {{ getOrdinal(calendarSimulatorDay()) }})
+          </h3>
         </div>
 
         <div class="table-container">
@@ -918,6 +960,33 @@
           </table>
         </div>
       </div>
+
+      <!-- Holidays Section -->
+      @if (yearHolidays().length > 0) {
+        <div class="holidays-section">
+          <div class="section-title-row">
+            <h3>
+              <span class="material-icons">beach_access</span>
+              Official NSE / BSE Trading Holidays ({{ calendarYear() }})
+            </h3>
+          </div>
+          <div class="holidays-grid">
+            @for (h of yearHolidays(); track h.date) {
+              <div class="holiday-card">
+                <div class="hol-date-col">
+                  <span class="hol-day">{{ getHolidayDayName(h.date) }}</span>
+                  <span class="hol-num">{{ getHolidayDayNum(h.date) }}</span>
+                </div>
+                <div class="hol-info-col">
+                  <h4 class="hol-name">{{ h.name }}</h4>
+                  <span class="hol-date-full">{{ formatDateStr(h.date) }}</span>
+                  <span class="hol-badge">Market Closed</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
   }
 

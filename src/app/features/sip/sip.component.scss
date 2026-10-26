@@ -953,22 +953,32 @@
         }
 
         .control-label {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
           font-size: 0.8rem;
-          font-weight: 600;
+          font-weight: 700;
           color: var(--text-muted);
           text-transform: uppercase;
           letter-spacing: 0.04em;
+
+          .sm-icon {
+            font-size: 15px;
+            color: #8b5cf6;
+          }
 
           strong {
             color: var(--text-primary);
           }
         }
 
-        .year-pills {
+        .year-pills,
+        .btn-group-segmented {
           display: flex;
           gap: 0.35rem;
 
-          .pill-btn {
+          .pill-btn,
+          .btn-segment {
             background: var(--bg-secondary);
             border: 1px solid var(--border-light);
             color: var(--text-secondary);
@@ -988,11 +998,50 @@
               background: var(--text-primary);
               color: var(--bg-primary);
               border-color: var(--text-primary);
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
             }
           }
         }
 
-        .day-chips-row {
+        .select-plan-wrapper {
+          position: relative;
+          width: 100%;
+        }
+
+        .select-plan-dropdown {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-light);
+          border-radius: var(--radius-md);
+          color: var(--text-primary);
+          padding: 0.55rem 0.9rem;
+          font-size: 0.86rem;
+          font-weight: 600;
+          cursor: pointer;
+          width: 100%;
+          appearance: none;
+          -webkit-appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 0.75rem center;
+          background-size: 14px;
+          padding-right: 2.2rem;
+          transition: all var(--transition-fast);
+
+          &:hover,
+          &:focus {
+            border-color: #8b5cf6;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+          }
+
+          option {
+            background: var(--bg-card);
+            color: var(--text-primary);
+          }
+        }
+
+        .day-chips-row,
+        .day-chips {
           display: flex;
           flex-wrap: wrap;
           gap: 0.4rem;
@@ -1004,23 +1053,68 @@
             color: var(--text-secondary);
             font-size: 0.82rem;
             font-weight: 700;
-            padding: 0.35rem 0.7rem;
+            padding: 0.38rem 0.75rem;
             border-radius: var(--radius-full);
             cursor: pointer;
             transition: all var(--transition-fast);
 
             &:hover {
               border-color: var(--border-color);
+              color: var(--text-primary);
             }
 
             &.active {
-              background: #8b5cf6;
+              background: linear-gradient(135deg, #8b5cf6, #6366f1);
               color: #ffffff;
               border-color: #8b5cf6;
+              box-shadow: 0 2px 10px rgba(139, 92, 246, 0.35);
             }
           }
 
-          .custom-day-input {
+          .custom-day-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-full);
+            padding: 0.25rem 0.65rem 0.25rem 0.45rem;
+            transition: all var(--transition-fast);
+
+            &:focus-within,
+            &:hover {
+              border-color: #8b5cf6;
+              box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+            }
+
+            .custom-day-input {
+              width: 36px;
+              padding: 0;
+              text-align: center;
+              border: none;
+              background: transparent;
+              color: var(--text-primary);
+              font-weight: 700;
+              font-size: 0.85rem;
+              outline: none;
+              -moz-appearance: textfield;
+
+              &::-webkit-outer-spin-button,
+              &::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+              }
+            }
+
+            .input-suffix {
+              font-size: 0.75rem;
+              font-weight: 700;
+              color: var(--text-muted);
+              user-select: none;
+            }
+          }
+
+          .custom-day-input:not(.custom-day-wrapper .custom-day-input) {
             width: 55px;
             padding: 0.35rem 0.4rem;
             text-align: center;
