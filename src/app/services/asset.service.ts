@@ -12,6 +12,7 @@ import {
     updateDoc,
     deleteDoc,
     getDocs,
+    writeBatch,
 } from 'firebase/firestore';
 import { Auth } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
@@ -61,6 +62,27 @@ export class AssetService {
         if (!uid) throw new Error('User not authenticated');
         const ref = doc(this.firestore, `users/${uid}/assets/${id}`);
         await deleteDoc(ref);
+    }
+
+    /**
+     * Delete multiple assets in atomic batches (Firestore allows up to 500 operations per batch).
+     * Commits all deletions atomically at once to prevent multiple snapshot reloads and excessive API calls.
+     */
+    async batchDeleteAssets(ids: string[]): Promise<void> {
+        const uid = this.auth.currentUser?.uid;
+        if (!uid) throw new Error('User not authenticated');
+        if (!ids || ids.length === 0) return;
+
+        const CHUNK_SIZE = 500;
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+            const batch = writeBatch(this.firestore);
+            for (const id of chunk) {
+                const ref = doc(this.firestore, `users/${uid}/assets/${id}`);
+                batch.delete(ref);
+            }
+            await batch.commit();
+        }
     }
 
     /**

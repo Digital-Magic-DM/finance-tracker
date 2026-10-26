@@ -20,8 +20,8 @@
     <div class="toolbar-actions">
       @if (selectMode()) {
         <span class="select-count">{{ selectedCount() }} selected</span>
-        <button class="btn btn-ghost btn-sm" (click)="selectAll()">Select All</button>
-        <button class="btn btn-ghost btn-sm" (click)="deselectAll()">Deselect</button>
+        <button class="btn btn-ghost btn-sm" (click)="selectAll()">Select All ({{ filteredAssets().length }})</button>
+        <button class="btn btn-ghost btn-sm" (click)="deselectAll()" [disabled]="selectedCount() === 0">Deselect</button>
         <button class="btn btn-danger btn-sm" [disabled]="selectedCount() === 0 || deleting()" (click)="deleteSelected()">
           <span class="material-icons sm-icon">delete</span>
           {{ deleting() ? 'Deleting...' : 'Delete (' + selectedCount() + ')' }}
@@ -932,4 +932,112 @@
     (closed)="showImport.set(false)"
     (imported)="onImportComplete($event)"
   />
+}
+
+<!-- Delete Confirmation Warning Modal -->
+@if (showDeleteModal()) {
+  <div class="modal-overlay delete-modal-overlay" (click)="closeDeleteModal()">
+    <div class="modal delete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header delete-modal-header">
+        <div class="warning-title-wrap">
+          <div class="warning-icon-badge">
+            <span class="material-icons warning-icon">delete_sweep</span>
+          </div>
+          <div>
+            <h3>Confirm Asset Deletion</h3>
+            <p class="subtitle">
+              {{ assetsPendingDeletion().length === 1 ? '1 holding selected for deletion' : (assetsPendingDeletion().length + ' holdings selected for deletion') }}
+            </p>
+          </div>
+        </div>
+        <button class="btn-icon" (click)="closeDeleteModal()" [disabled]="deleting()" title="Close">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body delete-modal-body">
+        <!-- Prominent Destructive Callout -->
+        <div class="delete-callout-banner">
+          <span class="material-icons callout-icon">warning_amber</span>
+          <div class="callout-text">
+            <div class="callout-heading">Warning: Permanent Action</div>
+            <div class="callout-desc">
+              You are about to permanently delete the {{ assetsPendingDeletion().length === 1 ? 'holding' : 'holdings' }} listed below. This will remove {{ assetsPendingDeletion().length === 1 ? 'it' : 'them' }} from your portfolio, live price updates, and total net worth calculations.
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Stat Cards -->
+        <div class="delete-summary-cards">
+          <div class="del-card">
+            <span class="del-card-label">Holdings Count</span>
+            <span class="del-card-value">{{ assetsPendingDeletion().length }}</span>
+          </div>
+          <div class="del-card">
+            <span class="del-card-label">Total Invested</span>
+            <span class="del-card-value">{{ deleteTotalInvested() | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="del-card">
+            <span class="del-card-label">Current Value</span>
+            <span class="del-card-value">{{ deleteTotalValue() | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+        </div>
+
+        <!-- Scrollable List of Holdings to be Deleted -->
+        <div class="delete-list-section">
+          <div class="delete-list-header">
+            <span>Holdings to be removed:</span>
+            <span class="delete-list-counter">{{ assetsPendingDeletion().length }} item{{ assetsPendingDeletion().length > 1 ? 's' : '' }}</span>
+          </div>
+          <div class="delete-items-list custom-scrollbar">
+            @for (asset of assetsPendingDeletion(); track asset.id || asset.name) {
+              <div class="delete-item-row">
+                <div class="item-main">
+                  <div class="item-name-row">
+                    <span class="item-name">{{ asset.symbol || asset.name }}</span>
+                    @if (asset.symbol && asset.name && asset.symbol !== asset.name) {
+                      <span class="item-subname">· {{ asset.name }}</span>
+                    }
+                  </div>
+                  <div class="item-meta">
+                    <span class="item-type-badge">{{ getTypeLabel(asset.type || AssetType.Other) }}</span>
+                    <span class="meta-dot">·</span>
+                    <span class="item-qty">
+                      {{ asset.quantity | number:'1.0-4' }} {{ asset.type === 'MutualFund' ? 'units' : (asset.type === 'FixedDeposit' ? 'deposit' : 'qty') }}
+                    </span>
+                    <span class="meta-dot">·</span>
+                    <span class="item-source">{{ getAssetApp(asset) }}</span>
+                  </div>
+                </div>
+
+                <div class="item-financials">
+                  <span class="item-val">
+                    {{ (getAssetValue(asset) * getFxRate(asset)) | currency:'INR':'symbol':'1.0-0' }}
+                  </span>
+                  <span class="item-invested">
+                    Cost: {{ (asset.buyPrice * asset.quantity * getFxRate(asset)) | currency:'INR':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer delete-modal-footer">
+        <button class="btn btn-ghost" (click)="closeDeleteModal()" [disabled]="deleting()">
+          Cancel
+        </button>
+        <button class="btn btn-danger btn-confirm-delete" (click)="confirmDelete()" [disabled]="deleting()">
+          @if (deleting()) {
+            <span class="material-icons spin sm-icon">sync</span>
+            <span>Deleting ({{ assetsPendingDeletion().length }})...</span>
+          } @else {
+            <span class="material-icons sm-icon">delete_forever</span>
+            <span>Confirm Delete ({{ assetsPendingDeletion().length }})</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
 }

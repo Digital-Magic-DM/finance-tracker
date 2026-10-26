@@ -66,6 +66,22 @@ export class AssetsComponent implements OnInit {
     selectMode = signal(false);
     selectedIds = signal<Set<string>>(new Set());
     deleting = signal(false);
+    showDeleteModal = signal(false);
+    assetsPendingDeletion = signal<Asset[]>([]);
+
+    deleteTotalInvested = computed(() => {
+        return this.assetsPendingDeletion().reduce(
+            (sum, a) => sum + (a.buyPrice * a.quantity * this.getFxRate(a)),
+            0
+        );
+    });
+
+    deleteTotalValue = computed(() => {
+        return this.assetsPendingDeletion().reduce(
+            (sum, a) => sum + (this.getAssetValue(a) * this.getFxRate(a)),
+            0
+        );
+    });
 
     // View mode: 'cards' (broker holding cards) or 'table' (accordion table)
     viewMode = signal<'cards' | 'table'>((localStorage.getItem('assetsViewMode') as 'cards' | 'table') || 'cards');
@@ -641,8 +657,8 @@ export class AssetsComponent implements OnInit {
     }
 
     selectAll() {
-        const allIds = this.assets().filter(a => a.id).map(a => a.id!);
-        this.selectedIds.set(new Set(allIds));
+        const visibleIds = this.filteredAssets().filter(a => a.id).map(a => a.id!);
+        this.selectedIds.set(new Set(visibleIds));
     }
 
     deselectAll() {
@@ -659,22 +675,56 @@ export class AssetsComponent implements OnInit {
         });
     }
 
-    async deleteSelected() {
-        const ids = Array.from(this.selectedIds());
-        if (ids.length === 0) return;
+    deleteSelected() {
+        const ids = this.selectedIds();
+        if (ids.size === 0) return;
 
-        const confirmText = `Delete ${ids.length} selected asset${ids.length > 1 ? 's' : ''}?`;
-        if (!confirm(confirmText)) return;
+        const toDelete = this.assets().filter(a => a.id && ids.has(a.id));
+        if (toDelete.length === 0) return;
+
+        this.assetsPendingDeletion.set(toDelete);
+        this.showDeleteModal.set(true);
+    }
+
+    closeDeleteModal() {
+        if (this.deleting()) return;
+        this.showDeleteModal.set(false);
+        this.assetsPendingDeletion.set([]);
+    }
+
+    async confirmDelete() {
+        const toDelete = this.assetsPendingDeletion();
+        const ids = toDelete.map(a => a.id!).filter(Boolean);
+        if (ids.length === 0) {
+            this.closeDeleteModal();
+            return;
+        }
 
         this.deleting.set(true);
         try {
-            for (const id of ids) {
-                await this.assetService.deleteAsset(id);
+            await this.assetService.batchDeleteAssets(ids);
+
+            // Remove deleted IDs from current selection
+            this.selectedIds.update(set => {
+                const next = new Set(set);
+                for (const id of ids) {
+                    next.delete(id);
+                }
+                return next;
+            });
+
+            if (this.selectedIds().size === 0) {
+                this.selectMode.set(false);
             }
-            this.selectedIds.set(new Set());
-            this.selectMode.set(false);
-        } catch (err) {
+
+            this.snackbar.show(
+                `Successfully deleted ${ids.length} holding${ids.length > 1 ? 's' : ''}`,
+                'success'
+            );
+            this.closeDeleteModal();
+        } catch (err: any) {
             console.error('[Assets] Batch delete failed:', err);
+            this.snackbar.show('Failed to delete holdings. Please try again.', 'error');
         } finally {
             this.deleting.set(false);
         }
@@ -1006,10 +1056,11 @@ export class AssetsComponent implements OnInit {
         }
     }
 
-    async delete(id: string) {
-        if (confirm('Delete this asset?')) {
-            await this.assetService.deleteAsset(id);
-        }
+    delete(id: string) {
+        const asset = this.assets().find(a => a.id === id);
+        if (!asset) return;
+        this.assetsPendingDeletion.set([asset]);
+        this.showDeleteModal.set(true);
     }
 
     async refreshMutualFunds(force = false) {
