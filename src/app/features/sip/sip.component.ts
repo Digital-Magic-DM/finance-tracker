@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, HostListener } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SipService } from '../../services/sip.service';
@@ -33,6 +33,21 @@ export class SipComponent implements OnInit {
   public calendarService = inject(MarketCalendarService);
   public navService = inject(AmfiNavService);
   private snackbar = inject(SnackbarService);
+
+  showExportDropdown = signal(false);
+  showDeleteModal = signal(false);
+  sipPendingDeletion = signal<Sip | null>(null);
+  deleting = signal(false);
+
+  toggleExportDropdown(event?: Event) {
+    if (event) event.stopPropagation();
+    this.showExportDropdown.update(v => !v);
+  }
+
+  @HostListener('document:click')
+  closeExportDropdown() {
+    this.showExportDropdown.set(false);
+  }
   private assetService = inject(AssetService);
   public reportExport = inject(ReportExportService);
 
@@ -680,9 +695,28 @@ export class SipComponent implements OnInit {
     }
   }
 
-  async deleteSip(sip: Sip) {
-    if (confirm(`Are you sure you want to delete SIP for "${sip.name}"?`)) {
+  deleteSip(sip: Sip) {
+    this.sipPendingDeletion.set(sip);
+    this.showDeleteModal.set(true);
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal.set(false);
+    this.sipPendingDeletion.set(null);
+  }
+
+  async confirmDeleteSip() {
+    const sip = this.sipPendingDeletion();
+    if (!sip) return;
+    this.deleting.set(true);
+    try {
       await this.sipService.deleteSip(sip.id);
+      this.snackbar.show(`Deleted SIP for "${sip.name}"`, 'success');
+      this.closeDeleteModal();
+    } catch (e: any) {
+      this.snackbar.show(e.message || 'Failed to delete SIP', 'error');
+    } finally {
+      this.deleting.set(false);
     }
   }
 

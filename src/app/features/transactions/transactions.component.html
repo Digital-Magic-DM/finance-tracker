@@ -1,26 +1,45 @@
 <div class="transactions-page">
-  <div class="page-header">
-    <div class="header-actions">
-      @if (selectMode()) {
-        <span class="selected-count">{{ selectedIds().size }} selected</span>
-        <button class="btn btn-danger" [disabled]="selectedIds().size === 0 || deleting()" (click)="deleteSelected()">
-          {{ deleting() ? 'Deleting...' : 'Delete Selected' }}
+  <div class="page-header transactions-toolbar-row">
+    <div class="search-box-wrap">
+      <span class="material-icons search-icon">search</span>
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search transactions (e.g. Salary, Rent, Grocery)..." 
+        [value]="searchQuery()" 
+        (input)="searchQuery.set($any($event.target).value)" 
+      />
+      @if (searchQuery()) {
+        <button class="clear-search-btn" (click)="searchQuery.set('')" title="Clear">
+          <span class="material-icons">close</span>
         </button>
-        <button class="btn btn-ghost" (click)="toggleSelectMode()">Cancel</button>
+      }
+    </div>
+
+    <div class="toolbar-actions">
+      @if (selectMode()) {
+        <span class="select-count">{{ selectedCount() }} selected</span>
+        <button class="btn btn-ghost btn-sm" (click)="selectAll()">Select All ({{ filtered().length }})</button>
+        <button class="btn btn-ghost btn-sm" (click)="deselectAll()" [disabled]="selectedCount() === 0">Deselect</button>
+        <button class="btn btn-danger btn-sm" [disabled]="selectedCount() === 0 || deleting()" (click)="deleteSelected()">
+          <span class="material-icons sm-icon">delete</span>
+          {{ deleting() ? 'Deleting...' : 'Delete (' + selectedCount() + ')' }}
+        </button>
+        <button class="btn btn-ghost btn-sm" (click)="toggleSelectMode()">Cancel</button>
       } @else {
-        <button class="btn btn-secondary action-tool-btn" (click)="toggleSelectMode()" title="Select transactions (multi-select to delete)">
+        <button class="btn btn-ghost btn-sm action-tool-btn" (click)="toggleSelectMode()" title="Select transactions (multi-select to delete)">
           <span class="material-icons sm-icon">checklist</span>
           <span class="btn-text">Select</span>
         </button>
-        <button class="btn btn-primary" id="add-tx-btn" (click)="openAdd()" title="Add Transaction">
+        <button class="btn btn-primary btn-sm add-main-btn" id="add-tx-btn" (click)="openAdd()" title="Add Transaction (+)">
           <span class="plus-icon">+</span>
-          <span class="btn-text">Add</span>
+          <span class="btn-text">Add Transaction</span>
         </button>
-        <button class="btn btn-ghost action-tool-btn" (click)="showImport.set(true)" title="Import from CSV/Excel">
+        <button class="btn btn-ghost btn-sm action-tool-btn" (click)="showImport.set(true)" title="Import from CSV / Excel">
           <span class="material-icons sm-icon">post_add</span>
           <span class="btn-text">Import</span>
         </button>
-        <button class="btn btn-ghost action-tool-btn" (click)="exportCSV()" title="Export transactions to CSV">
+        <button class="btn btn-ghost btn-sm action-tool-btn" (click)="exportCSV()" title="Export transactions to CSV">
           <span class="material-icons sm-icon">arrow_upward</span>
           <span class="btn-text">Export</span>
         </button>
@@ -132,8 +151,12 @@
               </td>
               <td>
                 <div style="display:flex; gap:6px; justify-content:flex-end">
-                  <button class="btn-icon" (click)="openEdit(tx)">✎</button>
-                  <button class="btn-icon" style="color:var(--accent-danger)" (click)="delete(tx.id!)">✕</button>
+                  <button class="btn-icon" (click)="openEdit(tx)" title="Edit Transaction">
+                    <span class="material-icons sm-icon">edit</span>
+                  </button>
+                  <button class="btn-icon btn-delete" (click)="delete(tx.id!)" title="Delete Transaction">
+                    <span class="material-icons sm-icon">delete</span>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -156,7 +179,9 @@
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>{{ editingId() ? 'Edit' : 'Add' }} Transaction</h3>
-        <button class="btn-icon" (click)="closeModal()">✕</button>
+        <button class="btn-icon" (click)="closeModal()" title="Close">
+          <span class="material-icons">close</span>
+        </button>
       </div>
       <div class="modal-body">
         <div class="form-group">
@@ -217,4 +242,100 @@
     (closed)="showImport.set(false)"
     (imported)="showImport.set(false)"
   />
+}
+
+<!-- Delete Confirmation Warning Modal -->
+@if (showDeleteModal()) {
+  <div class="modal-overlay delete-modal-overlay" (click)="closeDeleteModal()">
+    <div class="modal delete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header delete-modal-header">
+        <div class="warning-title-wrap">
+          <div class="warning-icon-badge">
+            <span class="material-icons warning-icon">delete_sweep</span>
+          </div>
+          <div>
+            <h3>Confirm Transaction Deletion</h3>
+            <p class="subtitle">
+              {{ txPendingDeletion().length === 1 ? '1 transaction selected for deletion' : (txPendingDeletion().length + ' transactions selected for deletion') }}
+            </p>
+          </div>
+        </div>
+        <button class="btn-icon" (click)="closeDeleteModal()" [disabled]="deleting()" title="Close">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body delete-modal-body">
+        <div class="delete-callout-banner">
+          <span class="material-icons callout-icon">warning_amber</span>
+          <div class="callout-text">
+            <div class="callout-heading">Warning: Permanent Action</div>
+            <div class="callout-desc">
+              You are about to permanently delete the {{ txPendingDeletion().length === 1 ? 'transaction' : 'transactions' }} listed below. This will adjust your income/expense reports and cashflow statistics.
+            </div>
+          </div>
+        </div>
+
+        <div class="delete-summary-cards">
+          <div class="del-card">
+            <span class="del-card-label">Count</span>
+            <span class="del-card-value">{{ txPendingDeletion().length }}</span>
+          </div>
+          <div class="del-card" style="grid-column: span 2;">
+            <span class="del-card-label">Total Amount</span>
+            <span class="del-card-value">{{ deleteTotalAmount() | currency:'INR':'symbol':'1.0-0' }}</span>
+          </div>
+        </div>
+
+        <div class="delete-list-section">
+          <div class="delete-list-header">
+            <span>Transactions to be removed:</span>
+            <span class="delete-list-counter">{{ txPendingDeletion().length }} item{{ txPendingDeletion().length > 1 ? 's' : '' }}</span>
+          </div>
+          <div class="delete-items-list custom-scrollbar">
+            @for (tx of txPendingDeletion(); track tx.id || tx.description) {
+              <div class="delete-item-row">
+                <div class="item-main">
+                  <div class="item-name-row">
+                    <span class="item-name">{{ tx.description }}</span>
+                    <span class="item-subname">· {{ tx.category }}</span>
+                  </div>
+                  <div class="item-meta">
+                    <span class="item-type-badge">{{ tx.type }}</span>
+                    @if (tx.bank) {
+                      <span class="meta-dot">·</span>
+                      <span class="item-source">{{ tx.bank }}</span>
+                    }
+                    <span class="meta-dot">·</span>
+                    <span>{{ formatDate(tx.date) | date:'MMM d, yyyy' }}</span>
+                  </div>
+                </div>
+
+                <div class="item-financials">
+                  <span class="item-val" [class.text-success]="tx.type === 'Income' || tx.type === 'Sell'" [class.text-danger]="tx.type === 'Expense' || tx.type === 'Buy'">
+                    {{ tx.type === 'Income' || tx.type === 'Sell' ? '+' : '-' }}{{ tx.amount | currency:'INR':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer delete-modal-footer">
+        <button class="btn btn-ghost" (click)="closeDeleteModal()" [disabled]="deleting()">
+          Cancel
+        </button>
+        <button class="btn btn-danger btn-confirm-delete" (click)="confirmDelete()" [disabled]="deleting()">
+          @if (deleting()) {
+            <span class="material-icons spin sm-icon">sync</span>
+            <span>Deleting ({{ txPendingDeletion().length }})...</span>
+          } @else {
+            <span class="material-icons sm-icon">delete_forever</span>
+            <span>Confirm Delete ({{ txPendingDeletion().length }})</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
 }

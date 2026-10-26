@@ -17,8 +17,9 @@
         <button type="button" class="tf-btn" [class.active]="selectedTimeframe() === 'ALL'" (click)="setTimeframe('ALL')">ALL</button>
       </div>
 
-      <button class="btn btn-primary btn-build" (click)="openCreateCustomChart()">
-        <span class="material-icons">add_chart</span> Build Custom Analytics
+      <button class="btn btn-primary btn-sm add-main-btn" (click)="openCreateCustomChart()">
+        <span class="plus-icon">+</span>
+        <span class="btn-text">Build Custom Analytics</span>
       </button>
     </div>
   </div>
@@ -43,7 +44,7 @@
                               <span class="material-icons">edit</span>
                           </button>
                           <button class="btn-icon-subtle btn-delete" (click)="deleteCustomChart(widget.config.id)" title="Delete Widget">
-                              <span class="material-icons">close</span>
+                              <span class="material-icons sm-icon">delete</span>
                           </button>
                       </div>
                   </div>
@@ -86,7 +87,7 @@
                                   <span class="material-icons">tune</span>
                               </button>
                               <button class="btn-icon-subtle btn-delete" (click)="deleteCustomChart(chart.config.id)" title="Delete Chart">
-                                  <span class="material-icons">delete_outline</span>
+                                  <span class="material-icons sm-icon">delete</span>
                               </button>
                           </div>
                       </div>

@@ -61,6 +61,23 @@ export class TransactionService {
         await deleteDoc(ref);
     }
 
+    async batchDeleteTransactions(ids: string[]): Promise<void> {
+        const uid = this.auth.currentUser?.uid;
+        if (!uid || !ids || ids.length === 0) return;
+
+        const { writeBatch } = await import('firebase/firestore');
+        const CHUNK_SIZE = 500;
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+            const batch = writeBatch(this.firestore);
+            for (const id of chunk) {
+                const ref = doc(this.firestore, `users/${uid}/transactions/${id}`);
+                batch.delete(ref);
+            }
+            await batch.commit();
+        }
+    }
+
     async batchAddTransactions(transactions: Omit<Transaction, 'id'>[]): Promise<{ created: number }> {
         const uid = this.auth.currentUser?.uid;
         if (!uid || transactions.length === 0) return { created: 0 };

@@ -2,36 +2,81 @@
     animation: fadeIn 0.3s ease;
 }
 
-.header-actions {
+.transactions-toolbar-row {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 12px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
 
-    .selected-count {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-secondary);
-    }
-    
-    @media (max-width: 600px) {
-        width: 100%;
-        gap: 6px;
-        justify-content: flex-start;
-        align-items: stretch;
-        
-        .btn {
-            flex: 1;
-            padding: 6px 8px;
-            font-size: 11px;
-            text-align: center;
-            justify-content: center;
+    .search-box-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 240px;
+        max-width: 480px;
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: var(--text-muted);
+            pointer-events: none;
         }
-        
-        .selected-count {
+
+        .search-input {
             width: 100%;
-            text-align: center;
-            padding-bottom: 2px;
+            height: 38px;
+            padding: 0 34px 0 38px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+
+            &:focus {
+                border-color: var(--text-primary);
+            }
+        }
+
+        .clear-search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            border-radius: 50%;
+
+            &:hover {
+                color: var(--text-primary);
+            }
+        }
+    }
+
+    .toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+
+        @media (max-width: 600px) {
+            width: 100%;
+            gap: 6px;
+
+            .action-tool-btn, .add-main-btn {
+                flex: 1;
+                justify-content: center;
+            }
         }
     }
 }

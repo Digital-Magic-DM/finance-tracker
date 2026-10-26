@@ -1,7 +1,8 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/transaction.service';
+import { SnackbarService } from '../../services/snackbar.service';
 import { Transaction, TransactionType, TRANSACTION_CATEGORIES } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportTransactionsComponent } from './import-transactions/import-transactions.component';
@@ -10,12 +11,13 @@ import { CustomSelectDirective } from '../../shared/directives/custom-select.dir
 @Component({
     selector: 'app-transactions',
     standalone: true,
-    imports: [CommonModule, FormsModule, DatePipe, ImportTransactionsComponent, CustomSelectDirective],
+    imports: [CommonModule, FormsModule, DatePipe, CurrencyPipe, ImportTransactionsComponent, CustomSelectDirective],
     templateUrl: './transactions.component.html',
     styleUrl: './transactions.component.scss',
 })
 export class TransactionsComponent {
     private txService = inject(TransactionService);
+    private snackbar = inject(SnackbarService);
 
     all = toSignal(this.txService.getTransactions(), { initialValue: [] });
     showModal = signal(false);
@@ -30,7 +32,14 @@ export class TransactionsComponent {
     // Multi-select state
     selectMode = signal(false);
     selectedIds = signal<Set<string>>(new Set());
+    selectedCount = computed(() => this.selectedIds().size);
     deleting = signal(false);
+    showDeleteModal = signal(false);
+    txPendingDeletion = signal<Transaction[]>([]);
+
+    deleteTotalAmount = computed(() =>
+        this.txPendingDeletion().reduce((sum, t) => sum + (t.amount || 0), 0)
+    );
 
     txTypes = ['All', ...Object.values(TransactionType)];
     categories = TRANSACTION_CATEGORIES;
@@ -167,29 +176,66 @@ export class TransactionsComponent {
         this.selectedIds.set(new Set());
     }
 
-    async deleteSelected() {
-        const ids = Array.from(this.selectedIds());
-        if (ids.length === 0) return;
+    deleteSelected() {
+        const ids = this.selectedIds();
+        if (ids.size === 0) return;
 
-        const confirmText = `Delete ${ids.length} selected transactions?`;
-        if (!confirm(confirmText)) return;
+        const toDelete = this.all().filter(t => t.id && ids.has(t.id));
+        if (toDelete.length === 0) return;
+
+        this.txPendingDeletion.set(toDelete);
+        this.showDeleteModal.set(true);
+    }
+
+    delete(id: string) {
+        const tx = this.all().find(t => t.id === id);
+        if (!tx) return;
+
+        this.txPendingDeletion.set([tx]);
+        this.showDeleteModal.set(true);
+    }
+
+    closeDeleteModal() {
+        if (this.deleting()) return;
+        this.showDeleteModal.set(false);
+        this.txPendingDeletion.set([]);
+    }
+
+    async confirmDelete() {
+        const toDelete = this.txPendingDeletion();
+        const ids = toDelete.map(t => t.id!).filter(Boolean);
+        if (ids.length === 0) {
+            this.closeDeleteModal();
+            return;
+        }
 
         this.deleting.set(true);
         try {
-            for (const id of ids) {
-                await this.txService.deleteTransaction(id);
+            await this.txService.batchDeleteTransactions(ids);
+
+            this.selectedIds.update(set => {
+                const next = new Set(set);
+                for (const id of ids) {
+                    next.delete(id);
+                }
+                return next;
+            });
+
+            if (this.selectedIds().size === 0) {
+                this.selectMode.set(false);
             }
-            this.selectedIds.set(new Set());
-            this.selectMode.set(false);
-        } catch (err) {
+
+            this.snackbar.show(
+                `Successfully deleted ${ids.length} transaction${ids.length > 1 ? 's' : ''}`,
+                'success'
+            );
+            this.closeDeleteModal();
+        } catch (err: any) {
             console.error('[Transactions] Batch delete failed:', err);
+            this.snackbar.show('Failed to delete transactions. Please try again.', 'error');
         } finally {
             this.deleting.set(false);
         }
-    }
-
-    async delete(id: string) {
-        if (confirm('Delete this transaction?')) await this.txService.deleteTransaction(id);
     }
 
     getTypeClass(type: TransactionType) {

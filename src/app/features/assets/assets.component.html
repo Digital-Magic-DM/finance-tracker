@@ -357,8 +357,8 @@
             <button class="btn-card-action" (click)="openEdit(asset)" title="Edit">
               <span class="material-icons">edit</span>
             </button>
-            <button class="btn-card-action btn-del" (click)="delete(asset.id!)" title="Delete">
-              <span class="material-icons">delete</span>
+            <button class="btn-card-action btn-del btn-delete" (click)="delete(asset.id!)" title="Delete">
+              <span class="material-icons sm-icon">delete</span>
             </button>
           }
         </div>
@@ -608,7 +608,7 @@
                               <span class="material-icons" style="font-size: 16px;">edit</span>
                             </button>
                             <button class="btn-icon btn-delete" (click)="delete(asset.id!); $event.stopPropagation()" title="Delete">
-                              <span class="material-icons" style="font-size: 16px;">delete</span>
+                              <span class="material-icons sm-icon">delete</span>
                             </button>
                           </div>
                         }

@@ -14,38 +14,58 @@
     </div>
 
     <div class="header-actions">
-      <!-- Export Statements -->
-      <button
-        class="btn btn-secondary"
-        (click)="exportStatement('pdf')"
-        title="Download official PDF SIP statement & audit trail">
-        <span class="material-icons">picture_as_pdf</span>
-        <span>PDF</span>
-      </button>
-
-      <button
-        class="btn btn-secondary"
-        (click)="exportStatement('excel')"
-        title="Download Excel spreadsheet of active SIPs & execution history">
-        <span class="material-icons">table_view</span>
-        <span>Excel</span>
-      </button>
-
       <!-- Sync / Schedule Check -->
       <button
-        class="btn btn-secondary sync-btn"
+        class="btn btn-ghost btn-sm action-tool-btn sync-btn"
         (click)="syncSchedules()"
         [disabled]="sipService.syncing()"
         title="Synchronize upcoming schedules and market calendar rollovers">
-        <span class="material-icons" [class.spinning]="sipService.syncing()">sync</span>
-        <span>{{ sipService.syncing() ? 'Syncing...' : 'Sync Schedules' }}</span>
+        <span class="material-icons sm-icon" [class.spinning]="sipService.syncing()">sync</span>
+        <span class="btn-text">{{ sipService.syncing() ? 'Syncing...' : 'Sync Schedules' }}</span>
       </button>
 
       <!-- Add SIP Button -->
-      <button class="btn btn-primary" (click)="openAddModal()">
-        <span class="material-icons">add_circle</span>
-        <span>New SIP</span>
+      <button class="btn btn-primary btn-sm add-main-btn" (click)="openAddModal()" title="Set Up New SIP Plan">
+        <span class="plus-icon">+</span>
+        <span class="btn-text">Add SIP</span>
       </button>
+
+      <!-- Export Statements Dropdown -->
+      <div class="export-dropdown-wrapper" (click)="$event.stopPropagation()">
+        <button
+          class="btn btn-ghost btn-sm action-tool-btn"
+          (click)="toggleExportDropdown($event)"
+          title="Export SIP statements and schedules">
+          <span class="material-icons sm-icon">arrow_upward</span>
+          <span class="btn-text">Export</span>
+          <span class="material-icons dropdown-caret">expand_more</span>
+        </button>
+        @if (showExportDropdown()) {
+          <div class="export-menu shadow-lg">
+            <button class="export-item" (click)="exportStatement('pdf'); closeExportDropdown()">
+              <span class="material-icons sm-icon">picture_as_pdf</span>
+              <div class="export-info">
+                <span class="export-title">PDF Statement</span>
+                <span class="export-sub">Official statement & audit trail</span>
+              </div>
+            </button>
+            <button class="export-item" (click)="exportStatement('excel'); closeExportDropdown()">
+              <span class="material-icons sm-icon">table_view</span>
+              <div class="export-info">
+                <span class="export-title">Excel Spreadsheet (.xlsx)</span>
+                <span class="export-sub">Active SIPs & ledger history</span>
+              </div>
+            </button>
+            <button class="export-item" (click)="exportCsv(); closeExportDropdown()">
+              <span class="material-icons sm-icon">file_download</span>
+              <div class="export-info">
+                <span class="export-title">CSV Data (.csv)</span>
+                <span class="export-sub">Raw spreadsheet format</span>
+              </div>
+            </button>
+          </div>
+        }
+      </div>
     </div>
   </header>
 
@@ -411,10 +431,10 @@
                   </button>
 
                   <button
-                    class="btn btn-sm btn-ghost text-danger"
+                    class="btn btn-sm btn-ghost btn-delete"
                     (click)="deleteSip(sip)"
                     title="Delete Plan">
-                    <span class="material-icons">delete</span>
+                    <span class="material-icons sm-icon">delete</span>
                   </button>
                 </div>
               </div>
@@ -485,6 +505,9 @@
                         </button>
                         <button class="icon-btn" (click)="togglePause(sip)" [title]="sip.status === 'Active' ? 'Pause' : 'Resume'">
                           <span class="material-icons">{{ sip.status === 'Active' ? 'pause' : 'play_arrow' }}</span>
+                        </button>
+                        <button class="icon-btn btn-delete" (click)="deleteSip(sip)" title="Delete Plan">
+                          <span class="material-icons sm-icon">delete</span>
                         </button>
                       </div>
                     </td>
@@ -1542,6 +1565,62 @@
 
         <div class="modal-footer">
           <button class="btn btn-primary" (click)="closeHistoryModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Delete Confirmation Warning Modal ── -->
+  @if (showDeleteModal()) {
+    <div class="modal-backdrop" (click)="closeDeleteModal()">
+      <div class="modal-card delete-warning-modal" (click)="$event.stopPropagation()">
+        <div class="delete-warning-icon">
+          <span class="material-icons">warning_amber</span>
+        </div>
+
+        <h3 class="delete-warning-title">Delete SIP Plan</h3>
+        <p class="delete-warning-subtitle">
+          Are you sure you want to delete this SIP plan?
+        </p>
+
+        @if (sipPendingDeletion(); as sip) {
+          <div class="delete-items-summary">
+            <div class="delete-summary-row">
+              <span class="delete-summary-label">Plan Name:</span>
+              <span class="delete-summary-val font-semibold">{{ sip.name }}</span>
+            </div>
+            <div class="delete-summary-row">
+              <span class="delete-summary-label">Installment:</span>
+              <span class="delete-summary-val">{{ sip.amount | currency:'INR':'symbol':'1.0-0' }} / {{ sip.frequency }}</span>
+            </div>
+            @if (sip.folioNumber) {
+              <div class="delete-summary-row">
+                <span class="delete-summary-label">Folio Number:</span>
+                <span class="delete-summary-val">{{ sip.folioNumber }}</span>
+              </div>
+            }
+            <div class="delete-summary-row">
+              <span class="delete-summary-label">Confirmed Invested:</span>
+              <span class="delete-summary-val">{{ (sip.totalInvested || 0) | currency:'INR':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+        }
+
+        <p class="delete-warning-text">
+          This will permanently remove the SIP plan schedule. Existing transactions and asset holdings that were already confirmed will remain untouched.
+        </p>
+
+        <div class="modal-actions-grid">
+          <button class="btn btn-secondary" (click)="closeDeleteModal()" [disabled]="deleting()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDeleteSip()" [disabled]="deleting()">
+            @if (deleting()) {
+              <span class="material-icons spin">sync</span>
+              <span>Deleting...</span>
+            } @else {
+              <span class="material-icons sm-icon">delete</span>
+              <span>Delete Plan</span>
+            }
+          </button>
         </div>
       </div>
     </div>

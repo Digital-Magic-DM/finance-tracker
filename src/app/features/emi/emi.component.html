@@ -10,15 +10,14 @@
     </div>
 
       <div class="header-actions">
-
-        <button class="btn btn-secondary action-tool-btn" (click)="exportDataJson()" title="Export loans data as JSON">
-          <span class="material-icons sm-icon">download</span>
-          <span class="btn-text">Export</span>
-        </button>
-
-        <button class="btn btn-primary" (click)="openAddModal()" title="Add New Loan or EMI">
+        <button class="btn btn-primary btn-sm add-main-btn" (click)="openAddModal()" title="Add New Loan or EMI">
           <span class="plus-icon">+</span>
           <span class="btn-text">Add Loan</span>
+        </button>
+
+        <button class="btn btn-ghost btn-sm action-tool-btn" (click)="exportDataJson()" title="Export loans data as JSON">
+          <span class="material-icons sm-icon">arrow_upward</span>
+          <span class="btn-text">Export</span>
         </button>
       </div>
     </div>
@@ -610,8 +609,8 @@
                     <button class="btn-icon" (click)="openEditModal(loan)" title="Edit loan details">
                       <span class="material-icons">edit</span>
                     </button>
-                    <button class="btn-icon text-danger" (click)="deleteLoan(loan)" title="Delete loan">
-                      <span class="material-icons">delete_outline</span>
+                    <button class="btn-icon btn-delete" (click)="deleteLoan(loan)" title="Delete loan">
+                      <span class="material-icons sm-icon">delete</span>
                     </button>
                   </div>
                 </div>
@@ -688,8 +687,8 @@
                     <button class="tbl-btn" (click)="openEditModal(loan)" title="Edit">
                       <span class="material-icons">edit</span>
                     </button>
-                    <button class="tbl-btn text-danger" (click)="deleteLoan(loan)" title="Delete">
-                      <span class="material-icons">delete</span>
+                    <button class="tbl-btn btn-delete" (click)="deleteLoan(loan)" title="Delete">
+                      <span class="material-icons sm-icon">delete</span>
                     </button>
                   </td>
                 </tr>
