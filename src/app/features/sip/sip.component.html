@@ -2,14 +2,9 @@
   <!-- ── Top Header ── -->
   <header class="sip-header">
     <div class="header-left">
-      <div class="header-badge">
-        <span class="material-icons">verified_user</span>
-        <span>SIP TRACKING & RECONCILIATION ENGINE</span>
-      </div>
-      <h1 class="header-title">Systematic Investment Plans (SIP)</h1>
+      <h1 class="header-title">Systematic Investment Plans</h1>
       <p class="header-desc">
-        Track recurring mutual fund investments, reconcile external statements, and synchronize portfolio holdings
-        strictly upon confirmed unit allotment. Real-world market calendar handles weekend and holiday rollovers.
+        Track recurring investments, market settlements, and portfolio reconciliations.
       </p>
     </div>
 
@@ -272,59 +267,28 @@
         </div>
       </div>
 
-      <!-- Engine Notice Banner -->
-      <div class="auto-engine-card">
-        <div class="engine-icon-wrapper">
-          <span class="material-icons">shield</span>
-        </div>
-        <div class="engine-text">
-          <strong>Non-Custodial SIP Tracking & Reconciliation:</strong>
-          FinTracker tracks your registered SIPs and generates upcoming installments ahead of time according to the official NSE/BSE market trading calendar.
-          Units are credited to your portfolio holdings <em>only after actual confirmation</em> via CAS statements or RTA allotment alerts.
-        </div>
-        <div class="engine-action">
-          <button class="btn btn-sm btn-ghost" (click)="activeTab.set('reconcile')">
-            <span class="material-icons">verified</span>
-            <span>Open Reconciliation Queue</span>
-          </button>
-        </div>
-      </div>
-
       <!-- ── Urgent SIP Notice (Scheduled Within 3 Working Days) ── -->
       @if (urgentUpcomingSips().length > 0) {
         @let urgent = urgentUpcomingSips()[0];
         <div class="urgent-sip-banner shadow-sm">
           <div class="urgent-banner-left">
-            <div class="urgent-banner-icon-box">
-              <span class="material-icons">notification_important</span>
-            </div>
+            <span class="material-icons urgent-lead-icon">schedule</span>
             <div class="urgent-banner-text">
-              <div class="urgent-banner-header">
-                <span class="urgent-tag">
-                  @if (urgent.workingDays === 0) {
-                    DEBITING TODAY
-                  } @else {
-                    {{ urgent.workingDays }} TRADING DAY{{ urgent.workingDays > 1 ? 'S' : '' }} LEFT
-                  }
-                </span>
-                <span class="urgent-headline">
-                  Upcoming SIP: <strong>{{ urgent.sip.name }}</strong> ({{ urgent.sip.amount | currency:'INR':'symbol':'1.0-0' }})
-                </span>
-              </div>
-              <p class="urgent-desc">
-                Scheduled for market execution on <strong>{{ formatDateStr(urgent.sip.nextExecutionDate) }}</strong>.
-                Banks require at least 3 business days notice to pause auto-debits. Would you like to proceed or skip this month?
-              </p>
+              <span class="urgent-headline">
+                <strong>{{ urgent.sip.name }}</strong> ({{ urgent.sip.amount | currency:'INR':'symbol':'1.0-0' }}) scheduled for {{ formatDateStr(urgent.sip.nextExecutionDate) }}
+              </span>
+              <span class="urgent-tag">
+                {{ urgent.workingDays === 0 ? 'Today' : urgent.workingDays + 'd left' }}
+              </span>
             </div>
           </div>
           <div class="urgent-banner-actions">
-            <button class="btn btn-sm btn-skip-urgent" (click)="openSkipModal(urgent.sip)">
+            <button class="btn btn-xs btn-skip-urgent" (click)="openSkipModal(urgent.sip)">
               <span class="material-icons sm-icon">skip_next</span>
-              <span>Skip This Month</span>
+              <span>Skip Month</span>
             </button>
-            <button class="btn btn-sm btn-ghost-dismiss" (click)="dismissUrgentNotice(urgent.sip.id)" title="Dismiss notice and keep scheduled">
-              <span class="material-icons sm-icon">check</span>
-              <span>Keep Scheduled</span>
+            <button class="btn btn-xs btn-ghost-dismiss" (click)="dismissUrgentNotice(urgent.sip.id)" title="Dismiss">
+              <span class="material-icons sm-icon">close</span>
             </button>
           </div>
         </div>
@@ -726,10 +690,9 @@
     <div class="tab-content reconcile-view">
       <div class="reconcile-header-card">
         <div class="reconcile-desc">
-          <h2>SIP Allotment Reconciliation</h2>
-          <p>
-            Reconcile scheduled investments against official AMC / RTA allotment records.
-            Holdings in your portfolio are updated <strong>only after confirmed unit allotment</strong>.
+          <h2>Reconciliation & Allotment</h2>
+          <p class="subtitle">
+            Match scheduled investments against AMC and CAS records to update holdings.
           </p>
         </div>
 
@@ -865,15 +828,11 @@
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
   @if (activeTab() === 'calendar') {
     <div class="tab-content calendar-simulator-view">
-      <!-- Sebi Rule Banner -->
-      <div class="sebi-rule-banner">
-        <span class="banner-badge">
-          <span class="material-icons">gavel</span>
-          AMFI &amp; SEBI SETTLEMENT RULE
-        </span>
-        <h2>NSE / BSE Trading Calendar &amp; Date Simulator</h2>
-        <p>
-          Experience how AMFI / SEBI mutual fund settlement cycles automatically adapt when your preferred SIP day falls on a Saturday, Sunday, or national clearing holiday.
+      <!-- Calendar Header -->
+      <div class="calendar-header-card">
+        <h2>Trading Calendar & Date Simulator</h2>
+        <p class="subtitle">
+          Simulate weekend and holiday settlement rollovers for scheduled SIP days.
         </p>
       </div>
 
@@ -884,7 +843,7 @@
           <div class="sim-group">
             <span class="control-label">
               <span class="material-icons sm-icon">calendar_today</span>
-              Calendar Year
+              Year
             </span>
             <div class="year-pills">
               @for (yr of availableYears; track yr) {
@@ -903,7 +862,7 @@
           <div class="sim-group flex-1">
             <span class="control-label">
               <span class="material-icons sm-icon">tune</span>
-              Simulate From Plan
+              Plan
             </span>
             <div class="select-plan-wrapper">
               <select
@@ -922,7 +881,7 @@
           <div class="sim-group">
             <span class="control-label">
               <span class="material-icons sm-icon">event_repeat</span>
-              Test Preferred Day of Month
+              Preferred Day
             </span>
             <div class="day-chips-row">
               @for (d of commonSipDays; track d) {
@@ -957,15 +916,15 @@
           </div>
           <div class="stat-box">
             <span class="stat-num text-success">{{ simulatorStats().onTimeCount }}</span>
-            <span class="stat-desc">Regular Open Trading Days</span>
+            <span class="stat-desc">Open Days</span>
           </div>
           <div class="stat-box">
             <span class="stat-num text-warning">{{ simulatorStats().shiftedCount }}</span>
-            <span class="stat-desc">Holiday / Weekend Rollovers</span>
+            <span class="stat-desc">Rollovers</span>
           </div>
           <div class="stat-box">
             <span class="stat-num text-accent">+{{ simulatorStats().avgDelayDays }}d</span>
-            <span class="stat-desc">Avg Settlement Shift</span>
+            <span class="stat-desc">Avg Shift</span>
           </div>
         </div>
       </div>
@@ -975,7 +934,7 @@
         <div class="section-title-row">
           <h3>
             <span class="material-icons">event_note</span>
-            12-Month Market Execution Schedule for Year {{ calendarYear() }} (Preferred Day: {{ getOrdinal(calendarSimulatorDay()) }})
+            12-Month Schedule ({{ calendarYear() }} • Day {{ getOrdinal(calendarSimulatorDay()) }})
           </h3>
         </div>
 
@@ -1326,26 +1285,13 @@
     <div class="modal-backdrop" (click)="closeAddEditModal()">
       <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <div>
-            <h3>{{ editingSipId() ? 'Edit Systematic Investment Plan' : 'Track New SIP Plan' }}</h3>
-            <p class="modal-subtitle">
-              Configure fund details, scheme code, folio, and preferred monthly debit day
-            </p>
-          </div>
+          <h3>{{ editingSipId() ? 'Edit SIP Plan' : 'Add SIP Plan' }}</h3>
           <button class="close-btn" (click)="closeAddEditModal()">
             <span class="material-icons">close</span>
           </button>
         </div>
 
         <div class="modal-body">
-          <div class="disclaimer-banner mb-3">
-            <span class="material-icons">info</span>
-            <span>
-              <strong>Note:</strong> DM FinTracker tracks your registered SIPs and reconciles units from statements.
-              It does not execute real-money debits.
-            </span>
-          </div>
-
           <!-- Quick Starter Templates -->
           @if (!editingSipId()) {
             <div class="presets-section mb-3">
@@ -1394,7 +1340,7 @@
                     [class.active]="schemeSelectMode() === 'asset'"
                     (click)="schemeSelectMode.set('asset')">
                     <span class="material-icons sm-icon">inventory_2</span>
-                    <span>My Portfolio Assets ({{ categoryAssets().length }})</span>
+                    <span>Portfolio Assets ({{ categoryAssets().length }})</span>
                   </button>
                   @if (sipFormCategory === 'MutualFund' || sipFormCategory === 'ETF') {
                     <button
@@ -1403,7 +1349,7 @@
                       [class.active]="schemeSelectMode() === 'amfi'"
                       (click)="schemeSelectMode.set('amfi')">
                       <span class="material-icons sm-icon">search</span>
-                      <span>Search AMFI Catalog</span>
+                      <span>Search Catalog</span>
                     </button>
                   }
                   <button
@@ -1412,7 +1358,7 @@
                     [class.active]="schemeSelectMode() === 'custom'"
                     (click)="schemeSelectMode.set('custom')">
                     <span class="material-icons sm-icon">edit</span>
-                    <span>Custom / Other</span>
+                    <span>Custom</span>
                   </button>
                 </div>
               </div>
@@ -1425,7 +1371,7 @@
                       class="form-control asset-select-dropdown"
                       [ngModel]="sipFormLinkedAssetId"
                       (ngModelChange)="onSelectExistingAsset($event)">
-                      <option value="">-- Select an existing {{ SIP_CONFIG[sipFormCategory].label }} from your portfolio --</option>
+                      <option value="">-- Select {{ SIP_CONFIG[sipFormCategory].label }} holding --</option>
                       @for (a of categoryAssets(); track a.id) {
                         <option [value]="a.id">
                           {{ a.name }} ({{ a.quantity | number:'1.2-2' }} units • ₹{{ ((a.quantity || 0) * (a.currentPrice || a.buyPrice || 0)) | number:'1.0-0' }})
@@ -1448,7 +1394,7 @@
                         type="button"
                         class="btn btn-xs btn-outline-primary"
                         (click)="schemeSelectMode.set(sipFormCategory === 'MutualFund' || sipFormCategory === 'ETF' ? 'amfi' : 'custom')">
-                        Switch to {{ sipFormCategory === 'MutualFund' || sipFormCategory === 'ETF' ? 'Search Catalog' : 'Custom Name' }} ➔
+                        Switch to {{ sipFormCategory === 'MutualFund' || sipFormCategory === 'ETF' ? 'Search Catalog' : 'Custom' }} ➔
                       </button>
                     </div>
                   }
@@ -1463,7 +1409,7 @@
                     <input
                       type="text"
                       class="form-control with-lead-icon"
-                      placeholder="Type fund name or code to search (e.g. Parag Parikh, HDFC Top 100)..."
+                      placeholder="Type fund name or code to search..."
                       [(ngModel)]="sipFormName"
                       (ngModelChange)="onSearchSchemeInput($event)" />
                     @if (isSearchingSchemes()) {
@@ -1487,22 +1433,21 @@
                 </div>
               }
 
-              <!-- Mode 3 or Selected Name Confirmation -->
-              <div class="scheme-name-confirm-box" [class.mt-2]="schemeSelectMode() !== 'custom'">
-                @if (schemeSelectMode() !== 'custom') {
-                  <label class="sub-label">Scheme / Asset Display Name:</label>
-                }
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="e.g. Parag Parikh Flexi Cap Fund - Direct Growth"
-                  [(ngModel)]="sipFormName" />
-              </div>
+              <!-- Mode 3: Custom Input -->
+              @if (schemeSelectMode() === 'custom') {
+                <div class="scheme-name-confirm-box">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Enter scheme or asset name..."
+                    [(ngModel)]="sipFormName" />
+                </div>
+              }
             </div>
 
-            <!-- AMFI Scheme Code -->
+            <!-- Scheme Code -->
             <div class="form-group">
-              <label>AMFI Scheme Code (6 Digits)</label>
+              <label>Scheme Code</label>
               <input
                 type="text"
                 class="form-control"
@@ -1512,7 +1457,7 @@
 
             <!-- ISIN -->
             <div class="form-group">
-              <label>ISIN (Optional)</label>
+              <label>ISIN</label>
               <input
                 type="text"
                 class="form-control"
@@ -1524,8 +1469,8 @@
             <div class="form-group">
               <label>Plan Type</label>
               <select class="form-control" [(ngModel)]="sipFormPlanType">
-                <option value="Direct">Direct Plan (Zero Commission)</option>
-                <option value="Regular">Regular Plan</option>
+                <option value="Direct">Direct</option>
+                <option value="Regular">Regular</option>
               </select>
             </div>
 
@@ -1534,7 +1479,7 @@
               <label>Option</label>
               <select class="form-control" [(ngModel)]="sipFormOption">
                 <option value="Growth">Growth</option>
-                <option value="IDCW">IDCW / Dividend</option>
+                <option value="IDCW">Dividend (IDCW)</option>
               </select>
             </div>
 
@@ -1571,7 +1516,7 @@
 
             <!-- Preferred Day of Month -->
             <div class="form-group">
-              <label class="required">Preferred Debit Day (1 - 31)</label>
+              <label class="required">Debit Day (1-31)</label>
               <input
                 type="number"
                 class="form-control"
@@ -1582,9 +1527,9 @@
               <div class="live-date-preview" [class.shifted]="modalDateResolution().wasShifted">
                 <span class="material-icons">{{ modalDateResolution().wasShifted ? 'swap_horiz' : 'event_available' }}</span>
                 <span>
-                  Next trading day: <strong>{{ formatDateStr(modalDateResolution().executionDate) }}</strong>
+                  Next: <strong>{{ formatDateStr(modalDateResolution().executionDate) }}</strong>
                   @if (modalDateResolution().wasShifted) {
-                    ({{ modalDateResolution().reason }})
+                    • {{ modalDateResolution().reason }}
                   }
                 </span>
               </div>
@@ -1601,7 +1546,7 @@
 
             <!-- Bank / Mandate Account -->
             <div class="form-group">
-              <label>Payment Source / Bank Mandate</label>
+              <label>Payment Source / Bank</label>
               <input
                 type="text"
                 class="form-control"
@@ -1611,23 +1556,12 @@
 
             <!-- Folio Number -->
             <div class="form-group">
-              <label>Folio / Account Number</label>
+              <label>Folio Number</label>
               <input
                 type="text"
                 class="form-control"
                 placeholder="e.g. 1029481928"
                 [(ngModel)]="sipFormFolio" />
-            </div>
-
-            <!-- Link to Existing Portfolio Asset -->
-            <div class="form-group">
-              <label>Link to Portfolio Asset Holding (Optional)</label>
-              <select class="form-control" [(ngModel)]="sipFormLinkedAssetId">
-                <option value="">Auto-match by scheme name / ISIN</option>
-                @for (a of userAssets(); track a.id) {
-                  <option [value]="a.id">{{ a.name }} ({{ a.type }})</option>
-                }
-              </select>
             </div>
 
             <!-- Step-Up SIP Toggle -->
@@ -1870,7 +1804,7 @@
         }
 
         <p class="delete-warning-text">
-          This will permanently remove the SIP plan schedule. Existing transactions and asset holdings that were already confirmed will remain untouched.
+          Past confirmed transactions and holdings will remain in your portfolio.
         </p>
 
         <div class="modal-actions-grid">
@@ -1901,74 +1835,48 @@
           </span>
         </div>
 
-        <h3 class="skip-modal-title">
-          {{ skipWorkingDays() <= 3 ? 'Skip Installment — Bank Notice' : 'Skip Next Installment' }}
-        </h3>
-
-        <p class="skip-modal-subtitle">
-          Pause tracking for this specific month's installment without cancelling your plan
-        </p>
+        <h3 class="skip-modal-title">Skip Next Installment</h3>
 
         @if (sipToSkip(); as sip) {
           <!-- Plan Summary Box -->
           <div class="skip-plan-summary">
             <div class="skip-summary-row">
-              <span class="skip-summary-label">Plan Name:</span>
+              <span class="skip-summary-label">Plan</span>
               <span class="skip-summary-val font-semibold">{{ sip.name }}</span>
             </div>
             <div class="skip-summary-row">
-              <span class="skip-summary-label">Installment Amount:</span>
+              <span class="skip-summary-label">Amount</span>
               <span class="skip-summary-val amount-val">{{ sip.amount | currency:'INR':'symbol':'1.0-0' }}</span>
             </div>
             <div class="skip-summary-row">
-              <span class="skip-summary-label">Scheduled Market Date:</span>
+              <span class="skip-summary-label">Scheduled Date</span>
               <span class="skip-summary-val date-val">{{ formatDateStr(sip.nextExecutionDate) }}</span>
             </div>
             <div class="skip-summary-row">
-              <span class="skip-summary-label">Trading Days Notice:</span>
+              <span class="skip-summary-label">Notice</span>
               <span class="skip-summary-val">
                 @if (skipWorkingDays() <= 3) {
-                  <span class="badge badge-warning">⚡ {{ skipWorkingDays() }} Working Day(s) Left</span>
+                  <span class="badge badge-warning">⚡ {{ skipWorkingDays() }} working day(s) left</span>
                 } @else {
-                  <span class="badge badge-info">📅 {{ skipWorkingDays() }} Working Days Ahead</span>
+                  <span class="badge badge-info">📅 {{ skipWorkingDays() }} working days ahead</span>
                 }
               </span>
             </div>
           </div>
 
-          <!-- Explanatory Notice depending on <= 3 days or > 3 days -->
           @if (skipWorkingDays() <= 3) {
             <div class="cutoff-warning-box">
-              <div class="warning-title">
-                <span class="material-icons sm-icon">info</span>
-                <strong>Under 3 Working Days — Bank Auto-Debit Notice</strong>
-              </div>
-              <p class="warning-text">
-                Your next installment is scheduled in <strong>{{ skipWorkingDays() }} trading day(s)</strong>.
-                Indian AMCs and clearing banks freeze NACH auto-debit presentation files 3 business days prior to the debit date.
-              </p>
-              <p class="warning-text mb-0">
-                If you skip in FinTracker now, your bank may still present the debit.
-                If debited and units are allotted, FinTracker will reconcile the allotment when your CAS statement is imported.
-              </p>
-            </div>
-          } @else {
-            <div class="cutoff-info-box">
-              <span class="material-icons sm-icon">check_circle</span>
+              <span class="material-icons sm-icon">info</span>
               <span>
-                You are within the 3+ working days window. Skipping this installment will advance your scheduled next execution date to next month. No auto-debit will be tracked for this cycle.
+                <strong>Bank Notice:</strong> Auto-debit processing may already be initiated by your bank (under 3 working days). If debited, units will reconcile on statement import.
               </span>
             </div>
           }
-
-          <p class="skip-confirm-prompt">
-            Do you want to proceed and mark this month's installment as <strong>Skipped</strong>?
-          </p>
         }
 
         <div class="modal-actions-grid">
           <button class="btn btn-secondary" (click)="closeSkipModal()">
-            Keep Scheduled
+            Cancel
           </button>
           <button
             class="btn"
@@ -1976,7 +1884,7 @@
             [class.btn-primary]="skipWorkingDays() > 3"
             (click)="confirmSkipSip()">
             <span class="material-icons sm-icon">skip_next</span>
-            <span>Yes, Skip This Month</span>
+            <span>Skip Installment</span>
           </button>
         </div>
       </div>
