@@ -318,6 +318,84 @@ export class SipComponent implements OnInit {
     };
   });
 
+  readonly popularFundPresets = [
+    {
+      name: 'Parag Parikh Flexi Cap Fund - Direct Growth',
+      house: 'PPFAS Mutual Fund',
+      cat: 'MutualFund' as SipCategory,
+      code: '122639',
+      isin: 'INF879O01019',
+      tag: 'Flexi Cap Equity',
+      desc: 'High-conviction value investing with domestic and global bluechip equity exposure.',
+    },
+    {
+      name: 'UTI Nifty 50 Index Fund - Direct Growth',
+      house: 'UTI Mutual Fund',
+      cat: 'MutualFund' as SipCategory,
+      code: '120716',
+      isin: 'INF789F01AU3',
+      tag: 'Large Cap Index',
+      desc: 'Low-cost passive index tracking India’s top 50 bluechip companies.',
+    },
+    {
+      name: 'Quant Small Cap Fund - Direct Growth',
+      house: 'Quant Mutual Fund',
+      cat: 'MutualFund' as SipCategory,
+      code: '120828',
+      isin: 'INF966L01AA3',
+      tag: 'Small Cap Equity',
+      desc: 'High-alpha quantitative momentum strategy investing in high-growth companies.',
+    },
+    {
+      name: 'Mirae Asset Large Cap Fund - Direct Growth',
+      house: 'Mirae Asset Mutual Fund',
+      cat: 'MutualFund' as SipCategory,
+      code: '118834',
+      isin: 'INF769K01010',
+      tag: 'Large Cap Equity',
+      desc: 'Consistent compounders across financial leaders, tech giants & consumer staples.',
+    },
+    {
+      name: 'Nippon India ETF Gold BeES',
+      house: 'Nippon India Mutual Fund',
+      cat: 'Gold' as SipCategory,
+      code: '105758',
+      isin: 'INF204KB14I2',
+      tag: 'Gold / Commodity',
+      desc: 'Digital gold investment tracking domestic physical gold market prices.',
+    },
+    {
+      name: 'HDFC Mid-Cap Opportunities Fund - Direct Growth',
+      house: 'HDFC Mutual Fund',
+      cat: 'MutualFund' as SipCategory,
+      code: '118989',
+      isin: 'INF179K01BE2',
+      tag: 'Mid Cap Equity',
+      desc: 'Mid-sized businesses with robust balance sheets and high secular earnings runway.',
+    },
+  ];
+
+  selectFundPreset(preset: {
+    name: string;
+    house: string;
+    cat: SipCategory;
+    code?: string;
+    isin?: string;
+  }) {
+    this.openAddModal();
+    this.sipFormName = preset.name;
+    this.sipFormFundHouse = preset.house;
+    this.sipFormCategory = preset.cat;
+    if (preset.code) {
+      this.sipFormSchemeCode = preset.code;
+    }
+    if (preset.isin) {
+      this.sipFormIsin = preset.isin;
+    }
+    this.sipFormPlanType = preset.name.toLowerCase().includes('regular') ? 'Regular' : 'Direct';
+    this.sipFormOption = preset.name.toLowerCase().includes('idcw') ? 'IDCW' : 'Growth';
+  }
+
   setSimulatorDay(day: number) {
     this.calendarSimulatorDay.set(day);
   }
@@ -347,10 +425,36 @@ export class SipComponent implements OnInit {
     }
   }
 
-  selectScheme(scheme: { schemeCode: string; schemeName: string }) {
+  async selectScheme(scheme: { schemeCode: string; schemeName: string }) {
     this.sipFormName = scheme.schemeName;
     this.sipFormSchemeCode = scheme.schemeCode;
     this.schemeSearchResults.set([]);
+
+    // Auto-detect Plan Type & Option
+    const lower = scheme.schemeName.toLowerCase();
+    this.sipFormPlanType = lower.includes('regular') ? 'Regular' : 'Direct';
+    this.sipFormOption = lower.includes('idcw') || lower.includes('dividend') ? 'IDCW' : 'Growth';
+
+    // Auto-detect AMC / Fund House from scheme name prefix
+    const amcList = [
+      'Parag Parikh', 'PPFAS', 'UTI', 'HDFC', 'SBI', 'ICICI Prudential', 'Mirae Asset',
+      'Quant', 'Nippon India', 'Axis', 'Kotak', 'Tata', 'Bandhan', 'DSP', 'Motilal Oswal',
+      'Aditya Birla Sun Life', 'Canara Robeco', 'Edelweiss', 'Invesco', 'Franklin Templeton'
+    ];
+    for (const amc of amcList) {
+      if (scheme.schemeName.toLowerCase().startsWith(amc.toLowerCase()) || scheme.schemeName.toLowerCase().includes(amc.toLowerCase())) {
+        this.sipFormFundHouse = `${amc} Mutual Fund`;
+        break;
+      }
+    }
+
+    // Try fetching latest NAV & ISIN snapshot in background
+    try {
+      const snap = await this.navService.getNavForDate(scheme.schemeCode);
+      if (snap?.isin) {
+        this.sipFormIsin = snap.isin;
+      }
+    } catch {}
   }
 
   // ── Open Add/Edit Modal ──

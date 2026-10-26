@@ -3,7 +3,7 @@
   <header class="sip-header">
     <div class="header-left">
       <div class="header-badge">
-        <span class="material-icons-outlined pulse-icon">verified_user</span>
+        <span class="material-icons">verified_user</span>
         <span>SIP TRACKING & RECONCILIATION ENGINE</span>
       </div>
       <h1 class="header-title">Systematic Investment Plans (SIP)</h1>
@@ -270,9 +270,9 @@
         </div>
       </div>
 
-      <!-- ── SIP Cards Grid ── -->
-      @if (viewMode() === 'cards') {
-        @if (filteredSips().length > 0) {
+      <!-- ── SIP Plans Display (Cards or Table) ── -->
+      @if (filteredSips().length > 0) {
+        @if (viewMode() === 'cards') {
           <div class="sips-grid">
             @for (sip of filteredSips(); track sip.id) {
               <div class="sip-card" [class.paused]="sip.status === 'Paused'">
@@ -421,23 +421,7 @@
             }
           </div>
         } @else {
-          <div class="empty-state-card">
-            <div class="empty-icon-circle">
-              <span class="material-icons">savings</span>
-            </div>
-            <h3>No Systematic Investment Plans Found</h3>
-            <p>Track your registered mutual fund SIPs, simulate market calendar execution dates, and reconcile units.</p>
-            <button class="btn btn-primary" (click)="openAddModal()">
-              <span class="material-icons">add_circle</span>
-              <span>Create Your First SIP</span>
-            </button>
-          </div>
-        }
-      }
-
-      <!-- ── Table View ── -->
-      @if (viewMode() === 'table') {
-        @if (filteredSips().length > 0) {
+          <!-- ── Table View ── -->
           <div class="table-container">
             <table class="data-table">
               <thead>
@@ -508,6 +492,112 @@
                 }
               </tbody>
             </table>
+          </div>
+        }
+      } @else {
+        <!-- ── Empty / Setup State ── -->
+        @if (sipService.sips().length === 0) {
+          <div class="sip-setup-hub">
+            <!-- Setup Hero Card -->
+            <div class="setup-hero-card">
+              <div class="hero-left">
+                <div class="hero-badge">
+                  <span class="material-icons">rocket_launch</span>
+                  <span>GETTING STARTED</span>
+                </div>
+                <h2 class="hero-title">Set Up Your Systematic Investment Plan (SIP)</h2>
+                <p class="hero-desc">
+                  Automate recurring mutual fund investments. DM FinTracker tracks your monthly debit dates,
+                  automatically adjusts for NSE/BSE holidays and weekends, and reconciles your portfolio only after confirmed AMC unit allotment.
+                </p>
+                <div class="hero-actions">
+                  <button class="btn btn-primary" (click)="openAddModal()">
+                    <span class="material-icons">add_circle</span>
+                    <span>Set Up Custom SIP Plan</span>
+                  </button>
+                  <button class="btn btn-secondary" (click)="activeTab.set('calendar')">
+                    <span class="material-icons">calendar_month</span>
+                    <span>View Market Calendar</span>
+                  </button>
+                  <button class="btn btn-secondary" (click)="activeTab.set('calculator')">
+                    <span class="material-icons">calculate</span>
+                    <span>Compounding Calculator</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="hero-steps">
+                <div class="step-card">
+                  <div class="step-num">1</div>
+                  <div class="step-content">
+                    <strong>Pick Fund &amp; Debit Day</strong>
+                    <span>Select any of 45,000+ AMFI schemes and pick your preferred monthly debit day (1–31).</span>
+                  </div>
+                </div>
+                <div class="step-card">
+                  <div class="step-num">2</div>
+                  <div class="step-content">
+                    <strong>Automated Market Rollover</strong>
+                    <span>If your debit day lands on a weekend or exchange holiday, FinTracker shifts it to the next open trading session.</span>
+                  </div>
+                </div>
+                <div class="step-card">
+                  <div class="step-num">3</div>
+                  <div class="step-content">
+                    <strong>Reconcile Upon Allotment</strong>
+                    <span>Confirm NAV and units once your AMC or CAS statement arrives to safely credit portfolio holdings.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Starter Templates Grid -->
+            <div class="starter-templates-section">
+              <div class="section-header">
+                <div>
+                  <h3 class="section-title">Popular Fund Starters</h3>
+                  <p class="section-subtitle">Click any popular fund template to set up your plan with one tap</p>
+                </div>
+              </div>
+
+              <div class="starter-grid">
+                @for (preset of popularFundPresets; track preset.code) {
+                  <div class="starter-card" (click)="selectFundPreset(preset)">
+                    <div class="starter-card-top">
+                      <span class="category-pill" [style.color]="SIP_CONFIG[preset.cat].color" [style.background]="SIP_CONFIG[preset.cat].color + '18'">
+                        <span class="material-icons">{{ SIP_CONFIG[preset.cat].icon }}</span>
+                        <span>{{ preset.tag }}</span>
+                      </span>
+                      <span class="scheme-code-badge">Code: {{ preset.code }}</span>
+                    </div>
+
+                    <h4 class="starter-title">{{ preset.name.split(' - ')[0] }}</h4>
+                    <p class="starter-desc">{{ preset.desc }}</p>
+
+                    <div class="starter-card-footer">
+                      <span class="amc-label">{{ preset.house }}</span>
+                      <button class="btn-outline-primary" (click)="$event.stopPropagation(); selectFundPreset(preset)">
+                        <span>Set Up Plan</span>
+                        <span class="material-icons sm-icon">arrow_forward</span>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        } @else {
+          <!-- Filtered Empty State -->
+          <div class="empty-state-card">
+            <div class="empty-icon-circle">
+              <span class="material-icons">filter_alt_off</span>
+            </div>
+            <h3>No Matching SIP Plans</h3>
+            <p>No investment plans match "{{ searchQuery() }}" or the selected category filter.</p>
+            <button class="btn btn-secondary" (click)="searchQuery.set(''); selectedCategory.set('All')">
+              <span class="material-icons">restart_alt</span>
+              <span>Clear Filters</span>
+            </button>
           </div>
         }
       }
@@ -1072,6 +1162,24 @@
             </span>
           </div>
 
+          <!-- Quick Starter Templates -->
+          @if (!editingSipId()) {
+            <div class="presets-section mb-3">
+              <label class="section-label">Quick Starter Templates</label>
+              <div class="presets-chips">
+                @for (preset of popularFundPresets; track preset.code) {
+                  <button
+                    type="button"
+                    class="preset-btn"
+                    [class.selected]="sipFormSchemeCode === preset.code"
+                    (click)="selectFundPreset(preset)">
+                    <span class="material-icons">{{ SIP_CONFIG[preset.cat].icon }}</span>
+                    <span>{{ preset.name.split(' - ')[0] }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
 
           <div class="form-grid">
             <!-- Scheme Search & Name -->
