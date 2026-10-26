@@ -265,25 +265,50 @@ export class SipService {
   }
 
   /**
-   * Determine all due installment dates that have passed up to today
-   * and haven't been marked as executed/skipped yet.
+   * Determine due installment dates that have passed up to today
+   * and haven't been executed or skipped yet.
+   * Prevents runaway historical backfills by respecting lastExecutionDate
+   * and bounding newly created past-dated SIPs to current billing cycle.
    */
   private getPendingInstallmentsUpToToday(
     sip: Sip,
     todayStr: string
   ): Array<{ installmentNumber: number; resolution: TradingDayResolution }> {
     const results: Array<{ installmentNumber: number; resolution: TradingDayResolution }> = [];
-    const startDate = this.calendar.parseDate(sip.startDate);
     const today = this.calendar.parseDate(todayStr);
+    const startDate = this.calendar.parseDate(sip.startDate || todayStr);
 
+    // If SIP hasn't started yet, nothing is pending
     if (startDate > today) return [];
 
-    const executedDates = new Set(
-      (sip.installments || []).map((inst) => inst.scheduledDate)
-    );
+    // Collect all dates already executed or skipped
+    const executedDates = new Set<string>();
+    (sip.installments || []).forEach((inst) => {
+      if (inst.status === 'Executed' || inst.status === 'Skipped') {
+        if (inst.scheduledDate) executedDates.add(inst.scheduledDate);
+        if (inst.executionDate) executedDates.add(inst.executionDate);
+      }
+    });
 
-    let currYear = startDate.getFullYear();
-    let currMonth = startDate.getMonth();
+    // Check boundary:
+    // If lastExecutionDate exists, we only look for dates strictly AFTER lastExecutionDate
+    let checkFromDate: Date;
+    if (sip.lastExecutionDate) {
+      const lastDate = this.calendar.parseDate(sip.lastExecutionDate);
+      checkFromDate = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate() + 1);
+    } else {
+      // If no lastExecutionDate exists:
+      // Only check installments starting from the SIP's startDate,
+      // but never look back further than the current month to prevent historical floods!
+      const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      checkFromDate = startDate > currentMonthStart ? startDate : currentMonthStart;
+    }
+
+    // If checkFromDate is in the future, nothing is due
+    if (checkFromDate > today) return [];
+
+    let currYear = checkFromDate.getFullYear();
+    let currMonth = checkFromDate.getMonth();
     const endYear = today.getFullYear();
     const endMonth = today.getMonth();
 
@@ -294,24 +319,38 @@ export class SipService {
       const clampedDay = Math.min(sip.sipDay || 10, maxDaysInMonth);
       const scheduledDate = new Date(currYear, currMonth, clampedDay);
 
-      // Only check if after or equal to sip.startDate
-      if (scheduledDate >= startDate) {
+      // Must be on or after both startDate and checkFromDate
+      if (scheduledDate >= checkFromDate && scheduledDate >= startDate) {
         const resolution = this.calendar.resolveTradingDay(scheduledDate);
 
         // If market execution date is today or past, and hasn't been executed yet
-        if (resolution.executionDate <= todayStr && !executedDates.has(resolution.scheduledDate)) {
+        const notYetExecuted =
+          !executedDates.has(resolution.scheduledDate) &&
+          !executedDates.has(resolution.executionDate) &&
+          (!sip.lastExecutionDate || resolution.executionDate > sip.lastExecutionDate);
+
+        if (resolution.executionDate <= todayStr && notYetExecuted) {
           installmentCounter++;
           results.push({
             installmentNumber: installmentCounter,
             resolution,
           });
+
+          // Guard against runaway execution: at most 1 pending installment per check
+          if (results.length >= 1) break;
         }
       }
 
-      currMonth++;
+      // Frequency increment
+      if (sip.frequency === 'Quarterly') {
+        currMonth += 3;
+      } else {
+        currMonth += 1;
+      }
+
       if (currMonth > 11) {
-        currMonth = 0;
-        currYear++;
+        currYear += Math.floor(currMonth / 12);
+        currMonth = currMonth % 12;
       }
     }
 
@@ -334,14 +373,17 @@ export class SipService {
       const targetDate = new Date(year, month, clampedDay);
       const resolution = this.calendar.resolveTradingDay(targetDate);
 
-      // Next execution is strictly after today, or if today is earlier than market close
-      if (resolution.executionDate >= todayStr) {
-        const alreadyExecuted = (sip.installments || []).some(
-          (inst) => inst.scheduledDate === resolution.scheduledDate && inst.status === 'Executed'
+      // Check if this date has already been executed or skipped
+      const isAlreadyExecuted =
+        (sip.lastExecutionDate && resolution.executionDate <= sip.lastExecutionDate) ||
+        (sip.installments || []).some(
+          (inst) =>
+            (inst.scheduledDate === resolution.scheduledDate || inst.executionDate === resolution.executionDate) &&
+            (inst.status === 'Executed' || inst.status === 'Skipped')
         );
-        if (!alreadyExecuted) {
-          return resolution.executionDate;
-        }
+
+      if (!isAlreadyExecuted && resolution.executionDate >= todayStr) {
+        return resolution.executionDate;
       }
 
       month++;
@@ -450,6 +492,11 @@ export class SipService {
           lastUpdatedDate: todayStr,
           navDate: todayStr,
         });
+
+        // Update in-memory userAssets cache
+        existingAsset.quantity = Math.round(newQty * 1000) / 1000;
+        existingAsset.buyPrice = weightedAvgBuyPrice;
+        existingAsset.currentPrice = nav;
       } else {
         // Create new asset in portfolio
         let assetType = AssetType.MutualFund;
@@ -473,6 +520,16 @@ export class SipService {
           navDate: todayStr,
           isLiquid: true,
         });
+
+        userAssets.push({
+          id: 'temp_' + Date.now(),
+          name: sip.name,
+          type: assetType,
+          quantity: units,
+          buyPrice: nav,
+          currentPrice: nav,
+          currency: 'INR',
+        } as Asset);
       }
     } catch (e) {
       console.warn('[SipService] Could not sync asset holding:', e);
@@ -521,8 +578,10 @@ export class SipService {
       updatedAt: new Date().toISOString(),
     };
 
-    if (updates.sipDay || updates.startDate || updates.status) {
-      updatedSip.nextExecutionDate = this.calculateNextExecutionDate(updatedSip);
+    if (updates.sipDay || updates.startDate || updates.status || updates.installments) {
+      if (!updates.nextExecutionDate) {
+        updatedSip.nextExecutionDate = this.calculateNextExecutionDate(updatedSip);
+      }
     }
 
     const updated = [...list];
@@ -604,11 +663,18 @@ export class SipService {
     };
 
     const installments = [...(sip.installments || []), newInst];
+    const nextDate = this.calculateNextExecutionDate({
+      ...sip,
+      installments,
+      lastExecutionDate: res.executionDate,
+    });
+
     const updatedSip: Partial<Sip> = {
       installments,
       installmentsPaid: (sip.installmentsPaid || 0) + 1,
       totalInvested: (sip.totalInvested || 0) + amount,
       lastExecutionDate: res.executionDate,
+      nextExecutionDate: nextDate,
     };
 
     await this.updateSip(id, updatedSip);
@@ -725,7 +791,8 @@ export class SipService {
   loadSampleData() {
     const today = new Date();
     const curYear = today.getFullYear();
-    const curMonth = today.getMonth();
+    const curMonth = today.getMonth() + 1; // 1-indexed for standard date strings
+    const mStr = String(curMonth).padStart(2, '0');
 
     const sampleSips: Sip[] = [
       {
@@ -749,34 +816,34 @@ export class SipService {
         autoExecute: true,
         totalInvested: 45000,
         installmentsPaid: 9,
-        lastExecutionDate: `${curYear}-${String(curMonth).padStart(2, '0')}-10`,
+        lastExecutionDate: `${curYear}-${mStr}-12`,
         installments: [
           {
             id: 'inst_ppfas_1',
-            installmentNumber: 1,
-            scheduledDate: `${curYear}-01-10`,
-            executionDate: `${curYear}-01-10`,
+            installmentNumber: 8,
+            scheduledDate: `${curYear}-09-10`,
+            executionDate: `${curYear}-09-10`,
             amount: 5000,
-            nav: 78.4,
-            units: 63.775,
+            nav: 84.2,
+            units: 59.382,
             status: 'Executed',
             isMarketShifted: false,
             autoExecuted: true,
-            executedAt: `${curYear}-01-10T10:00:00.000Z`,
+            executedAt: `${curYear}-09-10T10:00:00.000Z`,
           },
           {
             id: 'inst_ppfas_2',
-            installmentNumber: 2,
-            scheduledDate: `${curYear}-02-10`,
-            executionDate: `${curYear}-02-12`,
+            installmentNumber: 9,
+            scheduledDate: `${curYear}-${mStr}-10`,
+            executionDate: `${curYear}-${mStr}-12`,
             amount: 5000,
-            nav: 80.2,
-            units: 62.344,
+            nav: 86.4,
+            units: 57.87,
             status: 'Executed',
             isMarketShifted: true,
-            shiftReason: 'Shifted +2 days: Scheduled on Saturday (Weekend) ➔ Executed on Monday, 12 Feb',
+            shiftReason: 'Shifted +2 days: Scheduled on Saturday (Weekend) ➔ Executed on Monday, 12 Oct',
             autoExecuted: true,
-            executedAt: `${curYear}-02-12T10:00:00.000Z`,
+            executedAt: `${curYear}-${mStr}-12T10:00:00.000Z`,
           },
         ],
         notes: 'Core equity wealth builder. Annual 10% step-up enabled.',
@@ -798,8 +865,22 @@ export class SipService {
         autoExecute: true,
         totalInvested: 24000,
         installmentsPaid: 8,
-        lastExecutionDate: `${curYear}-${String(curMonth).padStart(2, '0')}-15`,
-        installments: [],
+        lastExecutionDate: `${curYear}-${mStr}-15`,
+        installments: [
+          {
+            id: 'inst_uti_1',
+            installmentNumber: 8,
+            scheduledDate: `${curYear}-${mStr}-15`,
+            executionDate: `${curYear}-${mStr}-15`,
+            amount: 3000,
+            nav: 242.15,
+            units: 12.389,
+            status: 'Executed',
+            isMarketShifted: false,
+            autoExecuted: true,
+            executedAt: `${curYear}-${mStr}-15T10:00:00.000Z`,
+          },
+        ],
         notes: 'Passive low-cost index foundation.',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -819,8 +900,23 @@ export class SipService {
         autoExecute: true,
         totalInvested: 17500,
         installmentsPaid: 7,
-        lastExecutionDate: `${curYear}-${String(curMonth).padStart(2, '0')}-25`,
-        installments: [],
+        lastExecutionDate: `${curYear}-${mStr}-26`,
+        installments: [
+          {
+            id: 'inst_quant_1',
+            installmentNumber: 7,
+            scheduledDate: `${curYear}-${mStr}-25`,
+            executionDate: `${curYear}-${mStr}-26`,
+            amount: 2500,
+            nav: 118.75,
+            units: 21.053,
+            status: 'Executed',
+            isMarketShifted: true,
+            shiftReason: 'Shifted +1 day: Scheduled on Sunday (Weekend) ➔ Executed on Monday, 26 Oct',
+            autoExecuted: true,
+            executedAt: `${curYear}-${mStr}-26T10:00:00.000Z`,
+          },
+        ],
         notes: 'High alpha small-cap allocation.',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -840,8 +936,22 @@ export class SipService {
         autoExecute: true,
         totalInvested: 12000,
         installmentsPaid: 6,
-        lastExecutionDate: `${curYear}-${String(curMonth).padStart(2, '0')}-05`,
-        installments: [],
+        lastExecutionDate: `${curYear}-${mStr}-05`,
+        installments: [
+          {
+            id: 'inst_gold_1',
+            installmentNumber: 6,
+            scheduledDate: `${curYear}-${mStr}-05`,
+            executionDate: `${curYear}-${mStr}-05`,
+            amount: 2000,
+            nav: 68.5,
+            units: 29.197,
+            status: 'Executed',
+            isMarketShifted: false,
+            autoExecuted: true,
+            executedAt: `${curYear}-${mStr}-05T10:00:00.000Z`,
+          },
+        ],
         notes: 'Hedge asset against currency and inflation risk.',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -856,11 +966,6 @@ export class SipService {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleSips));
     } catch {}
-
-    // Check auto-execution for samples
-    setTimeout(() => {
-      this.checkAndAutoExecuteSips();
-    }, 1000);
   }
 
   private loadLastCheckTime(): string {
