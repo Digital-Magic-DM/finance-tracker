@@ -627,7 +627,7 @@ export class EmiService {
     await this.updateLoan(id, updates);
   }
 
-  // ── Persistence & Sample Data ──
+  // ── Persistence & Data Loading ──
   private async loadLoans() {
     this.loading.set(true);
     try {
@@ -635,8 +635,14 @@ export class EmiService {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed: Loan[] = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.loans.set(parsed);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(
+            (l) => l && l.id && !l.id.startsWith('loan_sample_') && !l.id.includes('sample')
+          );
+          this.loans.set(cleaned);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+          } catch {}
           this.loading.set(false);
         }
       }
@@ -648,94 +654,32 @@ export class EmiService {
           const col = collection(this.firestore, `users/${uid}/loans`);
           const snap = await getDocs(col);
           if (!snap.empty) {
+            const sampleDocs = snap.docs.filter(
+              (d) => d.id.startsWith('loan_sample_') || d.id.includes('sample')
+            );
+            sampleDocs.forEach((d) => deleteDoc(d.ref).catch(() => {}));
+
             const remoteLoans: Loan[] = [];
-            snap.forEach((d) => remoteLoans.push({ id: d.id, ...(d.data() as any) }));
-            if (remoteLoans.length > 0) {
-              this.loans.set(remoteLoans);
-              try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteLoans));
-              } catch {}
-              return;
-            }
+            snap.forEach((d) => {
+              if (!d.id.startsWith('loan_sample_') && !d.id.includes('sample')) {
+                remoteLoans.push({ id: d.id, ...(d.data() as any) });
+              }
+            });
+            this.loans.set(remoteLoans);
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteLoans));
+            } catch {}
+            return;
           }
         } catch (e) {
           console.warn('Firestore loan sync fallback to cache:', e);
         }
       }
-
-      // 3. Fallback to sample data if no loans exist
-      if (this.loans().length === 0) {
-        this.loadSampleData();
-      }
     } catch (e) {
       console.warn('Failed to read loans from storage:', e);
-      if (this.loans().length === 0) {
-        this.loadSampleData();
-      }
     } finally {
       this.loading.set(false);
     }
-  }
-
-  loadSampleData() {
-    const sampleLoans: Loan[] = [
-      {
-        id: 'loan_sample_home',
-        name: 'HDFC Smart Home Loan',
-        lender: 'HDFC Bank',
-        loanType: 'Home',
-        principalAmount: 4500000,
-        interestRate: 8.5,
-        tenureMonths: 240, // 20 years
-        emiAmount: 39049,
-        startDate: '2023-01-05',
-        dueDay: 5,
-        paidEmis: 45,
-        accountNumber: 'HL-4819203918',
-        status: 'Active',
-        notes: 'Co-borrower with spouse. Prepayment eligible without penalty.',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: 'loan_sample_car',
-        name: 'Tata Nexon EV Car Loan',
-        lender: 'State Bank of India',
-        loanType: 'Vehicle',
-        principalAmount: 1200000,
-        interestRate: 8.75,
-        tenureMonths: 60, // 5 years
-        emiAmount: 24765,
-        startDate: '2024-03-10',
-        dueDay: 10,
-        paidEmis: 31,
-        accountNumber: 'AL-9018274612',
-        status: 'Active',
-        notes: 'Electric vehicle green concession (0.25% discount applied).',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: 'loan_sample_gadget',
-        name: 'MacBook Pro M3 Max No-Cost EMI',
-        lender: 'ICICI Bank Credit Card',
-        loanType: 'Gadget',
-        principalAmount: 199900,
-        interestRate: 0.0,
-        tenureMonths: 12,
-        emiAmount: 16658,
-        startDate: '2026-05-15',
-        dueDay: 15,
-        paidEmis: 5,
-        accountNumber: 'CC-EMI-8812',
-        status: 'Active',
-        notes: '0% interest 12-month merchant discount offer.',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ];
-
-    this.saveLoans(sampleLoans);
   }
 
   private async saveLoans(list: Loan[]) {

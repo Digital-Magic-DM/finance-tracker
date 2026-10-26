@@ -318,24 +318,6 @@ export class SipComponent implements OnInit {
     };
   });
 
-  readonly popularFundPresets = [
-    { name: 'Parag Parikh Flexi Cap Fund - Direct Growth', house: 'PPFAS Mutual Fund', cat: 'MutualFund' as SipCategory, code: '122639' },
-    { name: 'UTI Nifty 50 Index Fund - Direct Growth', house: 'UTI Mutual Fund', cat: 'MutualFund' as SipCategory, code: '120716' },
-    { name: 'Quant Small Cap Fund - Direct Growth', house: 'Quant Mutual Fund', cat: 'MutualFund' as SipCategory, code: '120828' },
-    { name: 'Mirae Asset Large Cap Fund - Direct Growth', house: 'Mirae Asset Mutual Fund', cat: 'MutualFund' as SipCategory, code: '118834' },
-    { name: 'Nippon India ETF Gold BeES', house: 'Nippon India Mutual Fund', cat: 'Gold' as SipCategory, code: '105758' },
-    { name: 'HDFC Mid-Cap Opportunities Fund - Direct Growth', house: 'HDFC Mutual Fund', cat: 'MutualFund' as SipCategory, code: '118989' },
-  ];
-
-  selectFundPreset(preset: { name: string; house: string; cat: SipCategory; code?: string }) {
-    this.sipFormName = preset.name;
-    this.sipFormFundHouse = preset.house;
-    this.sipFormCategory = preset.cat;
-    if (preset.code) {
-      this.sipFormSchemeCode = preset.code;
-    }
-  }
-
   setSimulatorDay(day: number) {
     this.calendarSimulatorDay.set(day);
   }
@@ -382,7 +364,7 @@ export class SipComponent implements OnInit {
     this.sipFormOption = 'Growth';
     this.sipFormFundHouse = '';
     this.sipFormFolio = '';
-    this.sipFormMandate = 'HDFC Bank - OTM Autopay (...4819)';
+    this.sipFormMandate = '';
     this.sipFormAmount = 5000;
     this.sipFormFrequency = 'Monthly';
     this.sipFormDay = 10;

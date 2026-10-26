@@ -10,10 +10,6 @@
     </div>
 
       <div class="header-actions">
-        <button class="btn btn-secondary action-tool-btn" (click)="loadSampleLoans()" title="Load sample loans for preview">
-          <span class="material-icons sm-icon">auto_fix_high</span>
-          <span class="btn-text">Sample Data</span>
-        </button>
 
         <button class="btn btn-secondary action-tool-btn" (click)="exportDataJson()" title="Export loans data as JSON">
           <span class="material-icons sm-icon">download</span>
@@ -481,9 +477,6 @@
             } @else {
               <button class="btn btn-primary" (click)="openAddModal()">
                 <span class="plus-icon">+</span> Add Your First Loan
-              </button>
-              <button class="btn btn-secondary" (click)="loadSampleLoans()">
-                <span class="material-icons sm-icon">auto_fix_high</span> Load Sample Loans
               </button>
             }
           </div>

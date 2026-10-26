@@ -1072,24 +1072,6 @@
             </span>
           </div>
 
-          <!-- Quick Presets -->
-          @if (!editingSipId()) {
-            <div class="presets-section mb-3">
-              <label class="section-label">Popular Fund Presets</label>
-              <div class="presets-chips">
-                @for (preset of popularFundPresets; track preset.name) {
-                  <button
-                    type="button"
-                    class="preset-btn"
-                    [class.selected]="sipFormName === preset.name"
-                    (click)="selectFundPreset(preset)">
-                    <span class="material-icons">{{ SIP_CONFIG[preset.cat].icon }}</span>
-                    <span>{{ preset.name.split(' - ')[0] }}</span>
-                  </button>
-                }
-              </div>
-            </div>
-          }
 
           <div class="form-grid">
             <!-- Scheme Search & Name -->

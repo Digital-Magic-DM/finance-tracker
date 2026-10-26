@@ -544,10 +544,6 @@ export class EmiComponent {
     return target.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
   }
 
-  loadSampleLoans() {
-    this.emiService.loadSampleData();
-    this.snackbar.show('Loaded 3 sample loans (Home, Vehicle, Gadget EMI)', 'success');
-  }
 
   exportDataJson() {
     const json = this.emiService.exportJson();

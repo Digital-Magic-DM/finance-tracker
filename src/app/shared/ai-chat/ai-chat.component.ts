@@ -296,16 +296,16 @@ export class AiChatComponent {
 
     try {
       const response = await this.aiService.chatWithData(text, contextData);
-      
-      this.messages.update(m => [...m, { 
-        id: Date.now().toString(), 
-        role: 'ai', 
-        content: response 
+
+      this.messages.update(m => [...m, {
+        id: Date.now().toString(),
+        role: 'ai',
+        content: response
       }]);
     } catch (e: any) {
-      this.messages.update(m => [...m, { 
-        id: Date.now().toString(), 
-        role: 'system', 
+      this.messages.update(m => [...m, {
+        id: Date.now().toString(),
+        role: 'system',
         content: 'Error: ' + e.message
       }]);
     }
@@ -318,7 +318,7 @@ export class AiChatComponent {
       if (this.chatContainer) {
         this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
       }
-    } catch(err) {}
+    } catch (err) { }
   }
 
   formatMessage(text: string): string {

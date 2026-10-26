@@ -705,10 +705,29 @@ export class SipService {
       }
     }
 
-    if (loaded.length === 0) {
-      this.loadSampleData();
-    } else {
-      this.sips.set(loaded);
+    // Purge any legacy dummy / sample SIPs from remote and local storage
+    if (this.firestore && uid) {
+      try {
+        const snap = await getDocs(collection(this.firestore, `users/${uid}/sips`));
+        if (!snap.empty) {
+          const sampleDocs = snap.docs.filter(
+            (d) => d.id.startsWith('sip_sample_') || d.id.includes('sample')
+          );
+          sampleDocs.forEach((d) => deleteDoc(d.ref).catch(() => {}));
+        }
+      } catch {}
+    }
+
+    loaded = (loaded || []).filter(
+      (s) => s && s.id && !s.id.startsWith('sip_sample_') && !s.id.includes('sample')
+    );
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded));
+    } catch {}
+
+    this.sips.set(loaded);
+    if (loaded.length > 0) {
       // Auto-sync future schedules idempotently
       setTimeout(() => this.syncAllSipSchedules(true), 500);
     }
@@ -736,197 +755,7 @@ export class SipService {
     }
   }
 
-  loadSampleData() {
-    const today = new Date();
-    const curYear = today.getFullYear();
-    const curMonth = today.getMonth() + 1;
-    const mStr = String(curMonth).padStart(2, '0');
 
-    const sampleSips: Sip[] = [
-      {
-        id: 'sip_sample_ppfas',
-        name: 'Parag Parikh Flexi Cap Fund - Direct Growth',
-        category: 'MutualFund',
-        schemeCode: '122639',
-        isin: 'INF879O01019',
-        planType: 'Direct',
-        option: 'Growth',
-        fundHouse: 'PPFAS Mutual Fund',
-        folioNumber: '109845623',
-        mandateAccount: 'HDFC Bank - OTM Autopay',
-        amount: 5000,
-        frequency: 'Monthly',
-        sipDay: 10,
-        startDate: `${curYear}-01-10`,
-        status: 'Active',
-        stepUp: {
-          enabled: true,
-          type: 'percentage',
-          value: 10,
-          frequencyMonths: 12,
-        },
-        autoExecute: true,
-        executionMode: 'External',
-        dataSource: 'CAS',
-        totalInvested: 45000,
-        confirmedUnitsTotal: 521.85,
-        installmentsPaid: 9,
-        lastExecutionDate: `${curYear}-${mStr}-12`,
-        installments: [
-          {
-            id: 'sip_sample_ppfas_20260910',
-            installmentNumber: 8,
-            scheduledDate: `${curYear}-09-10`,
-            executionDate: `${curYear}-09-10`,
-            amount: 5000,
-            nav: 84.2,
-            units: 59.382,
-            paymentStatus: 'Debited',
-            allotmentStatus: 'Confirmed',
-            reconciliationStatus: 'Matched',
-            confirmationSource: 'CAS_STATEMENT',
-            allotmentDate: `${curYear}-09-10`,
-            status: 'Executed',
-            isMarketShifted: false,
-            autoExecuted: false,
-            executedAt: `${curYear}-09-10T10:00:00.000Z`,
-            reconciliationNotes: 'Confirmed via CAMS Monthly CAS Statement',
-          },
-          {
-            id: 'sip_sample_ppfas_20261010',
-            installmentNumber: 9,
-            scheduledDate: `${curYear}-${mStr}-10`,
-            executionDate: `${curYear}-${mStr}-12`,
-            amount: 5000,
-            nav: 86.4,
-            units: 57.87,
-            paymentStatus: 'Debited',
-            allotmentStatus: 'Confirmed',
-            reconciliationStatus: 'Matched',
-            confirmationSource: 'CAS_STATEMENT',
-            allotmentDate: `${curYear}-${mStr}-12`,
-            status: 'Executed',
-            isMarketShifted: true,
-            shiftReason: 'Shifted +2 days: Scheduled on Saturday (Weekend) ➔ Executed on Monday, 12 Oct',
-            autoExecuted: false,
-            executedAt: `${curYear}-${mStr}-12T10:00:00.000Z`,
-            reconciliationNotes: 'Confirmed via CAMS Monthly CAS Statement',
-          },
-        ],
-        notes: 'Core equity wealth builder with active risk management. Tracked via CAS.',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: 'sip_sample_uti',
-        name: 'UTI Nifty 50 Index Fund - Direct Growth',
-        category: 'MutualFund',
-        schemeCode: '120716',
-        isin: 'INF789F01AU3',
-        planType: 'Direct',
-        option: 'Growth',
-        fundHouse: 'UTI Mutual Fund',
-        folioNumber: '504892110',
-        mandateAccount: 'ICICI Bank - e-Mandate',
-        amount: 3000,
-        frequency: 'Monthly',
-        sipDay: 15,
-        startDate: `${curYear}-01-15`,
-        status: 'Active',
-        autoExecute: true,
-        executionMode: 'External',
-        dataSource: 'CAS',
-        totalInvested: 24000,
-        confirmedUnitsTotal: 99.112,
-        installmentsPaid: 8,
-        lastExecutionDate: `${curYear}-${mStr}-15`,
-        installments: [
-          {
-            id: 'sip_sample_uti_20261015',
-            installmentNumber: 8,
-            scheduledDate: `${curYear}-${mStr}-15`,
-            executionDate: `${curYear}-${mStr}-15`,
-            amount: 3000,
-            nav: 242.15,
-            units: 12.389,
-            paymentStatus: 'Debited',
-            allotmentStatus: 'Confirmed',
-            reconciliationStatus: 'Matched',
-            confirmationSource: 'CAS_STATEMENT',
-            allotmentDate: `${curYear}-${mStr}-15`,
-            status: 'Executed',
-            isMarketShifted: false,
-            autoExecuted: false,
-            executedAt: `${curYear}-${mStr}-15T10:00:00.000Z`,
-            reconciliationNotes: 'Confirmed via KFintech CAS Statement',
-          },
-        ],
-        notes: 'Passive low-cost index allocation.',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: 'sip_sample_quant',
-        name: 'Quant Small Cap Fund - Direct Growth',
-        category: 'MutualFund',
-        schemeCode: '120828',
-        isin: 'INF966L01AA3',
-        planType: 'Direct',
-        option: 'Growth',
-        fundHouse: 'Quant Mutual Fund',
-        folioNumber: '88291044',
-        mandateAccount: 'HDFC Bank - OTM Autopay',
-        amount: 2500,
-        frequency: 'Monthly',
-        sipDay: 25,
-        startDate: `${curYear}-01-25`,
-        status: 'Active',
-        autoExecute: true,
-        executionMode: 'External',
-        dataSource: 'CAS',
-        totalInvested: 17500,
-        confirmedUnitsTotal: 147.371,
-        installmentsPaid: 7,
-        lastExecutionDate: `${curYear}-${mStr}-26`,
-        installments: [
-          {
-            id: 'sip_sample_quant_20261025',
-            installmentNumber: 7,
-            scheduledDate: `${curYear}-${mStr}-25`,
-            executionDate: `${curYear}-${mStr}-26`,
-            amount: 2500,
-            nav: 118.75,
-            units: 21.053,
-            paymentStatus: 'Debited',
-            allotmentStatus: 'Confirmed',
-            reconciliationStatus: 'Matched',
-            confirmationSource: 'CAS_STATEMENT',
-            allotmentDate: `${curYear}-${mStr}-26`,
-            status: 'Executed',
-            isMarketShifted: true,
-            shiftReason: 'Shifted +1 day: Scheduled on Sunday (Weekend) ➔ Executed on Monday, 26 Oct',
-            autoExecuted: false,
-            executedAt: `${curYear}-${mStr}-26T10:00:00.000Z`,
-            reconciliationNotes: 'Confirmed via CAMS Statement',
-          },
-        ],
-        notes: 'Small-cap growth momentum strategy.',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ];
-
-    // Generate upcoming installments ahead of schedule for samples
-    sampleSips.forEach((s) => {
-      s.installments = this.generateExpectedInstallments(s, 3);
-      s.nextExecutionDate = this.calculateNextExecutionDate(s);
-    });
-
-    this.sips.set(sampleSips);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleSips));
-    } catch {}
-  }
 
   private loadLastSyncTime(): string {
     try {
