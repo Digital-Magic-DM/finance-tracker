@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, NgZone, ChangeDetectorRef, OnInit,
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AssetService } from '../../services/asset.service';
+import { GoalService } from '../../services/goal.service';
 import { PriceService } from '../../services/price.service';
 import { GoogleFinanceService } from '../../services/google-finance.service';
 import { SnackbarService } from '../../services/snackbar.service';
@@ -39,6 +40,7 @@ interface AssetGroup {
 })
 export class AssetsComponent implements OnInit {
     private assetService = inject(AssetService);
+    goalService = inject(GoalService);
     private priceService = inject(PriceService);
     public googleFinance = inject(GoogleFinanceService);
     private tickerRegistry = inject(TickerRegistryService);
@@ -84,10 +86,14 @@ export class AssetsComponent implements OnInit {
     });
 
     // View mode: 'cards' (broker holding cards) or 'table' (accordion table)
-    viewMode = signal<'cards' | 'table'>((localStorage.getItem('assetsViewMode') as 'cards' | 'table') || 'cards');
+    viewMode = signal<'cards' | 'table'>((localStorage.getItem('assetsViewMode') as 'cards' | 'table') || 'table');
 
     // Single expanded group tracking
-    private expandedGroup = signal<string | null>(null);
+    // All groups expanded by default in table view so users can see all holdings
+    expandedGroups = signal<Set<string>>(new Set([
+        'Overview', 'Stock', 'MutualFund', 'USStock', 'FixedDeposit',
+        'Bond', 'SavingsAccount', 'ETF', 'Gold', 'Crypto', 'RealEstate', 'Cash', 'Other'
+    ]));
 
     assetTypes = Object.values(AssetType);
     AssetType = AssetType;
@@ -265,7 +271,9 @@ export class AssetsComponent implements OnInit {
         interestRate: undefined,
         maturityDate: undefined,
         subType: undefined,
-        isLiquid: true
+        isLiquid: true,
+        goalId: undefined,
+        goalName: undefined
     });
 
     toggleHideAmounts() {
@@ -274,6 +282,11 @@ export class AssetsComponent implements OnInit {
             localStorage.setItem('hideAssetAmounts', String(next));
             return next;
         });
+    }
+
+    setViewMode(mode: 'cards' | 'table') {
+        this.viewMode.set(mode);
+        localStorage.setItem('assetsViewMode', mode);
     }
 
     toggleViewMode() {
@@ -331,7 +344,7 @@ export class AssetsComponent implements OnInit {
             list.push({ label: 'US Stocks', count: counts.get('US Stocks')!, key: 'US Stocks' });
         }
 
-        const standardOrder = ['Mutual Funds', 'Fixed Deposits', 'Bonds', 'ETFs', 'Gold', 'Crypto', 'Real Estate', 'Cash', 'Other'];
+        const standardOrder = ['Savings Account', 'Mutual Funds', 'Fixed Deposits', 'Bonds', 'ETFs', 'Gold', 'Crypto', 'Real Estate', 'Cash', 'Other'];
         for (const cat of standardOrder) {
             if (counts.has(cat) && counts.get(cat)! > 0) {
                 list.push({ label: cat, count: counts.get(cat)!, key: cat });
@@ -538,12 +551,14 @@ export class AssetsComponent implements OnInit {
         // Only call the fetch API for the asset types actually shown on screen!
         if (stocks.length > 0) this.refreshStocks(stocks);
         if (mfs.length > 0) this.refreshMutualFunds(forceMF, mfs);
+        if (this.isViewingUS() || visible.some(a => this.isUSAsset(a))) {
+            this.googleFinance.fetchUsdInrRate(true).catch(() => {});
+        }
     }
 
     assetGroups = computed(() => {
         const assets = this.filteredAssets();
-        const expandedType = this.expandedGroup();
-        const totalPortfolioValue = this.totalValue();
+                const totalPortfolioValue = this.totalValue();
         const usdRate = this.USD_TO_INR;
 
         // Separate US Stocks from Indian/other assets
@@ -566,6 +581,7 @@ export class AssetsComponent implements OnInit {
             AssetType.MutualFund,
             AssetType.Stock,
             AssetType.FixedDeposit,
+            AssetType.SavingsAccount,
             AssetType.Bond,
             AssetType.ETF,
             AssetType.Gold,
@@ -595,14 +611,14 @@ export class AssetsComponent implements OnInit {
             groups.push({
                 type: 'USStock',
                 label: 'US Stocks',
-                assets: usStocks,
+                assets: this.sortAssetList(usStocks),
                 totalValue: tValue,
                 totalInvested: tInvested,
                 totalGain: tGain,
                 gainPct: gPct,
                 allocation,
                 color: this.getColor(AssetType.USStock),
-                expanded: expandedType === 'USStock',
+                expanded: this.isGroupExpanded('USStock'),
                 currency: 'USD',
                 totalValueINR: tValueINR,
                 totalInvestedINR: tInvestedINR,
@@ -640,7 +656,7 @@ export class AssetsComponent implements OnInit {
                     gainPct: gPct,
                     allocation,
                     color: ASSET_COLORS[type],
-                    expanded: expandedType === type,
+                    expanded: this.isGroupExpanded(type),
                     currency: 'INR',
                     totalValueINR: tValue,
                     totalInvestedINR: tInvested,
@@ -694,6 +710,7 @@ export class AssetsComponent implements OnInit {
             [AssetType.Crypto]: 'Crypto',
             [AssetType.RealEstate]: 'Real Estate',
             [AssetType.Cash]: 'Cash',
+            [AssetType.SavingsAccount]: 'Savings Account',
             [AssetType.Other]: 'Other'
         };
         return labels[type as string] || type;
@@ -712,14 +729,15 @@ export class AssetsComponent implements OnInit {
             [AssetType.Gold]: 'workspace_premium',
             [AssetType.Crypto]: 'currency_bitcoin',
             [AssetType.RealEstate]: 'home_work',
-            [AssetType.Cash]: 'account_balance_wallet',
+            [AssetType.Cash]: 'payments',
+            [AssetType.SavingsAccount]: 'account_balance',
             [AssetType.Other]: 'category',
         };
         return icons[type] || 'category';
     }
 
     isNonMarketAsset(a: Asset): boolean {
-        return a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit;
+        return a.type === AssetType.Cash || a.type === AssetType.SavingsAccount || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit;
     }
 
     getGain(a: Asset) {
@@ -745,15 +763,50 @@ export class AssetsComponent implements OnInit {
     }
 
     // ─── Group collapse/expand ───────────────────
+    isGroupExpanded(type: string | AssetType): boolean {
+        return this.expandedGroups().has(String(type));
+    }
+
+    areAllGroupsExpanded(): boolean {
+        return this.expandedGroups().size > 0;
+    }
+
     toggleGroup(type: string | AssetType) {
-        if (this.expandedGroup() === type) {
-            this.expandedGroup.set(null);
+        const key = String(type);
+        this.expandedGroups.update(set => {
+            const next = new Set(set);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+            return next;
+        });
+    }
+
+    toggleAllGroups() {
+        if (this.areAllGroupsExpanded()) {
+            this.expandedGroups.set(new Set());
         } else {
-            this.expandedGroup.set(type);
+            this.expandedGroups.set(new Set([
+                'Overview', 'Stock', 'MutualFund', 'USStock', 'FixedDeposit',
+                'Bond', 'SavingsAccount', 'ETF', 'Gold', 'Crypto', 'RealEstate', 'Cash', 'Other'
+            ]));
         }
     }
 
     // ─── Multi-select ────────────────────────────
+    onGoalSelected(goalId: string) {
+        if (!goalId) {
+            this.updateForm('goalId', undefined as any);
+            this.updateForm('goalName', undefined as any);
+            return;
+        }
+        const goal = this.goalService.goals().find(g => g.id === goalId);
+        this.updateForm('goalId', goalId);
+        this.updateForm('goalName', goal ? goal.name : undefined as any);
+    }
+
     toggleSelectMode() {
         if (this.selectMode()) {
             // Exiting select mode — clear selections
@@ -872,6 +925,7 @@ export class AssetsComponent implements OnInit {
                 'Crypto': AssetType.Crypto,
                 'Real Estate': AssetType.RealEstate,
                 'Cash': AssetType.Cash,
+                'Savings Account': AssetType.SavingsAccount,
                 'Other': AssetType.Other,
             };
             const currentCat = this.selectedCategory();
@@ -884,7 +938,7 @@ export class AssetsComponent implements OnInit {
             }
         }
         const defaultCurrency = currency || ((selectedType === AssetType.USStock || selectedType === AssetType.Crypto || this.isViewingUS()) ? 'USD' : 'INR');
-        const defaultQty = (selectedType === AssetType.FixedDeposit || selectedType === AssetType.RealEstate || selectedType === AssetType.Cash) ? 1 : (selectedType === AssetType.Bond ? 1 : 0);
+        const defaultQty = (selectedType === AssetType.FixedDeposit || selectedType === AssetType.RealEstate || selectedType === AssetType.Cash || selectedType === AssetType.SavingsAccount) ? 1 : (selectedType === AssetType.Bond ? 1 : 0);
         const defaultSubType = selectedType === AssetType.Bond ? 'Corporate Bond' : (selectedType === AssetType.FixedDeposit ? 'Bank FD' : undefined);
         const defaultBuyPrice = selectedType === AssetType.Bond ? 1000 : 0;
         this.form.set({
@@ -899,7 +953,7 @@ export class AssetsComponent implements OnInit {
             notes: '',
             appSource: 'Manual',
             location: undefined,
-            interestRate: selectedType === AssetType.FixedDeposit ? 7.0 : (selectedType === AssetType.Bond ? 8.5 : undefined),
+            interestRate: selectedType === AssetType.FixedDeposit ? 7.0 : (selectedType === AssetType.SavingsAccount ? 3.5 : (selectedType === AssetType.Bond ? 8.5 : undefined)),
             maturityDate: undefined,
             subType: defaultSubType,
             payoutFrequency: selectedType === AssetType.Bond ? 'Annual' : undefined,
@@ -948,8 +1002,14 @@ export class AssetsComponent implements OnInit {
         const payoutFreq = a.payoutFrequency || (isBond ? (a.subType === 'Govt Bond (G-Sec)' ? 'Semi-Annual' : 'Annual') : undefined);
         const payoutDates = a.payoutDates || (isBond && a.maturityDate ? this.bondLookupService.calculatePayoutDates(a.maturityDate, payoutFreq) : undefined);
 
+        const isCashOrSavings = a.type === AssetType.Cash || a.type === AssetType.SavingsAccount;
+        const totalCashAmt = isCashOrSavings ? (a.quantity * (a.currentPrice > 0 ? a.currentPrice : a.buyPrice)) : a.buyPrice;
+
         this.form.set({
             ...a,
+            quantity: isCashOrSavings ? 1 : a.quantity,
+            buyPrice: isCashOrSavings ? totalCashAmt : a.buyPrice,
+            currentPrice: isCashOrSavings ? totalCashAmt : a.currentPrice,
             currency: isUS ? 'USD' : (a.currency || 'INR'),
             appSource: source,
             payoutFrequency: payoutFreq,
@@ -959,6 +1019,17 @@ export class AssetsComponent implements OnInit {
     }
 
     closeModal() { this.showModal.set(false); }
+
+    updateCashOrSavingsBalance(val: number) {
+        const num = isNaN(val) ? 0 : val;
+        this.form.update(f => ({
+            ...f,
+            quantity: 1,
+            buyPrice: num,
+            currentPrice: num,
+            isLiquid: true
+        }));
+    }
 
     updateForm(field: keyof Omit<Asset, 'id'>, value: any) {
         this.form.update((f) => {
@@ -972,11 +1043,23 @@ export class AssetsComponent implements OnInit {
                 } else if (!this.editingId()) {
                     next.currency = 'INR';
                 }
-                if (type === AssetType.Cash || type === AssetType.RealEstate || type === AssetType.FixedDeposit) {
+                if (type === AssetType.Cash || type === AssetType.SavingsAccount || type === AssetType.RealEstate || type === AssetType.FixedDeposit) {
                     next.symbol = '';
                 }
-                if (type === AssetType.Cash || type === AssetType.RealEstate) {
+                if (type === AssetType.Cash || type === AssetType.SavingsAccount || type === AssetType.RealEstate) {
                     next.appSource = 'Manual';
+                }
+                if (type === AssetType.Cash || type === AssetType.SavingsAccount) {
+                    if (!next.quantity || next.quantity <= 0) next.quantity = 1;
+                    if (next.buyPrice > 0 && (!next.currentPrice || next.currentPrice <= 0)) {
+                        next.currentPrice = next.buyPrice;
+                    } else if (next.currentPrice > 0 && (!next.buyPrice || next.buyPrice <= 0)) {
+                        next.buyPrice = next.currentPrice;
+                    }
+                    next.isLiquid = true;
+                    if (type === AssetType.SavingsAccount && next.interestRate === undefined) {
+                        next.interestRate = 3.5;
+                    }
                 }
                 if (type !== AssetType.RealEstate) {
                     next.location = undefined;

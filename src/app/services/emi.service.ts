@@ -1,4 +1,5 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { PinSecurityService } from './pin-security.service';
 import { Firestore } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
 import { collection, doc, setDoc, deleteDoc, getDocs } from 'firebase/firestore';
@@ -22,12 +23,24 @@ const STORAGE_KEY = 'finance_tracker_emi_loans_v1';
 export class EmiService {
   private firestore = inject(Firestore, { optional: true });
   private auth = inject(Auth, { optional: true });
+  private pinSecurity = inject(PinSecurityService, { optional: true });
 
   readonly loans = signal<Loan[]>([]);
   readonly loading = signal<boolean>(false);
 
   constructor() {
-    this.loadLoans();
+    if (this.pinSecurity) {
+      effect(() => {
+        const locked = this.pinSecurity?.isLocked();
+        if (!locked) {
+          this.loadLoans();
+        } else {
+          this.loans.set([]);
+        }
+      });
+    } else {
+      this.loadLoans();
+    }
   }
 
   // ── Summary Metrics ──
@@ -629,6 +642,7 @@ export class EmiService {
 
   // ── Persistence & Data Loading ──
   private async loadLoans() {
+    if (this.pinSecurity?.isLocked()) { this.loans.set([]); return; }
     this.loading.set(true);
     try {
       // 1. Try LocalStorage for immediate instant render

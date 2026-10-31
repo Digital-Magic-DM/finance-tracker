@@ -165,7 +165,7 @@ export class AnalyticsComponent {
     portfolioValue = computed(() => {
         return this.assets().reduce((total, asset) => {
             const cp = asset.currentPrice > 0 ? asset.currentPrice : (
-                asset.type === AssetType.Cash || asset.type === AssetType.RealEstate || 
+                asset.type === AssetType.Cash || asset.type === AssetType.SavingsAccount || asset.type === AssetType.RealEstate || 
                 asset.type === AssetType.Bond || asset.type === AssetType.FixedDeposit ? asset.buyPrice : 0
             );
             const fx = this.priceService.isUSAsset(asset) ? this.googleFinance.usdToInrRate() : 1;
@@ -198,7 +198,7 @@ export class AnalyticsComponent {
         if (burn <= 0) return 0;
 
         const liquidAssets = this.assets()
-            .filter(a => a.type === AssetType.Cash || (a.type === AssetType.FixedDeposit && a.isLiquid))
+            .filter(a => a.type === AssetType.Cash || a.type === AssetType.SavingsAccount || (a.type === AssetType.FixedDeposit && a.isLiquid))
             .reduce((sum, a) => sum + (a.quantity * (a.currentPrice > 0 ? a.currentPrice : a.buyPrice)), 0);
 
         return Math.round((liquidAssets / burn) * 10) / 10;
@@ -296,7 +296,7 @@ export class AnalyticsComponent {
         const map: Record<string, number> = {};
         this.assets().forEach(asset => {
             const cp = asset.currentPrice > 0 ? asset.currentPrice : (
-                asset.type === AssetType.Cash || asset.type === AssetType.RealEstate || 
+                asset.type === AssetType.Cash || asset.type === AssetType.SavingsAccount || asset.type === AssetType.RealEstate || 
                 asset.type === AssetType.Bond || asset.type === AssetType.FixedDeposit ? asset.buyPrice : 0
             );
             const fx = this.priceService.isUSAsset(asset) ? this.googleFinance.usdToInrRate() : 1;
@@ -317,7 +317,7 @@ export class AnalyticsComponent {
         const map: Record<string, number> = {};
         this.assets().forEach(asset => {
             const cp = asset.currentPrice > 0 ? asset.currentPrice : (
-                asset.type === AssetType.Cash || asset.type === AssetType.RealEstate || 
+                asset.type === AssetType.Cash || asset.type === AssetType.SavingsAccount || asset.type === AssetType.RealEstate || 
                 asset.type === AssetType.Bond || asset.type === AssetType.FixedDeposit ? asset.buyPrice : 0
             );
             const fx = this.priceService.isUSAsset(asset) ? this.googleFinance.usdToInrRate() : 1;

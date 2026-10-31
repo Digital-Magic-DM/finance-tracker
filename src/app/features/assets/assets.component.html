@@ -34,10 +34,6 @@
             <span class="btn-text">Select</span>
           </button>
         }
-        <button class="btn btn-ghost btn-sm view-mode-btn action-tool-btn" (click)="toggleViewMode()" [title]="viewMode() === 'cards' ? 'Switch to Table View' : 'Switch to Card View'">
-          <span class="material-icons sm-icon">{{ viewMode() === 'cards' ? 'table_chart' : 'dashboard' }}</span>
-          <span class="btn-text">{{ viewMode() === 'cards' ? 'Table View' : 'Card View' }}</span>
-        </button>
 
         <!-- Combined Add Asset Button + Dropdown -->
         <div class="add-asset-split-group" (click)="$event.stopPropagation()">
@@ -76,9 +72,13 @@
                 <span class="material-icons item-icon">trending_up</span>
                 <span class="item-label">ETF</span>
               </button>
+              <button class="dropdown-item" (click)="openAdd(AssetType.SavingsAccount, 'INR')">
+                <span class="material-icons item-icon">account_balance</span>
+                <span class="item-label">Savings Account (Bank)</span>
+              </button>
               <button class="dropdown-item" (click)="openAdd(AssetType.Cash, 'INR')">
-                <span class="material-icons item-icon">account_balance_wallet</span>
-                <span class="item-label">Cash &amp; Bank Balance</span>
+                <span class="material-icons item-icon">payments</span>
+                <span class="item-label">Physical Cash (In Hand)</span>
               </button>
               <button class="dropdown-item" (click)="openAdd(AssetType.RealEstate, 'INR')">
                 <span class="material-icons item-icon">home</span>
@@ -175,19 +175,25 @@
       </div>
     }
 
-    <!-- Sort Selector Control -->
-    <div class="sort-control-wrapper">
-      <span class="material-icons sort-prefix-icon">sort</span>
-      <select class="sort-select" appCustomSelect [ngModel]="sortField()" (ngModelChange)="setSortField($event)">
-        <option value="value">Current Value</option>
-        <option value="invested">Invested Amount</option>
-        <option value="gain">Returns (P&amp;L)</option>
-        <option value="gainPct">Returns %</option>
-        <option value="name">Holding Name</option>
-        <option value="quantity">Quantity</option>
-      </select>
-      <button class="btn-icon btn-sort-dir" (click)="toggleSortDirection()" [title]="sortDirection() === 'asc' ? 'Ascending (click for Descending)' : 'Descending (click for Ascending)'">
-        <span class="material-icons sm-icon">{{ sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
+    <!-- View Mode Selector Pill Group in Strip -->
+    <div class="view-mode-pill-group strip-view-mode">
+      <button
+        type="button"
+        class="view-pill-btn"
+        [class.active]="viewMode() === 'table'"
+        (click)="setViewMode('table')"
+        title="Switch to Table View">
+        <span class="material-icons sm-icon">table_chart</span>
+        <span class="btn-text">Table</span>
+      </button>
+      <button
+        type="button"
+        class="view-pill-btn"
+        [class.active]="viewMode() === 'cards'"
+        (click)="setViewMode('cards')"
+        title="Switch to Card View">
+        <span class="material-icons sm-icon">grid_view</span>
+        <span class="btn-text">Cards</span>
       </button>
     </div>
   </div>
@@ -464,6 +470,7 @@
           }
         </div>
       }
+    } @else {
       <!-- Classic Grouped Table View -->
       <div class="accordion-container">
         <!-- Table Column Headers Bar -->
@@ -498,7 +505,12 @@
               <span class="material-icons sort-icon">{{ getSortIcon('gain') }}</span>
             </span>
           </div>
-          <div class="col-actions">Actions</div>
+          <div class="col-actions header-actions-col">
+            <button type="button" class="btn-expand-all" (click)="toggleAllGroups()" [title]="areAllGroupsExpanded() ? 'Collapse All Categories' : 'Expand All Categories'">
+              <span class="material-icons sm-icon">{{ areAllGroupsExpanded() ? 'unfold_less' : 'unfold_more' }}</span>
+              <span class="btn-text">{{ areAllGroupsExpanded() ? 'Collapse' : 'Expand' }}</span>
+            </button>
+          </div>
         </div>
 
         @for (group of assetGroups(); track group.type) {
@@ -589,6 +601,12 @@
                           <span class="name-text">{{ asset.name }}</span>
                           @if (asset.symbol) {
                             <span class="symbol-text">{{ asset.symbol }}</span>
+                          }
+                          @if (asset.goalName) {
+                            <span class="goal-pill-tag" title="Mapped to Goal: {{ asset.goalName }}">
+                              <span class="material-icons sm-icon" style="font-size: 11px;">flag</span>
+                              <span>{{ asset.goalName }}</span>
+                            </span>
                           }
                           @if (asset.type === 'FixedDeposit' && asset.interestRate) {
                             <span class="symbol-text" style="color: #f59e0b; font-weight: 600;">{{ asset.interestRate }}% p.a.{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}</span>
@@ -692,13 +710,24 @@
         </button>
       </div>
       <div class="modal-body">
+        <!-- Target Financial Goal Selection -->
+        <div class="form-group">
+          <label>Linked Financial Goal (Reason to Save)</label>
+          <select class="form-control" [ngModel]="form().goalId || ''" (ngModelChange)="onGoalSelected($event)">
+            <option value="">-- No Goal (General Wealth / Unallocated) --</option>
+            @for (g of goalService.goals(); track g.id) {
+              <option [value]="g.id">{{ g.name }} ({{ g.category }})</option>
+            }
+          </select>
+        </div>
+
         <div class="form-group">
           <label>
-            {{ form().type === 'FixedDeposit' ? 'Bank / Institution Name *' : (form().type === 'Bond' ? 'Bond / Issuer Name *' : (form().type === 'RealEstate' ? 'Property Name *' : (form().type === 'Cash' ? 'Account / Bank Name *' : 'Asset Name *'))) }}
+            {{ form().type === 'FixedDeposit' ? 'Bank / Institution Name *' : (form().type === 'Bond' ? 'Bond / Issuer Name *' : (form().type === 'RealEstate' ? 'Property Name *' : (form().type === 'SavingsAccount' ? 'Bank & Account Name *' : (form().type === 'Cash' ? 'Cash Source / Wallet Name *' : 'Asset Name *')))) }}
           </label>
           <input class="form-control" type="text" [value]="form().name" maxlength="100"
             (input)="updateForm('name', $any($event.target).value)" 
-            [placeholder]="form().type === 'FixedDeposit' ? 'e.g. HDFC Bank FD, Bajaj Finance Corporate FD' : (form().type === 'Bond' ? 'e.g. Tata Capital 8.5% NCD, NHAI Tax-Free' : (form().type === 'RealEstate' ? 'e.g. 3BHK Apartment, Commercial Plot' : 'e.g. Reliance Industries'))" />
+            [placeholder]="form().type === 'FixedDeposit' ? 'e.g. HDFC Bank FD, Bajaj Finance Corporate FD' : (form().type === 'Bond' ? 'e.g. Tata Capital 8.5% NCD, NHAI Tax-Free' : (form().type === 'RealEstate' ? 'e.g. 3BHK Apartment, Commercial Plot' : (form().type === 'SavingsAccount' ? 'e.g. HDFC Salary Account, SBI Savings' : (form().type === 'Cash' ? 'e.g. Physical Cash In Hand, Home Safe' : 'e.g. Reliance Industries'))))" />
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -882,7 +911,7 @@
           </div>
         }
 
-        @if (form().type !== 'Cash' && form().type !== 'RealEstate' && form().type !== 'FixedDeposit' && form().type !== 'Bond') {
+        @if (form().type !== 'Cash' && form().type !== 'SavingsAccount' && form().type !== 'RealEstate' && form().type !== 'FixedDeposit' && form().type !== 'Bond') {
           <div class="form-group">
             <label>{{ form().type === 'MutualFund' ? 'Scheme Code / ISIN (Optional)' : 'Symbol / ISIN' }}</label>
             <input class="form-control" type="text" [value]="form().symbol || ''"
@@ -922,24 +951,59 @@
           </div>
         }
 
-        <div class="form-row">
+        <!-- Dedicated Section for Savings Account (Bank) -->
+        @if (form().type === 'SavingsAccount') {
+          <div class="form-row">
+            <div class="form-group">
+              <label>Account Balance ({{ form().currency === 'USD' ? '$' : '₹' }}) *</label>
+              <input class="form-control" type="number" [value]="form().buyPrice || form().currentPrice || ''" min="0" max="999999999" step="any"
+                (input)="updateCashOrSavingsBalance(+$any($event.target).value)" placeholder="e.g. 150000" />
+            </div>
+            <div class="form-group">
+              <label>Savings Interest Rate (% p.a. - Optional)</label>
+              <input class="form-control" type="number" [value]="form().interestRate ?? 3.5" min="0" max="25" step="0.05"
+                (input)="updateForm('interestRate', +$any($event.target).value)" placeholder="e.g. 3.5" />
+            </div>
+          </div>
+          <div class="cash-savings-hint">
+            <span class="material-icons hint-icon">verified_user</span>
+            <span>Automatically treated as <strong>Liquid Emergency Fund</strong> for runway analysis. Zero market volatility risk.</span>
+          </div>
+        }
+
+        <!-- Dedicated Section for Physical Cash -->
+        @if (form().type === 'Cash') {
           <div class="form-group">
-            <label>{{ form().type === 'MutualFund' ? 'Units' : (form().type === 'FixedDeposit' ? 'Deposit Count' : (form().type === 'Bond' ? 'Quantity (Units / Bonds)' : 'Quantity')) }} *</label>
-            <input class="form-control" type="number" [value]="form().quantity" min="0" max="99999999" step="any"
-              (input)="updateForm('quantity', +$any($event.target).value)" />
+            <label>Cash In Hand / Available Amount ({{ form().currency === 'USD' ? '$' : '₹' }}) *</label>
+            <input class="form-control" type="number" [value]="form().buyPrice || form().currentPrice || ''" min="0" max="999999999" step="any"
+              (input)="updateCashOrSavingsBalance(+$any($event.target).value)" placeholder="e.g. 25000" />
+          </div>
+          <div class="cash-savings-hint">
+            <span class="material-icons hint-icon">payments</span>
+            <span>Physical cash held with zero market risk. Liquid 1:1 face value.</span>
+          </div>
+        }
+
+        @if (form().type !== 'Cash' && form().type !== 'SavingsAccount') {
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ form().type === 'MutualFund' ? 'Units' : (form().type === 'FixedDeposit' ? 'Deposit Count' : (form().type === 'Bond' ? 'Quantity (Units / Bonds)' : 'Quantity')) }} *</label>
+              <input class="form-control" type="number" [value]="form().quantity" min="0" max="99999999" step="any"
+                (input)="updateForm('quantity', +$any($event.target).value)" />
+            </div>
+            <div class="form-group">
+              <label>{{ form().type === 'MutualFund' ? 'Avg NAV (₹)' : (form().type === 'FixedDeposit' ? 'Principal Deposit (₹)' : (form().type === 'Bond' ? 'Buy Price / Face Value (₹)' : ('Buy Price (' + (form().currency === 'USD' ? '$' : '₹') + ')'))) }} *</label>
+              <input class="form-control" type="number" [value]="form().buyPrice" min="0" max="999999999" step="any"
+                (input)="updateForm('buyPrice', +$any($event.target).value)" />
+            </div>
           </div>
           <div class="form-group">
-            <label>{{ form().type === 'MutualFund' ? 'Avg NAV (₹)' : (form().type === 'FixedDeposit' ? 'Principal Deposit (₹)' : (form().type === 'Bond' ? 'Buy Price / Face Value (₹)' : ('Buy Price (' + (form().currency === 'USD' ? '$' : '₹') + ')'))) }} *</label>
-            <input class="form-control" type="number" [value]="form().buyPrice" min="0" max="999999999" step="any"
-              (input)="updateForm('buyPrice', +$any($event.target).value)" />
+            <label>{{ form().type === 'MutualFund' ? 'Current NAV (₹)' : (form().type === 'FixedDeposit' ? 'Current / Maturity Value (₹)' : (form().type === 'Bond' ? 'Current Price (₹)' : ('Current Price (' + (form().currency === 'USD' ? '$' : '₹') + ')'))) }} *</label>
+            <input class="form-control" type="number" [value]="form().currentPrice" min="0" max="999999999" step="any"
+              (input)="updateForm('currentPrice', +$any($event.target).value)" />
           </div>
-        </div>
-        <div class="form-group">
-          <label>{{ form().type === 'MutualFund' ? 'Current NAV (₹)' : (form().type === 'FixedDeposit' ? 'Current / Maturity Value (₹)' : (form().type === 'Bond' ? 'Current Price (₹)' : ('Current Price (' + (form().currency === 'USD' ? '$' : '₹') + ')'))) }} *</label>
-          <input class="form-control" type="number" [value]="form().currentPrice" min="0" max="999999999" step="any"
-            (input)="updateForm('currentPrice', +$any($event.target).value)" />
-        </div>
-        @if (form().type !== 'Cash' && form().type !== 'RealEstate' && form().type !== 'FixedDeposit') {
+        }
+        @if (form().type !== 'Cash' && form().type !== 'SavingsAccount' && form().type !== 'RealEstate' && form().type !== 'FixedDeposit') {
           <div class="form-row">
             <div class="form-group">
               <label>App Source</label>

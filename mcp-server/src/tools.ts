@@ -60,7 +60,7 @@ export async function getNetWorthOverview(uid: string): Promise<NetWorthOverview
       buyPrice: Number(data.buyPrice) || 0,
       currentPrice: Number(data.currentPrice) || Number(data.buyPrice) || 0,
       currency: data.currency || 'INR',
-      isLiquid: Boolean(data.isLiquid || data.type === 'Cash' || data.type === 'FixedDeposit'),
+      isLiquid: Boolean(data.isLiquid || data.type === 'Cash' || data.type === 'SavingsAccount' || data.type === 'FixedDeposit'),
       notes: data.notes,
       appSource: data.appSource,
     };
@@ -151,7 +151,7 @@ export async function listAssets(
       buyPrice: Number(data.buyPrice) || 0,
       currentPrice: Number(data.currentPrice) || Number(data.buyPrice) || 0,
       currency: data.currency || 'INR',
-      isLiquid: Boolean(data.isLiquid || data.type === 'Cash' || data.type === 'FixedDeposit'),
+      isLiquid: Boolean(data.isLiquid || data.type === 'Cash' || data.type === 'SavingsAccount' || data.type === 'FixedDeposit'),
       notes: data.notes,
       appSource: data.appSource,
       interestRate: data.interestRate,

@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <!-- Stats Row -->
+  <!-- Stats Row (Strict 4-Box Grid) -->
   <div class="stats-grid">
     <div class="card stat-card net-worth-card" [title]="totalLiabilities() > 0 ? 'Net Worth = Total Assets - Total Loan Debt' : 'Total Asset Portfolio Value'">
       <div class="material-icons stat-icon">{{ totalLiabilities() > 0 ? 'account_balance' : 'inventory_2' }}</div>
@@ -32,32 +32,6 @@
         }
       </div>
     </div>
-
-    @if (totalLiabilities() > 0) {
-      <div class="card stat-card emi-debt-card" routerLink="/app/emi" style="cursor: pointer;" title="Manage Loans & EMIs">
-        <div class="material-icons stat-icon" style="color: #ef4444;">credit_card</div>
-        <p class="stat-label">Loan Liabilities</p>
-        <div class="stat-value text-danger">₹{{ totalLiabilities() | number:'1.0-0' }}</div>
-        <div class="stat-change" style="color: #ef4444;">
-          ₹{{ totalMonthlyEmi() | number:'1.0-0' }}/mo EMI outflow →
-        </div>
-      </div>
-    }
-
-    @if (sipService.summaryMetrics().totalActiveSips > 0) {
-      <div class="card stat-card sip-dashboard-card" routerLink="/app/sip" style="cursor: pointer;" title="Manage SIPs & Market Auto-Invest">
-        <div class="material-icons stat-icon" style="color: #8b5cf6;">autorenew</div>
-        <p class="stat-label">Monthly SIP Commitment</p>
-        <div class="stat-value" style="color: #8b5cf6;">₹{{ sipService.summaryMetrics().totalMonthlyCommitment | number:'1.0-0' }}</div>
-        <div class="stat-change" style="color: #8b5cf6;">
-          @if (sipService.summaryMetrics().nextUpcomingSip; as nextSip) {
-            Next: {{ nextSip.daysRemaining === 0 ? 'Debiting Today' : ('In ' + nextSip.daysRemaining + 'd') }} (₹{{ nextSip.amount | number:'1.0-0' }}) →
-          } @else {
-            {{ sipService.summaryMetrics().totalActiveSips }} active SIPs →
-          }
-        </div>
-      </div>
-    }
 
     <div class="card stat-card">
       <div class="material-icons stat-icon">paid</div>
@@ -87,17 +61,70 @@
         {{ totalDaysGainPct() >= 0 ? '+' : '' }}{{ totalDaysGainPct() | number:'1.2-2' }}% today
       </div>
     </div>
+  </div>
 
-    <div class="card stat-card health-stat-card" routerLink="/app/essentials" style="cursor: pointer;" title="View Essentials Deep Dive">
-      <div class="material-icons stat-icon" [style.color]="healthStatus().color">{{ healthStatus().icon }}</div>
-      <p class="stat-label">Financial Health</p>
-      <div class="stat-value" [style.color]="healthStatus().color">
-        {{ essentialsService.healthScore() }} <small style="font-size: 14px; opacity: 0.7;">/ 10</small>
+  <!-- Insights & Status Strip (Financial Health, Active SIPs, Loan EMIs) -->
+  <div class="dashboard-highlights-bar">
+    @if (goalService.goals().length > 0) {
+      <div class="highlight-chip goal-chip" routerLink="/app/goals" title="View Financial Goals Progress">
+        <div class="chip-icon-box" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+          <span class="material-icons">flag</span>
+        </div>
+        <div class="chip-text">
+          <span class="chip-label">Goal Progress</span>
+          <span class="chip-value">
+            {{ goalService.summaryMetrics().overallProgressPct }}% of ₹{{ goalService.summaryMetrics().totalTargetAmount | number:'1.0-0' }}
+          </span>
+        </div>
+        <span class="material-icons chip-arrow">arrow_forward</span>
       </div>
-      <div class="stat-change" [style.color]="healthStatus().color">
-        {{ healthStatus().label }} · {{ essentialsService.runwayMonths() | number:'1.1-1' }}m buffer →
+    }
+
+    <div class="highlight-chip health-chip" routerLink="/app/essentials" title="View Financial Health Deep Dive">
+      <div class="chip-icon-box" [style.background]="healthStatus().color + '1a'" [style.color]="healthStatus().color">
+        <span class="material-icons">{{ healthStatus().icon }}</span>
       </div>
+      <div class="chip-text">
+        <span class="chip-label">Financial Health</span>
+        <span class="chip-value" [style.color]="healthStatus().color">
+          {{ essentialsService.healthScore() }}/10 · {{ healthStatus().label }} ({{ essentialsService.runwayMonths() | number:'1.1-1' }}m runway)
+        </span>
+      </div>
+      <span class="material-icons chip-arrow">arrow_forward</span>
     </div>
+
+    @if (sipService.summaryMetrics().totalActiveSips > 0) {
+      <div class="highlight-chip sip-chip" routerLink="/app/sip" title="Manage SIPs & Auto-Invest">
+        <div class="chip-icon-box" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
+          <span class="material-icons">autorenew</span>
+        </div>
+        <div class="chip-text">
+          <span class="chip-label">Monthly SIP Commitment</span>
+          <span class="chip-value" style="color: #8b5cf6;">
+            ₹{{ sipService.summaryMetrics().totalMonthlyCommitment | number:'1.0-0' }}/mo
+            @if (sipService.summaryMetrics().nextUpcomingSip; as nextSip) {
+              · Next: {{ nextSip.daysRemaining === 0 ? 'Debiting Today' : ('in ' + nextSip.daysRemaining + 'd') }}
+            }
+          </span>
+        </div>
+        <span class="material-icons chip-arrow">arrow_forward</span>
+      </div>
+    }
+
+    @if (totalLiabilities() > 0) {
+      <div class="highlight-chip emi-chip" routerLink="/app/emi" title="Manage Loans & Liabilities">
+        <div class="chip-icon-box" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+          <span class="material-icons">credit_card</span>
+        </div>
+        <div class="chip-text">
+          <span class="chip-label">Loan Liabilities</span>
+          <span class="chip-value text-danger">
+            ₹{{ totalLiabilities() | number:'1.0-0' }} · ₹{{ totalMonthlyEmi() | number:'1.0-0' }}/mo EMI
+          </span>
+        </div>
+        <span class="material-icons chip-arrow">arrow_forward</span>
+      </div>
+    }
   </div>
 
   <!-- Brutalist Quote Row -->

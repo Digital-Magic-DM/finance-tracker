@@ -98,7 +98,7 @@ export class EssentialsService {
     liquidAssetsTotal = computed(() => {
         return this.assets()
             .filter(a => {
-                if (a.type === AssetType.Cash || a.type === AssetType.FixedDeposit || a.isLiquid) return true;
+                if (a.type === AssetType.Cash || a.type === AssetType.SavingsAccount || a.type === AssetType.FixedDeposit || a.isLiquid) return true;
                 if (a.type === AssetType.MutualFund) {
                     const n = (a.name || '').toLowerCase();
                     return /liquid|overnight|arbitrage|money market|savings fund|cash/i.test(n);
@@ -106,7 +106,7 @@ export class EssentialsService {
                 return false;
             })
             .reduce((s, a) => {
-                const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
+                const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.SavingsAccount || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
                 const fx = this.priceService.isUSAsset(a) ? this.googleFinance.usdToInrRate() : 1;
                 return s + (a.quantity * cp * fx);
             }, 0);
@@ -151,7 +151,7 @@ export class EssentialsService {
     // 5.3 Current Net Worth
     currentNetWorth = computed(() => {
         return this.assets().reduce((s, a) => {
-            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.SavingsAccount || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
             const fx = this.priceService.isUSAsset(a) ? this.googleFinance.usdToInrRate() : 1;
             return s + (a.quantity * cp * fx);
         }, 0);

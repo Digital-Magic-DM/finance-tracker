@@ -46,11 +46,23 @@ export class AmfiNavService {
    * Respects NAV publication schedules: NAVs for day T are typically published between 21:00 and 23:30 IST on day T.
    */
   async getNavForDate(schemeCode: string | number, requestedDateStr?: string): Promise<NavSnapshot | null> {
-    const code = String(schemeCode).trim();
-    if (!code) return null;
+    const rawInput = String(schemeCode).trim();
+    if (!rawInput) return null;
 
     const todayStr = this.formatDate(new Date());
     const targetDate = requestedDateStr || todayStr;
+
+    // Resolve non-numeric input (e.g. scheme name) to numeric schemeCode if needed
+    let code = rawInput;
+    if (!/^\d{5,7}$/.test(code)) {
+      const matches = await this.searchSchemes(code);
+      if (matches.length > 0) {
+        code = matches[0].schemeCode;
+      } else {
+        return null;
+      }
+    }
+
     const cacheKey = `${code}_${targetDate}`;
 
     // 1. Check in-memory / persistent cache

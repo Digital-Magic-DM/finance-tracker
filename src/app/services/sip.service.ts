@@ -1,7 +1,8 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { PinSecurityService } from './pin-security.service';
 import { Firestore } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
-import { collection, doc, setDoc, deleteDoc, getDocs } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, getDocs, writeBatch, deleteField } from 'firebase/firestore';
 import {
   Sip,
   SipInstallment,
@@ -27,6 +28,7 @@ export class SipService {
   private navService = inject(AmfiNavService);
   private reconciliationService = inject(SipReconciliationService);
   private snackbar = inject(SnackbarService);
+  private pinSecurity = inject(PinSecurityService, { optional: true });
 
   readonly sips = signal<Sip[]>([]);
   readonly loading = signal<boolean>(false);
@@ -35,7 +37,18 @@ export class SipService {
   readonly pendingReconciliationNotice = signal<{ count: number; sips: string[] } | null>(null);
 
   constructor() {
-    this.loadSips();
+    if (this.pinSecurity) {
+      effect(() => {
+        const locked = this.pinSecurity?.isLocked();
+        if (!locked) {
+          this.loadSips();
+        } else {
+          this.sips.set([]);
+        }
+      });
+    } else {
+      this.loadSips();
+    }
   }
 
   // ── Summary Metrics ──
@@ -394,6 +407,45 @@ export class SipService {
     this.snackbar.show(`SIP "${updatedSip.name}" updated successfully.`, 'success');
   }
 
+  /**
+   * Update multiple SIPs in a single atomic batch operation without multiple individual network calls.
+   */
+  async batchUpdateSips(updates: { id: string; changes: Partial<Sip> }[]): Promise<void> {
+    if (updates.length === 0) return;
+    const updateMap = new Map(updates.map((u) => [u.id, u.changes]));
+    const now = new Date().toISOString();
+    const updatedList = this.sips().map((s) => {
+      const chg = updateMap.get(s.id);
+      if (chg) {
+        return { ...s, ...chg, updatedAt: now };
+      }
+      return s;
+    });
+
+    this.sips.set(updatedList);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    } catch {}
+
+    const uid = this.auth?.currentUser?.uid;
+    if (this.firestore && uid) {
+      try {
+        const batch = writeBatch(this.firestore);
+        for (const item of updates) {
+          const ref = doc(this.firestore, `users/${uid}/sips/${item.id}`);
+          const payload: any = { updatedAt: now };
+          for (const [key, val] of Object.entries(item.changes)) {
+            payload[key] = (val === undefined || val === null || val === '') ? deleteField() : val;
+          }
+          batch.update(ref, payload);
+        }
+        await batch.commit();
+      } catch (e) {
+        console.warn('[SipService] batchUpdateSips firestore error:', e);
+      }
+    }
+  }
+
   async pauseSip(id: string): Promise<void> {
     await this.updateSip(id, { status: 'Paused' });
     this.snackbar.show('SIP paused. Future expected installments paused.', 'info');
@@ -713,6 +765,7 @@ export class SipService {
   // ── Persistence ──
 
   async loadSips() {
+    if (this.pinSecurity?.isLocked()) { this.sips.set([]); return; }
     this.loading.set(true);
     let loaded: Sip[] = [];
 

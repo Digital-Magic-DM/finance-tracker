@@ -16,6 +16,7 @@ import { PortfolioChartComponent } from '../../shared/portfolio-chart/portfolio-
 import { NetworthChartComponent } from '../../shared/networth-chart/networth-chart.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EssentialsService } from '../../services/essentials.service';
+import { GoalService } from '../../services/goal.service';
 import { EmiService } from '../../services/emi.service';
 import { SipService } from '../../services/sip.service';
 import quotesDataFile from '../../../assets/quotes.json';
@@ -35,6 +36,7 @@ export class DashboardComponent implements OnInit {
     public googleFinance = inject(GoogleFinanceService);
     public priceService = inject(PriceService);
     public essentialsService = inject(EssentialsService);
+    goalService = inject(GoalService);
     public emiService = inject(EmiService);
     public sipService = inject(SipService);
 
@@ -116,7 +118,7 @@ export class DashboardComponent implements OnInit {
 
     totalNetWorth = computed(() =>
         this.assets().reduce((sum, a) => {
-            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.SavingsAccount || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
             const fx = this.getFxRate(a);
             return sum + (a.quantity * cp * fx);
         }, 0)
@@ -205,10 +207,10 @@ export class DashboardComponent implements OnInit {
             .filter((t) => {
                 const d = this.formatDate(t.date);
                 if (isNaN(d.getTime())) return false;
-                
+
                 const isCorrectMonth = d.getMonth() === month && d.getFullYear() === year;
                 const isIncomeType = t.type === TransactionType.Income || t.type === TransactionType.Sell;
-                
+
                 return isIncomeType && isCorrectMonth;
             })
             .reduce((s, t) => s + (Number(t.amount) || 0), 0);
@@ -239,7 +241,7 @@ export class DashboardComponent implements OnInit {
         if (total === 0) return [];
         const grouped: { [key: string]: number } = {};
         for (const a of this.assets()) {
-            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.SavingsAccount || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
             const fx = this.getFxRate(a);
             const val = a.quantity * cp * fx;
 
@@ -264,6 +266,8 @@ export class DashboardComponent implements OnInit {
                 label = 'Crypto';
             } else if (a.type === AssetType.Cash) {
                 label = 'Cash';
+            } else if (a.type === AssetType.SavingsAccount) {
+                label = 'Savings Account';
             }
 
             grouped[label] = (grouped[label] || 0) + val;
@@ -284,6 +288,8 @@ export class DashboardComponent implements OnInit {
             'ETF': 'var(--asset-etf)',
             'Gold': 'var(--asset-gold)',
             'Cash': 'var(--asset-cash)',
+            'Savings Account': 'var(--asset-savings, #10b981)',
+            'SavingsAccount': 'var(--asset-savings, #10b981)',
             'Real Estate': 'var(--asset-re)',
             'RealEstate': 'var(--asset-re)',
             'Crypto': 'var(--asset-crypto)',
@@ -299,21 +305,21 @@ export class DashboardComponent implements OnInit {
             }))
             .sort((a, b) => b.value - a.value);
     });
-    
+
     appWiseHoldings = computed(() => {
         const total = this.totalNetWorth();
         if (total === 0) return [];
-        
+
         const grouped: { [key: string]: number } = {};
         for (const a of this.assets()) {
-            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.SavingsAccount || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
             const fx = this.getFxRate(a);
             const val = a.quantity * cp * fx;
             const source = this.getAssetApp(a);
-            
+
             grouped[source] = (grouped[source] || 0) + val;
         }
-        
+
         return Object.entries(grouped)
             .map(([label, value]) => ({
                 label,
@@ -338,7 +344,7 @@ export class DashboardComponent implements OnInit {
                 map[key] = (map[key] || 0) + tx.amount;
             }
         }
-        
+
         // Return last 4 months for dashboard
         return Object.entries(map)
             .map(([month, amount]) => ({ month, amount }))

@@ -219,6 +219,7 @@ export class PriceService {
         const stocks = assets.filter(a =>
             a.type !== AssetType.MutualFund &&
             a.type !== AssetType.Cash &&
+            a.type !== AssetType.SavingsAccount &&
             a.type !== AssetType.RealEstate &&
             a.type !== AssetType.FixedDeposit &&
             a.type !== AssetType.Bond

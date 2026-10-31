@@ -39,6 +39,7 @@ export class SidebarComponent {
             { label: 'Assets', icon: 'account_balance_wallet', route: '/app/assets' },
             { label: 'Transactions', icon: 'receipt_long', route: '/app/transactions' },
             { label: 'SIPs & Auto-Invest', icon: 'autorenew', route: '/app/sip' },
+            { label: 'Financial Goals', icon: 'flag', route: '/app/goals' },
             { label: 'Analytics', icon: 'analytics', route: '/app/analytics' },
             { label: 'Essentials', icon: 'health_and_safety', route: '/app/essentials' },
             { label: 'EMI & Loans', icon: 'credit_score', route: '/app/emi' },

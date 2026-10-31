@@ -1,0 +1,534 @@
+<div class="goals-page">
+  <!-- ── Top Header Bar (Primary UI) ── -->
+  <div class="goals-topbar">
+    <div class="topbar-title-group">
+      <h1 class="goals-heading">Financial Goals</h1>
+      <p class="goals-subheading">
+        <span class="subheading-desc">Map investments and automated SIPs to clear life milestones</span>
+      </p>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm add-main-btn" (click)="openAddModal()" title="Set Up New Goal">
+        <span class="plus-icon">+</span>
+        <span class="btn-text">Add Goal</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── 4-Box KPI Stats Grid (Primary UI) ── -->
+  <div class="stats-grid">
+    <!-- Box 1: Total Goal Target -->
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">flag</div>
+      <p class="stat-label">Total Target Capital</p>
+      <div class="stat-value">₹{{ goalService.summaryMetrics().totalTargetAmount | number:'1.0-0' }}</div>
+      <div class="stat-change text-muted">Across {{ goalService.summaryMetrics().totalGoals }} life goals</div>
+    </div>
+
+    <!-- Box 2: Accumulated Capital -->
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">savings</div>
+      <p class="stat-label">Accumulated Capital</p>
+      <div class="stat-value">₹{{ goalService.summaryMetrics().totalAccumulatedAmount | number:'1.0-0' }}</div>
+      <div class="stat-change text-muted">Mapped holdings &amp; SIP investments</div>
+    </div>
+
+    <!-- Box 3: Overall Progress -->
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">trending_up</div>
+      <p class="stat-label">Overall Progress</p>
+      <div class="stat-value">{{ goalService.summaryMetrics().overallProgressPct }}%</div>
+      <div class="stat-change" [class.text-success]="goalService.summaryMetrics().achievedGoals > 0">
+        {{ goalService.summaryMetrics().achievedGoals }} of {{ goalService.summaryMetrics().totalGoals }} goals achieved
+      </div>
+    </div>
+
+    <!-- Box 4: Monthly SIPs Powering Goals -->
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">autorenew</div>
+      <p class="stat-label">Monthly SIP Allocation</p>
+      <div class="stat-value">₹{{ goalService.summaryMetrics().totalMonthlySipAllocated | number:'1.0-0' }}</div>
+      <div class="stat-change text-muted">Active monthly auto-investments</div>
+    </div>
+  </div>
+
+  <!-- ── Filter Toolbar Strip ── -->
+  <div class="assets-toolbar-row">
+    <!-- Search Input -->
+    <div class="search-box">
+      <span class="material-icons search-icon">search</span>
+      <input
+        type="text"
+        placeholder="Search goals by name or category..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)" />
+    </div>
+
+    <!-- Category Chips Strip -->
+    <div class="category-chips-bar">
+      <button
+        type="button"
+        class="chip-btn"
+        [class.active]="selectedCategory() === 'All'"
+        (click)="selectedCategory.set('All')">
+        All ({{ goalService.goals().length }})
+      </button>
+      @for (cat of categories; track cat) {
+        <button
+          type="button"
+          class="chip-btn"
+          [class.active]="selectedCategory() === cat"
+          (click)="selectedCategory.set(cat)">
+          <span class="material-icons chip-icon">{{ GOAL_CONFIG[cat].icon }}</span>
+          <span>{{ GOAL_CONFIG[cat].label }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Goals Grid ── -->
+  @if (filteredGoals().length > 0) {
+    <div class="goals-grid">
+      @for (goal of filteredGoals(); track goal.id) {
+        <div class="card goal-card" [class.achieved]="goal.status === 'Achieved'">
+          <!-- Top Line: Icon, Title, Priority & Status -->
+          <div class="goal-header">
+            <div class="goal-identity">
+              <div class="goal-icon-box" [style.color]="goal.color || '#fff'">
+                <span class="material-icons">{{ goal.icon || 'flag' }}</span>
+              </div>
+              <div class="goal-title-group">
+                <h3 class="goal-name">{{ goal.name }}</h3>
+                <div class="goal-meta-row">
+                  <span class="category-tag">{{ GOAL_CONFIG[goal.category].label }}</span>
+                  <span class="meta-dot">·</span>
+                  <span class="priority-badge" [class.priority-high]="goal.priority === 'High'" [class.priority-med]="goal.priority === 'Medium'">
+                    {{ goal.priority }} Priority
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="goal-status-group">
+              <span class="status-pill" 
+                    [class.status-achieved]="goal.status === 'Achieved'"
+                    [class.status-progress]="goal.status === 'In Progress'"
+                    [class.status-boost]="goal.status === 'Needs Boost'">
+                {{ goal.status }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Progress Bar & Percentage -->
+          <div class="goal-progress-section">
+            <div class="progress-label-row">
+              <span class="progress-pct-bold">{{ goal.progressPct }}% Complete</span>
+              <span class="progress-ratio">
+                ₹{{ goal.currentAmount | number:'1.0-0' }} / ₹{{ goal.targetAmount | number:'1.0-0' }}
+              </span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" [style.width.%]="goal.progressPct" [style.background]="goal.color || 'var(--text-primary)'"></div>
+            </div>
+          </div>
+
+          <!-- 4-Metric Grid -->
+          <div class="goal-metrics-grid">
+            <div class="metric-item">
+              <span class="metric-lbl">Target Amount</span>
+              <span class="metric-val">₹{{ goal.targetAmount | number:'1.0-0' }}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-lbl">Accumulated</span>
+              <span class="metric-val text-success">₹{{ goal.currentAmount | number:'1.0-0' }}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-lbl">Remaining Gap</span>
+              <span class="metric-val">₹{{ goal.remainingAmount | number:'1.0-0' }}</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-lbl">Target Horizon</span>
+              <span class="metric-val">{{ formatDateStr(goal.targetDate) }} ({{ goal.monthsRemaining }}m)</span>
+            </div>
+          </div>
+
+          <!-- Investment Mapping Summary -->
+          <div class="investment-mapping-box">
+            <div class="mapping-title-row">
+              <div class="mapping-label-group">
+                <span class="material-icons sm-icon">link</span>
+                <strong>Mapped Funding Sources</strong>
+                <span class="mapping-counts">({{ goal.mappedAssetsCount }} assets · {{ goal.mappedSipsCount }} SIPs)</span>
+              </div>
+              <button class="btn btn-ghost btn-xs btn-map-action" (click)="openMappingModal(goal)">
+                <span class="material-icons sm-icon">tune</span>
+                <span>Manage Links</span>
+              </button>
+            </div>
+
+            <!-- SIP vs Required Savings Row -->
+            <div class="savings-benchmark-row">
+              <div class="benchmark-col">
+                <span class="benchmark-lbl">Allocated Monthly SIP:</span>
+                <span class="benchmark-val">₹{{ goal.monthlySipAmount | number:'1.0-0' }} / mo</span>
+              </div>
+              <div class="benchmark-col">
+                <span class="benchmark-lbl">Required Monthly Savings:</span>
+                <span class="benchmark-val" [class.text-warning]="!goal.isOnTrack">
+                  ₹{{ goal.requiredMonthlySavings | number:'1.0-0' }} / mo
+                </span>
+              </div>
+              <div class="benchmark-status">
+                @if (goal.status === 'Achieved') {
+                  <span class="benchmark-badge badge-success">✓ Target Met</span>
+                } @else if (goal.isOnTrack) {
+                  <span class="benchmark-badge badge-success">✓ On Track</span>
+                } @else {
+                  <span class="benchmark-badge badge-warning">
+                    +₹{{ (goal.requiredMonthlySavings - goal.monthlySipAmount) | number:'1.0-0' }} / mo Boost Needed
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Mapped Tags Strip -->
+            @if (goal.mappedAssetNames.length > 0 || goal.mappedSipNames.length > 0) {
+              <div class="mapped-tags-strip">
+                @for (name of goal.mappedAssetNames; track name) {
+                  <span class="mapped-pill asset-pill" title="Mapped Holding">
+                    <span class="material-icons pill-icon">account_balance_wallet</span>
+                    <span>{{ name }}</span>
+                  </span>
+                }
+                @for (name of goal.mappedSipNames; track name) {
+                  <span class="mapped-pill sip-pill" title="Mapped Monthly SIP">
+                    <span class="material-icons pill-icon">autorenew</span>
+                    <span>{{ name }}</span>
+                  </span>
+                }
+              </div>
+            } @else {
+              <p class="empty-mapping-hint">No holdings or SIPs mapped yet. Click "Manage Links" to connect your investments to this goal!</p>
+            }
+          </div>
+
+          <!-- Card Actions Toolbar -->
+          <div class="goal-card-footer">
+            <button class="btn btn-secondary btn-sm action-btn" (click)="openContributionModal(goal)">
+              <span class="material-icons sm-icon">add</span>
+              <span>Add Funds</span>
+            </button>
+            <div class="footer-right-actions">
+              <button class="icon-btn" (click)="openEditModal(goal)" title="Edit Goal">
+                <span class="material-icons">edit</span>
+              </button>
+              <button class="icon-btn btn-delete" (click)="deleteGoal(goal)" title="Delete Goal">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Empty State -->
+    <div class="card empty-state">
+      <span class="material-icons empty-icon">flag</span>
+      <h3>No Financial Goals Found</h3>
+      <p>Give your savings a clear purpose! Create your first milestone (e.g. Retirement, Dream Home, Emergency Buffer) and map your investments.</p>
+      <button class="btn btn-primary" (click)="openAddModal()">
+        <span class="plus-icon">+</span>
+        <span>Set Your First Goal</span>
+      </button>
+    </div>
+  }
+</div>
+
+<!-- ── Add / Edit Goal Modal ── -->
+@if (showAddEditModal()) {
+  <div class="modal-overlay" (click)="closeAddEditModal()">
+    <div class="modal modal-md" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingGoalId() ? 'Edit Financial Goal' : 'Set New Financial Goal' }}</h3>
+        <button class="btn-icon" (click)="closeAddEditModal()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Goal Name -->
+        <div class="form-group">
+          <label>Goal Name *</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="e.g. Dream House Down Payment, Retirement Fund"
+            [(ngModel)]="formName" />
+        </div>
+
+        <div class="form-row">
+          <!-- Category -->
+          <div class="form-group">
+            <label>Category *</label>
+            <select class="form-control" [(ngModel)]="formCategory">
+              @for (cat of categories; track cat) {
+                <option [value]="cat">{{ GOAL_CONFIG[cat].label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Priority -->
+          <div class="form-group">
+            <label>Priority</label>
+            <select class="form-control" [(ngModel)]="formPriority">
+              <option value="High">High Priority</option>
+              <option value="Medium">Medium Priority</option>
+              <option value="Low">Low Priority</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Target Amount -->
+          <div class="form-group">
+            <label>Target Amount (₹) *</label>
+            <input
+              type="number"
+              class="form-control"
+              min="1000"
+              step="10000"
+              [(ngModel)]="formTargetAmount" />
+          </div>
+
+          <!-- Target Date -->
+          <div class="form-group">
+            <label>Target Due Date *</label>
+            <input
+              type="date"
+              class="form-control"
+              [(ngModel)]="formTargetDate" />
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label>Remarks &amp; Motivation</label>
+          <textarea
+            class="form-control"
+            rows="2"
+            placeholder="Why you are saving for this goal..."
+            [(ngModel)]="formNotes"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeAddEditModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveGoal()" [disabled]="!formName || formTargetAmount <= 0">
+          <span>{{ editingGoalId() ? 'Save Changes' : 'Create Goal' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Map Investments Modal ── -->
+@if (showMappingModal()) {
+  <div class="modal-overlay" (click)="closeMappingModal()">
+    <div class="modal modal-lg mapping-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-titles">
+          <h3>Manage Links for "{{ activeMappingGoal()?.name }}"</h3>
+          <p class="modal-sub">Link holdings and SIPs to fund this goal's target capital. Investments already linked to other goals are hidden.</p>
+        </div>
+        <button class="btn-icon" (click)="closeMappingModal()" [disabled]="savingMapping()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body mapping-modal-body">
+        <!-- Section 1: Portfolio Holdings -->
+        <div class="mapping-section">
+          <div class="section-header-bar">
+            <h4 class="section-title">
+              <span class="material-icons">account_balance_wallet</span>
+              <span>Portfolio Holdings ({{ availableAssetsForGoal().length }} Available)</span>
+            </h4>
+            <div class="bulk-actions-group">
+              <button
+                type="button"
+                class="btn-bulk-pill"
+                (click)="toggleAllAssetsInView()"
+                [title]="isAllAssetsInViewSelected() ? 'Deselect visible assets' : 'Select all visible assets'">
+                <span class="material-icons sm-icon">{{ isAllAssetsInViewSelected() ? 'remove_done' : 'done_all' }}</span>
+                <span>{{ isAllAssetsInViewSelected() ? 'Deselect All (' + filteredMappingAssets().length + ')' : 'Select All (' + filteredMappingAssets().length + ')' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Filter Pills for Assets -->
+          @if (availableAssetCategories().length > 1) {
+            <div class="mapping-cat-pills-row">
+              @for (cat of availableAssetCategories(); track cat) {
+                <button
+                  type="button"
+                  class="cat-pill"
+                  [class.active]="assetMappingCategory() === cat"
+                  (click)="assetMappingCategory.set(cat)">
+                  <span>{{ getAssetCategoryLabel(cat) }}</span>
+                  <span class="cat-pill-count">{{ getAssetCategoryCount(cat) }}</span>
+                </button>
+              }
+            </div>
+          }
+
+          <div class="checklist-container">
+            @for (asset of filteredMappingAssets(); track asset.id) {
+              @if (asset.id) {
+                <label class="mapping-check-item" [class.selected]="selectedAssetIds().has(asset.id)">
+                  <input
+                    type="checkbox"
+                    [checked]="selectedAssetIds().has(asset.id)"
+                    (change)="toggleAssetSelection(asset.id)" />
+                  <div class="item-details">
+                    <div class="item-name-row">
+                      <span class="item-name">{{ asset.name }}</span>
+                      @if (asset.goalId === activeMappingGoal()?.id) {
+                        <span class="badge-linked-current">Linked to this goal</span>
+                      }
+                    </div>
+                    <span class="item-meta">{{ getAssetCategoryLabel(asset.type) }} · {{ asset.quantity }} units</span>
+                  </div>
+                  <div class="item-val">
+                    ₹{{ getAssetDisplayValue(asset) | number:'1.0-0' }}
+                  </div>
+                </label>
+              }
+            }
+            @if (filteredMappingAssets().length === 0) {
+              <p class="empty-list-note">
+                {{ availableAssetsForGoal().length === 0 ? 'No unallocated holdings available to link (all holdings may already be linked to other goals).' : 'No holdings in category "' + getAssetCategoryLabel(assetMappingCategory()) + '".' }}
+              </p>
+            }
+          </div>
+        </div>
+
+        <!-- Section 2: Automated SIPs -->
+        <div class="mapping-section">
+          <div class="section-header-bar">
+            <h4 class="section-title">
+              <span class="material-icons">autorenew</span>
+              <span>Recurring SIPs &amp; Auto-Investments ({{ availableSipsForGoal().length }} Available)</span>
+            </h4>
+            <div class="bulk-actions-group">
+              <button
+                type="button"
+                class="btn-bulk-pill"
+                (click)="toggleAllSipsInView()"
+                [title]="isAllSipsInViewSelected() ? 'Deselect visible SIPs' : 'Select all visible SIPs'">
+                <span class="material-icons sm-icon">{{ isAllSipsInViewSelected() ? 'remove_done' : 'done_all' }}</span>
+                <span>{{ isAllSipsInViewSelected() ? 'Deselect All (' + filteredMappingSips().length + ')' : 'Select All (' + filteredMappingSips().length + ')' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Filter Pills for SIPs -->
+          @if (availableSipCategories().length > 1) {
+            <div class="mapping-cat-pills-row">
+              @for (cat of availableSipCategories(); track cat) {
+                <button
+                  type="button"
+                  class="cat-pill"
+                  [class.active]="sipMappingCategory() === cat"
+                  (click)="sipMappingCategory.set(cat)">
+                  <span>{{ getSipCategoryLabel(cat) }}</span>
+                  <span class="cat-pill-count">{{ getSipCategoryCount(cat) }}</span>
+                </button>
+              }
+            </div>
+          }
+
+          <div class="checklist-container">
+            @for (sip of filteredMappingSips(); track sip.id) {
+              <label class="mapping-check-item" [class.selected]="selectedSipIds().has(sip.id)">
+                <input
+                  type="checkbox"
+                  [checked]="selectedSipIds().has(sip.id)"
+                  (change)="toggleSipSelection(sip.id)" />
+                <div class="item-details">
+                  <div class="item-name-row">
+                    <span class="item-name">{{ sip.name }}</span>
+                    @if (sip.goalId === activeMappingGoal()?.id) {
+                      <span class="badge-linked-current">Linked to this goal</span>
+                    }
+                  </div>
+                  <span class="item-meta">{{ sip.category || 'SIP' }} · {{ sip.frequency }} · {{ sip.status }}</span>
+                </div>
+                <div class="item-val">
+                  ₹{{ sip.amount | number:'1.0-0' }} / mo
+                </div>
+              </label>
+            }
+            @if (filteredMappingSips().length === 0) {
+              <p class="empty-list-note">
+                {{ availableSipsForGoal().length === 0 ? 'No unallocated SIP plans available to link (all SIPs may already be linked to other goals).' : 'No SIPs in category "' + getSipCategoryLabel(sipMappingCategory()) + '".' }}
+              </p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer mapping-modal-footer">
+        <div class="mapping-summary-indicator">
+          <span class="material-icons sum-icon">link</span>
+          <span class="sum-text">
+            Mapped: <strong>₹{{ selectedAssetsTotalValue() | number:'1.0-0' }}</strong> capital + <strong>₹{{ selectedSipsTotalMonthly() | number:'1.0-0' }}/mo</strong> SIPs
+          </span>
+        </div>
+        <div class="footer-btn-group">
+          <button class="btn btn-secondary" (click)="closeMappingModal()" [disabled]="savingMapping()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveMapping()" [disabled]="savingMapping()">
+            <span>{{ savingMapping() ? 'Saving All Links...' : 'Save Linked Investments' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Quick Add Funds / Contribution Modal ── -->
+@if (showContributionModal()) {
+  <div class="modal-overlay" (click)="closeContributionModal()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add Funds to Goal</h3>
+        <button class="btn-icon" (click)="closeContributionModal()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-desc">
+          Add an external lump-sum or manual cash savings towards <strong>{{ contributionGoal()?.name }}</strong>.
+        </p>
+
+        <div class="form-group">
+          <label>Contribution Amount (₹) *</label>
+          <input
+            type="number"
+            class="form-control"
+            min="100"
+            step="1000"
+            [(ngModel)]="contributionAmount" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeContributionModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="saveContribution()" [disabled]="contributionAmount <= 0">
+          Confirm Addition
+        </button>
+      </div>
+    </div>
+  </div>
+}

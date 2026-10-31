@@ -1,41 +1,42 @@
-<div class="app-shell">
-  <!-- Sidebar overlay for mobile -->
-  @if (sidebarOpen()) {
-    <div class="sidebar-overlay" (click)="closeSidebar()"></div>
-  }
+@if (pinSecurity.isLocked()) {
+  <!-- When locked by Security PIN, ONLY render the PIN lock screen.
+       Prevent mounting router-outlet, app-shell, or loading sensitive financial data into the DOM -->
+  <app-pin-lock />
+} @else {
+  <div class="app-shell">
+    <!-- Sidebar overlay for mobile -->
+    @if (sidebarOpen()) {
+      <div class="sidebar-overlay" (click)="closeSidebar()"></div>
+    }
 
-  <!-- Sidebar -->
-  <div class="sidebar-wrapper" [class.open]="sidebarOpen()" [class.collapsed]="sidebarCollapsed()">
-    <app-sidebar [collapsed]="sidebarCollapsed()" (closeSidebar)="closeSidebar()" />
+    <!-- Sidebar -->
+    <div class="sidebar-wrapper" [class.open]="sidebarOpen()" [class.collapsed]="sidebarCollapsed()">
+      <app-sidebar [collapsed]="sidebarCollapsed()" (closeSidebar)="closeSidebar()" />
 
-    <!-- Single Center Collapse Button Between Sidebar and Main Content -->
-    <button 
-      class="sidebar-edge-toggle desktop-only" 
-      (click)="toggleSidebarCollapse()" 
-      [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-      [attr.aria-label]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
-      <span class="material-icons toggle-icon">{{ sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}</span>
-    </button>
+      <!-- Single Center Collapse Button Between Sidebar and Main Content -->
+      <button 
+        class="sidebar-edge-toggle desktop-only" 
+        (click)="toggleSidebarCollapse()" 
+        [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        [attr.aria-label]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
+        <span class="material-icons toggle-icon">{{ sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}</span>
+      </button>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-wrapper" [class.sidebar-collapsed]="sidebarCollapsed()">
+      <app-toolbar (sidebarToggle)="toggleSidebar()" />
+      <main class="content-area">
+        <router-outlet />
+      </main>
+    </div>
+
+    <!-- AI Assistant Overlay -->
+    <app-ai-chat></app-ai-chat>
+
+    <!-- Security Remediation Modal (Triggered on unknown device login / Not Me) -->
+    @if (deviceSessionService.isRemediationModalOpen()) {
+      <app-security-remediation-modal />
+    }
   </div>
-
-  <!-- Main content -->
-  <div class="main-wrapper" [class.sidebar-collapsed]="sidebarCollapsed()">
-    <app-toolbar (sidebarToggle)="toggleSidebar()" />
-    <main class="content-area">
-      <router-outlet />
-    </main>
-  </div>
-
-  <!-- AI Assistant Overlay -->
-  <app-ai-chat></app-ai-chat>
-
-  <!-- Security PIN Lock Screen -->
-  @if (pinSecurity.isLocked()) {
-    <app-pin-lock />
-  }
-
-  <!-- Security Remediation Modal (Triggered on unknown device login / Not Me) -->
-  @if (deviceSessionService.isRemediationModalOpen()) {
-    <app-security-remediation-modal />
-  }
-</div>
+}

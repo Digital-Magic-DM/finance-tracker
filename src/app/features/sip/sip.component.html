@@ -1,26 +1,16 @@
-<div class="sip-page-container">
-  <!-- ── Top Header ── -->
-  <header class="sip-header">
-    <div class="header-left">
-      <h1 class="header-title">Systematic Investment Plans</h1>
-      <p class="header-desc">
-        Track recurring investments, market settlements, and portfolio reconciliations.
+<div class="sip-page">
+  <!-- ── Top Dashboard Bar (Primary UI) ── -->
+  <div class="sip-topbar">
+    <div class="topbar-title-group">
+      <h1 class="sip-heading">SIPs &amp; Auto-Invest</h1>
+      <p class="sip-subheading">
+        <span class="subheading-desc">Automated wealth creation &amp; recurring investment schedules</span>
       </p>
     </div>
 
-    <div class="header-actions">
-      <!-- Sync / Schedule Check -->
-      <button
-        class="btn btn-ghost btn-sm action-tool-btn sync-btn"
-        (click)="syncSchedules()"
-        [disabled]="sipService.syncing()"
-        title="Synchronize upcoming schedules and market calendar rollovers">
-        <span class="material-icons sm-icon" [class.spinning]="sipService.syncing()">sync</span>
-        <span class="btn-text">{{ sipService.syncing() ? 'Syncing...' : 'Sync Schedules' }}</span>
-      </button>
-
+    <div class="topbar-actions">
       <!-- Add SIP Button -->
-      <button class="btn btn-primary btn-sm add-main-btn" (click)="openAddModal()" title="Set Up New SIP Plan">
+      <button class="btn btn-primary btn-sm add-main-btn" (click)="openAddModal()" title="Set Up New SIP">
         <span class="plus-icon">+</span>
         <span class="btn-text">Add SIP</span>
       </button>
@@ -30,7 +20,7 @@
         <button
           class="btn btn-ghost btn-sm action-tool-btn"
           (click)="toggleExportDropdown($event)"
-          title="Export SIP statements and schedules">
+          title="Export statements">
           <span class="material-icons sm-icon">arrow_upward</span>
           <span class="btn-text">Export</span>
           <span class="material-icons dropdown-caret">expand_more</span>
@@ -41,14 +31,14 @@
               <span class="material-icons sm-icon">picture_as_pdf</span>
               <div class="export-info">
                 <span class="export-title">PDF Statement</span>
-                <span class="export-sub">Official statement & audit trail</span>
+                <span class="export-sub">Official statement &amp; audit trail</span>
               </div>
             </button>
             <button class="export-item" (click)="exportStatement('excel'); closeExportDropdown()">
               <span class="material-icons sm-icon">table_view</span>
               <div class="export-info">
                 <span class="export-title">Excel Spreadsheet (.xlsx)</span>
-                <span class="export-sub">Active SIPs & ledger history</span>
+                <span class="export-sub">Active SIPs &amp; ledger history</span>
               </div>
             </button>
             <button class="export-item" (click)="exportCsv(); closeExportDropdown()">
@@ -62,233 +52,166 @@
         }
       </div>
     </div>
-  </header>
+  </div>
 
-  <!-- ── Hero KPI Metric Cards ── -->
-  <section class="kpi-grid">
-    <!-- Monthly SIP Commitment -->
-    <div class="kpi-card gradient-violet">
-      <div class="kpi-header">
-        <span class="kpi-label">Monthly SIP Outflow</span>
-        <div class="kpi-icon-wrapper">
-          <span class="material-icons">payments</span>
-        </div>
-      </div>
-      <div class="kpi-value">
-        {{ sipService.summaryMetrics().totalMonthlyCommitment | currency:'INR':'symbol':'1.0-0' }}
-      </div>
-      <div class="kpi-subtext">
-        Across <strong>{{ sipService.summaryMetrics().totalActiveSips }}</strong> active registered plans
-      </div>
+  <!-- ── KPI Stats Grid (Strict 4-Box Primary UI) ── -->
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">payments</div>
+      <p class="stat-label">Monthly SIP Outflow</p>
+      <div class="stat-value">₹{{ sipService.summaryMetrics().totalMonthlyCommitment | number:'1.0-0' }}</div>
+      <div class="stat-change text-muted">Across {{ sipService.summaryMetrics().totalActiveSips }} active plans</div>
     </div>
 
-    <!-- Total Invested via SIPs (Confirmed Allotments ONLY) -->
-    <div class="kpi-card gradient-emerald">
-      <div class="kpi-header">
-        <span class="kpi-label">Confirmed Invested Total</span>
-        <div class="kpi-icon-wrapper">
-          <span class="material-icons">account_balance_wallet</span>
-        </div>
-      </div>
-      <div class="kpi-value">
-        {{ sipService.summaryMetrics().totalInvested | currency:'INR':'symbol':'1.0-0' }}
-      </div>
-      <div class="kpi-subtext">
-        <strong>{{ sipService.summaryMetrics().totalConfirmedInstallments }}</strong> confirmed allotments credited
-      </div>
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">account_balance_wallet</div>
+      <p class="stat-label">Confirmed Invested</p>
+      <div class="stat-value">₹{{ sipService.summaryMetrics().totalInvested | number:'1.0-0' }}</div>
+      <div class="stat-change text-muted">{{ sipService.summaryMetrics().totalConfirmedInstallments }} confirmed allotments</div>
     </div>
 
-    <!-- Next Upcoming SIP & Pending Reconciliation -->
-    <div class="kpi-card gradient-blue">
-      <div class="kpi-header">
-        <span class="kpi-label">Upcoming / Pending Verification</span>
-        <div class="kpi-icon-wrapper">
-          <span class="material-icons">event_upcoming</span>
-        </div>
-      </div>
-      @if (sipService.summaryMetrics().totalPendingAllotments > 0) {
-        <div class="kpi-value text-amber">
-          {{ sipService.summaryMetrics().totalPendingAllotments }} Pending Allotment(s)
-        </div>
-        <div class="kpi-subtext">
-          <button class="badge-link-btn" (click)="activeTab.set('reconcile')">
-            <span class="material-icons">verified</span>
-            <span>Reconcile Now ➔</span>
-          </button>
-        </div>
-      } @else if (sipService.summaryMetrics().nextUpcomingSip; as nextSip) {
-        <div class="kpi-value text-truncate" [title]="nextSip.sipName">
-          {{ nextSip.amount | currency:'INR':'symbol':'1.0-0' }}
-        </div>
-        <div class="kpi-subtext upcoming-subtext">
-          <span class="fund-name-pill text-truncate">{{ nextSip.sipName }}</span>
-          <div class="due-badge" [class.due-soon]="nextSip.daysRemaining <= 3">
-            <span class="material-icons">schedule</span>
-            @if (nextSip.daysRemaining === 0) {
-              <span>Debiting Today!</span>
-            } @else if (nextSip.daysRemaining === 1) {
-              <span>Tomorrow ({{ formatDateStr(nextSip.executionDate) }})</span>
-            } @else {
-              <span>In {{ nextSip.daysRemaining }} days ({{ formatDateStr(nextSip.executionDate) }})</span>
-            }
-          </div>
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">event_upcoming</div>
+      <p class="stat-label">Next Debit</p>
+      @if (sipService.summaryMetrics().nextUpcomingSip; as nextSip) {
+        <div class="stat-value">₹{{ nextSip.amount | number:'1.0-0' }}</div>
+        <div class="stat-change" [class.text-amber]="nextSip.daysRemaining <= 3">
+          {{ nextSip.sipName }} · {{ nextSip.daysRemaining === 0 ? 'Debiting Today' : ('in ' + nextSip.daysRemaining + 'd') }}
         </div>
       } @else {
-        <div class="kpi-value text-muted">—</div>
-        <div class="kpi-subtext text-muted">All active plans up-to-date</div>
+        <div class="stat-value">—</div>
+        <div class="stat-change text-muted">All active plans up-to-date</div>
       }
     </div>
 
-    <!-- Market Calendar & Trading Status -->
-    <div class="kpi-card gradient-amber">
-      <div class="kpi-header">
-        <span class="kpi-label">NSE / BSE Trading Status</span>
-        <div class="kpi-icon-wrapper">
-          <span class="material-icons">candlestick_chart</span>
-        </div>
-      </div>
-      <div class="market-status-badge" [class.open]="sipService.summaryMetrics().marketStatus.isOpen">
-        <span class="status-dot"></span>
-        <span class="status-text">{{ sipService.summaryMetrics().marketStatus.statusText }}</span>
-      </div>
-      <div class="kpi-subtext market-time-subtext">
-        {{ sipService.summaryMetrics().marketStatus.nextSessionText }}
+    <div class="card stat-card">
+      <div class="material-icons stat-icon">autorenew</div>
+      <p class="stat-label">Active Auto-Invest</p>
+      <div class="stat-value">{{ sipService.summaryMetrics().totalActiveSips }} Plans</div>
+      <div class="stat-change text-muted">
+        @if (sipService.summaryMetrics().totalPendingAllotments > 0) {
+          <span class="text-amber" style="cursor: pointer;" (click)="activeTab.set('reconcile')">
+            {{ sipService.summaryMetrics().totalPendingAllotments }} pending verification →
+          </span>
+        } @else {
+          {{ sipService.sips().length }} total registered
+        }
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ── Navigation Tabs ── -->
-  <nav class="sip-nav-tabs">
+  <!-- ── Segmented Navigation Bar (Primary UI) ── -->
+  <div class="market-segment-bar">
     <button
-      class="tab-btn"
+      class="market-tab"
       [class.active]="activeTab() === 'active'"
       (click)="activeTab.set('active')">
       <span class="material-icons">format_list_bulleted</span>
-      <span>Active Plans ({{ filteredSips().length }})</span>
+      <span>Active Plans</span>
+      <span class="m-count">{{ filteredSips().length }}</span>
     </button>
 
     <button
-      class="tab-btn"
+      class="market-tab"
       [class.active]="activeTab() === 'reconcile'"
       (click)="activeTab.set('reconcile')">
       <span class="material-icons">verified</span>
-      <span>Reconcile & Verify</span>
+      <span>Verification &amp; Ledger</span>
       @if (sipService.summaryMetrics().totalPendingAllotments > 0) {
-        <span class="pill-badge badge-warning">{{ sipService.summaryMetrics().totalPendingAllotments }} Pending</span>
+        <span class="m-count count-amber">
+          {{ sipService.summaryMetrics().totalPendingAllotments }}
+        </span>
       }
     </button>
 
     <button
-      class="tab-btn"
+      class="market-tab"
       [class.active]="activeTab() === 'calendar'"
       (click)="activeTab.set('calendar')">
       <span class="material-icons">calendar_month</span>
-      <span>Market Trading Calendar</span>
-      <span class="pill-badge">Holidays</span>
+      <span>Market Holidays</span>
     </button>
 
     <button
-      class="tab-btn"
-      [class.active]="activeTab() === 'history'"
-      (click)="activeTab.set('history')">
-      <span class="material-icons">history</span>
-      <span>Confirmed Allotment Ledger</span>
-      <span class="pill-badge">{{ allExecutedInstallments().length }}</span>
-    </button>
-
-    <button
-      class="tab-btn"
+      class="market-tab"
       [class.active]="activeTab() === 'calculator'"
       (click)="activeTab.set('calculator')">
       <span class="material-icons">calculate</span>
-      <span>SIP Compounding Calculator</span>
+      <span>SIP Calculator</span>
     </button>
-  </nav>
+  </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
   <!-- TAB 1: ACTIVE SIPS VIEW                                                -->
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
   @if (activeTab() === 'active') {
     <div class="tab-content active-sips-view">
-      <!-- Filter & Search Toolbar -->
-      <div class="toolbar-row">
-        <!-- Category Chips -->
-        <div class="category-chips">
-          <button
-            class="chip-btn"
-            [class.active]="selectedCategory() === 'All'"
-            (click)="selectedCategory.set('All')">
-            All ({{ sipService.sips().length }})
-          </button>
-          @for (cat of sipCategories; track cat) {
-            <button
-              class="chip-btn"
-              [class.active]="selectedCategory() === cat"
-              (click)="selectedCategory.set(cat)">
-              <span class="material-icons chip-icon">{{ SIP_CONFIG[cat].icon }}</span>
-              <span>{{ SIP_CONFIG[cat].label }}</span>
+      <!-- Search & Toolbar Row (Primary UI) -->
+      <div class="assets-toolbar-row sip-toolbar-row">
+        <div class="search-box-wrap">
+          <span class="material-icons search-icon">search</span>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search plans (e.g. Parag Parikh, Nifty 50, Folio)..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)" />
+          @if (searchQuery()) {
+            <button class="clear-search-btn" (click)="searchQuery.set('')" title="Clear">
+              <span class="material-icons">close</span>
             </button>
           }
         </div>
 
-        <div class="toolbar-right">
-          <!-- Search Box -->
-          <div class="search-box">
-            <span class="material-icons search-icon">search</span>
-            <input
-              type="text"
-              placeholder="Search by fund, scheme code, folio..."
-              [ngModel]="searchQuery()"
-              (ngModelChange)="searchQuery.set($event)" />
-            @if (searchQuery()) {
-              <button class="clear-search" (click)="searchQuery.set('')">
-                <span class="material-icons">close</span>
-              </button>
-            }
-          </div>
-
-          <!-- View Mode Toggle (Cards / Table) -->
-          <div class="view-toggle">
-            <button
-              class="toggle-btn"
-              [class.active]="viewMode() === 'cards'"
-              (click)="viewMode.set('cards')"
-              title="Cards Grid View">
-              <span class="material-icons">grid_view</span>
-            </button>
-            <button
-              class="toggle-btn"
-              [class.active]="viewMode() === 'table'"
-              (click)="viewMode.set('table')"
-              title="Compact Table View">
-              <span class="material-icons">view_list</span>
-            </button>
-          </div>
+        <div class="toolbar-actions">
+          <button
+            class="btn btn-ghost btn-sm view-mode-btn action-tool-btn"
+            (click)="viewMode.set(viewMode() === 'cards' ? 'table' : 'cards')"
+            [title]="viewMode() === 'cards' ? 'Switch to Table View' : 'Switch to Card View'">
+            <span class="material-icons sm-icon">{{ viewMode() === 'cards' ? 'table_chart' : 'dashboard' }}</span>
+            <span class="btn-text">{{ viewMode() === 'cards' ? 'Table View' : 'Card View' }}</span>
+          </button>
         </div>
       </div>
 
-      <!-- ── Urgent SIP Notice (Scheduled Within 3 Working Days) ── -->
+      <!-- Category Filter Chips -->
+      <div class="category-chips-bar">
+        <button
+          class="chip-btn"
+          [class.active]="selectedCategory() === 'All'"
+          (click)="selectedCategory.set('All')">
+          All ({{ sipService.sips().length }})
+        </button>
+        @for (cat of sipCategories; track cat) {
+          <button
+            class="chip-btn"
+            [class.active]="selectedCategory() === cat"
+            (click)="selectedCategory.set(cat)">
+            <span class="material-icons chip-icon">{{ SIP_CONFIG[cat].icon }}</span>
+            <span>{{ SIP_CONFIG[cat].label }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- ── Urgent Notice (< 3 Days) ── -->
       @if (urgentUpcomingSips().length > 0) {
         @let urgent = urgentUpcomingSips()[0];
-        <div class="urgent-sip-banner shadow-sm">
-          <div class="urgent-banner-left">
-            <span class="material-icons urgent-lead-icon">schedule</span>
-            <div class="urgent-banner-text">
-              <span class="urgent-headline">
-                <strong>{{ urgent.sip.name }}</strong> ({{ urgent.sip.amount | currency:'INR':'symbol':'1.0-0' }}) scheduled for {{ formatDateStr(urgent.sip.nextExecutionDate) }}
-              </span>
-              <span class="urgent-tag">
-                {{ urgent.workingDays === 0 ? 'Today' : urgent.workingDays + 'd left' }}
-              </span>
+        <div class="urgent-banner">
+          <div class="urgent-content">
+            <span class="material-icons urgent-icon">notification_important</span>
+            <div class="urgent-text">
+              <span class="urgent-title">Upcoming Debit:</span>
+              <span class="urgent-desc"><strong>{{ urgent.sip.name }}</strong> ({{ urgent.sip.amount | currency:'INR':'symbol':'1.0-0' }}) on {{ formatDateStr(urgent.sip.nextExecutionDate) }}</span>
+              <span class="urgent-countdown-pill">{{ urgent.workingDays === 0 ? 'Today' : urgent.workingDays + 'd left' }}</span>
             </div>
           </div>
-          <div class="urgent-banner-actions">
-            <button class="btn btn-xs btn-skip-urgent" (click)="openSkipModal(urgent.sip)">
+          <div class="urgent-actions">
+            <button class="btn btn-sm btn-secondary" (click)="openSkipModal(urgent.sip)">
               <span class="material-icons sm-icon">skip_next</span>
               <span>Skip Month</span>
             </button>
-            <button class="btn btn-xs btn-ghost-dismiss" (click)="dismissUrgentNotice(urgent.sip.id)" title="Dismiss">
-              <span class="material-icons sm-icon">close</span>
+            <button class="icon-btn" (click)="dismissUrgentNotice(urgent.sip.id)" title="Dismiss">
+              <span class="material-icons">close</span>
             </button>
           </div>
         </div>
@@ -300,155 +223,110 @@
           <div class="sips-grid">
             @for (sip of filteredSips(); track sip.id) {
               <div class="sip-card" [class.paused]="sip.status === 'Paused'">
-                <!-- Card Header -->
-                <div class="sip-card-header">
-                  <div class="cat-badge" [style.background]="SIP_CONFIG[sip.category].badgeBg" [style.color]="SIP_CONFIG[sip.category].color">
-                    <span class="material-icons">{{ SIP_CONFIG[sip.category].icon }}</span>
-                    <span>{{ SIP_CONFIG[sip.category].label }}</span>
-                  </div>
-
-                  <div class="header-badges">
+                <!-- Top Line: Category & Status -->
+                <div class="card-top-line">
+                  <div class="category-group">
+                    <span class="category-icon material-icons">{{ SIP_CONFIG[sip.category].icon }}</span>
+                    <span class="category-name">{{ SIP_CONFIG[sip.category].label }}</span>
                     @if (sip.planType) {
-                      <span class="plan-badge">{{ sip.planType }}</span>
+                      <span class="meta-dot">·</span>
+                      <span class="plan-type">{{ sip.planType }}</span>
                     }
-                    @if (sip.option) {
-                      <span class="option-badge">{{ sip.option }}</span>
+                    @if (sip.goalName) {
+                      <span class="meta-dot">·</span>
+                      <span class="goal-pill-tag" title="Powering Goal: {{ sip.goalName }}">
+                        <span class="material-icons sm-icon" style="font-size: 11px;">flag</span>
+                        <span>{{ sip.goalName }}</span>
+                      </span>
                     }
+                  </div>
+                  <div class="status-group">
                     <span class="status-pill" [class.active]="sip.status === 'Active'" [class.paused]="sip.status === 'Paused'">
                       {{ sip.status }}
                     </span>
                   </div>
                 </div>
 
-                <!-- Fund Info -->
-                <div class="sip-card-body">
-                  <h3 class="sip-fund-name" [title]="sip.name">{{ sip.name }}</h3>
-                  <div class="sip-fund-meta">
-                    @if (sip.schemeCode) {
-                      <span class="scheme-code-badge">AMFI: {{ sip.schemeCode }}</span>
-                    }
-                    @if (sip.fundHouse) {
-                      <span class="fund-house-text">{{ sip.fundHouse }}</span>
-                    }
-                  </div>
-
-                  <div class="amount-row">
-                    <div class="amount-main">
-                      <span class="amount-num">{{ sip.amount | currency:'INR':'symbol':'1.0-0' }}</span>
-                      <span class="freq-tag">/ {{ sip.frequency }}</span>
-                    </div>
-
-                    @if (sip.stepUp?.enabled) {
-                      <div class="step-up-pill" title="Annual Step-Up Active">
-                        <span class="material-icons">trending_up</span>
-                        <span>+{{ sip.stepUp?.value }}{{ sip.stepUp?.type === 'percentage' ? '%' : '₹' }}/yr</span>
+                <!-- Main Line: Scheme Name & Amount -->
+                <div class="card-main-line">
+                  <div class="scheme-info">
+                    <h3 class="scheme-name" [title]="sip.name">{{ sip.name }}</h3>
+                    @if (sip.fundHouse || sip.folioNumber) {
+                      <div class="scheme-meta">
+                        @if (sip.fundHouse) { <span>{{ sip.fundHouse }}</span> }
+                        @if (sip.fundHouse && sip.folioNumber) { <span class="meta-dot">·</span> }
+                        @if (sip.folioNumber) { <span>Folio: {{ sip.folioNumber }}</span> }
                       </div>
                     }
                   </div>
-
-                  <!-- Next Execution & Market Shift Notice -->
-                  <div class="execution-info-box">
-                    <div class="exec-row">
-                      <span class="exec-label">Preferred Debit Day:</span>
-                      <span class="exec-val font-semibold">{{ sip.sipDay }}th of month</span>
-                    </div>
-
-                    <div class="exec-row">
-                      <span class="exec-label">Next Market Trading Date:</span>
-                      <span class="exec-val next-date font-semibold">
-                        {{ formatDateStr(sip.nextExecutionDate) }}
-                      </span>
-                    </div>
-
-                    @let res = calendarService.resolveTradingDay(sip.nextExecutionDate || '');
-                    @if (res.wasShifted) {
-                      <div class="shift-alert-box" [title]="res.reason">
-                        <span class="material-icons">info</span>
-                        <span>{{ res.reason }}</span>
-                      </div>
-                    }
-                  </div>
-
-                  <!-- Mandate & Folio -->
-                  <div class="meta-details">
-                    @if (sip.mandateAccount) {
-                      <div class="meta-item">
-                        <span class="material-icons">account_balance</span>
-                        <span class="text-truncate">{{ sip.mandateAccount }}</span>
-                      </div>
-                    }
-                    @if (sip.folioNumber) {
-                      <div class="meta-item">
-                        <span class="material-icons">badge</span>
-                        <span>Folio: {{ sip.folioNumber }}</span>
-                      </div>
-                    }
-                  </div>
-
-                  <!-- Confirmed Holdings Stat -->
-                  <div class="holding-stat-row">
-                    <div class="stat-col">
-                      <span class="stat-label">Confirmed Invested</span>
-                      <span class="stat-val font-semibold">{{ (sip.totalInvested || 0) | currency:'INR':'symbol':'1.0-0' }}</span>
-                    </div>
-                    <div class="stat-col">
-                      <span class="stat-label">Confirmed Units</span>
-                      <span class="stat-val text-success font-semibold">{{ sip.confirmedUnitsTotal || 0 }} units</span>
-                    </div>
-                    <div class="stat-col">
-                      <span class="stat-label">Installments</span>
-                      <span class="stat-val">{{ sip.installmentsPaid || 0 }} paid</span>
-                    </div>
+                  <div class="amount-box">
+                    <span class="amount-value">{{ sip.amount | currency:'INR':'symbol':'1.0-0' }}</span>
+                    <span class="frequency-tag">/ {{ sip.frequency }}</span>
                   </div>
                 </div>
 
-                <!-- Card Footer Actions -->
-                <div class="sip-card-footer">
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    (click)="openScheduleModal(sip)"
-                    title="View 12-Month Market Calendar Execution Schedule">
-                    <span class="material-icons">event</span>
-                    <span>Schedule</span>
-                  </button>
+                <!-- Next Debit Info Line -->
+                <div class="card-debit-line">
+                  <div class="debit-date-box">
+                    <span class="material-icons debit-icon">event</span>
+                    <span class="debit-label">Next Debit:</span>
+                    <span class="debit-date">{{ formatDateStr(sip.nextExecutionDate) }}</span>
+                    <span class="debit-sub">(Day {{ sip.sipDay }})</span>
+                    @let res = calendarService.resolveTradingDay(sip.nextExecutionDate || '');
+                    @if (res.wasShifted) {
+                      <span class="holiday-note" [title]="res.reason">· Rollover to {{ formatDateStr(res.executionDate) }} (Holiday)</span>
+                    }
+                  </div>
+                  @if (sip.stepUp?.enabled) {
+                    <div class="stepup-tag" title="Annual Step-Up">
+                      <span class="material-icons">trending_up</span>
+                      <span>+{{ sip.stepUp?.value }}{{ sip.stepUp?.type === 'percentage' ? '%' : '₹' }}/yr</span>
+                    </div>
+                  }
+                </div>
 
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    (click)="openHistoryModal(sip)"
-                    title="View Past Installments Ledger">
-                    <span class="material-icons">history</span>
-                    <span>History</span>
-                  </button>
+                <!-- Summary Stats Line: Invested, Units, Installments -->
+                <div class="card-stats-line">
+                  <div class="stat-item">
+                    <span class="stat-name">Invested:</span>
+                    <span class="stat-data">{{ (sip.totalInvested || 0) | currency:'INR':'symbol':'1.0-0' }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-name">Units:</span>
+                    <span class="stat-data text-success">{{ (sip.confirmedUnitsTotal || 0) > 0 ? (sip.confirmedUnitsTotal | number:'1.2-2') : '—' }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-name">Paid:</span>
+                    <span class="stat-data">{{ sip.installmentsPaid || 0 }}</span>
+                  </div>
+                </div>
 
-                  <button
-                    class="btn btn-sm btn-ghost btn-skip"
-                    (click)="openSkipModal(sip)"
-                    [disabled]="sip.status !== 'Active'"
-                    title="Skip upcoming installment for this month">
-                    <span class="material-icons sm-icon">skip_next</span>
-                    <span>Skip</span>
-                  </button>
-
-                  <button
-                    class="btn btn-sm btn-ghost"
-                    (click)="openEditModal(sip)"
-                    title="Edit Plan Settings">
-                    <span class="material-icons">edit</span>
-                  </button>
-
-                  <button
-                    class="btn btn-sm btn-ghost"
-                    (click)="togglePause(sip)"
-                    [title]="sip.status === 'Active' ? 'Pause SIP' : 'Resume SIP'">
-                    <span class="material-icons">{{ sip.status === 'Active' ? 'pause' : 'play_arrow' }}</span>
-                  </button>
-
-                  <button
-                    class="btn btn-sm btn-ghost btn-delete"
-                    (click)="deleteSip(sip)"
-                    title="Delete Plan">
-                    <span class="material-icons sm-icon">delete</span>
-                  </button>
+                <!-- Card Action Footer -->
+                <div class="card-footer-actions">
+                  <div class="btn-group-left">
+                    <button class="btn btn-ghost btn-sm action-tool-btn" (click)="openScheduleModal(sip)" title="12-Month Schedule">
+                      <span class="material-icons sm-icon">calendar_today</span>
+                      <span class="btn-text">Schedule</span>
+                    </button>
+                    <button class="btn btn-ghost btn-sm action-tool-btn" (click)="openHistoryModal(sip)" title="Installment History">
+                      <span class="material-icons sm-icon">history</span>
+                      <span class="btn-text">History</span>
+                    </button>
+                  </div>
+                  <div class="btn-group-right">
+                    <button class="icon-btn" (click)="openSkipModal(sip)" [disabled]="sip.status !== 'Active'" title="Skip this month">
+                      <span class="material-icons">skip_next</span>
+                    </button>
+                    <button class="icon-btn" (click)="openEditModal(sip)" title="Edit SIP">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button class="icon-btn" (click)="togglePause(sip)" [title]="sip.status === 'Active' ? 'Pause SIP' : 'Resume SIP'">
+                      <span class="material-icons">{{ sip.status === 'Active' ? 'pause' : 'play_arrow' }}</span>
+                    </button>
+                    <button class="icon-btn btn-delete" (click)="deleteSip(sip)" title="Delete SIP">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             }
@@ -461,13 +339,13 @@
                 <tr>
                   <th class="sortable-th" [class.is-sorted]="sortField() === 'name'" (click)="toggleSort('name')" title="Sort by Plan Name">
                     <span class="th-content">
-                      <span>Plan Name</span>
+                      <span>Plan / Scheme Name</span>
                       <span class="material-icons sort-icon">{{ getSortIcon('name') }}</span>
                     </span>
                   </th>
                   <th class="sortable-th" [class.is-sorted]="sortField() === 'schemeCode'" (click)="toggleSort('schemeCode')" title="Sort by Scheme Code">
                     <span class="th-content">
-                      <span>Scheme Code</span>
+                      <span>AMFI / Code</span>
                       <span class="material-icons sort-icon">{{ getSortIcon('schemeCode') }}</span>
                     </span>
                   </th>
@@ -507,7 +385,7 @@
                       <span class="material-icons sort-icon">{{ getSortIcon('status') }}</span>
                     </span>
                   </th>
-                  <th class="text-right" style="width: 130px;">Actions</th>
+                  <th class="text-right" style="width: 140px;">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -516,14 +394,20 @@
                     <td>
                       <div class="fund-cell">
                         <span class="fund-name font-semibold">{{ sip.name }}</span>
-                        @if (sip.fundHouse) {
-                          <span class="fund-sub">{{ sip.fundHouse }}</span>
-                        }
+                        <div class="fund-sub-row">
+                          @if (sip.fundHouse) {
+                            <span class="fund-sub text-muted">{{ sip.fundHouse }}</span>
+                          }
+                          @if (sip.goalName) {
+                            <span class="goal-pill-tag" title="Powering Goal: {{ sip.goalName }}">
+                              <span class="material-icons sm-icon" style="font-size: 11px;">flag</span>
+                              <span>{{ sip.goalName }}</span>
+                            </span>
+                          }
+                        </div>
                       </div>
                     </td>
-                    <td>
-                      <span class="code-pill">{{ sip.schemeCode || '—' }}</span>
-                    </td>
+                    <td><span class="code-pill">{{ sip.schemeCode || '—' }}</span></td>
                     <td>
                       <div class="amount-cell">
                         <strong>{{ sip.amount | currency:'INR':'symbol':'1.0-0' }}</strong>
@@ -534,12 +418,8 @@
                     </td>
                     <td>{{ sip.frequency }}</td>
                     <td>{{ sip.sipDay }}th of month</td>
-                    <td>
-                      <span class="next-date font-semibold">{{ formatDateStr(sip.nextExecutionDate) }}</span>
-                    </td>
-                    <td>
-                      <span class="font-semibold">{{ (sip.totalInvested || 0) | currency:'INR':'symbol':'1.0-0' }}</span>
-                    </td>
+                    <td><span class="next-date font-semibold">{{ formatDateStr(sip.nextExecutionDate) }}</span></td>
+                    <td><span class="font-semibold">{{ (sip.totalInvested || 0) | currency:'INR':'symbol':'1.0-0' }}</span></td>
                     <td>
                       <span class="status-pill" [class.active]="sip.status === 'Active'" [class.paused]="sip.status === 'Paused'">
                         {{ sip.status }}
@@ -556,7 +436,7 @@
                         <button class="icon-btn" (click)="openEditModal(sip)" title="Edit">
                           <span class="material-icons">edit</span>
                         </button>
-                        <button class="icon-btn btn-skip-icon" (click)="openSkipModal(sip)" [disabled]="sip.status !== 'Active'" title="Skip upcoming installment for this month">
+                        <button class="icon-btn" (click)="openSkipModal(sip)" [disabled]="sip.status !== 'Active'" title="Skip this month">
                           <span class="material-icons sm-icon">skip_next</span>
                         </button>
                         <button class="icon-btn" (click)="togglePause(sip)" [title]="sip.status === 'Active' ? 'Pause' : 'Resume'">
@@ -574,118 +454,34 @@
           </div>
         }
       } @else {
-        <!-- ── Empty / Setup State ── -->
-        @if (sipService.sips().length === 0) {
-          <div class="sip-setup-hub">
-            <!-- Setup Hero Card -->
-            <div class="setup-hero-card">
-              <div class="hero-left">
-                <div class="hero-badge">
-                  <span class="material-icons">rocket_launch</span>
-                  <span>GETTING STARTED</span>
-                </div>
-                <h2 class="hero-title">Set Up Your Systematic Investment Plan (SIP)</h2>
-                <p class="hero-desc">
-                  Automate recurring mutual fund investments. DM FinTracker tracks your monthly debit dates,
-                  automatically adjusts for NSE/BSE holidays and weekends, and reconciles your portfolio only after confirmed AMC unit allotment.
-                </p>
-                <div class="hero-actions">
-                  <button class="btn btn-primary" (click)="openAddModal()">
-                    <span class="material-icons">add_circle</span>
-                    <span>Set Up Custom SIP Plan</span>
-                  </button>
-                  <button class="btn btn-secondary" (click)="activeTab.set('calendar')">
-                    <span class="material-icons">calendar_month</span>
-                    <span>View Market Calendar</span>
-                  </button>
-                  <button class="btn btn-secondary" (click)="activeTab.set('calculator')">
-                    <span class="material-icons">calculate</span>
-                    <span>Compounding Calculator</span>
-                  </button>
-                </div>
-              </div>
-
-              <div class="hero-steps">
-                <div class="step-card">
-                  <div class="step-num">1</div>
-                  <div class="step-content">
-                    <strong>Pick Fund &amp; Debit Day</strong>
-                    <span>Select any of 45,000+ AMFI schemes and pick your preferred monthly debit day (1–31).</span>
-                  </div>
-                </div>
-                <div class="step-card">
-                  <div class="step-num">2</div>
-                  <div class="step-content">
-                    <strong>Automated Market Rollover</strong>
-                    <span>If your debit day lands on a weekend or exchange holiday, FinTracker shifts it to the next open trading session.</span>
-                  </div>
-                </div>
-                <div class="step-card">
-                  <div class="step-num">3</div>
-                  <div class="step-content">
-                    <strong>Reconcile Upon Allotment</strong>
-                    <span>Confirm NAV and units once your AMC or CAS statement arrives to safely credit portfolio holdings.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Starter Templates Grid -->
-            <div class="starter-templates-section">
-              <div class="section-header">
-                <div>
-                  <h3 class="section-title">Popular Fund Starters</h3>
-                  <p class="section-subtitle">Click any popular fund template to set up your plan with one tap</p>
-                </div>
-              </div>
-
-              <div class="starter-grid">
-                @for (preset of popularFundPresets; track preset.code) {
-                  <div class="starter-card" (click)="selectFundPreset(preset)">
-                    <div class="starter-card-top">
-                      <span class="category-pill" [style.color]="SIP_CONFIG[preset.cat].color" [style.background]="SIP_CONFIG[preset.cat].color + '18'">
-                        <span class="material-icons">{{ SIP_CONFIG[preset.cat].icon }}</span>
-                        <span>{{ preset.tag }}</span>
-                      </span>
-                      <span class="scheme-code-badge">Code: {{ preset.code }}</span>
-                    </div>
-
-                    <h4 class="starter-title">{{ preset.name.split(' - ')[0] }}</h4>
-                    <p class="starter-desc">{{ preset.desc }}</p>
-
-                    <div class="starter-card-footer">
-                      <span class="amc-label">{{ preset.house }}</span>
-                      <button class="btn-outline-primary" (click)="$event.stopPropagation(); selectFundPreset(preset)">
-                        <span>Set Up Plan</span>
-                        <span class="material-icons sm-icon">arrow_forward</span>
-                      </button>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
+        <!-- ── Empty State ── -->
+        <div class="card empty-state-card">
+          <div class="empty-icon-circle">
+            <span class="material-icons">autorenew</span>
           </div>
-        } @else {
-          <!-- Filtered Empty State -->
-          <div class="empty-state-card">
-            <div class="empty-icon-circle">
-              <span class="material-icons">filter_alt_off</span>
-            </div>
-            <h3>No Matching SIP Plans</h3>
-            <p>No investment plans match "{{ searchQuery() }}" or the selected category filter.</p>
-            <button class="btn btn-secondary" (click)="searchQuery.set(''); selectedCategory.set('All')">
-              <span class="material-icons">restart_alt</span>
-              <span>Clear Filters</span>
-            </button>
+          <h3>No SIP Plans Found</h3>
+          <p>
+            @if (searchQuery() || selectedCategory() !== 'All') {
+              No investments matching your filter criteria. Try clearing search filters.
+            } @else {
+              Set up your first automated investment plan to track recurring debits and units.
+            }
+          </p>
+          <div class="empty-actions">
+            @if (searchQuery() || selectedCategory() !== 'All') {
+              <button class="btn btn-secondary" (click)="searchQuery.set(''); selectedCategory.set('All')">Clear Filters</button>
+            } @else {
+              <button class="btn btn-primary" (click)="openAddModal()">
+                <span class="plus-icon">+</span>
+                <span>Add Your First SIP</span>
+              </button>
+            }
           </div>
-        }
+        </div>
       }
     </div>
   }
 
-  <!-- ═══════════════════════════════════════════════════════════════════════ -->
-  <!-- TAB 2: RECONCILE & VERIFY SCREEN                                       -->
-  <!-- ═══════════════════════════════════════════════════════════════════════ -->
   @if (activeTab() === 'reconcile') {
     <div class="tab-content reconcile-view">
       <div class="reconcile-header-card">
@@ -826,6 +622,8 @@
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
   <!-- TAB 3: YEARLY MARKET CALENDAR & SIMULATOR                               -->
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  
+
   @if (activeTab() === 'calendar') {
     <div class="tab-content calendar-simulator-view">
       <!-- Calendar Header -->
@@ -1054,6 +852,8 @@
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
   <!-- TAB 5: SIP WEALTH CALCULATOR                                           -->
   <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  
+
   @if (activeTab() === 'calculator') {
     <div class="tab-content calculator-view">
       <div class="calc-grid">
@@ -1285,34 +1085,18 @@
     <div class="modal-backdrop" (click)="closeAddEditModal()">
       <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h3>{{ editingSipId() ? 'Edit SIP Plan' : 'Add SIP Plan' }}</h3>
+          <div>
+            <h3>{{ editingSipId() ? 'Edit SIP Plan' : 'Add SIP Plan' }}</h3>
+            <p class="modal-subtitle">Configure automated recurring investment schedule &amp; tracking</p>
+          </div>
           <button class="close-btn" (click)="closeAddEditModal()">
             <span class="material-icons">close</span>
           </button>
         </div>
 
         <div class="modal-body">
-          <!-- Quick Starter Templates -->
-          @if (!editingSipId()) {
-            <div class="presets-section mb-3">
-              <label class="section-label">Quick Starter Templates</label>
-              <div class="presets-chips">
-                @for (preset of popularFundPresets; track preset.code) {
-                  <button
-                    type="button"
-                    class="preset-btn"
-                    [class.selected]="sipFormSchemeCode === preset.code"
-                    (click)="selectFundPreset(preset)">
-                    <span class="material-icons">{{ SIP_CONFIG[preset.cat].icon }}</span>
-                    <span>{{ preset.name.split(' - ')[0] }}</span>
-                  </button>
-                }
-              </div>
-            </div>
-          }
-
           <div class="form-grid">
-            <!-- 1. Category / Asset Type (At top of form) -->
+            <!-- 1. Category / Asset Type (Full Width) -->
             <div class="form-group full-width category-select-group">
               <label class="required">Investment Asset Type</label>
               <div class="category-pills-row">
@@ -1329,7 +1113,7 @@
               </div>
             </div>
 
-            <!-- 2. Scheme / Asset Name with Dropdown of Portfolio Assets based on Type -->
+            <!-- 2. Scheme / Asset Name with Dropdown / Autocomplete (Full Width) -->
             <div class="form-group full-width scheme-selection-container">
               <div class="scheme-mode-header">
                 <label class="required">Scheme / Asset Name</label>
@@ -1358,12 +1142,12 @@
                     [class.active]="schemeSelectMode() === 'custom'"
                     (click)="schemeSelectMode.set('custom')">
                     <span class="material-icons sm-icon">edit</span>
-                    <span>Custom</span>
+                    <span>Custom Name</span>
                   </button>
                 </div>
               </div>
 
-              <!-- Mode 1: Dropdown of our portfolio assets based on type -->
+              <!-- Mode 1: Dropdown of portfolio assets -->
               @if (schemeSelectMode() === 'asset') {
                 <div class="asset-dropdown-box">
                   @if (categoryAssets().length > 0) {
@@ -1445,68 +1229,23 @@
               }
             </div>
 
-            <!-- Scheme Code -->
-            <div class="form-group">
-              <label>Scheme Code</label>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="e.g. 122639"
-                [(ngModel)]="sipFormSchemeCode" />
-            </div>
-
-            <!-- ISIN -->
-            <div class="form-group">
-              <label>ISIN</label>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="e.g. INF879O01019"
-                [(ngModel)]="sipFormIsin" />
-            </div>
-
-            <!-- Plan Type -->
-            <div class="form-group">
-              <label>Plan Type</label>
-              <select class="form-control" [(ngModel)]="sipFormPlanType">
-                <option value="Direct">Direct</option>
-                <option value="Regular">Regular</option>
-              </select>
-            </div>
-
-            <!-- Option -->
-            <div class="form-group">
-              <label>Option</label>
-              <select class="form-control" [(ngModel)]="sipFormOption">
-                <option value="Growth">Growth</option>
-                <option value="IDCW">Dividend (IDCW)</option>
-              </select>
-            </div>
-
-            <!-- Fund House / AMC -->
-            <div class="form-group">
-              <label>Fund House / AMC</label>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="e.g. PPFAS Mutual Fund"
-                [(ngModel)]="sipFormFundHouse" />
-            </div>
-
-            <!-- Amount -->
+            <!-- Row 1: Amount & Frequency -->
             <div class="form-group">
               <label class="required">Installment Amount (₹)</label>
-              <input
-                type="number"
-                class="form-control"
-                min="100"
-                step="500"
-                [(ngModel)]="sipFormAmount" />
+              <div class="input-with-prefix">
+                <span class="input-prefix">₹</span>
+                <input
+                  type="number"
+                  class="form-control prefix-input"
+                  placeholder="5000"
+                  min="100"
+                  step="500"
+                  [(ngModel)]="sipFormAmount" />
+              </div>
             </div>
 
-            <!-- Frequency -->
             <div class="form-group">
-              <label>Frequency</label>
+              <label class="required">Frequency</label>
               <select class="form-control" [(ngModel)]="sipFormFrequency">
                 <option value="Monthly">Monthly</option>
                 <option value="Weekly">Weekly</option>
@@ -1514,16 +1253,16 @@
               </select>
             </div>
 
-            <!-- Preferred Day of Month -->
+            <!-- Row 2: Debit Day & Start Date -->
             <div class="form-group">
-              <label class="required">Debit Day (1-31)</label>
+              <label class="required">Debit Day of Month (1-31)</label>
               <input
                 type="number"
                 class="form-control"
+                placeholder="10"
                 min="1"
                 max="31"
                 [(ngModel)]="sipFormDay" />
-
               <div class="live-date-preview" [class.shifted]="modalDateResolution().wasShifted">
                 <span class="material-icons">{{ modalDateResolution().wasShifted ? 'swap_horiz' : 'event_available' }}</span>
                 <span>
@@ -1535,7 +1274,6 @@
               </div>
             </div>
 
-            <!-- Start Date -->
             <div class="form-group">
               <label class="required">Start Date</label>
               <input
@@ -1544,70 +1282,139 @@
                 [(ngModel)]="sipFormStartDate" />
             </div>
 
-            <!-- Bank / Mandate Account -->
+            <!-- Row 3: Goal Mapping & Bank / Payment Source -->
+            <div class="form-group">
+              <label>Link to Financial Goal</label>
+              <select class="form-control" [(ngModel)]="sipFormGoalId">
+                <option value="">-- No Specific Goal --</option>
+                @for (g of goalService.goals(); track g.id) {
+                  <option [value]="g.id">🎯 {{ g.name }} (Target: ₹{{ g.targetAmount | number:'1.0-0' }})</option>
+                }
+              </select>
+            </div>
+
             <div class="form-group">
               <label>Payment Source / Bank</label>
               <input
                 type="text"
                 class="form-control"
-                placeholder="e.g. HDFC Bank - OTM Autopay (...4819)"
+                placeholder="e.g. HDFC Bank - Autopay (...4819)"
                 [(ngModel)]="sipFormMandate" />
             </div>
 
-            <!-- Folio Number -->
-            <div class="form-group">
-              <label>Folio Number</label>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="e.g. 1029481928"
-                [(ngModel)]="sipFormFolio" />
+            <!-- Advanced Details Collapsible Toggle Button -->
+            <div class="form-group full-width advanced-toggle-wrapper">
+              <button type="button" class="btn-toggle-advanced" (click)="toggleAdvancedFields()">
+                <span class="material-icons">{{ showAdvancedModalFields() ? 'expand_less' : 'tune' }}</span>
+                <span>{{ showAdvancedModalFields() ? 'Hide Technical & AMC Options' : '+ Advanced Options (Folio, AMC, Step-Up, Notes)' }}</span>
+              </button>
             </div>
 
-            <!-- Step-Up SIP Toggle -->
-            <div class="form-group full-width step-up-config-box">
-              <div class="step-up-toggle-row">
-                <label class="switch-container">
-                  <input type="checkbox" [(ngModel)]="sipFormStepUpEnabled" />
-                  <span class="switch-slider"></span>
-                </label>
-                <div class="switch-label">
-                  <strong>Annual Step-Up SIP</strong>
-                  <span>Automatically plan higher installments every 12 months</span>
-                </div>
+            <!-- Collapsible Advanced Options -->
+            @if (showAdvancedModalFields()) {
+              <!-- Folio Number -->
+              <div class="form-group">
+                <label>Folio Number</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g. 1029481928"
+                  [(ngModel)]="sipFormFolio" />
               </div>
 
-              @if (sipFormStepUpEnabled) {
-                <div class="step-up-inputs">
-                  <div class="form-group">
-                    <label>Step-Up Type</label>
-                    <select class="form-control" [(ngModel)]="sipFormStepUpType">
-                      <option value="percentage">Percentage (%)</option>
-                      <option value="fixed">Fixed Amount (₹)</option>
-                    </select>
-                  </div>
+              <!-- Fund House / AMC -->
+              <div class="form-group">
+                <label>Fund House / AMC</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g. PPFAS Mutual Fund"
+                  [(ngModel)]="sipFormFundHouse" />
+              </div>
 
-                  <div class="form-group">
-                    <label>Increase Value</label>
-                    <input
-                      type="number"
-                      class="form-control"
-                      min="1"
-                      [(ngModel)]="sipFormStepUpValue" />
+              <!-- Plan Type -->
+              <div class="form-group">
+                <label>Plan Type</label>
+                <select class="form-control" [(ngModel)]="sipFormPlanType">
+                  <option value="Direct">Direct</option>
+                  <option value="Regular">Regular</option>
+                </select>
+              </div>
+
+              <!-- Option -->
+              <div class="form-group">
+                <label>Option</label>
+                <select class="form-control" [(ngModel)]="sipFormOption">
+                  <option value="Growth">Growth</option>
+                  <option value="IDCW">Dividend (IDCW)</option>
+                </select>
+              </div>
+
+              <!-- Scheme Code -->
+              <div class="form-group">
+                <label>Scheme Code (AMFI)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g. 122639"
+                  [(ngModel)]="sipFormSchemeCode" />
+              </div>
+
+              <!-- ISIN -->
+              <div class="form-group">
+                <label>ISIN</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="e.g. INF879O01019"
+                  [(ngModel)]="sipFormIsin" />
+              </div>
+
+              <!-- Step-Up SIP Toggle -->
+              <div class="form-group full-width step-up-config-box">
+                <div class="step-up-toggle-row">
+                  <label class="switch-container">
+                    <input type="checkbox" [(ngModel)]="sipFormStepUpEnabled" />
+                    <span class="switch-slider"></span>
+                  </label>
+                  <div class="switch-label">
+                    <strong>Annual Step-Up SIP</strong>
+                    <span>Automatically plan higher installments every 12 months</span>
                   </div>
                 </div>
-              }
-            </div>
 
-            <!-- Notes -->
-            <div class="form-group full-width">
-              <label>Notes</label>
-              <textarea
-                class="form-control"
-                rows="2"
-                placeholder="Investment goal or remarks..."
-                [(ngModel)]="sipFormNotes"></textarea>
-            </div>
+                @if (sipFormStepUpEnabled) {
+                  <div class="step-up-inputs">
+                    <div class="form-group">
+                      <label>Step-Up Type</label>
+                      <select class="form-control" [(ngModel)]="sipFormStepUpType">
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount (₹)</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label>Increase Value</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        min="1"
+                        [(ngModel)]="sipFormStepUpValue" />
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Notes -->
+              <div class="form-group full-width">
+                <label>Notes / Remarks</label>
+                <textarea
+                  class="form-control"
+                  rows="2"
+                  placeholder="Investment remarks or instructions..."
+                  [(ngModel)]="sipFormNotes"></textarea>
+              </div>
+            }
           </div>
         </div>
 

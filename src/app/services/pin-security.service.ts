@@ -48,10 +48,25 @@ export class PinSecurityService {
         const keys = this.getStorageKeys(targetUid);
         const localHash = localStorage.getItem(keys.hash);
         const localSalt = localStorage.getItem(keys.salt);
+        const localLaunch = localStorage.getItem(keys.launchLock);
+        const isSessionUnlocked = sessionStorage.getItem(keys.unlockedSession) === 'true';
+
+        if (localLaunch !== null) {
+            this.requireLaunchLock.set(localLaunch === 'true');
+        }
+
         if (localHash && localSalt) {
             this.currentPinHash = localHash;
             this.currentPinSalt = localSalt;
             this.isPinSet.set(true);
+
+            // Crucial: Set isLocked synchronously BEFORE router-outlet or any component mounts
+            if (this.requireLaunchLock() && !isSessionUnlocked) {
+                this.isLocked.set(true);
+            } else {
+                this.isLocked.set(false);
+            }
+            this.isLoaded.set(true);
             return true;
         }
 

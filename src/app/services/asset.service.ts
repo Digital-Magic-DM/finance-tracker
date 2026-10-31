@@ -13,19 +13,23 @@ import {
     deleteDoc,
     getDocs,
     writeBatch,
+    deleteField,
 } from 'firebase/firestore';
 import { Auth } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 import { Asset } from '../models/finance.models';
+import { PinSecurityService } from './pin-security.service';
 
 @Injectable({ providedIn: 'root' })
 export class AssetService {
     private firestore = inject(Firestore);
     private auth = inject(Auth);
     private injector = inject(Injector);
+    private pinSecurity = inject(PinSecurityService, { optional: true });
 
 
     private getCollectionRef() {
+        if (this.pinSecurity?.isLocked()) return null;
         const uid = this.auth.currentUser?.uid;
         if (!uid) return null;
         return collection(this.firestore, `users/${uid}/assets`);
@@ -80,6 +84,30 @@ export class AssetService {
             for (const id of chunk) {
                 const ref = doc(this.firestore, `users/${uid}/assets/${id}`);
                 batch.delete(ref);
+            }
+            await batch.commit();
+        }
+    }
+
+    /**
+     * Update multiple assets in atomic batches (Firestore allows up to 500 operations per batch).
+     * Commits all updates atomically at once to prevent multiple individual API calls.
+     */
+    async batchUpdateAssets(updates: { id: string; changes: Partial<Asset> }[]): Promise<void> {
+        const uid = this.auth.currentUser?.uid;
+        if (!uid || updates.length === 0) return;
+
+        const CHUNK_SIZE = 500;
+        for (let i = 0; i < updates.length; i += CHUNK_SIZE) {
+            const chunk = updates.slice(i, i + CHUNK_SIZE);
+            const batch = writeBatch(this.firestore);
+            for (const item of chunk) {
+                const ref = doc(this.firestore, `users/${uid}/assets/${item.id}`);
+                const payload: any = {};
+                for (const [key, val] of Object.entries(item.changes)) {
+                    payload[key] = (val === undefined || val === null || val === '') ? deleteField() : val;
+                }
+                batch.update(ref, payload);
             }
             await batch.commit();
         }

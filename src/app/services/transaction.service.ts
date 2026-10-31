@@ -15,14 +15,17 @@ import {
 import { Auth } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 import { Transaction } from '../models/finance.models';
+import { PinSecurityService } from './pin-security.service';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
     private firestore = inject(Firestore);
     private auth = inject(Auth);
     private injector = inject(Injector);
+    private pinSecurity = inject(PinSecurityService, { optional: true });
 
     private getCollectionRef() {
+        if (this.pinSecurity?.isLocked()) return null;
         const uid = this.auth.currentUser?.uid;
         if (!uid) return null;
         return collection(this.firestore, `users/${uid}/transactions`);

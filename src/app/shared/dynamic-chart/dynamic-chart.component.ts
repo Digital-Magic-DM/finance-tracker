@@ -98,6 +98,7 @@ export class DynamicChartComponent implements AfterViewInit, OnChanges, OnDestro
                     this.resolveColor('--asset-etf', '#ec4899'),
                     this.resolveColor('--asset-gold', '#eab308'),
                     this.resolveColor('--asset-cash', '#10b981'),
+                    this.resolveColor('--asset-savings', '#059669'),
                     this.resolveColor('--asset-bond', '#14b8a6'),
                     this.resolveColor('--asset-us-stock', '#06b6d4'),
                     this.resolveColor('--asset-re', '#f97316'),

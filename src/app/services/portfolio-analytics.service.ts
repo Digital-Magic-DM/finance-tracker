@@ -30,7 +30,7 @@ export class PortfolioAnalyticsService {
         let maxDailyGain = -Infinity;
 
         assets.forEach((asset: Asset) => {
-            const cp = asset.currentPrice > 0 ? asset.currentPrice : (asset.type === AssetType.Cash || asset.type === AssetType.RealEstate || asset.type === AssetType.Bond || asset.type === AssetType.FixedDeposit ? asset.buyPrice : 0);
+            const cp = asset.currentPrice > 0 ? asset.currentPrice : (asset.type === AssetType.Cash || asset.type === AssetType.SavingsAccount || asset.type === AssetType.RealEstate || asset.type === AssetType.Bond || asset.type === AssetType.FixedDeposit ? asset.buyPrice : 0);
             const fx = this.priceService.isUSAsset(asset) ? this.googleFinance.usdToInrRate() : 1;
             const currentVal = asset.quantity * cp * fx;
             total += currentVal;

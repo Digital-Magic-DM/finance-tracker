@@ -29,6 +29,9 @@ export class GoogleFinanceService {
     private http = inject(HttpClient);
     private readonly STORAGE_KEY = 'fintracker_google_finance_url';
     private readonly USD_RATE_KEY = 'fintracker_usd_to_inr';
+    private readonly USD_RATE_TIME_KEY = 'fintracker_usd_to_inr_time';
+    private readonly USD_RATE_TTL_MS = 60 * 60 * 1000; // 1 hour (3,600,000 ms)
+    private pendingRateFetch: Promise<number> | null = null;
 
     apiUrl = signal<string>(this.getEffectiveUrl());
     isConfigured = signal<boolean>(true);
@@ -57,8 +60,35 @@ export class GoogleFinanceService {
     /**
      * Automatically detects the live USD/INR exchange rate using Google Finance
      * (via CURRENCY:USDINR) or free open exchange rate APIs as fallback.
+     * Caches in localStorage for 1 hour. Pass force=true to bypass cache (e.g. manual user refresh).
      */
-    async fetchUsdInrRate(): Promise<number> {
+    async fetchUsdInrRate(force: boolean = false): Promise<number> {
+        // 0. Cache check: If not forced and last updated < 1 hour ago, use cached rate immediately
+        if (!force) {
+            try {
+                const lastTime = Number(localStorage.getItem(this.USD_RATE_TIME_KEY) || 0);
+                const currentRate = this.usdToInrRate();
+                const now = Date.now();
+                if (lastTime > 0 && (now - lastTime) < this.USD_RATE_TTL_MS && currentRate > 50) {
+                    return currentRate;
+                }
+            } catch {}
+        }
+
+        // Deduplicate simultaneous requests
+        if (this.pendingRateFetch) {
+            return this.pendingRateFetch;
+        }
+
+        this.pendingRateFetch = this.executeFetchUsdInrRate()
+            .finally(() => {
+                this.pendingRateFetch = null;
+            });
+
+        return this.pendingRateFetch;
+    }
+
+    private async executeFetchUsdInrRate(): Promise<number> {
         // 1. Try Google Finance Apps Script Web App (CURRENCY:USDINR)
         try {
             const endpoint = this.apiUrl();
@@ -99,6 +129,7 @@ export class GoogleFinanceService {
         this.usdToInrRate.set(rounded);
         try {
             localStorage.setItem(this.USD_RATE_KEY, String(rounded));
+            localStorage.setItem(this.USD_RATE_TIME_KEY, String(Date.now()));
         } catch {}
     }
 

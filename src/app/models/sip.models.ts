@@ -124,6 +124,8 @@ export interface Sip {
   // Portfolio Integration
   linkedAssetId?: string;
   linkedAssetName?: string;
+  goalId?: string;
+  goalName?: string;
 
   notes?: string;
   createdAt: string;

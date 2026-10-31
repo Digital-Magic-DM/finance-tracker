@@ -7,6 +7,7 @@ export enum AssetType {
     ETF = 'ETF',
     Gold = 'Gold',
     Cash = 'Cash',
+    SavingsAccount = 'SavingsAccount',
     RealEstate = 'RealEstate',
     Crypto = 'Crypto',
     Other = 'Other',
@@ -76,6 +77,8 @@ export interface Asset {
     subType?: string;          // e.g. 'Corporate Bond' | 'Govt Bond (G-Sec)' | 'Bank FD' | 'NBFC FD' | 'Tax-Free Bond'
     payoutFrequency?: string;  // e.g. 'Semi-Annual' | 'Annual' | 'Monthly' | 'Quarterly' | 'Cumulative'
     payoutDates?: string;      // e.g. '14 Aug & 14 Feb each year'
+    goalId?: string;           // Optional ID of the goal this asset is mapped to
+    goalName?: string;         // Display label of the mapped goal
 }
 
 export interface Transaction {
@@ -125,6 +128,7 @@ export const ASSET_COLORS: { [key in AssetType]: string } = {
     [AssetType.ETF]: 'var(--asset-etf)',
     [AssetType.Gold]: 'var(--asset-gold)',
     [AssetType.Cash]: 'var(--asset-cash)',
+    [AssetType.SavingsAccount]: 'var(--asset-savings, #10b981)',
     [AssetType.RealEstate]: 'var(--asset-re)',
     [AssetType.Crypto]: 'var(--asset-crypto)',
     [AssetType.Other]: 'var(--asset-other)',
@@ -146,6 +150,7 @@ export const ASSET_TYPE_LABELS: Record<string, string> = {
     [AssetType.Crypto]: 'Crypto',
     [AssetType.RealEstate]: 'Real Estate',
     [AssetType.Cash]: 'Cash',
+    [AssetType.SavingsAccount]: 'Savings Account / Bank',
     [AssetType.Other]: 'Other'
 };
 

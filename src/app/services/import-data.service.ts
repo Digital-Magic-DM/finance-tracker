@@ -332,16 +332,16 @@ export class ImportDataService {
         if (!header) return false;
         const h = header.toLowerCase().trim();
         return h.includes('invested value') ||
-               h.includes('invested amount') ||
-               h.includes('amount invested') ||
-               h.includes('cost value') ||
-               h.includes('total cost') ||
-               h.includes('current value') ||
-               h.includes('market value') ||
-               h.includes('total value') ||
-               h.includes('present value') ||
-               h === 'invested' ||
-               h === 'current';
+            h.includes('invested amount') ||
+            h.includes('amount invested') ||
+            h.includes('cost value') ||
+            h.includes('total cost') ||
+            h.includes('current value') ||
+            h.includes('market value') ||
+            h.includes('total value') ||
+            h.includes('present value') ||
+            h === 'invested' ||
+            h === 'current';
     }
 
     parseINDmoney(headers: string[], rows: any[][]): Omit<Asset, 'id'>[] {
@@ -609,6 +609,7 @@ export class ImportDataService {
         }
         // Heuristic from name
         const lower = name.toLowerCase();
+        if (lower.includes('savings account') || lower.includes('bank account') || lower.includes('savings bank') || lower.includes('salary account')) return AssetType.SavingsAccount;
         if (lower.includes('fixed deposit') || lower.includes('term deposit') || lower.includes(' fd') || lower.endsWith(' fd')) return AssetType.FixedDeposit;
         if (lower.includes('bond') || lower.includes('sgb') || lower.includes('debenture') || lower.includes('g-sec') || lower.includes('gsec') || lower.includes('ncd')) return AssetType.Bond;
         if (lower.includes('fund') || lower.includes('scheme') || lower.includes('amc')) {

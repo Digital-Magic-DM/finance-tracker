@@ -86,6 +86,11 @@ export const routes: Routes = [
                     import('./features/sip/sip.component').then((m) => m.SipComponent),
             },
             {
+                path: 'goals',
+                loadComponent: () =>
+                    import('./features/goals/goals.component').then((m) => m.GoalsComponent),
+            },
+            {
                 path: 'analytics',
                 loadComponent: () =>
                     import('./features/analytics/analytics.component').then((m) => m.AnalyticsComponent),

@@ -32,7 +32,7 @@ export class SnapshotService {
         let totalInvested = 0;
 
         for (const asset of assets) {
-            const cp = asset.currentPrice > 0 ? asset.currentPrice : (asset.type === AssetType.Cash || asset.type === AssetType.RealEstate || asset.type === AssetType.Bond || asset.type === AssetType.FixedDeposit ? asset.buyPrice : 0);
+            const cp = asset.currentPrice > 0 ? asset.currentPrice : (asset.type === AssetType.Cash || asset.type === AssetType.SavingsAccount || asset.type === AssetType.RealEstate || asset.type === AssetType.Bond || asset.type === AssetType.FixedDeposit ? asset.buyPrice : 0);
             const fx = this.priceService.isUSAsset(asset) ? this.googleFinance.usdToInrRate() : 1;
             const value = asset.quantity * cp * fx;
             const cost = asset.quantity * asset.buyPrice * fx;
@@ -74,7 +74,7 @@ export class SnapshotService {
         let currentCost = 0;
         let currentNetWorth = 0;
         for (const a of assets) {
-            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
+            const cp = a.currentPrice > 0 ? a.currentPrice : (a.type === AssetType.Cash || a.type === AssetType.SavingsAccount || a.type === AssetType.RealEstate || a.type === AssetType.Bond || a.type === AssetType.FixedDeposit ? a.buyPrice : 0);
             const fx = this.priceService.isUSAsset(a) ? this.googleFinance.usdToInrRate() : 1;
             currentNetWorth += a.quantity * cp * fx;
             currentCost += a.quantity * a.buyPrice * fx;

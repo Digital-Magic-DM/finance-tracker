@@ -7,6 +7,7 @@ export type AssetType =
   | 'ETF'
   | 'Gold'
   | 'Cash'
+  | 'SavingsAccount'
   | 'RealEstate'
   | 'Crypto'
   | 'Other';

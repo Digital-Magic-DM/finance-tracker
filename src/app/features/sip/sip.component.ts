@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit, HostListener } from '@angu
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SipService } from '../../services/sip.service';
+import { GoalService } from '../../services/goal.service';
 import { MarketCalendarService } from '../../services/market-calendar.service';
 import { AmfiNavService } from '../../services/amfi-nav.service';
 import { SnackbarService } from '../../services/snackbar.service';
@@ -30,6 +31,7 @@ import { Asset, AssetType } from '../../models/finance.models';
 })
 export class SipComponent implements OnInit {
   public sipService = inject(SipService);
+  goalService = inject(GoalService);
   public calendarService = inject(MarketCalendarService);
   public navService = inject(AmfiNavService);
   private snackbar = inject(SnackbarService);
@@ -86,7 +88,7 @@ export class SipComponent implements OnInit {
   readonly activeTab = signal<'active' | 'reconcile' | 'calendar' | 'history' | 'calculator'>('active');
   readonly selectedCategory = signal<string>('All');
   readonly searchQuery = signal<string>('');
-  readonly viewMode = signal<'cards' | 'table'>('cards');
+  readonly viewMode = signal<'cards' | 'table'>('table');
 
   readonly SIP_CONFIG = SIP_CATEGORY_CONFIG;
   readonly sipCategories: SipCategory[] = [
@@ -101,6 +103,12 @@ export class SipComponent implements OnInit {
   // ── Modals State ──
   readonly showAddEditModal = signal<boolean>(false);
   readonly editingSipId = signal<string | null>(null);
+  sipFormGoalId = '';
+  readonly showAdvancedModalFields = signal<boolean>(false);
+
+  toggleAdvancedFields() {
+    this.showAdvancedModalFields.update(v => !v);
+  }
 
   readonly showScheduleModal = signal<boolean>(false);
   readonly selectedSipForSchedule = signal<Sip | null>(null);
@@ -513,84 +521,6 @@ export class SipComponent implements OnInit {
     };
   });
 
-  readonly popularFundPresets = [
-    {
-      name: 'Parag Parikh Flexi Cap Fund - Direct Growth',
-      house: 'PPFAS Mutual Fund',
-      cat: 'MutualFund' as SipCategory,
-      code: '122639',
-      isin: 'INF879O01019',
-      tag: 'Flexi Cap Equity',
-      desc: 'High-conviction value investing with domestic and global bluechip equity exposure.',
-    },
-    {
-      name: 'UTI Nifty 50 Index Fund - Direct Growth',
-      house: 'UTI Mutual Fund',
-      cat: 'MutualFund' as SipCategory,
-      code: '120716',
-      isin: 'INF789F01AU3',
-      tag: 'Large Cap Index',
-      desc: 'Low-cost passive index tracking India’s top 50 bluechip companies.',
-    },
-    {
-      name: 'Quant Small Cap Fund - Direct Growth',
-      house: 'Quant Mutual Fund',
-      cat: 'MutualFund' as SipCategory,
-      code: '120828',
-      isin: 'INF966L01AA3',
-      tag: 'Small Cap Equity',
-      desc: 'High-alpha quantitative momentum strategy investing in high-growth companies.',
-    },
-    {
-      name: 'Mirae Asset Large Cap Fund - Direct Growth',
-      house: 'Mirae Asset Mutual Fund',
-      cat: 'MutualFund' as SipCategory,
-      code: '118834',
-      isin: 'INF769K01010',
-      tag: 'Large Cap Equity',
-      desc: 'Consistent compounders across financial leaders, tech giants & consumer staples.',
-    },
-    {
-      name: 'Nippon India ETF Gold BeES',
-      house: 'Nippon India Mutual Fund',
-      cat: 'Gold' as SipCategory,
-      code: '105758',
-      isin: 'INF204KB14I2',
-      tag: 'Gold / Commodity',
-      desc: 'Digital gold investment tracking domestic physical gold market prices.',
-    },
-    {
-      name: 'HDFC Mid-Cap Opportunities Fund - Direct Growth',
-      house: 'HDFC Mutual Fund',
-      cat: 'MutualFund' as SipCategory,
-      code: '118989',
-      isin: 'INF179K01BE2',
-      tag: 'Mid Cap Equity',
-      desc: 'Mid-sized businesses with robust balance sheets and high secular earnings runway.',
-    },
-  ];
-
-  selectFundPreset(preset: {
-    name: string;
-    house: string;
-    cat: SipCategory;
-    code?: string;
-    isin?: string;
-  }) {
-    this.openAddModal();
-    this.sipFormName = preset.name;
-    this.sipFormFundHouse = preset.house;
-    this.sipFormCategory = preset.cat;
-    if (preset.code) {
-      this.sipFormSchemeCode = preset.code;
-    }
-    if (preset.isin) {
-      this.sipFormIsin = preset.isin;
-    }
-    this.sipFormPlanType = preset.name.toLowerCase().includes('regular') ? 'Regular' : 'Direct';
-    this.sipFormOption = preset.name.toLowerCase().includes('idcw') ? 'IDCW' : 'Growth';
-  }
-
   setSimulatorDay(day: number) {
     this.calendarSimulatorDay.set(day);
   }
@@ -654,8 +584,10 @@ export class SipComponent implements OnInit {
 
   // ── Open Add/Edit Modal ──
   openAddModal() {
+    this.showAdvancedModalFields.set(false);
     this.editingSipId.set(null);
     this.sipFormName = '';
+    this.sipFormGoalId = '';
     this.sipFormCategory = 'MutualFund';
     this.sipFormCategorySignal.set('MutualFund');
     this.sipFormSchemeCode = '';
@@ -683,8 +615,12 @@ export class SipComponent implements OnInit {
   }
 
   openEditModal(sip: Sip) {
+    this.showAdvancedModalFields.set(
+      !!(sip.folioNumber || sip.mandateAccount || sip.schemeCode || sip.isin || sip.fundHouse || sip.stepUp?.enabled || sip.notes)
+    );
     this.editingSipId.set(sip.id);
     this.sipFormName = sip.name;
+    this.sipFormGoalId = sip.goalId || '';
     this.sipFormCategory = sip.category;
     this.sipFormCategorySignal.set(sip.category);
     this.sipFormSchemeCode = sip.schemeCode || '';
@@ -740,6 +676,10 @@ export class SipComponent implements OnInit {
       ? this.userAssets().find((a) => a.id === this.sipFormLinkedAssetId)
       : undefined;
 
+    const selectedGoal = this.sipFormGoalId
+      ? this.goalService.goals().find((g) => g.id === this.sipFormGoalId)
+      : undefined;
+
     const sipData = {
       name: this.sipFormName.trim(),
       category: this.sipFormCategory,
@@ -769,6 +709,8 @@ export class SipComponent implements OnInit {
         : undefined,
       linkedAssetId: this.sipFormLinkedAssetId || undefined,
       linkedAssetName: linkedAsset?.name || undefined,
+      goalId: this.sipFormGoalId || undefined,
+      goalName: selectedGoal?.name || undefined,
       notes: this.sipFormNotes.trim() || undefined,
     };
 
