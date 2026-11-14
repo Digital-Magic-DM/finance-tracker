@@ -104,6 +104,7 @@ export class ReportExportService {
             columns: string[];
             rows: (string | number)[][];
             columnStyles?: { [key: number]: any };
+            styles?: any;
         }>,
         filename: string
     ) {
@@ -256,6 +257,7 @@ export class ReportExportService {
                         textColor: [30, 41, 59],
                         lineColor: [226, 232, 240],
                         lineWidth: 0.1,
+                        ...(tbl.styles || {})
                     },
                     headStyles: {
                         fillColor: [15, 23, 42],
@@ -433,7 +435,11 @@ export class ReportExportService {
                                 col.key.toLowerCase().includes('profit') || 
                                 col.key.toLowerCase().includes('invested') || 
                                 col.key.toLowerCase().includes('principal')) {
-                                cell.numFmt = '₹#,##0.00';
+                                if (rowData.currency === 'USD' && (col.key.toLowerCase().includes('price') || col.key.toLowerCase().includes('native') || col.key.toLowerCase().includes('usd'))) {
+                                    cell.numFmt = '$#,##0.00';
+                                } else {
+                                    cell.numFmt = '₹#,##0.00';
+                                }
                             }
                         }
                     });
@@ -460,20 +466,881 @@ export class ReportExportService {
     }
 
     // =========================================================================
-    // HIGH-LEVEL SPECIALIZED EXPORTERS
+    // HIGH-LEVEL SPECIALIZED EXPORTERS & CATEGORIZATION HELPERS
     // =========================================================================
+
+    /**
+     * Helper to classify assets into clean, dedicated categories
+     */
+    private categorizeAssets(assets: any[], usdRate: number) {
+        const indianStocks: any[] = [];
+        const usStocks: any[] = [];
+        const mutualFunds: any[] = [];
+        const fixedIncome: any[] = [];
+        const bankAndCash: any[] = [];
+        const otherAssets: any[] = [];
+
+        for (const a of assets || []) {
+            const isUS = a.type === 'USStock' || a.currency === 'USD';
+            if (isUS) {
+                usStocks.push(a);
+            } else if (a.type === 'Stock' || a.type === 'ETF') {
+                indianStocks.push(a);
+            } else if (a.type === 'MutualFund') {
+                mutualFunds.push(a);
+            } else if (a.type === 'Bond' || a.type === 'FixedDeposit') {
+                fixedIncome.push(a);
+            } else if (a.type === 'SavingsAccount' || a.type === 'Cash') {
+                bankAndCash.push(a);
+            } else {
+                otherAssets.push(a);
+            }
+        }
+
+        const getValINR = (a: any) => {
+            const isUS = a.type === 'USStock' || a.currency === 'USD';
+            const fx = isUS ? usdRate : 1;
+            const isCashLike = a.type === 'Cash' || a.type === 'SavingsAccount';
+            const qty = isCashLike ? 1 : (a.quantity != null ? a.quantity : 1);
+            const cp = a.currentPrice != null ? a.currentPrice : (a.buyPrice || 0);
+            return qty * cp * fx;
+        };
+
+        const sorter = (a: any, b: any) => getValINR(b) - getValINR(a);
+        indianStocks.sort(sorter);
+        usStocks.sort(sorter);
+        mutualFunds.sort(sorter);
+        fixedIncome.sort(sorter);
+        bankAndCash.sort(sorter);
+        otherAssets.sort(sorter);
+
+        return { indianStocks, usStocks, mutualFunds, fixedIncome, bankAndCash, otherAssets };
+    }
+
+    private getTickerSymbol(a: any): string {
+        if (a.symbol && a.symbol.trim()) return a.symbol.trim();
+        if (a.isin && a.isin.trim()) return a.isin.trim();
+        return '-';
+    }
+
+    private formatAssetQty(a: any): string {
+        if (a.type === 'Cash' || a.type === 'SavingsAccount') return '-';
+        const q = a.quantity != null ? a.quantity : 1;
+        if (Number.isInteger(q)) return q.toLocaleString('en-IN');
+        return q.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+    }
+
+    private getAssetTypeLabel(type: string): string {
+        switch (type) {
+            case 'Stock': return 'Indian Stock';
+            case 'USStock': return 'US Stock';
+            case 'MutualFund': return 'Mutual Fund';
+            case 'FixedDeposit': return 'Fixed Deposit';
+            case 'SavingsAccount': return 'Savings / Bank';
+            case 'RealEstate': return 'Real Estate';
+            case 'Cash': return 'Physical Cash';
+            case 'Bond': return 'Bond';
+            case 'ETF': return 'ETF';
+            case 'Gold': return 'Gold';
+            case 'Crypto': return 'Crypto';
+            default: return type || 'Other';
+        }
+    }
+
+    /**
+     * Build categorized tables for PDF export with proper headers and subtotals
+     */
+    private buildCategorizedPdfTables(
+        cat: ReturnType<typeof this.categorizeAssets>,
+        usdRate: number,
+        totalNetWorth: number,
+        sectionPrefix = '2'
+    ): Array<{
+        sectionTitle?: string;
+        columns: string[];
+        rows: (string | number)[][];
+        columnStyles?: { [key: number]: any };
+        styles?: any;
+    }> {
+        const tables: any[] = [];
+        let subSecIdx = 1;
+
+        // 1. Indian Equities & Stocks
+        if (cat.indianStocks.length > 0) {
+            let totInv = 0;
+            let totVal = 0;
+            let totShares = 0;
+            const rows: (string | number)[][] = cat.indianStocks.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const inv = qty * bp;
+                const val = qty * cp;
+                const pl = val - inv;
+                const plPct = inv > 0 ? (pl / inv) * 100 : 0;
+                totInv += inv;
+                totVal += val;
+                totShares += qty;
+                return [
+                    a.name || '-',
+                    this.getTickerSymbol(a),
+                    this.formatAssetQty(a),
+                    this.formatCurrency(bp),
+                    this.formatCurrency(cp),
+                    this.formatCurrency(val),
+                    this.formatCurrency(pl),
+                    this.formatPct(plPct)
+                ];
+            });
+
+            const totPl = totVal - totInv;
+            const totPlPct = totInv > 0 ? (totPl / totInv) * 100 : 0;
+            rows.push([
+                `Subtotal (${cat.indianStocks.length} Stocks)`,
+                '',
+                totShares.toLocaleString('en-IN'),
+                '',
+                '',
+                this.formatCurrency(totVal),
+                this.formatCurrency(totPl),
+                this.formatPct(totPlPct)
+            ]);
+
+            tables.push({
+                sectionTitle: `${sectionPrefix}.${subSecIdx++} Indian Equities & Stocks (${cat.indianStocks.length} Assets)`,
+                columns: ['Stock / Security Name', 'Ticker / ISIN', 'Shares', 'Avg Buy', 'Cur Price', 'Total Value', 'Gain / Loss', 'Return %'],
+                rows,
+                styles: { fontSize: 7.5, cellPadding: 2 },
+                columnStyles: {
+                    0: { cellWidth: 44 },
+                    1: { cellWidth: 22 },
+                    2: { halign: 'right', cellWidth: 16 },
+                    3: { halign: 'right', cellWidth: 20 },
+                    4: { halign: 'right', cellWidth: 20 },
+                    5: { halign: 'right', cellWidth: 22 },
+                    6: { halign: 'right', cellWidth: 22 },
+                    7: { halign: 'right', cellWidth: 16 }
+                }
+            });
+        }
+
+        // 2. US Equities & Global Stocks
+        if (cat.usStocks.length > 0) {
+            let totInvUSD = 0;
+            let totValUSD = 0;
+            let totShares = 0;
+            const rows: (string | number)[][] = cat.usStocks.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const invUSD = qty * bp;
+                const valUSD = qty * cp;
+                const plUSD = valUSD - invUSD;
+                const valINR = valUSD * usdRate;
+                const plINR = plUSD * usdRate;
+                const plPct = invUSD > 0 ? (plUSD / invUSD) * 100 : 0;
+                totInvUSD += invUSD;
+                totValUSD += valUSD;
+                totShares += qty;
+                return [
+                    a.name || '-',
+                    this.getTickerSymbol(a),
+                    this.formatAssetQty(a),
+                    `$${bp.toFixed(2)}`,
+                    `$${cp.toFixed(2)}`,
+                    `$${valUSD.toFixed(2)}\n(Rs. ${Math.round(valINR).toLocaleString('en-IN')})`,
+                    `${plUSD >= 0 ? '+' : ''}$${plUSD.toFixed(2)}\n(${plINR >= 0 ? '+' : ''}Rs. ${Math.round(plINR).toLocaleString('en-IN')})`,
+                    this.formatPct(plPct)
+                ];
+            });
+
+            const totPlUSD = totValUSD - totInvUSD;
+            const totValINR = totValUSD * usdRate;
+            const totPlINR = totPlUSD * usdRate;
+            const totPlPct = totInvUSD > 0 ? (totPlUSD / totInvUSD) * 100 : 0;
+            rows.push([
+                `Subtotal (${cat.usStocks.length} US Stocks)`,
+                '',
+                totShares.toLocaleString('en-IN'),
+                '',
+                '',
+                `$${totValUSD.toFixed(2)}\n(Rs. ${Math.round(totValINR).toLocaleString('en-IN')})`,
+                `${totPlUSD >= 0 ? '+' : ''}$${totPlUSD.toFixed(2)}\n(${totPlINR >= 0 ? '+' : ''}Rs. ${Math.round(totPlINR).toLocaleString('en-IN')})`,
+                this.formatPct(totPlPct)
+            ]);
+
+            tables.push({
+                sectionTitle: `${sectionPrefix}.${subSecIdx++} US Equities & Global Stocks (${cat.usStocks.length} Assets • FX @ Rs. ${usdRate.toFixed(2)}/USD)`,
+                columns: ['Company Name', 'Ticker', 'Shares', 'Avg Buy ($)', 'Cur Price ($)', 'Current Value', 'Gain / Loss', 'Return %'],
+                rows,
+                styles: { fontSize: 7.5, cellPadding: 2 },
+                columnStyles: {
+                    0: { cellWidth: 44 },
+                    1: { cellWidth: 20 },
+                    2: { halign: 'right', cellWidth: 16 },
+                    3: { halign: 'right', cellWidth: 20 },
+                    4: { halign: 'right', cellWidth: 20 },
+                    5: { halign: 'right', cellWidth: 24 },
+                    6: { halign: 'right', cellWidth: 24 },
+                    7: { halign: 'right', cellWidth: 16 }
+                }
+            });
+        }
+
+        // 3. Mutual Funds & SIPs
+        if (cat.mutualFunds.length > 0) {
+            let totInv = 0;
+            let totVal = 0;
+            const rows: (string | number)[][] = cat.mutualFunds.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const inv = qty * bp;
+                const val = qty * cp;
+                const pl = val - inv;
+                const plPct = inv > 0 ? (pl / inv) * 100 : 0;
+                totInv += inv;
+                totVal += val;
+                return [
+                    a.name || '-',
+                    this.getTickerSymbol(a),
+                    qty.toFixed(3),
+                    this.formatCurrency(bp),
+                    this.formatCurrency(cp),
+                    this.formatCurrency(val),
+                    this.formatCurrency(pl),
+                    this.formatPct(plPct)
+                ];
+            });
+
+            const totPl = totVal - totInv;
+            const totPlPct = totInv > 0 ? (totPl / totInv) * 100 : 0;
+            rows.push([
+                `Subtotal (${cat.mutualFunds.length} Funds)`,
+                '',
+                '',
+                '',
+                '',
+                this.formatCurrency(totVal),
+                this.formatCurrency(totPl),
+                this.formatPct(totPlPct)
+            ]);
+
+            tables.push({
+                sectionTitle: `${sectionPrefix}.${subSecIdx++} Mutual Funds & SIP Portfolio (${cat.mutualFunds.length} Funds)`,
+                columns: ['Scheme / Fund Name', 'Folio / Code', 'Units', 'Purchase NAV', 'Current NAV', 'Current Value', 'Gain / Loss', 'Return %'],
+                rows,
+                styles: { fontSize: 7.5, cellPadding: 2 },
+                columnStyles: {
+                    0: { cellWidth: 46 },
+                    1: { cellWidth: 22 },
+                    2: { halign: 'right', cellWidth: 18 },
+                    3: { halign: 'right', cellWidth: 18 },
+                    4: { halign: 'right', cellWidth: 18 },
+                    5: { halign: 'right', cellWidth: 22 },
+                    6: { halign: 'right', cellWidth: 22 },
+                    7: { halign: 'right', cellWidth: 16 }
+                }
+            });
+        }
+
+        // 4. Fixed Income & Bonds
+        if (cat.fixedIncome.length > 0) {
+            let totVal = 0;
+            let totInv = 0;
+            const rows: (string | number)[][] = cat.fixedIncome.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const inv = qty * bp;
+                const val = qty * cp;
+                totInv += inv;
+                totVal += val;
+                return [
+                    a.name || '-',
+                    a.subType || (a.type === 'FixedDeposit' ? 'Fixed Deposit' : 'Bond'),
+                    a.bank || a.appSource || '-',
+                    this.formatCurrency(inv),
+                    a.interestRate ? `${a.interestRate}%` : (a.metadata?.interestRate ? `${a.metadata.interestRate}%` : '-'),
+                    a.maturityDate ? this.formatDate(a.maturityDate) : '-',
+                    this.formatCurrency(val)
+                ];
+            });
+
+            rows.push([
+                `Subtotal (${cat.fixedIncome.length} Instruments)`,
+                '',
+                '',
+                this.formatCurrency(totInv),
+                '',
+                '',
+                this.formatCurrency(totVal)
+            ]);
+
+            tables.push({
+                sectionTitle: `${sectionPrefix}.${subSecIdx++} Fixed Deposits & Sovereign Bonds (${cat.fixedIncome.length} Instruments)`,
+                columns: ['Instrument Name', 'Type', 'Bank / Issuer', 'Principal Deposited', 'Interest Rate / Yield', 'Maturity Date', 'Current Value'],
+                rows,
+                styles: { fontSize: 7.5, cellPadding: 2 },
+                columnStyles: {
+                    0: { cellWidth: 46 },
+                    1: { cellWidth: 22 },
+                    2: { cellWidth: 24 },
+                    3: { halign: 'right', cellWidth: 24 },
+                    4: { halign: 'right', cellWidth: 20 },
+                    5: { halign: 'center', cellWidth: 22 },
+                    6: { halign: 'right', cellWidth: 24 }
+                }
+            });
+        }
+
+        // 5. Bank Accounts & Liquid Savings
+        if (cat.bankAndCash.length > 0) {
+            let totVal = 0;
+            const rows: (string | number)[][] = cat.bankAndCash.map((a: any) => {
+                const val = a.currentPrice != null ? a.currentPrice : (a.buyPrice || 0);
+                totVal += val;
+                const sharePct = totalNetWorth > 0 ? (val / totalNetWorth) * 100 : 0;
+                return [
+                    a.name || '-',
+                    a.type === 'Cash' ? 'Physical Cash / Liquid' : 'Savings Bank Account',
+                    a.bank || a.appSource || 'Bank',
+                    this.getTickerSymbol(a) !== '-' ? this.getTickerSymbol(a) : (a.accountNumber || '-'),
+                    this.formatCurrency(val),
+                    `${sharePct.toFixed(1)}%`
+                ];
+            });
+
+            const totShare = totalNetWorth > 0 ? (totVal / totalNetWorth) * 100 : 0;
+            rows.push([
+                `Subtotal (${cat.bankAndCash.length} Accounts)`,
+                '',
+                '',
+                '',
+                this.formatCurrency(totVal),
+                `${totShare.toFixed(1)}%`
+            ]);
+
+            tables.push({
+                sectionTitle: `${sectionPrefix}.${subSecIdx++} Bank Accounts & Liquid Savings (${cat.bankAndCash.length} Accounts)`,
+                columns: ['Account / Source Name', 'Category Type', 'Institution / Bank', 'Account / Ref', 'Available Balance', 'Portfolio Share %'],
+                rows,
+                styles: { fontSize: 7.5, cellPadding: 2 },
+                columnStyles: {
+                    0: { cellWidth: 48 },
+                    1: { cellWidth: 32 },
+                    2: { cellWidth: 28 },
+                    3: { cellWidth: 24 },
+                    4: { halign: 'right', cellWidth: 26 },
+                    5: { halign: 'right', cellWidth: 24 }
+                }
+            });
+        }
+
+        // 6. Other Assets & Commodities
+        if (cat.otherAssets.length > 0) {
+            let totInv = 0;
+            let totVal = 0;
+            const rows: (string | number)[][] = cat.otherAssets.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const inv = qty * bp;
+                const val = qty * cp;
+                const pl = val - inv;
+                const plPct = inv > 0 ? (pl / inv) * 100 : 0;
+                totInv += inv;
+                totVal += val;
+                return [
+                    a.name || '-',
+                    this.getAssetTypeLabel(a.type),
+                    this.formatAssetQty(a),
+                    this.formatCurrency(inv),
+                    this.formatCurrency(val),
+                    this.formatCurrency(pl),
+                    this.formatPct(plPct)
+                ];
+            });
+
+            const totPl = totVal - totInv;
+            const totPlPct = totInv > 0 ? (totPl / totInv) * 100 : 0;
+            rows.push([
+                `Subtotal (${cat.otherAssets.length} Assets)`,
+                '',
+                '',
+                this.formatCurrency(totInv),
+                this.formatCurrency(totVal),
+                this.formatCurrency(totPl),
+                this.formatPct(totPlPct)
+            ]);
+
+            tables.push({
+                sectionTitle: `${sectionPrefix}.${subSecIdx++} Other Assets & Commodities (${cat.otherAssets.length} Assets)`,
+                columns: ['Asset Name', 'Category', 'Quantity / Units', 'Cost Basis', 'Current Valuation', 'Gain / Loss', 'Return %'],
+                rows,
+                styles: { fontSize: 7.5, cellPadding: 2 },
+                columnStyles: {
+                    0: { cellWidth: 48 },
+                    1: { cellWidth: 26 },
+                    2: { halign: 'right', cellWidth: 22 },
+                    3: { halign: 'right', cellWidth: 22 },
+                    4: { halign: 'right', cellWidth: 24 },
+                    5: { halign: 'right', cellWidth: 22 },
+                    6: { halign: 'right', cellWidth: 18 }
+                }
+            });
+        }
+
+        return tables;
+    }
+
+    /**
+     * Build categorized Excel sheets for each individual asset class
+     */
+    private buildCategorizedExcelSheets(
+        cat: ReturnType<typeof this.categorizeAssets>,
+        usdRate: number,
+        totalNetWorth: number
+    ): Array<{
+        sheetName: string;
+        columns: { header: string; key: string; width: number }[];
+        rows: any[];
+    }> {
+        const sheets: any[] = [];
+
+        // 1. Indian Stocks Sheet
+        if (cat.indianStocks.length > 0) {
+            const columns = [
+                { header: 'Asset Name', key: 'name', width: 32 },
+                { header: 'Ticker / ISIN', key: 'symbol', width: 16 },
+                { header: 'Shares Held', key: 'quantity', width: 14 },
+                { header: 'Avg Buy Price (INR)', key: 'buyPrice', width: 18 },
+                { header: 'Current Price (INR)', key: 'currentPrice', width: 18 },
+                { header: 'Invested Capital (INR)', key: 'invested', width: 22 },
+                { header: 'Current Market Value (INR)', key: 'value', width: 22 },
+                { header: 'Unrealized Gain / Loss (INR)', key: 'profit', width: 22 },
+                { header: 'Return %', key: 'profitPct', width: 14 },
+                { header: 'Broker / Platform', key: 'source', width: 20 },
+                { header: 'Mapped Goal', key: 'goal', width: 20 },
+                { header: 'Notes / Remarks', key: 'notes', width: 28 }
+            ];
+
+            let totShares = 0;
+            let totInv = 0;
+            let totVal = 0;
+            const rows: any[] = cat.indianStocks.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const inv = qty * bp;
+                const val = qty * cp;
+                const pl = val - inv;
+                const plPct = inv > 0 ? (pl / inv) * 100 : 0;
+                totShares += qty;
+                totInv += inv;
+                totVal += val;
+                return {
+                    name: a.name || '',
+                    symbol: this.getTickerSymbol(a),
+                    quantity: Number.isInteger(qty) ? qty : Number(qty.toFixed(3)),
+                    buyPrice: bp,
+                    currentPrice: cp,
+                    invested: inv,
+                    value: val,
+                    profit: pl,
+                    profitPct: `${plPct.toFixed(2)}%`,
+                    source: a.appSource || a.metadata?.source || '-',
+                    goal: a.goalName || '-',
+                    notes: a.notes || ''
+                };
+            });
+
+            const totPl = totVal - totInv;
+            const totPlPct = totInv > 0 ? (totPl / totInv) * 100 : 0;
+            rows.push({
+                name: `Total (${cat.indianStocks.length} Stocks)`,
+                symbol: '',
+                quantity: totShares,
+                buyPrice: '',
+                currentPrice: '',
+                invested: totInv,
+                value: totVal,
+                profit: totPl,
+                profitPct: `${totPlPct.toFixed(2)}%`,
+                source: '',
+                goal: '',
+                notes: ''
+            });
+
+            sheets.push({ sheetName: 'Indian Stocks', columns, rows });
+        }
+
+        // 2. US Stocks Sheet
+        if (cat.usStocks.length > 0) {
+            const columns = [
+                { header: 'Company Name', key: 'name', width: 32 },
+                { header: 'Ticker / Symbol', key: 'symbol', width: 16 },
+                { header: 'Shares Held', key: 'quantity', width: 14 },
+                { header: 'Avg Buy Price (USD)', key: 'buyPriceUSD', width: 18 },
+                { header: 'Current Price (USD)', key: 'currentPriceUSD', width: 18 },
+                { header: 'Invested Capital (USD)', key: 'investedUSD', width: 20 },
+                { header: 'Current Value (USD)', key: 'valueUSD', width: 20 },
+                { header: 'Current Market Value (INR)', key: 'valueINR', width: 24 },
+                { header: 'Unrealized Gain / Loss (USD)', key: 'profitUSD', width: 22 },
+                { header: 'Unrealized Gain / Loss (INR)', key: 'profitINR', width: 22 },
+                { header: 'Return %', key: 'profitPct', width: 14 },
+                { header: 'Broker / Platform', key: 'source', width: 20 },
+                { header: 'Notes / Remarks', key: 'notes', width: 28 }
+            ];
+
+            let totShares = 0;
+            let totInvUSD = 0;
+            let totValUSD = 0;
+            const rows: any[] = cat.usStocks.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const invUSD = qty * bp;
+                const valUSD = qty * cp;
+                const plUSD = valUSD - invUSD;
+                const valINR = valUSD * usdRate;
+                const plINR = plUSD * usdRate;
+                const plPct = invUSD > 0 ? (plUSD / invUSD) * 100 : 0;
+                totShares += qty;
+                totInvUSD += invUSD;
+                totValUSD += valUSD;
+                return {
+                    name: a.name || '',
+                    symbol: this.getTickerSymbol(a),
+                    quantity: Number.isInteger(qty) ? qty : Number(qty.toFixed(4)),
+                    buyPriceUSD: bp,
+                    currentPriceUSD: cp,
+                    investedUSD: invUSD,
+                    valueUSD: valUSD,
+                    valueINR: valINR,
+                    profitUSD: plUSD,
+                    profitINR: plINR,
+                    profitPct: `${plPct.toFixed(2)}%`,
+                    source: a.appSource || a.metadata?.source || '-',
+                    notes: `FX Rate: Rs. ${usdRate.toFixed(2)}/USD`
+                };
+            });
+
+            const totPlUSD = totValUSD - totInvUSD;
+            const totValINR = totValUSD * usdRate;
+            const totPlINR = totPlUSD * usdRate;
+            const totPlPct = totInvUSD > 0 ? (totPlUSD / totInvUSD) * 100 : 0;
+            rows.push({
+                name: `Total (${cat.usStocks.length} US Stocks)`,
+                symbol: '',
+                quantity: totShares,
+                buyPriceUSD: '',
+                currentPriceUSD: '',
+                investedUSD: totInvUSD,
+                valueUSD: totValUSD,
+                valueINR: totValINR,
+                profitUSD: totPlUSD,
+                profitINR: totPlINR,
+                profitPct: `${totPlPct.toFixed(2)}%`,
+                source: '',
+                notes: `Consolidated US Valuation @ Rs. ${usdRate.toFixed(2)}`
+            });
+
+            sheets.push({ sheetName: 'US Stocks', columns, rows });
+        }
+
+        // 3. Mutual Funds Sheet
+        if (cat.mutualFunds.length > 0) {
+            const columns = [
+                { header: 'Scheme / Fund Name', key: 'name', width: 34 },
+                { header: 'Folio / ISIN', key: 'symbol', width: 16 },
+                { header: 'Units Held', key: 'quantity', width: 14 },
+                { header: 'Purchase NAV (INR)', key: 'buyPrice', width: 18 },
+                { header: 'Current NAV (INR)', key: 'currentPrice', width: 18 },
+                { header: 'Invested Capital (INR)', key: 'invested', width: 22 },
+                { header: 'Current Valuation (INR)', key: 'value', width: 22 },
+                { header: 'Profit / Loss (INR)', key: 'profit', width: 22 },
+                { header: 'Return %', key: 'profitPct', width: 14 },
+                { header: 'Platform / Source', key: 'source', width: 20 },
+                { header: 'Mapped Goal', key: 'goal', width: 20 },
+                { header: 'Notes / Remarks', key: 'notes', width: 28 }
+            ];
+
+            let totInv = 0;
+            let totVal = 0;
+            const rows: any[] = cat.mutualFunds.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const inv = qty * bp;
+                const val = qty * cp;
+                const pl = val - inv;
+                const plPct = inv > 0 ? (pl / inv) * 100 : 0;
+                totInv += inv;
+                totVal += val;
+                return {
+                    name: a.name || '',
+                    symbol: this.getTickerSymbol(a),
+                    quantity: Number(qty.toFixed(3)),
+                    buyPrice: bp,
+                    currentPrice: cp,
+                    invested: inv,
+                    value: val,
+                    profit: pl,
+                    profitPct: `${plPct.toFixed(2)}%`,
+                    source: a.appSource || a.metadata?.source || '-',
+                    goal: a.goalName || '-',
+                    notes: a.notes || ''
+                };
+            });
+
+            const totPl = totVal - totInv;
+            const totPlPct = totInv > 0 ? (totPl / totInv) * 100 : 0;
+            rows.push({
+                name: `Total (${cat.mutualFunds.length} Funds)`,
+                symbol: '',
+                quantity: '',
+                buyPrice: '',
+                currentPrice: '',
+                invested: totInv,
+                value: totVal,
+                profit: totPl,
+                profitPct: `${totPlPct.toFixed(2)}%`,
+                source: '',
+                goal: '',
+                notes: ''
+            });
+
+            sheets.push({ sheetName: 'Mutual Funds', columns, rows });
+        }
+
+        // 4. Fixed Income & Bonds Sheet
+        if (cat.fixedIncome.length > 0) {
+            const columns = [
+                { header: 'Instrument Name', key: 'name', width: 30 },
+                { header: 'Instrument Type', key: 'type', width: 18 },
+                { header: 'Bank / Issuer', key: 'bank', width: 22 },
+                { header: 'Principal Deposited (INR)', key: 'principal', width: 22 },
+                { header: 'Interest Rate %', key: 'interestRate', width: 16 },
+                { header: 'Maturity Date', key: 'maturityDate', width: 16 },
+                { header: 'Current Valuation (INR)', key: 'value', width: 22 },
+                { header: 'Mapped Goal', key: 'goal', width: 20 },
+                { header: 'Notes / Remarks', key: 'notes', width: 28 }
+            ];
+
+            let totInv = 0;
+            let totVal = 0;
+            const rows: any[] = cat.fixedIncome.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const inv = qty * bp;
+                const val = qty * cp;
+                totInv += inv;
+                totVal += val;
+                return {
+                    name: a.name || '',
+                    type: a.subType || (a.type === 'FixedDeposit' ? 'Fixed Deposit' : 'Bond'),
+                    bank: a.bank || a.appSource || '-',
+                    principal: inv,
+                    interestRate: a.interestRate ? `${a.interestRate}%` : (a.metadata?.interestRate ? `${a.metadata.interestRate}%` : '-'),
+                    maturityDate: a.maturityDate ? this.formatDate(a.maturityDate) : '-',
+                    value: val,
+                    goal: a.goalName || '-',
+                    notes: a.notes || ''
+                };
+            });
+
+            rows.push({
+                name: `Total (${cat.fixedIncome.length} Instruments)`,
+                type: '',
+                bank: '',
+                principal: totInv,
+                interestRate: '',
+                maturityDate: '',
+                value: totVal,
+                goal: '',
+                notes: ''
+            });
+
+            sheets.push({ sheetName: 'Fixed Income & Bonds', columns, rows });
+        }
+
+        // 5. Bank Accounts & Liquid Cash Sheet
+        if (cat.bankAndCash.length > 0) {
+            const columns = [
+                { header: 'Account / Source Name', key: 'name', width: 30 },
+                { header: 'Category Type', key: 'type', width: 22 },
+                { header: 'Bank / Institution', key: 'bank', width: 22 },
+                { header: 'Account / Reference', key: 'symbol', width: 18 },
+                { header: 'Available Balance (INR)', key: 'value', width: 22 },
+                { header: 'Portfolio Allocation %', key: 'allocation', width: 18 },
+                { header: 'Mapped Goal', key: 'goal', width: 20 },
+                { header: 'Notes / Remarks', key: 'notes', width: 28 }
+            ];
+
+            let totVal = 0;
+            const rows: any[] = cat.bankAndCash.map((a: any) => {
+                const val = a.currentPrice != null ? a.currentPrice : (a.buyPrice || 0);
+                totVal += val;
+                const sharePct = totalNetWorth > 0 ? (val / totalNetWorth) * 100 : 0;
+                return {
+                    name: a.name || '',
+                    type: a.type === 'Cash' ? 'Physical Cash / Liquid' : 'Savings Bank Account',
+                    bank: a.bank || a.appSource || 'Bank',
+                    symbol: this.getTickerSymbol(a) !== '-' ? this.getTickerSymbol(a) : (a.accountNumber || '-'),
+                    value: val,
+                    allocation: `${sharePct.toFixed(1)}%`,
+                    goal: a.goalName || '-',
+                    notes: a.notes || ''
+                };
+            });
+
+            const totShare = totalNetWorth > 0 ? (totVal / totalNetWorth) * 100 : 0;
+            rows.push({
+                name: `Total (${cat.bankAndCash.length} Accounts)`,
+                type: '',
+                bank: '',
+                symbol: '',
+                value: totVal,
+                allocation: `${totShare.toFixed(1)}%`,
+                goal: '',
+                notes: ''
+            });
+
+            sheets.push({ sheetName: 'Bank & Cash', columns, rows });
+        }
+
+        // 6. Other Assets Sheet
+        if (cat.otherAssets.length > 0) {
+            const columns = [
+                { header: 'Asset Name', key: 'name', width: 30 },
+                { header: 'Category', key: 'type', width: 18 },
+                { header: 'Quantity / Units', key: 'quantity', width: 16 },
+                { header: 'Cost Basis (INR)', key: 'invested', width: 20 },
+                { header: 'Current Valuation (INR)', key: 'value', width: 22 },
+                { header: 'Unrealized Gain / Loss (INR)', key: 'profit', width: 22 },
+                { header: 'Return %', key: 'profitPct', width: 14 },
+                { header: 'Notes / Remarks', key: 'notes', width: 28 }
+            ];
+
+            let totInv = 0;
+            let totVal = 0;
+            const rows: any[] = cat.otherAssets.map((a: any) => {
+                const qty = a.quantity != null ? a.quantity : 1;
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const inv = qty * bp;
+                const val = qty * cp;
+                const pl = val - inv;
+                const plPct = inv > 0 ? (pl / inv) * 100 : 0;
+                totInv += inv;
+                totVal += val;
+                return {
+                    name: a.name || '',
+                    type: this.getAssetTypeLabel(a.type),
+                    quantity: this.formatAssetQty(a),
+                    invested: inv,
+                    value: val,
+                    profit: pl,
+                    profitPct: `${plPct.toFixed(2)}%`,
+                    notes: a.notes || ''
+                };
+            });
+
+            const totPl = totVal - totInv;
+            const totPlPct = totInv > 0 ? (totPl / totInv) * 100 : 0;
+            rows.push({
+                name: `Total (${cat.otherAssets.length} Assets)`,
+                type: '',
+                quantity: '',
+                invested: totInv,
+                value: totVal,
+                profit: totPl,
+                profitPct: `${totPlPct.toFixed(2)}%`,
+                notes: ''
+            });
+
+            sheets.push({ sheetName: 'Other Assets', columns, rows });
+        }
+
+        return sheets;
+    }
+
+    /**
+     * Master All Holdings sheet (Consolidated & Categorized)
+     */
+    private buildAllHoldingsExcelSheet(sortedAssets: any[], usdRate: number): {
+        sheetName: string;
+        columns: { header: string; key: string; width: number }[];
+        rows: any[];
+    } {
+        const columns = [
+            { header: 'Asset Name', key: 'name', width: 32 },
+            { header: 'Ticker / Symbol', key: 'symbol', width: 16 },
+            { header: 'Asset Category', key: 'type', width: 22 },
+            { header: 'Currency', key: 'currency', width: 12 },
+            { header: 'Quantity / Units', key: 'quantity', width: 16 },
+            { header: 'Buy Price (Native)', key: 'buyPrice', width: 18 },
+            { header: 'Current Price (Native)', key: 'currentPrice', width: 18 },
+            { header: 'Current Market Value (INR)', key: 'value', width: 22 },
+            { header: 'Invested Capital (INR)', key: 'invested', width: 20 },
+            { header: 'Unrealized Gain / Loss (INR)', key: 'profit', width: 20 },
+            { header: 'Return %', key: 'profitPct', width: 14 },
+            { header: 'Platform / Broker Source', key: 'source', width: 22 },
+            { header: 'Mapped Goal', key: 'goal', width: 20 },
+            { header: 'Notes / Remarks', key: 'notes', width: 30 }
+        ];
+
+        const rows = sortedAssets.map((a: any) => {
+            const isUS = a.type === 'USStock' || a.currency === 'USD';
+            const fx = isUS ? usdRate : 1;
+            const isCashLike = a.type === 'Cash' || a.type === 'SavingsAccount';
+            const qty = isCashLike ? 1 : (a.quantity != null ? a.quantity : 1);
+            const bp = a.buyPrice != null ? a.buyPrice : 0;
+            const cp = a.currentPrice != null ? a.currentPrice : bp;
+            const invNative = qty * bp;
+            const valNative = qty * cp;
+            const plNative = isCashLike ? 0 : (valNative - invNative);
+            const invINR = isCashLike ? valNative * fx : invNative * fx;
+            const valINR = valNative * fx;
+            const plINR = plNative * fx;
+            const plPct = (!isCashLike && invNative > 0) ? (plNative / invNative) * 100 : 0;
+
+            return {
+                name: a.name || '',
+                symbol: this.getTickerSymbol(a),
+                type: this.getAssetTypeLabel(a.type),
+                currency: isUS ? 'USD' : 'INR',
+                quantity: isCashLike ? 1 : (Number.isInteger(qty) ? qty : Number(qty.toFixed(4))),
+                buyPrice: bp,
+                currentPrice: cp,
+                invested: invINR,
+                value: valINR,
+                profit: plINR,
+                profitPct: isCashLike ? '0.00%' : `${plPct.toFixed(2)}%`,
+                source: a.appSource || a.metadata?.source || '-',
+                goal: a.goalName || '-',
+                notes: isUS ? `US Asset ($${valNative.toFixed(2)} @ Rs.${usdRate.toFixed(2)}/USD) ${a.notes || ''}`.trim() : (a.notes || '')
+            };
+        });
+
+        return { sheetName: 'All Holdings Master', columns, rows };
+    }
 
     /**
      * 1. MASTER FINANCIAL STATEMENT (Multi-Section / Multi-Sheet)
      */
     async exportMasterReport(format: 'pdf' | 'excel', data: {
         portfolio: any;
+        assets?: any[];
         txSummary: any;
         txs: any[];
         user: any;
         periodLabel: string;
         fromDate?: string;
         toDate?: string;
+        usdRate?: number;
     }) {
         const meta: ReportMetadata = {
             title: 'Master Comprehensive Financial Statement',
@@ -505,25 +1372,54 @@ export class ReportExportService {
 
         const fStr = data.fromDate || 'all';
         const tStr = data.toDate || 'present';
+        const usdRate = data.usdRate || data.portfolio?.usdRate || 87.5;
+        const cat = this.categorizeAssets(data.assets || [], usdRate);
 
         if (format === 'pdf') {
-            const allocationRows = data.portfolio.breakdownList.map((b: any) => [
-                b.type,
-                b.count,
-                this.formatCurrency(b.invested),
-                this.formatCurrency(b.value),
-                this.formatCurrency(b.profit),
-                b.allocationPct.toFixed(1) + '%'
-            ]);
+            // Section 1: High-Level Asset Category Allocation
+            const allocationRows = data.portfolio.breakdownList.map((b: any) => {
+                const isUS = b.isUS || b.rawType === 'USStock' || b.type.toLowerCase().includes('us stock');
+                const label = isUS && b.valueUSD 
+                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})` 
+                    : b.type;
+                return [
+                    label,
+                    b.count,
+                    this.formatCurrency(b.invested),
+                    this.formatCurrency(b.value),
+                    this.formatCurrency(b.profit),
+                    b.allocationPct.toFixed(1) + '%'
+                ];
+            });
 
-            const txRows = data.txs.slice(0, 100).map((t: any) => [
-                this.formatDate(t.date),
-                t.type,
-                t.description || '-',
-                t.category || '-',
-                t.bank || '-',
-                this.formatCurrency(t.amount)
-            ]);
+            // Section 2: Dedicated Categorized Holding Tables (Indian Stocks, US Stocks, Mutual Funds, Bonds, Bank & Cash)
+            const categorizedPdfTables = this.buildCategorizedPdfTables(cat, usdRate, data.portfolio.totalValue, '2');
+
+            // Section 3: Comprehensive Transactions Journal
+            const maxPdfTx = 500;
+            const allTxs = data.txs || [];
+            const txList = allTxs.slice(0, maxPdfTx);
+            const txRows = txList.map((t: any) => {
+                let desc = t.description || '';
+                if (t.assetName && !desc.toLowerCase().includes(t.assetName.toLowerCase())) {
+                    desc = desc ? `${desc} [${t.assetName}]` : t.assetName;
+                }
+                if (t.notes && t.notes.trim() && !desc.toLowerCase().includes(t.notes.toLowerCase())) {
+                    desc = desc ? `${desc} • ${t.notes.trim()}` : t.notes.trim();
+                }
+                return [
+                    this.formatDate(t.date),
+                    t.type || '-',
+                    desc || '-',
+                    t.category || '-',
+                    t.bank || '-',
+                    this.formatCurrency(t.amount)
+                ];
+            });
+
+            const txTitle = allTxs.length > maxPdfTx
+                ? `3. Transactions Journal & Cash Activity (${data.periodLabel} - Showing latest ${maxPdfTx} of ${allTxs.length})`
+                : `3. Transactions Journal & Cash Activity (${data.periodLabel})`;
 
             await this.generatePdf(
                 meta,
@@ -531,13 +1427,14 @@ export class ReportExportService {
                 [
                     {
                         sectionTitle: '1. Asset Allocation & Portfolio Breakdown',
-                        columns: ['Asset Category', 'Holdings', 'Invested', 'Current Value', 'Gain / Loss', 'Allocation'],
+                        columns: ['Asset Category', 'Holdings', 'Invested (INR)', 'Current Value (INR)', 'Gain / Loss (INR)', 'Allocation'],
                         rows: allocationRows,
-                        columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } }
+                        columnStyles: { 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } }
                     },
+                    ...categorizedPdfTables,
                     {
-                        sectionTitle: `2. Transactions Journal (${data.periodLabel})`,
-                        columns: ['Date', 'Type', 'Description', 'Category', 'Account', 'Amount'],
+                        sectionTitle: txTitle,
+                        columns: ['Date', 'Type', 'Description / Details', 'Category', 'Account / Bank', 'Amount'],
                         rows: txRows,
                         columnStyles: { 5: { halign: 'right' } }
                     }
@@ -545,39 +1442,65 @@ export class ReportExportService {
                 `FinTracker_Master_Statement_${fStr}_to_${tStr}.pdf`
             );
         } else {
-            // Excel Multi-Sheet
+            // Excel Multi-Sheet: Clean Dedicated Categorized Worksheets + All Holdings Master + Transactions Ledger
+            // Sheet 1: Category Allocation
             const allocColumns = [
-                { header: 'Asset Category', key: 'type', width: 22 },
+                { header: 'Asset Category', key: 'type', width: 26 },
                 { header: 'Holdings Count', key: 'count', width: 16 },
-                { header: 'Invested Value', key: 'invested', width: 20 },
-                { header: 'Current Value', key: 'value', width: 20 },
-                { header: 'Profit / Loss', key: 'profit', width: 20 },
+                { header: 'Invested Value (INR)', key: 'invested', width: 22 },
+                { header: 'Current Value (INR)', key: 'value', width: 22 },
+                { header: 'Profit / Loss (INR)', key: 'profit', width: 22 },
                 { header: 'Allocation %', key: 'allocation', width: 16 },
             ];
-            const allocRows = data.portfolio.breakdownList.map((b: any) => ({
-                type: b.type,
-                count: b.count,
-                invested: b.invested,
-                value: b.value,
-                profit: b.profit,
-                allocation: b.allocationPct.toFixed(1) + '%'
-            }));
+            const allocRows = data.portfolio.breakdownList.map((b: any) => {
+                const isUS = b.isUS || b.rawType === 'USStock' || b.type.toLowerCase().includes('us stock');
+                const label = isUS && b.valueUSD 
+                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})` 
+                    : b.type;
+                return {
+                    type: label,
+                    count: b.count,
+                    invested: b.invested,
+                    value: b.value,
+                    profit: b.profit,
+                    allocation: b.allocationPct.toFixed(1) + '%'
+                };
+            });
 
+            // Categorized Worksheets (Indian Stocks, US Stocks, Mutual Funds, Fixed Income, Bank & Cash)
+            const categorizedExcelSheets = this.buildCategorizedExcelSheets(cat, usdRate, data.portfolio.totalValue);
+
+            // Consolidated Master Inventory
+            const sortedAllAssets = [
+                ...cat.indianStocks,
+                ...cat.usStocks,
+                ...cat.mutualFunds,
+                ...cat.fixedIncome,
+                ...cat.bankAndCash,
+                ...cat.otherAssets
+            ];
+            const masterAllHoldingsSheet = this.buildAllHoldingsExcelSheet(sortedAllAssets, usdRate);
+
+            // Transactions Ledger Sheet
             const txColumns = [
                 { header: 'Date', key: 'date', width: 14 },
                 { header: 'Type', key: 'type', width: 14 },
                 { header: 'Description', key: 'description', width: 32 },
                 { header: 'Category', key: 'category', width: 20 },
                 { header: 'Bank / Account', key: 'bank', width: 20 },
-                { header: 'Amount', key: 'amount', width: 18 }
+                { header: 'Amount', key: 'amount', width: 18 },
+                { header: 'Linked Security / Asset', key: 'assetName', width: 24 },
+                { header: 'Notes / Remarks', key: 'notes', width: 28 }
             ];
-            const txRows = data.txs.map((t: any) => ({
+            const txRows = (data.txs || []).map((t: any) => ({
                 date: this.formatDate(t.date),
-                type: t.type,
+                type: t.type || '',
                 description: t.description || '',
                 category: t.category || '',
                 bank: t.bank || '',
-                amount: t.amount || 0
+                amount: t.amount || 0,
+                assetName: t.assetName || '',
+                notes: t.notes || ''
             }));
 
             await this.generateExcel(
@@ -585,6 +1508,8 @@ export class ReportExportService {
                 metrics,
                 [
                     { sheetName: 'Asset Allocation', columns: allocColumns, rows: allocRows },
+                    ...categorizedExcelSheets,
+                    masterAllHoldingsSheet,
                     { sheetName: 'Transactions Ledger', columns: txColumns, rows: txRows }
                 ],
                 `FinTracker_Master_Statement_${fStr}_to_${tStr}.xlsx`
@@ -683,6 +1608,7 @@ export class ReportExportService {
         assets: any[];
         user: any;
         periodLabel: string;
+        usdRate?: number;
     }) {
         const meta: ReportMetadata = {
             title: 'Consolidated Portfolio Holdings Statement',
@@ -709,109 +1635,83 @@ export class ReportExportService {
         ];
 
         const dateStr = new Date().toISOString().slice(0, 10);
+        const usdRate = data.usdRate || data.portfolio?.usdRate || 87.5;
+        const cat = this.categorizeAssets(data.assets || [], usdRate);
 
         if (format === 'pdf') {
-            const allocRows = data.portfolio.breakdownList.map((b: any) => [
-                b.type,
-                b.count,
-                this.formatCurrency(b.invested),
-                this.formatCurrency(b.value),
-                this.formatCurrency(b.profit),
-                b.allocationPct.toFixed(1) + '%'
-            ]);
-
-            const holdingRows = data.assets.map((a: any) => {
-                const qty = a.quantity || 1;
-                const bp = a.buyPrice || 0;
-                const cp = a.currentPrice != null ? a.currentPrice : bp;
-                const inv = qty * bp;
-                const val = qty * cp;
-                const pl = val - inv;
+            const allocRows = data.portfolio.breakdownList.map((b: any) => {
+                const isUS = b.isUS || b.rawType === 'USStock' || b.type.toLowerCase().includes('us stock');
+                const label = isUS && b.valueUSD 
+                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})` 
+                    : b.type;
                 return [
-                    a.name || '-',
-                    a.symbol || '-',
-                    a.type || '-',
-                    qty,
-                    this.formatCurrency(bp),
-                    this.formatCurrency(cp),
-                    this.formatCurrency(val),
-                    this.formatCurrency(pl)
+                    label,
+                    b.count,
+                    this.formatCurrency(b.invested),
+                    this.formatCurrency(b.value),
+                    this.formatCurrency(b.profit),
+                    b.allocationPct.toFixed(1) + '%'
                 ];
             });
+
+            const categorizedPdfTables = this.buildCategorizedPdfTables(cat, usdRate, data.portfolio.totalValue, '2');
 
             await this.generatePdf(
                 meta,
                 metrics,
                 [
                     {
-                        sectionTitle: 'Asset Category Allocation',
+                        sectionTitle: '1. Asset Category Allocation',
                         columns: ['Category', 'Count', 'Invested', 'Current Value', 'Gain / Loss', 'Allocation'],
                         rows: allocRows,
                         columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } }
                     },
-                    {
-                        sectionTitle: 'All Holdings Inventory',
-                        columns: ['Asset Name', 'Symbol', 'Type', 'Qty', 'Buy Price', 'Cur Price', 'Total Value', 'Gain / Loss'],
-                        rows: holdingRows,
-                        columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' }, 7: { halign: 'right' } }
-                    }
+                    ...categorizedPdfTables
                 ],
                 `FinTracker_Portfolio_${dateStr}.pdf`
             );
         } else {
             const allocCols = [
-                { header: 'Category', key: 'type', width: 20 },
+                { header: 'Asset Category', key: 'type', width: 22 },
                 { header: 'Holdings Count', key: 'count', width: 16 },
-                { header: 'Invested', key: 'invested', width: 18 },
-                { header: 'Current Value', key: 'value', width: 18 },
-                { header: 'Gain / Loss', key: 'profit', width: 18 },
+                { header: 'Invested Value (INR)', key: 'invested', width: 22 },
+                { header: 'Current Value (INR)', key: 'value', width: 22 },
+                { header: 'Gain / Loss (INR)', key: 'profit', width: 22 },
                 { header: 'Allocation %', key: 'allocation', width: 16 }
             ];
-            const allocRows = data.portfolio.breakdownList.map((b: any) => ({
-                type: b.type,
-                count: b.count,
-                invested: b.invested,
-                value: b.value,
-                profit: b.profit,
-                allocation: b.allocationPct.toFixed(1) + '%'
-            }));
-
-            const holdingCols = [
-                { header: 'Asset Name', key: 'name', width: 28 },
-                { header: 'Symbol', key: 'symbol', width: 14 },
-                { header: 'Asset Type', key: 'type', width: 18 },
-                { header: 'Quantity', key: 'quantity', width: 14 },
-                { header: 'Buy Price', key: 'buyPrice', width: 16 },
-                { header: 'Current Price', key: 'currentPrice', width: 16 },
-                { header: 'Invested Value', key: 'invested', width: 18 },
-                { header: 'Current Value', key: 'value', width: 18 },
-                { header: 'Unrealized P&L', key: 'profit', width: 18 },
-                { header: 'Broker / App Source', key: 'source', width: 20 }
-            ];
-            const holdingRows = data.assets.map((a: any) => {
-                const qty = a.quantity || 1;
-                const bp = a.buyPrice || 0;
-                const cp = a.currentPrice != null ? a.currentPrice : bp;
+            const allocRows = data.portfolio.breakdownList.map((b: any) => {
+                const isUS = b.isUS || b.rawType === 'USStock' || b.type.toLowerCase().includes('us stock');
+                const label = isUS && b.valueUSD 
+                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})` 
+                    : b.type;
                 return {
-                    name: a.name || '',
-                    symbol: a.symbol || '',
-                    type: a.type || '',
-                    quantity: qty,
-                    buyPrice: bp,
-                    currentPrice: cp,
-                    invested: qty * bp,
-                    value: qty * cp,
-                    profit: (qty * cp) - (qty * bp),
-                    source: a.appSource || a.metadata?.source || '-'
+                    type: label,
+                    count: b.count,
+                    invested: b.invested,
+                    value: b.value,
+                    profit: b.profit,
+                    allocation: b.allocationPct.toFixed(1) + '%'
                 };
             });
+
+            const categorizedExcelSheets = this.buildCategorizedExcelSheets(cat, usdRate, data.portfolio.totalValue);
+            const sortedAllAssets = [
+                ...cat.indianStocks,
+                ...cat.usStocks,
+                ...cat.mutualFunds,
+                ...cat.fixedIncome,
+                ...cat.bankAndCash,
+                ...cat.otherAssets
+            ];
+            const masterAllHoldingsSheet = this.buildAllHoldingsExcelSheet(sortedAllAssets, usdRate);
 
             await this.generateExcel(
                 meta,
                 metrics,
                 [
                     { sheetName: 'Asset Allocation', columns: allocCols, rows: allocRows },
-                    { sheetName: 'Holdings List', columns: holdingCols, rows: holdingRows }
+                    ...categorizedExcelSheets,
+                    masterAllHoldingsSheet
                 ],
                 `FinTracker_Portfolio_${dateStr}.xlsx`
             );
@@ -825,6 +1725,7 @@ export class ReportExportService {
         stocks: any;
         user: any;
         periodLabel: string;
+        usdRate?: number;
     }) {
         const meta: ReportMetadata = {
             title: 'Equity & Stocks Portfolio Statement',
@@ -853,25 +1754,29 @@ export class ReportExportService {
         const dateStr = new Date().toISOString().slice(0, 10);
 
         if (format === 'pdf') {
-            const rows = data.stocks.rows.map((s: any) => [
-                s.symbol || '-',
-                s.name || '-',
-                s.exchange || '-',
-                s.quantity || 0,
-                this.formatCurrency(s.buyPrice),
-                this.formatCurrency(s.currentPrice || s.buyPrice),
-                this.formatCurrency(s.invested),
-                this.formatCurrency(s.value),
-                this.formatCurrency(s.profit),
-                this.formatPct(s.profitPct)
-            ]);
+            const rows = data.stocks.rows.map((s: any) => {
+                const isUS = s.isUS || s.currency === 'USD' || s.type === 'USStock';
+                const sym = isUS ? '$' : 'Rs. ';
+                return [
+                    s.symbol || '-',
+                    s.name || '-',
+                    s.exchange || '-',
+                    s.quantity || 0,
+                    this.formatCurrency(s.buyPrice, sym),
+                    this.formatCurrency(s.currentPrice || s.buyPrice, sym),
+                    this.formatCurrency(s.invested, 'Rs. '),
+                    this.formatCurrency(s.value, 'Rs. '),
+                    this.formatCurrency(s.profit, 'Rs. '),
+                    this.formatPct(s.profitPct)
+                ];
+            });
 
             await this.generatePdf(
                 meta,
                 metrics,
                 [{
                     sectionTitle: 'Equity Holdings & Valuation',
-                    columns: ['Symbol', 'Company', 'Exch', 'Qty', 'Buy Price', 'Cur Price', 'Invested', 'Current Val', 'P&L', 'Return %'],
+                    columns: ['Symbol', 'Company', 'Exch', 'Qty', 'Buy Price', 'Cur Price', 'Invested (INR)', 'Current Val (INR)', 'P&L (INR)', 'Return %'],
                     rows,
                     columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' }, 7: { halign: 'right' }, 8: { halign: 'right' }, 9: { halign: 'right' } }
                 }],
@@ -882,18 +1787,20 @@ export class ReportExportService {
                 { header: 'Symbol', key: 'symbol', width: 14 },
                 { header: 'Company Name', key: 'name', width: 28 },
                 { header: 'Exchange', key: 'exchange', width: 14 },
+                { header: 'Currency', key: 'currency', width: 12 },
                 { header: 'Quantity', key: 'quantity', width: 12 },
                 { header: 'Average Buy Price', key: 'buyPrice', width: 18 },
                 { header: 'Current Market Price', key: 'curPrice', width: 18 },
-                { header: 'Invested Value', key: 'invested', width: 18 },
-                { header: 'Current Valuation', key: 'value', width: 18 },
-                { header: 'Profit / Loss', key: 'profit', width: 18 },
+                { header: 'Invested Value (INR)', key: 'invested', width: 20 },
+                { header: 'Current Valuation (INR)', key: 'value', width: 20 },
+                { header: 'Profit / Loss (INR)', key: 'profit', width: 20 },
                 { header: 'Returns %', key: 'profitPct', width: 14 }
             ];
             const rows = data.stocks.rows.map((s: any) => ({
                 symbol: s.symbol || '',
                 name: s.name || '',
                 exchange: s.exchange || '',
+                currency: s.currency || (s.isUS ? 'USD' : 'INR'),
                 quantity: s.quantity || 0,
                 buyPrice: s.buyPrice || 0,
                 curPrice: s.currentPrice || s.buyPrice || 0,

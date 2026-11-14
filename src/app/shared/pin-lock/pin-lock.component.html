@@ -17,6 +17,14 @@
       <div class="pin-dot" [class.filled]="enteredPin().length >= 4"></div>
     </div>
 
+    <!-- Quick Biometric Unlock Button (If enabled) -->
+    @if (biometric.isAvailable() && biometric.isEnabled()) {
+      <button type="button" class="biometric-quick-btn" (click)="triggerBiometricUnlock()">
+        <span class="material-icons">fingerprint</span>
+        <span>Unlock with Fingerprint</span>
+      </button>
+    }
+
     <!-- Error message -->
     @if (error()) {
       <div class="pin-error-msg">
@@ -39,7 +47,13 @@
       <button type="button" class="key-btn" (click)="appendDigit('8')">8</button>
       <button type="button" class="key-btn" (click)="appendDigit('9')">9</button>
 
-      <button type="button" class="key-btn key-text" (click)="clearPin()">C</button>
+      @if (biometric.isAvailable() && biometric.isEnabled()) {
+        <button type="button" class="key-btn key-biometric" (click)="triggerBiometricUnlock()" title="Scan Fingerprint" aria-label="Fingerprint unlock">
+          <span class="material-icons biometric-fingerprint-icon">fingerprint</span>
+        </button>
+      } @else {
+        <button type="button" class="key-btn key-text" (click)="clearPin()">C</button>
+      }
       <button type="button" class="key-btn" (click)="appendDigit('0')">0</button>
       <button type="button" class="key-btn key-icon" (click)="deleteDigit()" aria-label="Backspace">
         <span class="material-icons">backspace</span>

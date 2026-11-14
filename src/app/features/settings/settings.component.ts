@@ -13,7 +13,9 @@ import { PwaService } from '../../services/pwa.service';
 import { AiService } from '../../services/ai.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { GoogleFinanceService } from '../../services/google-finance.service';
+import { PriceService } from '../../services/price.service';
 import { PinSecurityService } from '../../services/pin-security.service';
+import { BiometricService } from '../../services/biometric.service';
 import { DeviceSessionService } from '../../services/device-session.service';
 import { ReportExportService } from '../../services/report-export.service';
 import { ImportDataComponent } from './import-data/import-data.component';
@@ -42,12 +44,14 @@ export class SettingsComponent implements OnInit {
     aiService = inject(AiService);
     snackbar = inject(SnackbarService);
     pinSecurity = inject(PinSecurityService);
+    biometricService = inject(BiometricService);
     deviceService = inject(DeviceSessionService);
     reportExport = inject(ReportExportService);
     mcpAuth = inject(McpAuthService);
     splashService = inject(SplashScreenService);
     private assetService = inject(AssetService);
     private txService = inject(TransactionService);
+    priceService = inject(PriceService);
     sipService = inject(SipService);
     private route = inject(ActivatedRoute);
     private router = inject(Router);
@@ -495,6 +499,7 @@ export class SettingsComponent implements OnInit {
 
         const res = await this.pinSecurity.removePin(cur);
         if (res.success) {
+            await this.biometricService.disableBiometrics();
             this.removePinInput.set('');
             this.showRemovePinModal.set(false);
             this.removePinError.set('');
@@ -502,6 +507,17 @@ export class SettingsComponent implements OnInit {
             this.router.navigate(['/setup-pin']);
         } else {
             this.removePinError.set(res.message);
+        }
+    }
+
+    async toggleBiometrics() {
+        if (this.biometricService.isEnabled()) {
+            await this.biometricService.disableBiometrics();
+        } else {
+            const res = await this.biometricService.enableBiometrics();
+            if (!res.success && res.message) {
+                this.snackbar.show(res.message, 'error');
+            }
         }
     }
 
@@ -515,36 +531,85 @@ export class SettingsComponent implements OnInit {
     // 1. Overall Portfolio Report
     portfolioSummary = computed(() => {
         const asts = this.assets();
+        const usdRate = this.gfService.usdToInrRate();
         let totalVal = 0;
         let totalInv = 0;
 
-        const breakdownMap = new Map<AssetType, { count: number; value: number; invested: number }>();
+        const breakdownMap = new Map<AssetType, { 
+            count: number; 
+            value: number; 
+            invested: number;
+            valueUSD?: number;
+            investedUSD?: number;
+            isUS?: boolean;
+        }>();
 
         for (const a of asts) {
-            const currentVal = (a.quantity || 0) * (a.currentPrice || a.buyPrice || 0);
-            const investedVal = (a.quantity || 0) * (a.buyPrice || 0);
-            totalVal += currentVal;
-            totalInv += investedVal;
+            const isUS = a.type === AssetType.USStock || a.currency === 'USD' || this.priceService.isUSAsset(a);
+            const fx = isUS ? usdRate : 1;
+            const isCashLike = a.type === AssetType.Cash || a.type === AssetType.SavingsAccount;
+            const qty = isCashLike ? 1 : (a.quantity != null ? a.quantity : 1);
+            const rawCp = a.currentPrice != null ? a.currentPrice : (a.buyPrice || 0);
+            const rawBp = a.buyPrice || 0;
 
-            const existing = breakdownMap.get(a.type) || { count: 0, value: 0, invested: 0 };
+            const currentValINR = qty * rawCp * fx;
+            const investedValINR = qty * rawBp * fx;
+
+            totalVal += currentValINR;
+            totalInv += investedValINR;
+
+            const existing = breakdownMap.get(a.type) || { 
+                count: 0, 
+                value: 0, 
+                invested: 0, 
+                valueUSD: 0, 
+                investedUSD: 0, 
+                isUS 
+            };
             existing.count += 1;
-            existing.value += currentVal;
-            existing.invested += investedVal;
+            existing.value += currentValINR;
+            existing.invested += investedValINR;
+            if (isUS) {
+                existing.isUS = true;
+                existing.valueUSD = (existing.valueUSD || 0) + (qty * rawCp);
+                existing.investedUSD = (existing.investedUSD || 0) + (qty * rawBp);
+            }
             breakdownMap.set(a.type, existing);
         }
+
+        const getTypeDisplay = (type: AssetType): string => {
+            switch (type) {
+                case AssetType.Stock: return 'Indian Stocks';
+                case AssetType.USStock: return 'US Stocks';
+                case AssetType.MutualFund: return 'Mutual Funds';
+                case AssetType.FixedDeposit: return 'Fixed Deposits';
+                case AssetType.SavingsAccount: return 'Savings Account / Bank';
+                case AssetType.Bond: return 'Bonds';
+                case AssetType.Gold: return 'Gold & Precious Metals';
+                case AssetType.RealEstate: return 'Real Estate';
+                case AssetType.Crypto: return 'Crypto';
+                case AssetType.Cash: return 'Physical Cash';
+                default: return type;
+            }
+        };
 
         const breakdownList = Array.from(breakdownMap.entries()).map(([type, stats]) => {
             const pct = totalVal > 0 ? (stats.value / totalVal) * 100 : 0;
             const pl = stats.value - stats.invested;
             const plPct = stats.invested > 0 ? (pl / stats.invested) * 100 : 0;
             return {
-                type,
+                rawType: type,
+                type: getTypeDisplay(type),
                 count: stats.count,
                 invested: stats.invested,
                 value: stats.value,
                 profit: pl,
                 profitPct: plPct,
-                allocationPct: pct
+                allocationPct: pct,
+                isUS: stats.isUS,
+                valueUSD: stats.valueUSD,
+                investedUSD: stats.investedUSD,
+                profitUSD: stats.isUS ? ((stats.valueUSD || 0) - (stats.investedUSD || 0)) : undefined
             };
         }).sort((a, b) => b.value - a.value);
 
@@ -558,7 +623,8 @@ export class SettingsComponent implements OnInit {
             totalProfitPct,
             assetCount: asts.length,
             txCount: this.transactions().length,
-            breakdownList
+            breakdownList,
+            usdRate
         };
     });
 
@@ -566,6 +632,7 @@ export class SettingsComponent implements OnInit {
     stocksReport = computed(() => {
         const asts = this.assets().filter(a => a.type === AssetType.Stock || a.type === AssetType.USStock);
         const filter = this.stockFilter();
+        const usdRate = this.gfService.usdToInrRate();
 
         const filtered = asts.filter(a => {
             if (filter === 'india') return a.type === AssetType.Stock;
@@ -577,24 +644,37 @@ export class SettingsComponent implements OnInit {
         let totalInv = 0;
 
         const rows = filtered.map(a => {
+            const isUS = a.type === AssetType.USStock || a.currency === 'USD' || this.priceService.isUSAsset(a);
+            const fx = isUS ? usdRate : 1;
             const qty = a.quantity || 0;
             const buyPrice = a.buyPrice || 0;
             const curPrice = a.currentPrice != null ? a.currentPrice : buyPrice;
-            const invested = qty * buyPrice;
-            const value = qty * curPrice;
-            const pl = value - invested;
-            const plPct = invested > 0 ? (pl / invested) * 100 : 0;
-            totalVal += value;
-            totalInv += invested;
+            const investedNative = qty * buyPrice;
+            const valueNative = qty * curPrice;
+            const plNative = valueNative - investedNative;
+            const plPct = investedNative > 0 ? (plNative / investedNative) * 100 : 0;
+
+            const investedINR = investedNative * fx;
+            const valueINR = valueNative * fx;
+            const plINR = plNative * fx;
+
+            totalVal += valueINR;
+            totalInv += investedINR;
 
             return {
                 ...a,
-                invested,
-                value,
-                profit: pl,
+                isUS,
+                currency: isUS ? 'USD' : 'INR',
+                currencySymbol: isUS ? '$' : '₹',
+                invested: investedINR,
+                value: valueINR,
+                profit: plINR,
                 profitPct: plPct,
-                isIndian: a.type === AssetType.Stock,
-                exchange: a.symbol?.includes('.BO') ? 'BSE' : (a.type === AssetType.USStock ? 'US/NASDAQ' : 'NSE')
+                investedNative,
+                valueNative,
+                profitNative: plNative,
+                isIndian: !isUS,
+                exchange: a.symbol?.includes('.BO') ? 'BSE' : (isUS ? 'US/NASDAQ' : 'NSE')
             };
         }).sort((a, b) => b.value - a.value);
 
@@ -607,7 +687,9 @@ export class SettingsComponent implements OnInit {
             totalInvested: totalInv,
             totalProfit,
             totalProfitPct,
-            count: rows.length
+            count: rows.length,
+            isUSFilter: filter === 'us',
+            usdRate
         };
     });
 
@@ -760,12 +842,14 @@ export class SettingsComponent implements OnInit {
         const currentUser = this.authService.getCurrentUser();
         this.reportExport.exportMasterReport(format, {
             portfolio: this.portfolioSummary(),
+            assets: this.assets(),
             txSummary: this.transactionsReport(),
             txs: this.filteredTransactions(),
             user: currentUser,
             periodLabel: this.dateRangeLabel(),
             fromDate: this.fromDate(),
-            toDate: this.toDate()
+            toDate: this.toDate(),
+            usdRate: this.gfService.usdToInrRate()
         });
     }
 
@@ -787,7 +871,8 @@ export class SettingsComponent implements OnInit {
             portfolio: this.portfolioSummary(),
             assets: this.assets(),
             user: currentUser,
-            periodLabel: this.dateRangeLabel()
+            periodLabel: this.dateRangeLabel(),
+            usdRate: this.gfService.usdToInrRate()
         });
     }
 
@@ -796,7 +881,8 @@ export class SettingsComponent implements OnInit {
         this.reportExport.exportStocksReport(format, {
             stocks: this.stocksReport(),
             user: currentUser,
-            periodLabel: this.dateRangeLabel()
+            periodLabel: this.dateRangeLabel(),
+            usdRate: this.gfService.usdToInrRate()
         });
     }
 
@@ -851,36 +937,87 @@ export class SettingsComponent implements OnInit {
         const portfolio = this.portfolioSummary();
         const txSummary = this.transactionsReport();
         const txs = this.filteredTransactions();
+        const asts = this.assets();
+        const usdRate = this.gfService.usdToInrRate();
+
+        // Sort holdings by Category priority first, then current INR value descending
+        const categoryPriority: Record<string, number> = {
+            [AssetType.Stock]: 1,
+            [AssetType.ETF]: 1,
+            [AssetType.USStock]: 2,
+            [AssetType.MutualFund]: 3,
+            [AssetType.FixedDeposit]: 4,
+            [AssetType.Bond]: 4,
+            [AssetType.SavingsAccount]: 5,
+            [AssetType.Cash]: 5
+        };
+
+        const sortedAssets = [...asts].sort((a: any, b: any) => {
+            const isUSA = a.type === AssetType.USStock || a.currency === 'USD' || this.priceService.isUSAsset(a);
+            const isUSB = b.type === AssetType.USStock || b.currency === 'USD' || this.priceService.isUSAsset(b);
+            const pA = isUSA ? 2 : (categoryPriority[a.type] || 6);
+            const pB = isUSB ? 2 : (categoryPriority[b.type] || 6);
+            if (pA !== pB) return pA - pB;
+            const fxA = isUSA ? usdRate : 1;
+            const fxB = isUSB ? usdRate : 1;
+            const valA = (a.quantity || 1) * (a.currentPrice != null ? a.currentPrice : (a.buyPrice || 0)) * fxA;
+            const valB = (b.quantity || 1) * (b.currentPrice != null ? b.currentPrice : (b.buyPrice || 0)) * fxB;
+            return valB - valA;
+        });
 
         const lines: string[] = [
             `# FINTRACKER MASTER FINANCIAL STATEMENT`,
             `# Reporting Period: ${rangeStr}`,
             `# Export Date: ${new Date().toLocaleString('en-IN')}`,
+            `# Base Currency: INR (Rs.) | USD Exchange Rate: Rs. ${usdRate.toFixed(2)}/USD`,
             ``,
             `=== 1. PORTFOLIO NET WORTH SUMMARY ===`,
-            `Total Net Worth,${portfolio.totalValue}`,
-            `Total Invested,${portfolio.totalInvested}`,
-            `Total Gain / Loss,${portfolio.totalProfit}`,
+            `Total Net Worth,${portfolio.totalValue.toFixed(2)}`,
+            `Total Invested,${portfolio.totalInvested.toFixed(2)}`,
+            `Total Gain / Loss,${portfolio.totalProfit.toFixed(2)}`,
             `Overall Returns %,${portfolio.totalProfitPct.toFixed(2)}%`,
             `Total Asset Holdings,${portfolio.assetCount}`,
             ``,
             `=== 2. ASSET ALLOCATION BREAKDOWN ===`,
-            `Asset Category,Holdings,Invested Value,Current Value,Profit / Loss,Allocation %`,
+            `Asset Category,Holdings,Invested Value (INR),Current Value (INR),Profit / Loss (INR),Allocation %`,
             ...portfolio.breakdownList.map(b => 
                 `"${b.type}",${b.count},${b.invested.toFixed(2)},${b.value.toFixed(2)},${b.profit.toFixed(2)},${b.allocationPct.toFixed(1)}%`
             ),
             ``,
-            `=== 3. PERIOD CASH FLOW SUMMARY (${rangeStr}) ===`,
-            `Total Income / Inflow,${txSummary.totalIncome}`,
-            `Total Expenses / Outflow,${txSummary.totalExpense}`,
-            `Net Savings / Cashflow,${txSummary.netSavings}`,
+            `=== 3. CONSOLIDATED HOLDINGS & SECURITIES INVENTORY BY CATEGORY (${sortedAssets.length} Holdings) ===`,
+            `Asset Name,Ticker / Symbol,Category,Currency,Quantity / Units,Native Buy Price,Native Current Price,Invested Capital (INR),Current Market Value (INR),Unrealized Gain / Loss (INR),Return %,Broker / Source,Mapped Goal,Notes`,
+            ...sortedAssets.map(a => {
+                const isUS = a.type === AssetType.USStock || a.currency === 'USD' || this.priceService.isUSAsset(a);
+                const fx = isUS ? usdRate : 1;
+                const isCashLike = a.type === AssetType.Cash || a.type === AssetType.SavingsAccount;
+                const qty = isCashLike ? 1 : (a.quantity != null ? a.quantity : 1);
+                const bp = a.buyPrice != null ? a.buyPrice : 0;
+                const cp = a.currentPrice != null ? a.currentPrice : bp;
+                const valNative = qty * cp;
+                const invNative = isCashLike ? valNative : (qty * bp);
+                const plNative = isCashLike ? 0 : (valNative - invNative);
+                const invINR = invNative * fx;
+                const valINR = valNative * fx;
+                const plINR = plNative * fx;
+                const plPct = (!isCashLike && invNative > 0) ? (plNative / invNative) * 100 : 0;
+                const sym = a.symbol || a.isin || '-';
+                const currStr = isUS ? 'USD ($)' : 'INR (Rs.)';
+                const catLabel = isUS ? 'US Stock' : (a.type === AssetType.Stock ? 'Indian Stock' : a.type);
+                const qtyStr = isCashLike ? '-' : qty;
+                return `"${(a.name || '').replace(/"/g, '""')}","${sym}","${catLabel}","${currStr}",${qtyStr},${bp.toFixed(2)},${cp.toFixed(2)},${invINR.toFixed(2)},${valINR.toFixed(2)},${plINR.toFixed(2)},${plPct.toFixed(2)}%,"${(a.appSource || '').replace(/"/g, '""')}","${(a.goalName || '').replace(/"/g, '""')}","${(a.notes || '').replace(/"/g, '""')}"`;
+            }),
+            ``,
+            `=== 4. PERIOD CASH FLOW SUMMARY (${rangeStr}) ===`,
+            `Total Income / Inflow,${txSummary.totalIncome.toFixed(2)}`,
+            `Total Expenses / Outflow,${txSummary.totalExpense.toFixed(2)}`,
+            `Net Savings / Cashflow,${txSummary.netSavings.toFixed(2)}`,
             `Transactions Count,${txSummary.count}`,
             ``,
-            `=== 4. DETAILED TRANSACTIONS LOG (${rangeStr}) ===`,
-            `Date,Type,Description,Category,Bank,Amount`,
+            `=== 5. DETAILED TRANSACTIONS LOG (${rangeStr}) ===`,
+            `Date,Type,Description,Category,Bank / Account,Amount,Linked Security / Asset,Notes`,
             ...txs.map(t => {
                 const d = this.toValidDate(t.date);
-                return `${this.formatToDateString(d)},${t.type},"${(t.description || '').replace(/"/g, '""')}",${t.category || ''},${t.bank || ''},${t.amount || 0}`;
+                return `${this.formatToDateString(d)},${t.type},"${(t.description || '').replace(/"/g, '""')}",${t.category || ''},${t.bank || ''},${t.amount || 0},"${(t.assetName || '').replace(/"/g, '""')}","${(t.notes || '').replace(/"/g, '""')}"`;
             })
         ];
 

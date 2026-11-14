@@ -1,7 +1,8 @@
-import { Component, inject, signal, HostListener } from '@angular/core';
+import { Component, inject, signal, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PinSecurityService } from '../../services/pin-security.service';
 import { AuthService } from '../../services/auth.service';
+import { BiometricService } from '../../services/biometric.service';
 
 @Component({
     selector: 'app-pin-lock',
@@ -10,9 +11,10 @@ import { AuthService } from '../../services/auth.service';
     templateUrl: './pin-lock.component.html',
     styleUrl: './pin-lock.component.scss'
 })
-export class PinLockComponent {
+export class PinLockComponent implements OnInit {
     pinSecurity = inject(PinSecurityService);
     authService = inject(AuthService);
+    biometric = inject(BiometricService);
 
     enteredPin = signal<string>('');
     error = signal<string>('');
@@ -21,6 +23,26 @@ export class PinLockComponent {
     shakeError = signal<boolean>(false);
 
     readonly maxDigits = 4;
+
+    ngOnInit() {
+        // If fingerprint / biometric authentication is enabled, prompt user automatically
+        if (this.biometric.isAvailable() && this.biometric.isEnabled()) {
+            setTimeout(() => {
+                this.triggerBiometricUnlock();
+            }, 350);
+        }
+    }
+
+    async triggerBiometricUnlock() {
+        if (this.isVerifying() || this.biometric.isPrompting()) return;
+        this.error.set('');
+        const res = await this.biometric.authenticate();
+        if (res.success) {
+            this.pinSecurity.unlockWithBiometric();
+        } else if (!res.cancelled && res.message) {
+            this.error.set(res.message);
+        }
+    }
 
     @HostListener('window:keydown', ['$event'])
     handleKeyboard(event: KeyboardEvent) {

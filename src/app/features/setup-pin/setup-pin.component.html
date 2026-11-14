@@ -113,6 +113,19 @@
           }
         </div>
 
+        <!-- Biometric Checkbox if Available -->
+        @if (biometric.isAvailable()) {
+          <div class="biometric-opt-wrap" (click)="enableBiometric.set(!enableBiometric())">
+            <div class="biometric-checkbox" [class.checked]="enableBiometric()">
+              <span class="material-icons check-mark" *ngIf="enableBiometric()">check</span>
+            </div>
+            <div class="biometric-opt-text">
+              <span class="material-icons bio-icon">fingerprint</span>
+              <span>Enable Fingerprint / Biometric quick unlock</span>
+            </div>
+          </div>
+        }
+
         <!-- Submit Button -->
         <button
           type="submit"

@@ -354,6 +354,20 @@ export class PinSecurityService {
     }
 
     /**
+     * Unlock the application with Biometrics / Fingerprint
+     */
+    unlockWithBiometric(): boolean {
+        const uid = this.auth.currentUser?.uid;
+        if (uid) {
+            const keys = this.getStorageKeys(uid);
+            sessionStorage.setItem(keys.unlockedSession, 'true');
+        }
+        this.isLocked.set(false);
+        this.snackbar.show('Access granted via biometrics.', 'success');
+        return true;
+    }
+
+    /**
      * Toggle require PIN on app launch
      */
     async setRequireLaunchLock(enabled: boolean) {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PinSecurityService } from '../../services/pin-security.service';
+import { BiometricService } from '../../services/biometric.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { Title } from '@angular/platform-browser';
@@ -16,6 +17,7 @@ import { Title } from '@angular/platform-browser';
 })
 export class SetupPinComponent {
     private pinSecurity = inject(PinSecurityService);
+    public biometric = inject(BiometricService);
     private authService = inject(AuthService);
     private router = inject(Router);
     private title = inject(Title);
@@ -26,6 +28,7 @@ export class SetupPinComponent {
     newPin = signal<string>('');
     confirmPin = signal<string>('');
     showPin = signal<boolean>(false);
+    enableBiometric = signal<boolean>(true);
     error = signal<string>('');
     isSubmitting = signal<boolean>(false);
 
@@ -56,6 +59,10 @@ export class SetupPinComponent {
         try {
             const res = await this.pinSecurity.setPin(pin);
             if (res.success) {
+                // If biometric is available and selected, register it
+                if (this.biometric.isAvailable() && this.enableBiometric()) {
+                    await this.biometric.enableBiometrics();
+                }
                 // Instantly navigate to dashboard upon successful PIN setup
                 await this.router.navigate(['/app/dashboard']);
             } else {
