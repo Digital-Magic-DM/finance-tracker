@@ -278,77 +278,6 @@
     }
 }
 
-// ─── Market Region Segment Bar ─────────────────
-.market-segment-bar {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 14px;
-    background: var(--bg-card);
-    padding: 4px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
-
-    @media (max-width: 600px) {
-        margin-bottom: 8px;
-        padding: 3px;
-        gap: 4px;
-
-        .market-tab {
-            padding: 5px 10px;
-            font-size: 12px;
-            gap: 6px;
-        }
-    }
-
-    .market-tab {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 14px;
-        border-radius: var(--radius-sm);
-        border: none;
-        background: transparent;
-        color: var(--text-muted);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-
-        .m-count {
-            background: rgba(125, 125, 125, 0.12);
-            padding: 1px 7px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        &:hover {
-            color: var(--text-primary);
-            background: rgba(125, 125, 125, 0.08);
-        }
-
-        &.active {
-            background: var(--text-primary);
-            color: var(--bg-card);
-            font-weight: 700;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-
-            .m-count {
-                background: var(--bg-card);
-                color: var(--text-primary);
-            }
-        }
-    }
-}
 
 .country-pill {
     display: inline-flex;
@@ -596,6 +525,8 @@
 
 // ─── Portfolio Hero Card ───────────────────────
 .portfolio-hero-card {
+    position: relative;
+    overflow: hidden;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 16px;
@@ -633,10 +564,92 @@
     }
 
     .hero-top {
+        position: relative;
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
         margin-bottom: 16px;
+        min-height: 74px;
+
+        .hero-val-box {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-sparkline-wrap {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 65%;
+            max-width: 480px;
+            height: calc(100% + 22px);
+            pointer-events: none;
+            z-index: 1;
+
+            @media (max-width: 600px) {
+                width: 78%;
+                top: -6px;
+                right: -6px;
+                height: calc(100% + 14px);
+            }
+
+            .hero-sparkline-svg {
+                width: 100%;
+                height: 100%;
+                display: block;
+            }
+
+            &.positive {
+                .sparkline-stroke {
+                    fill: none;
+                    stroke: #10b981;
+                    stroke-width: 2.3;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
+                    filter: drop-shadow(0 0 7px rgba(16, 185, 129, 0.7));
+                }
+
+                .sparkline-tip-dot {
+                    fill: #34d399;
+                    filter: drop-shadow(0 0 6px #10b981);
+                }
+
+                .sparkline-pulse-ring {
+                    fill: none;
+                    stroke: #10b981;
+                    stroke-width: 1.5;
+                    animation: pulseDotGlow 2.4s ease-in-out infinite;
+                }
+            }
+
+            &.negative {
+                .sparkline-stroke {
+                    fill: none;
+                    stroke: #ef4444;
+                    stroke-width: 2.3;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
+                    filter: drop-shadow(0 0 7px rgba(239, 68, 68, 0.7));
+                }
+
+                .sparkline-tip-dot {
+                    fill: #f87171;
+                    filter: drop-shadow(0 0 6px #ef4444);
+                }
+
+                .sparkline-pulse-ring {
+                    fill: none;
+                    stroke: #ef4444;
+                    stroke-width: 1.5;
+                    animation: pulseDotGlow 2.4s ease-in-out infinite;
+                }
+            }
+        }
+
+        .hero-actions {
+            position: relative;
+            z-index: 3;
+        }
 
         .hero-label {
             font-size: 12px;
@@ -963,12 +976,33 @@
         .card-main-line {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
+            align-items: center;
             margin-bottom: 6px;
 
+            .card-identity-box {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 0;
+                flex: 1;
+
+                .holding-logo-wrap {
+                    width: 38px;
+                    height: 38px;
+                    min-width: 38px;
+                    min-height: 38px;
+                    border-radius: 10px;
+                }
+            }
+
             .ticker-box {
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+
                 .ticker-name {
-                    font-size: 17px;
+                    font-size: 16px;
                     font-weight: 800;
                     color: var(--text-primary);
                     margin: 0;
@@ -980,11 +1014,17 @@
                     color: var(--text-muted);
                     font-weight: 500;
                     display: block;
-                    margin-top: 2px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
             }
 
             .pnl-box {
+                flex-shrink: 0;
+                text-align: right;
+                margin-left: 8px;
+
                 .pnl-num {
                     font-size: 17px;
                     font-weight: 800;
@@ -1153,18 +1193,46 @@
     }
 }
 
+// ─── Table Responsive Horizontal Scroll Viewport ──────
+.table-scroll-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 8px;
+
+    &::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    }
+}
+
 // ─── Accordion Layout ────────────────────────
 .accordion-container {
     display: flex;
     flex-direction: column;
     gap: 16px;
     margin-bottom: 30px;
+    min-width: 850px;
 }
 
 .table-header-row {
     display: grid;
     /* 6 columns matching accordion-parent: Name, Alloc, Invested, Value, Return, Actions */
-    grid-template-columns: minmax(200px, 2fr) minmax(120px, 1.2fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(110px, 1fr) 100px;
+    grid-template-columns: minmax(230px, 2fr) minmax(120px, 1.2fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(110px, 1fr) 100px;
     grid-column-gap: 20px;
     align-items: center;
     padding: 10px 16px;
@@ -1176,35 +1244,8 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-
-    @media (max-width: 1000px) {
-        grid-template-columns: minmax(180px, 1.5fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 100px;
-
-        .col-alloc {
-            display: none;
-        }
-    }
-
-    @media (max-width: 800px) {
-        grid-template-columns: minmax(180px, 1.5fr) minmax(100px, 1fr) minmax(100px, 1fr) 100px;
-
-        .col-alloc,
-        .col-invested {
-            display: none;
-        }
-    }
-
-    @media (max-width: 600px) {
-        grid-template-columns: 1fr minmax(90px, 1fr) 100px;
-
-        .col-alloc,
-        .col-invested,
-        .col-returns {
-            display: none;
-        }
-
-        padding: 8px 12px;
-    }
+    min-width: 850px;
+    white-space: nowrap;
 
     .btn-expand-all {
         display: inline-flex;
@@ -1275,6 +1316,7 @@
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     border-radius: 12px;
     overflow: hidden;
+    min-width: 850px;
     transition: all 0.3s ease;
 
     &.expanded {
@@ -1285,46 +1327,19 @@
 
 .accordion-parent {
     display: grid;
-    /* 6 columns: Name, Alloc, Invested, Value, Return, Actions */
-    grid-template-columns: minmax(200px, 2fr) minmax(120px, 1.2fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(110px, 1fr) 100px;
+    /* 6 columns strictly matching table-header-row and accordion-child */
+    grid-template-columns: minmax(230px, 2fr) minmax(120px, 1.2fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(110px, 1fr) 100px;
     grid-column-gap: 20px;
     align-items: center;
     padding: 16px;
     cursor: pointer;
     user-select: none;
+    min-width: 850px;
+    white-space: nowrap;
     transition: background 0.2s;
 
     &:hover {
         background: var(--bg-card-hover, rgba(255, 255, 255, 0.07));
-    }
-
-    @media (max-width: 1000px) {
-        grid-template-columns: minmax(180px, 1.5fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) 100px;
-
-        .col-alloc {
-            display: none;
-        }
-    }
-
-    @media (max-width: 800px) {
-        grid-template-columns: minmax(180px, 1.5fr) minmax(100px, 1fr) minmax(100px, 1fr) 100px;
-
-        .col-alloc,
-        .col-invested {
-            display: none;
-        }
-    }
-
-    @media (max-width: 600px) {
-        grid-template-columns: 1fr minmax(90px, 1fr) 100px;
-
-        .col-alloc,
-        .col-invested,
-        .col-returns {
-            display: none;
-        }
-
-        padding: 12px;
     }
 }
 
@@ -1332,7 +1347,7 @@
     border-top: 1px solid var(--border-color);
     background: rgba(0, 0, 0, 0.15); // slightly darker for children
     animation: slideDown 0.3s ease-out;
-    overflow-x: auto;
+    min-width: 850px;
 
     @keyframes slideDown {
         from {
@@ -1349,14 +1364,15 @@
 
 .accordion-child {
     display: grid;
-    /* Same exact grid layout as parent so columns strictly align */
-    grid-template-columns: minmax(200px, 2fr) minmax(120px, 1.2fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(110px, 1fr) 100px;
+    /* Same exact grid layout as header and parent so columns strictly align */
+    grid-template-columns: minmax(230px, 2fr) minmax(120px, 1.2fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(110px, 1fr) 100px;
     grid-column-gap: 20px;
     align-items: center;
     padding: 12px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: background 0.2s;
     min-width: 850px;
+    white-space: nowrap;
 
     &:last-child {
         border-bottom: none;
@@ -1378,11 +1394,23 @@
 
     // Indent the child name slightly
     .child-name-col {
-        padding-left: 28px;
+        padding-left: 18px;
         position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        &:has(.select-checkbox) {
+            padding-left: 32px;
+        }
 
         @media (max-width: 600px) {
-            padding-left: 20px;
+            padding-left: 12px;
+            gap: 10px;
+
+            &:has(.select-checkbox) {
+                padding-left: 28px;
+            }
         }
     }
 }
@@ -1552,9 +1580,61 @@
     background: rgba(255, 255, 255, 0.02);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     min-width: 850px;
+    white-space: nowrap;
 }
 
 // ─── Reused Utilities ────────────────────────
+.holding-logo-wrap {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 9px;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    position: relative;
+    user-select: none;
+
+    &.has-image {
+        background: #ffffff;
+    }
+
+    .holding-logo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        background: #ffffff;
+        padding: 2px;
+    }
+
+    .holding-logo-fallback {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: inherit;
+
+        .fallback-icon {
+            font-size: 20px;
+        }
+
+        .fallback-monogram {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+    }
+}
+
 .name-box {
     display: flex;
     flex-direction: column;
@@ -2391,16 +2471,41 @@
 
 
 
-.goal-pill-tag {
+.name-headline-row {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    font-size: 10.5px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 4px;
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    margin-left: 6px;
+    gap: 7px;
+    max-width: 100%;
+}
+
+.ticker-title-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    max-width: 100%;
+}
+
+.goal-icon-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    cursor: default;
+    transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+
+    .goal-badge-icon {
+        font-size: 13px;
+        line-height: 1;
+    }
+
+    &:hover {
+        transform: scale(1.15);
+        filter: brightness(1.25);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
 }

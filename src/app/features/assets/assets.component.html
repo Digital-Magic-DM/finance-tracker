@@ -115,27 +115,6 @@
     </div>
   </div>
 
-  <!-- Market Region Segment Bar (Only rendered dynamically when user owns holdings across both Indian and US markets) -->
-  @if (hasBothMarkets()) {
-    <div class="market-segment-bar">
-      <button class="market-tab" [class.active]="selectedMarket() === 'all'" (click)="onSelectMarket('all')">
-        <span class="country-pill global-pill">ALL</span>
-        <span class="m-label">All Markets</span>
-        <span class="m-count">{{ assets().length }}</span>
-      </button>
-      <button class="market-tab" [class.active]="selectedMarket() === 'ind'" (click)="onSelectMarket('ind')">
-        <span class="country-pill ind-pill">IND</span>
-        <span class="m-label">Indian Portfolio</span>
-        <span class="m-count">{{ allIndAssets().length }}</span>
-      </button>
-      <button class="market-tab" [class.active]="selectedMarket() === 'us'" (click)="onSelectMarket('us')">
-        <span class="country-pill us-pill">US</span>
-        <span class="m-label">US Stocks</span>
-        <span class="m-count">{{ allUsAssets().length }}</span>
-      </button>
-    </div>
-  }
-
   <!-- Top Horizontal Scrollbar for Categories -->
   <div class="top-scrollbar-container">
     <div class="category-scroll-strip">
@@ -203,7 +182,7 @@
     <div class="hero-top">
       <div class="hero-val-box">
         <span class="hero-label">
-          {{ isViewingUS() ? 'US PORTFOLIO VALUE' : (selectedMarket() === 'ind' ? 'INDIAN PORTFOLIO VALUE' : 'CURRENT VALUE') }}
+          {{ isViewingUS() ? 'US PORTFOLIO VALUE' : (selectedCategory() === 'Indian Stocks' ? 'INDIAN STOCKS VALUE' : 'CURRENT VALUE') }}
         </span>
         <div class="hero-val-row">
           <span class="currency-sym">{{ isViewingUS() ? '$' : '₹' }}</span>
@@ -220,6 +199,53 @@
           </button>
         </div>
       </div>
+
+      <!-- Dynamic Sparkline Graph Design (Real Data-Driven Curve) -->
+      @let spark = heroSparkline();
+      <div class="hero-sparkline-wrap"
+           [class.positive]="spark.isPositive"
+           [class.negative]="!spark.isPositive"
+           aria-hidden="true">
+        <svg class="hero-sparkline-svg" viewBox="0 0 500 110" preserveAspectRatio="none">
+          <defs>
+            <!-- Positive Green Area Gradient -->
+            <linearGradient id="heroGainGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.35"/>
+              <stop offset="55%" stop-color="#10b981" stop-opacity="0.10"/>
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+            </linearGradient>
+            <!-- Negative Red Area Gradient -->
+            <linearGradient id="heroLossGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ef4444" stop-opacity="0.35"/>
+              <stop offset="55%" stop-color="#ef4444" stop-opacity="0.10"/>
+              <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0"/>
+            </linearGradient>
+            <!-- Horizontal fade mask so left side blends smoothly into dark card -->
+            <linearGradient id="heroFadeMask" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+              <stop offset="25%" stop-color="#fff" stop-opacity="0.45"/>
+              <stop offset="65%" stop-color="#fff" stop-opacity="1"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity="1"/>
+            </linearGradient>
+            <mask id="heroSparklineMask">
+              <rect x="0" y="0" width="500" height="110" fill="url(#heroFadeMask)"/>
+            </mask>
+          </defs>
+
+          <!-- Real Graph Rendered Path -->
+          <g mask="url(#heroSparklineMask)">
+            <path class="sparkline-fill"
+                  [attr.fill]="spark.isPositive ? 'url(#heroGainGrad)' : 'url(#heroLossGrad)'"
+                  [attr.d]="spark.fillPath" />
+            <path class="sparkline-stroke"
+                  [attr.d]="spark.strokePath" />
+          </g>
+          <!-- Glowing Pulse Dot on Tip -->
+          <circle class="sparkline-pulse-ring" [attr.cx]="spark.tipX" [attr.cy]="spark.tipY" r="5" />
+          <circle class="sparkline-tip-dot" [attr.cx]="spark.tipX" [attr.cy]="spark.tipY" r="3.5" />
+        </svg>
+      </div>
+
       <div class="hero-actions">
         <button class="refresh-all-btn" (click)="refreshAllPrices(false)" [disabled]="refreshingStocks() || refreshingMFs()" [title]="refreshTooltip()">
           <span class="material-icons" [class.spin]="refreshingStocks() || refreshingMFs()">sync</span>
@@ -310,11 +336,38 @@
 
       <!-- Main Line: Ticker & P&L Amount -->
       <div class="card-main-line">
-        <div class="ticker-box">
-          <h3 class="ticker-name">{{ asset.symbol || asset.name }}</h3>
-          @if (asset.symbol && asset.name && asset.symbol !== asset.name) {
-            <span class="full-company-name">{{ asset.name }}</span>
-          }
+        <div class="card-identity-box">
+          <div class="holding-logo-wrap" [class.has-image]="!!getCompanyLogo(asset)">
+            @if (getCompanyLogo(asset); as logoUrl) {
+              <img [src]="logoUrl" [alt]="asset.name" class="holding-logo-img" (error)="onLogoError(asset)" loading="lazy" />
+            } @else {
+              @let fallback = getLogoFallback(asset);
+              <div class="holding-logo-fallback" [style.background]="fallback.bg" [style.color]="fallback.color">
+                @if (fallback.type === 'icon') {
+                  <span class="material-icons fallback-icon">{{ fallback.icon }}</span>
+                } @else {
+                  <span class="fallback-monogram">{{ fallback.initials }}</span>
+                }
+              </div>
+            }
+          </div>
+          <div class="ticker-box">
+            <div class="ticker-title-row">
+              <h3 class="ticker-name">{{ asset.symbol || asset.name }}</h3>
+              @if (getGoalInfo(asset); as goal) {
+                <span class="goal-icon-badge" 
+                      [style.color]="goal.color" 
+                      [style.background]="goal.color + '18'" 
+                      [style.borderColor]="goal.color + '38'" 
+                      [title]="'Goal: ' + goal.name">
+                  <span class="material-icons goal-badge-icon">{{ goal.icon }}</span>
+                </span>
+              }
+            </div>
+            @if (asset.symbol && asset.name && asset.symbol !== asset.name) {
+              <span class="full-company-name">{{ asset.name }}</span>
+            }
+          </div>
         </div>
         <div class="pnl-box">
           @if (asset.currentPrice && asset.currentPrice > 0) {
@@ -391,8 +444,8 @@
   <!-- Holdings Content: Broker Cards View OR Table View -->
   @if (filteredAssets().length > 0) {
     @if (viewMode() === 'cards') {
-      <!-- Case 1: Both markets present and in 'all' view with Overview tab -> Render separated IND and US sections -->
-      @if (selectedMarket() === 'all' && hasBothMarkets() && selectedCategory() === 'Overview') {
+      <!-- Case 1: Both markets present and in Overview tab -> Render separated IND and US sections -->
+      @if (hasBothMarkets() && selectedCategory() === 'Overview') {
         <!-- 🇮🇳 Indian Portfolio Section -->
         @if (filteredIndAssets().length > 0) {
           <div class="market-section-divider">
@@ -436,8 +489,8 @@
           </div>
         }
       } @else {
-        <!-- Single market selected (IND or US) OR specific category selected -->
-        @if (selectedMarket() === 'ind' || (selectedMarket() === 'all' && allUsAssets().length === 0)) {
+        <!-- Single market or specific category selected -->
+        @if (selectedCategory() === 'Indian Stocks' || (!hasBothMarkets() && selectedCategory() === 'Overview')) {
           <div class="market-section-divider">
             <div class="section-badge-group">
               <span class="country-pill ind-pill">IND</span>
@@ -472,7 +525,8 @@
       }
     } @else {
       <!-- Classic Grouped Table View -->
-      <div class="accordion-container">
+      <div class="table-scroll-wrapper">
+        <div class="accordion-container">
         <!-- Table Column Headers Bar -->
         <div class="table-header-row">
           <div class="col-name sortable-col" [class.is-sorted]="sortField() === 'name'" (click)="toggleSort('name')" title="Sort by Holding Name">
@@ -597,16 +651,38 @@
                             </span>
                           </div>
                         }
+
+                        <div class="holding-logo-wrap" [class.has-image]="!!getCompanyLogo(asset)">
+                          @if (getCompanyLogo(asset); as logoUrl) {
+                            <img [src]="logoUrl" [alt]="asset.name" class="holding-logo-img" (error)="onLogoError(asset)" loading="lazy" />
+                          } @else {
+                            @let fallback = getLogoFallback(asset);
+                            <div class="holding-logo-fallback" [style.background]="fallback.bg" [style.color]="fallback.color">
+                              @if (fallback.type === 'icon') {
+                                <span class="material-icons fallback-icon">{{ fallback.icon }}</span>
+                              } @else {
+                                <span class="fallback-monogram">{{ fallback.initials }}</span>
+                              }
+                            </div>
+                          }
+                        </div>
+
                         <div class="name-box">
-                          <span class="name-text">{{ asset.name }}</span>
+                          <div class="name-headline-row">
+                            <span class="name-text">{{ asset.name }}</span>
+                            @if (getGoalInfo(asset); as goal) {
+                              <span class="goal-icon-badge" 
+                                    [style.color]="goal.color" 
+                                    [style.background]="goal.color + '1a'" 
+                                    [style.borderColor]="goal.color + '40'" 
+                                    [title]="'Goal: ' + goal.name"
+                                    aria-label="Linked Goal">
+                                <span class="material-icons goal-badge-icon">{{ goal.icon }}</span>
+                              </span>
+                            }
+                          </div>
                           @if (asset.symbol) {
                             <span class="symbol-text">{{ asset.symbol }}</span>
-                          }
-                          @if (asset.goalName) {
-                            <span class="goal-pill-tag" title="Mapped to Goal: {{ asset.goalName }}">
-                              <span class="material-icons sm-icon" style="font-size: 11px;">flag</span>
-                              <span>{{ asset.goalName }}</span>
-                            </span>
                           }
                           @if (asset.type === 'FixedDeposit' && asset.interestRate) {
                             <span class="symbol-text" style="color: #f59e0b; font-weight: 600;">{{ asset.interestRate }}% p.a.{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}</span>
@@ -689,6 +765,7 @@
           </div>
         }
       </div>
+    </div>
     }
   } @else {
     <div class="card empty-state" style="margin-top: 30px;">

@@ -429,11 +429,11 @@ export class ReportExportService {
 
                         if (typeof val === 'number') {
                             cell.alignment = { horizontal: 'right' };
-                            if (col.key.toLowerCase().includes('price') || 
-                                col.key.toLowerCase().includes('value') || 
-                                col.key.toLowerCase().includes('amount') || 
-                                col.key.toLowerCase().includes('profit') || 
-                                col.key.toLowerCase().includes('invested') || 
+                            if (col.key.toLowerCase().includes('price') ||
+                                col.key.toLowerCase().includes('value') ||
+                                col.key.toLowerCase().includes('amount') ||
+                                col.key.toLowerCase().includes('profit') ||
+                                col.key.toLowerCase().includes('invested') ||
                                 col.key.toLowerCase().includes('principal')) {
                                 if (rowData.currency === 'USD' && (col.key.toLowerCase().includes('price') || col.key.toLowerCase().includes('native') || col.key.toLowerCase().includes('usd'))) {
                                     cell.numFmt = '$#,##0.00';
@@ -1354,15 +1354,15 @@ export class ReportExportService {
         const metrics: SummaryMetric[] = [
             { label: 'Total Net Worth', value: this.formatCurrency(data.portfolio.totalValue), isPositive: true },
             { label: 'Invested Capital', value: this.formatCurrency(data.portfolio.totalInvested) },
-            { 
-                label: 'Overall Returns', 
-                value: this.formatCurrency(data.portfolio.totalProfit), 
+            {
+                label: 'Overall Returns',
+                value: this.formatCurrency(data.portfolio.totalProfit),
                 subtext: this.formatPct(data.portfolio.totalProfitPct),
                 isPositive: data.portfolio.totalProfit >= 0,
                 isNegative: data.portfolio.totalProfit < 0
             },
-            { 
-                label: 'Period Net Savings', 
+            {
+                label: 'Period Net Savings',
                 value: this.formatCurrency(data.txSummary.netSavings),
                 subtext: `Inflow: ${this.formatCurrency(data.txSummary.totalIncome)}`,
                 isPositive: data.txSummary.netSavings >= 0,
@@ -1379,8 +1379,8 @@ export class ReportExportService {
             // Section 1: High-Level Asset Category Allocation
             const allocationRows = data.portfolio.breakdownList.map((b: any) => {
                 const isUS = b.isUS || b.rawType === 'USStock' || b.type.toLowerCase().includes('us stock');
-                const label = isUS && b.valueUSD 
-                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})` 
+                const label = isUS && b.valueUSD
+                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})`
                     : b.type;
                 return [
                     label,
@@ -1454,8 +1454,8 @@ export class ReportExportService {
             ];
             const allocRows = data.portfolio.breakdownList.map((b: any) => {
                 const isUS = b.isUS || b.rawType === 'USStock' || b.type.toLowerCase().includes('us stock');
-                const label = isUS && b.valueUSD 
-                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})` 
+                const label = isUS && b.valueUSD
+                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})`
                     : b.type;
                 return {
                     type: label,
@@ -1540,8 +1540,8 @@ export class ReportExportService {
         const metrics: SummaryMetric[] = [
             { label: 'Total Inflow (Income)', value: this.formatCurrency(data.txSummary.totalIncome), isPositive: true },
             { label: 'Total Outflow (Expenses)', value: this.formatCurrency(data.txSummary.totalExpense), isNegative: true },
-            { 
-                label: 'Net Period Savings', 
+            {
+                label: 'Net Period Savings',
                 value: this.formatCurrency(data.txSummary.netSavings),
                 isPositive: data.txSummary.netSavings >= 0,
                 isNegative: data.txSummary.netSavings < 0
@@ -1620,14 +1620,14 @@ export class ReportExportService {
         const metrics: SummaryMetric[] = [
             { label: 'Current Portfolio Value', value: this.formatCurrency(data.portfolio.totalValue), isPositive: true },
             { label: 'Total Invested Capital', value: this.formatCurrency(data.portfolio.totalInvested) },
-            { 
-                label: 'Absolute Gain / Loss', 
+            {
+                label: 'Absolute Gain / Loss',
                 value: this.formatCurrency(data.portfolio.totalProfit),
                 isPositive: data.portfolio.totalProfit >= 0,
                 isNegative: data.portfolio.totalProfit < 0
             },
-            { 
-                label: 'Overall Returns %', 
+            {
+                label: 'Overall Returns %',
                 value: this.formatPct(data.portfolio.totalProfitPct),
                 isPositive: data.portfolio.totalProfitPct >= 0,
                 isNegative: data.portfolio.totalProfitPct < 0
@@ -1641,8 +1641,8 @@ export class ReportExportService {
         if (format === 'pdf') {
             const allocRows = data.portfolio.breakdownList.map((b: any) => {
                 const isUS = b.isUS || b.rawType === 'USStock' || b.type.toLowerCase().includes('us stock');
-                const label = isUS && b.valueUSD 
-                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})` 
+                const label = isUS && b.valueUSD
+                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})`
                     : b.type;
                 return [
                     label,
@@ -1681,8 +1681,8 @@ export class ReportExportService {
             ];
             const allocRows = data.portfolio.breakdownList.map((b: any) => {
                 const isUS = b.isUS || b.rawType === 'USStock' || b.type.toLowerCase().includes('us stock');
-                const label = isUS && b.valueUSD 
-                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})` 
+                const label = isUS && b.valueUSD
+                    ? `${b.type} (USD $${b.valueUSD.toFixed(2)})`
                     : b.type;
                 return {
                     type: label,
@@ -1737,14 +1737,14 @@ export class ReportExportService {
         const metrics: SummaryMetric[] = [
             { label: 'Total Stock Value', value: this.formatCurrency(data.stocks.totalValue), isPositive: true },
             { label: 'Invested Capital', value: this.formatCurrency(data.stocks.totalInvested) },
-            { 
-                label: 'Unrealized Gain / Loss', 
+            {
+                label: 'Unrealized Gain / Loss',
                 value: this.formatCurrency(data.stocks.totalProfit),
                 isPositive: data.stocks.totalProfit >= 0,
                 isNegative: data.stocks.totalProfit < 0
             },
-            { 
-                label: 'Stock Returns %', 
+            {
+                label: 'Stock Returns %',
                 value: this.formatPct(data.stocks.totalProfitPct),
                 isPositive: data.stocks.totalProfitPct >= 0,
                 isNegative: data.stocks.totalProfitPct < 0
@@ -1837,14 +1837,14 @@ export class ReportExportService {
         const metrics: SummaryMetric[] = [
             { label: 'Total MF Value', value: this.formatCurrency(data.mf.totalValue), isPositive: true },
             { label: 'Invested Capital', value: this.formatCurrency(data.mf.totalInvested) },
-            { 
-                label: 'Unrealized Gain / Loss', 
+            {
+                label: 'Unrealized Gain / Loss',
                 value: this.formatCurrency(data.mf.totalProfit),
                 isPositive: data.mf.totalProfit >= 0,
                 isNegative: data.mf.totalProfit < 0
             },
-            { 
-                label: 'MF Returns %', 
+            {
+                label: 'MF Returns %',
                 value: this.formatPct(data.mf.totalProfitPct),
                 isPositive: data.mf.totalProfitPct >= 0,
                 isNegative: data.mf.totalProfitPct < 0
@@ -1986,7 +1986,7 @@ export class ReportExportService {
     }
 
     /**
-     * 7. SIPs & AUTO-INVEST MANDATES STATEMENT
+     * 7. SIP MANDATES STATEMENT
      */
     async exportSipsReport(format: 'pdf' | 'excel', data: {
         sips: any[];
@@ -2053,13 +2053,13 @@ export class ReportExportService {
                 rows: (string | number)[][];
                 columnStyles?: { [key: number]: any };
             }> = [
-                {
-                    sectionTitle: 'Active Systematic Investment Mandates',
-                    columns: ['Plan Name', 'Category', 'Freq', 'Debit Day', 'Amount', 'Next Date', 'Step-Up', 'Status'],
-                    rows: planRows,
-                    columnStyles: { 4: { halign: 'right' } }
-                }
-            ];
+                    {
+                        sectionTitle: 'Active Systematic Investment Mandates',
+                        columns: ['Plan Name', 'Category', 'Freq', 'Debit Day', 'Amount', 'Next Date', 'Step-Up', 'Status'],
+                        rows: planRows,
+                        columnStyles: { 4: { halign: 'right' } }
+                    }
+                ];
 
             if (ledgerRows.length > 0) {
                 tables.push({

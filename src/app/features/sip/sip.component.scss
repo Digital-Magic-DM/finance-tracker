@@ -1417,15 +1417,35 @@
   }
 }
 
-.goal-pill-tag {
+.fund-title-row {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  gap: 7px;
+  max-width: 100%;
+}
+
+.goal-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  cursor: default;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+  vertical-align: middle;
+
+  .goal-badge-icon {
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  &:hover {
+    transform: scale(1.15);
+    filter: brightness(1.25);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
 }

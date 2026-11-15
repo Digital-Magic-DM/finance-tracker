@@ -54,6 +54,17 @@ export class GoalsComponent {
   formTargetDate: string = '';
   formPriority: 'High' | 'Medium' | 'Low' = 'High';
   formNotes: string = '';
+  formIcon: string = 'beach_access';
+
+  readonly availableIcons: string[] = [
+    'diamond', 'beach_access', 'home', 'school', 'directions_car', 
+    'flight_takeoff', 'health_and_safety', 'favorite', 'savings', 
+    'account_balance', 'trending_up', 'military_tech', 'laptop', 'pets', 'flag'
+  ];
+
+  onFormCategoryChange() {
+    this.formIcon = this.GOAL_CONFIG[this.formCategory]?.icon || 'flag';
+  }
 
   // Mapping Modal State
   showMappingModal = signal<boolean>(false);
@@ -174,6 +185,7 @@ export class GoalsComponent {
     this.editingGoalId.set(null);
     this.formName = '';
     this.formCategory = 'Retirement';
+    this.formIcon = this.GOAL_CONFIG['Retirement']?.icon || 'beach_access';
     this.formTargetAmount = 2500000;
     this.initDefaultDate();
     this.formPriority = 'High';
@@ -185,6 +197,7 @@ export class GoalsComponent {
     this.editingGoalId.set(goal.id);
     this.formName = goal.name;
     this.formCategory = goal.category;
+    this.formIcon = goal.icon || this.GOAL_CONFIG[goal.category]?.icon || 'flag';
     this.formTargetAmount = goal.targetAmount;
     this.formTargetDate = goal.targetDate;
     this.formPriority = goal.priority;
@@ -209,7 +222,7 @@ export class GoalsComponent {
       priority: this.formPriority,
       notes: this.formNotes.trim(),
       color: catConfig.color,
-      icon: catConfig.icon,
+      icon: this.formIcon || catConfig.icon,
     };
 
     if (this.editingGoalId()) {

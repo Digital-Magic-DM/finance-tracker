@@ -271,7 +271,7 @@
           <!-- Category -->
           <div class="form-group">
             <label>Category *</label>
-            <select class="form-control" [(ngModel)]="formCategory">
+            <select class="form-control" [(ngModel)]="formCategory" (ngModelChange)="onFormCategoryChange()">
               @for (cat of categories; track cat) {
                 <option [value]="cat">{{ GOAL_CONFIG[cat].label }}</option>
               }
@@ -286,6 +286,28 @@
               <option value="Medium">Medium Priority</option>
               <option value="Low">Low Priority</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Custom Goal Icon Selection -->
+        <div class="form-group icon-picker-group">
+          <label class="icon-picker-label">
+            <span>Goal Icon</span>
+            <span class="active-icon-preview" [style.color]="GOAL_CONFIG[formCategory].color">
+              <span class="material-icons sm-icon">{{ formIcon }}</span>
+            </span>
+          </label>
+          <div class="icon-selector-grid">
+            @for (ic of availableIcons; track ic) {
+              <button
+                type="button"
+                class="icon-choice-btn"
+                [class.selected]="formIcon === ic"
+                (click)="formIcon = ic"
+                [title]="ic">
+                <span class="material-icons">{{ ic }}</span>
+              </button>
+            }
           </div>
         </div>
 

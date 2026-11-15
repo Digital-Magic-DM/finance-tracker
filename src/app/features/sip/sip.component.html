@@ -232,11 +232,14 @@
                       <span class="meta-dot">·</span>
                       <span class="plan-type">{{ sip.planType }}</span>
                     }
-                    @if (sip.goalName) {
+                    @if (getGoalInfo(sip); as goal) {
                       <span class="meta-dot">·</span>
-                      <span class="goal-pill-tag" title="Powering Goal: {{ sip.goalName }}">
-                        <span class="material-icons sm-icon" style="font-size: 11px;">flag</span>
-                        <span>{{ sip.goalName }}</span>
+                      <span class="goal-icon-badge" 
+                            [style.color]="goal.color" 
+                            [style.background]="goal.color + '18'" 
+                            [style.borderColor]="goal.color + '38'" 
+                            [title]="'Powering Goal: ' + goal.name">
+                        <span class="material-icons goal-badge-icon">{{ goal.icon }}</span>
                       </span>
                     }
                   </div>
@@ -393,18 +396,23 @@
                   <tr>
                     <td>
                       <div class="fund-cell">
-                        <span class="fund-name font-semibold">{{ sip.name }}</span>
-                        <div class="fund-sub-row">
-                          @if (sip.fundHouse) {
-                            <span class="fund-sub text-muted">{{ sip.fundHouse }}</span>
-                          }
-                          @if (sip.goalName) {
-                            <span class="goal-pill-tag" title="Powering Goal: {{ sip.goalName }}">
-                              <span class="material-icons sm-icon" style="font-size: 11px;">flag</span>
-                              <span>{{ sip.goalName }}</span>
+                        <div class="fund-title-row">
+                          <span class="fund-name font-semibold">{{ sip.name }}</span>
+                          @if (getGoalInfo(sip); as goal) {
+                            <span class="goal-icon-badge" 
+                                  [style.color]="goal.color" 
+                                  [style.background]="goal.color + '18'" 
+                                  [style.borderColor]="goal.color + '38'" 
+                                  [title]="'Powering Goal: ' + goal.name">
+                              <span class="material-icons goal-badge-icon">{{ goal.icon }}</span>
                             </span>
                           }
                         </div>
+                        @if (sip.fundHouse) {
+                          <div class="fund-sub-row">
+                            <span class="fund-sub text-muted">{{ sip.fundHouse }}</span>
+                          </div>
+                        }
                       </div>
                     </td>
                     <td><span class="code-pill">{{ sip.schemeCode || '—' }}</span></td>

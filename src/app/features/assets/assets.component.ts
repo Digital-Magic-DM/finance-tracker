@@ -3,11 +3,14 @@ import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AssetService } from '../../services/asset.service';
 import { GoalService } from '../../services/goal.service';
+import { GOAL_CATEGORY_CONFIG } from '../../models/goal.models';
 import { PriceService } from '../../services/price.service';
 import { GoogleFinanceService } from '../../services/google-finance.service';
 import { SnackbarService } from '../../services/snackbar.service';
 import { TickerRegistryService } from '../../services/ticker-registry.service';
 import { BondLookupService } from '../../services/bond-lookup.service';
+import { CompanyLogoService } from '../../services/company-logo.service';
+import { SnapshotService } from '../../services/snapshot.service';
 import { Asset, AssetType, ASSET_COLORS } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportDataComponent } from '../settings/import-data/import-data.component';
@@ -46,6 +49,8 @@ export class AssetsComponent implements OnInit {
     private tickerRegistry = inject(TickerRegistryService);
     private bondLookupService = inject(BondLookupService);
     private snackbar = inject(SnackbarService);
+    public logoService = inject(CompanyLogoService);
+    private snapshotService = inject(SnapshotService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
 
@@ -55,6 +60,7 @@ export class AssetsComponent implements OnInit {
     }
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
+    snapshots = toSignal(this.snapshotService.getSnapshots(), { initialValue: [] });
     showModal = signal(false);
     showImport = signal(false);
     editingId = signal<string | null>(null);
@@ -298,8 +304,6 @@ export class AssetsComponent implements OnInit {
     }
 
 
-    // Market Region Filter: 'all' | 'ind' | 'us'
-    selectedMarket = signal<'all' | 'ind' | 'us'>('all');
 
     isUSAsset(a: Asset): boolean {
         return this.priceService.isUSAsset(a);
@@ -314,9 +318,7 @@ export class AssetsComponent implements OnInit {
     hasBothMarkets = computed(() => this.allIndAssets().length > 0 && this.allUsAssets().length > 0);
 
     categories = computed(() => {
-        const assets = this.selectedMarket() === 'ind'
-            ? this.allIndAssets()
-            : (this.selectedMarket() === 'us' ? this.allUsAssets() : this.assets());
+        const assets = this.assets();
 
         const counts = new Map<string, number>();
         let hasUS = false;
@@ -356,21 +358,13 @@ export class AssetsComponent implements OnInit {
     filteredAssets = computed(() => {
         let list = this.assets();
 
-        // 1. Market Region Filter
-        const market = this.selectedMarket();
-        if (market === 'ind') {
-            list = list.filter(a => this.isIndianAsset(a));
-        } else if (market === 'us') {
-            list = list.filter(a => this.isUSAsset(a));
-        }
-
-        // 2. App Filter
+        // 1. App Filter
         const app = this.appFilter();
         if (app !== 'All') {
             list = list.filter(a => this.getAssetApp(a) === app);
         }
 
-        // 3. Category Tab
+        // 2. Category Tab
         const cat = this.selectedCategory();
         if (cat === 'Indian Stocks') {
             list = list.filter(a => this.isIndianAsset(a) && a.type === AssetType.Stock);
@@ -448,7 +442,7 @@ export class AssetsComponent implements OnInit {
     }
 
     isViewingUS = computed(() => {
-        return this.selectedMarket() === 'us' || this.selectedCategory() === 'US Stocks';
+        return this.selectedCategory() === 'US Stocks';
     });
 
     usTotalDaysGainUSD = computed(() => {
@@ -464,26 +458,58 @@ export class AssetsComponent implements OnInit {
         return val > 0 ? (this.usTotalDaysGainUSD() / val) * 100 : 0;
     });
 
-    onSelectMarket(market: 'all' | 'ind' | 'us') {
-        this.selectedMarket.set(market);
-        if (market === 'us') {
-            this.selectedCategory.set('US Stocks');
-        } else if (market === 'ind' && this.selectedCategory() === 'US Stocks') {
-            this.selectedCategory.set('Indian Stocks');
-        } else if (market === 'all' && this.selectedCategory() === 'US Stocks') {
-            this.selectedCategory.set('Overview');
-        }
-    }
-
     onSelectCategory(catKey: string) {
         this.selectedCategory.set(catKey);
-        if (catKey === 'US Stocks') {
-            this.selectedMarket.set('us');
-        } else if (catKey === 'Indian Stocks' && this.selectedMarket() === 'us') {
-            this.selectedMarket.set('ind');
-        } else if (catKey === 'Overview' && this.selectedMarket() === 'us') {
-            this.selectedMarket.set('all');
+    }
+
+    // ── Linked Goal Info (Unique Icon & Theme Color) ──
+    readonly goalLookup = computed(() => {
+        const mapById = new Map<string, { name: string; icon: string; color: string }>();
+        const mapByName = new Map<string, { name: string; icon: string; color: string }>();
+
+        for (const g of this.goalService.goals()) {
+            const icon = g.icon || (g.category && GOAL_CATEGORY_CONFIG[g.category]?.icon) || 'flag';
+            const color = g.color || (g.category && GOAL_CATEGORY_CONFIG[g.category]?.color) || '#06b6d4';
+            const info = { name: g.name, icon, color };
+            if (g.id) mapById.set(g.id, info);
+            if (g.name) mapByName.set(g.name.toLowerCase().trim(), info);
         }
+
+        return { mapById, mapByName };
+    });
+
+    getGoalInfo(item?: { goalId?: string; goalName?: string }): { name: string; icon: string; color: string } | null {
+        if (!item || (!item.goalId && !item.goalName)) return null;
+        const { mapById, mapByName } = this.goalLookup();
+
+        if (item.goalId && mapById.has(item.goalId)) {
+            return mapById.get(item.goalId)!;
+        }
+        if (item.goalName) {
+            const normalized = item.goalName.toLowerCase().trim();
+            if (mapByName.has(normalized)) {
+                return mapByName.get(normalized)!;
+            }
+            for (const [catKey, config] of Object.entries(GOAL_CATEGORY_CONFIG)) {
+                if (normalized.includes(catKey.toLowerCase()) || normalized.includes(config.label.toLowerCase())) {
+                    return { name: item.goalName, icon: config.icon, color: config.color };
+                }
+            }
+            return { name: item.goalName, icon: 'flag', color: '#06b6d4' };
+        }
+        return null;
+    }
+
+    getCompanyLogo(asset: Asset): string | null {
+        return this.logoService.getLogoUrl(asset);
+    }
+
+    onLogoError(asset: Asset): void {
+        this.logoService.markLogoFailed(this.logoService.getLogoKey(asset));
+    }
+
+    getLogoFallback(asset: Asset) {
+        return this.logoService.getFallback(asset);
     }
 
     totalValue = computed(() =>
@@ -503,6 +529,10 @@ export class AssetsComponent implements OnInit {
         return inv > 0 ? (this.totalOverallGain() / inv) * 100 : 0;
     });
 
+    isHeroGainPositive = computed(() => {
+        return (this.isViewingUS() ? this.usTotalGainUSD() : this.totalOverallGain()) >= 0;
+    });
+
     totalDaysGain = computed(() => {
         return this.filteredAssets().reduce((s, a) => {
             const cp = a.currentPrice > 0 ? a.currentPrice : 0;
@@ -515,6 +545,203 @@ export class AssetsComponent implements OnInit {
     totalDaysGainPct = computed(() => {
         const val = this.totalValue();
         return val > 0 ? (this.totalDaysGain() / val) * 100 : 0;
+    });
+
+    private generateSparklineSvgPath(points: Array<{ x: number; y: number }>): { strokePath: string; fillPath: string; tipX: number; tipY: number } {
+        if (!points || points.length === 0) {
+            return {
+                strokePath: 'M 0,55 L 497,55',
+                fillPath: 'M 0,55 L 497,55 L 497,110 L 0,110 Z',
+                tipX: 497,
+                tipY: 55
+            };
+        }
+
+        if (points.length === 1) {
+            const y = Math.round(points[0].y * 10) / 10;
+            return {
+                strokePath: `M 0,${y} L 497,${y}`,
+                fillPath: `M 0,${y} L 497,${y} L 497,110 L 0,110 Z`,
+                tipX: 497,
+                tipY: y
+            };
+        }
+
+        let strokePath = `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+
+        if (points.length === 2) {
+            const p0 = points[0];
+            const p1 = points[1];
+            const midX = (p0.x + p1.x) / 2;
+            strokePath += ` C ${midX.toFixed(1)},${p0.y.toFixed(1)} ${midX.toFixed(1)},${p1.y.toFixed(1)} ${p1.x.toFixed(1)},${p1.y.toFixed(1)}`;
+        } else {
+            for (let i = 0; i < points.length - 1; i++) {
+                const p0 = i > 0 ? points[i - 1] : points[i];
+                const p1 = points[i];
+                const p2 = points[i + 1];
+                const p3 = i < points.length - 2 ? points[i + 2] : p2;
+
+                const cp1x = p1.x + (p2.x - p0.x) / 5.5;
+                const cp1y = p1.y + (p2.y - p0.y) / 5.5;
+                const cp2x = p2.x - (p3.x - p1.x) / 5.5;
+                const cp2y = p2.y - (p3.y - p1.y) / 5.5;
+
+                strokePath += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+            }
+        }
+
+        const lastPoint = points[points.length - 1];
+        const firstPoint = points[0];
+        const fillPath = `${strokePath} L ${lastPoint.x.toFixed(1)},110 L ${firstPoint.x.toFixed(1)},110 Z`;
+
+        return {
+            strokePath,
+            fillPath,
+            tipX: Number(lastPoint.x.toFixed(1)),
+            tipY: Number(lastPoint.y.toFixed(1))
+        };
+    }
+
+    heroSparkline = computed(() => {
+        const assets = this.filteredAssets();
+        const isUS = this.isViewingUS();
+        const currentVal = isUS ? this.usTotalValueUSD() : this.totalValue();
+        const investedCost = isUS ? this.usTotalInvestedUSD() : this.totalInvested();
+        const dayGain = isUS ? this.usTotalDaysGainUSD() : this.totalDaysGain();
+        const isPositive = this.isHeroGainPositive();
+
+        if (!assets || assets.length === 0 || currentVal <= 0) {
+            return {
+                strokePath: 'M 0,55 L 497,55',
+                fillPath: 'M 0,55 L 497,55 L 497,110 L 0,110 Z',
+                tipX: 497,
+                tipY: 55,
+                isPositive: true
+            };
+        }
+
+        // 1. Gather historical snapshot values from SnapshotService
+        const snaps = this.snapshots();
+        const pointsByDate = new Map<string, number>();
+
+        if (snaps && snaps.length > 0) {
+            for (const s of snaps) {
+                if (!s.date) continue;
+                let val: number | undefined;
+
+                if (isUS) {
+                    const usINR = s.breakdown?.[AssetType.USStock];
+                    if (usINR !== undefined && usINR > 0) {
+                        const rate = this.googleFinance.usdToInrRate() || 85;
+                        val = usINR / rate;
+                    }
+                } else if (this.selectedCategory() === 'Indian Stocks') {
+                    val = s.breakdown?.[AssetType.Stock];
+                } else if (this.selectedCategory() === 'Mutual Funds') {
+                    val = s.breakdown?.[AssetType.MutualFund];
+                } else if (this.selectedCategory() === 'Bonds') {
+                    val = s.breakdown?.[AssetType.Bond];
+                } else if (this.selectedCategory() === 'Savings Account') {
+                    val = s.breakdown?.[AssetType.SavingsAccount];
+                } else {
+                    val = s.totalAssets || s.netWorth;
+                }
+
+                if (val !== undefined && val > 0 && !isNaN(val)) {
+                    pointsByDate.set(s.date, val);
+                }
+            }
+        }
+
+        // 2. Incorporate asset purchase milestones (real timeline)
+        const sortedAssets = [...assets]
+            .filter(a => a.purchaseDate && !isNaN(new Date(a.purchaseDate).getTime()))
+            .sort((a, b) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
+
+        if (sortedAssets.length > 0) {
+            let cumulativeCost = 0;
+            const earliestSnapDate = pointsByDate.size > 0 
+                ? Array.from(pointsByDate.keys()).sort()[0] 
+                : '9999-99-99';
+
+            for (const a of sortedAssets) {
+                const d = new Date(a.purchaseDate);
+                const dStr = d.toISOString().split('T')[0];
+                const fx = isUS ? 1 : this.getFxRate(a);
+                cumulativeCost += a.buyPrice * a.quantity * fx;
+
+                if (dStr < earliestSnapDate && !pointsByDate.has(dStr)) {
+                    pointsByDate.set(dStr, cumulativeCost);
+                }
+            }
+        }
+
+        // 3. Anchor yesterday close and today's live valuation
+        const todayStr = new Date().toISOString().split('T')[0];
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        const yesterdayVal = Math.max(0, currentVal - dayGain);
+
+        if (!pointsByDate.has(yesterdayStr)) {
+            pointsByDate.set(yesterdayStr, yesterdayVal);
+        }
+        pointsByDate.set(todayStr, currentVal);
+
+        // Extract chronologically sorted values
+        let values = Array.from(pointsByDate.entries())
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(e => e[1]);
+
+        // If data points are sparse (< 4), build smooth realistic milestone steps
+        // from initial invested capital through accrued return to live valuation
+        if (values.length < 4) {
+            const startVal = investedCost > 0 ? investedCost : currentVal;
+            const diff = currentVal - startVal;
+            const steps = 7;
+            const interpolated: number[] = [];
+
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                if (i === 0) {
+                    interpolated.push(startVal);
+                } else if (i === steps - 1) {
+                    interpolated.push(yesterdayVal);
+                } else if (i === steps) {
+                    interpolated.push(currentVal);
+                } else {
+                    const progress = Math.pow(t, 1.2);
+                    const wave = Math.sin(t * Math.PI) * (diff * 0.05);
+                    interpolated.push(startVal + diff * progress + wave);
+                }
+            }
+            values = interpolated;
+        }
+
+        // 4. Map real values to SVG coordinates (500 x 110)
+        const minVal = Math.min(...values);
+        const maxVal = Math.max(...values);
+        const diff = maxVal - minVal;
+        const range = diff <= 0 ? Math.max(1, Math.abs(maxVal) * 0.1) : diff;
+
+        const paddedMin = minVal - range * 0.08;
+        const paddedMax = maxVal + range * 0.08;
+        const paddedRange = paddedMax - paddedMin;
+
+        const svgPoints = values.map((v, i) => {
+            const x = (i / (values.length - 1)) * 495 + 2;
+            const norm = (v - paddedMin) / paddedRange;
+            const y = 96 - (norm * 82);
+            return { x, y: Math.max(12, Math.min(98, y)) };
+        });
+
+        const paths = this.generateSparklineSvgPath(svgPoints);
+
+        return {
+            ...paths,
+            isPositive
+        };
     });
 
     isPriceRefreshableStock(a: Asset): boolean {
@@ -931,7 +1158,7 @@ export class AssetsComponent implements OnInit {
             const currentCat = this.selectedCategory();
             if (currentCat && catMap[currentCat]) {
                 selectedType = catMap[currentCat];
-            } else if (this.selectedMarket() === 'us') {
+            } else if (this.isViewingUS()) {
                 selectedType = AssetType.USStock;
             } else {
                 selectedType = AssetType.Stock;

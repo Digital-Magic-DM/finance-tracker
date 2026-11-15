@@ -21,6 +21,7 @@ import {
   MarketHoliday,
 } from '../../models/sip.models';
 import { Asset, AssetType } from '../../models/finance.models';
+import { GOAL_CATEGORY_CONFIG } from '../../models/goal.models';
 
 @Component({
   selector: 'app-sip',
@@ -199,6 +200,44 @@ export class SipComponent implements OnInit {
         return assets;
     }
   });
+
+  // ── Linked Goal Info (Unique Icon & Theme Color) ──
+  readonly goalLookup = computed(() => {
+    const mapById = new Map<string, { name: string; icon: string; color: string }>();
+    const mapByName = new Map<string, { name: string; icon: string; color: string }>();
+
+    for (const g of this.goalService.goals()) {
+      const icon = g.icon || (g.category && GOAL_CATEGORY_CONFIG[g.category]?.icon) || 'flag';
+      const color = g.color || (g.category && GOAL_CATEGORY_CONFIG[g.category]?.color) || '#06b6d4';
+      const info = { name: g.name, icon, color };
+      if (g.id) mapById.set(g.id, info);
+      if (g.name) mapByName.set(g.name.toLowerCase().trim(), info);
+    }
+
+    return { mapById, mapByName };
+  });
+
+  getGoalInfo(item?: { goalId?: string; goalName?: string }): { name: string; icon: string; color: string } | null {
+    if (!item || (!item.goalId && !item.goalName)) return null;
+    const { mapById, mapByName } = this.goalLookup();
+
+    if (item.goalId && mapById.has(item.goalId)) {
+      return mapById.get(item.goalId)!;
+    }
+    if (item.goalName) {
+      const normalized = item.goalName.toLowerCase().trim();
+      if (mapByName.has(normalized)) {
+        return mapByName.get(normalized)!;
+      }
+      for (const [catKey, config] of Object.entries(GOAL_CATEGORY_CONFIG)) {
+        if (normalized.includes(catKey.toLowerCase()) || normalized.includes(config.label.toLowerCase())) {
+          return { name: item.goalName, icon: config.icon, color: config.color };
+        }
+      }
+      return { name: item.goalName, icon: 'flag', color: '#06b6d4' };
+    }
+    return null;
+  }
 
   onCategoryChange(cat: SipCategory) {
     this.sipFormCategory = cat;
