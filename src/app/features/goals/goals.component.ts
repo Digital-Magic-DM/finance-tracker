@@ -455,4 +455,44 @@ export class GoalsComponent {
       return dStr;
     }
   }
+
+  // ── Mapped Sources Inline Expand/Collapse ──
+  expandedSourcesGoalIds = signal<Set<string>>(new Set());
+
+  toggleSourcesExpanded(goalId: string) {
+    this.expandedSourcesGoalIds.update((set) => {
+      const next = new Set(set);
+      if (next.has(goalId)) {
+        next.delete(goalId);
+      } else {
+        next.add(goalId);
+      }
+      return next;
+    });
+  }
+
+  isSourcesExpanded(goalId: string): boolean {
+    return this.expandedSourcesGoalIds().has(goalId);
+  }
+
+  getVisibleMappedAssets(goal: GoalWithProgress, limit = 3): string[] {
+    if (this.isSourcesExpanded(goal.id)) {
+      return goal.mappedAssetNames;
+    }
+    return goal.mappedAssetNames.slice(0, limit);
+  }
+
+  getVisibleMappedSips(goal: GoalWithProgress, limit = 3): string[] {
+    if (this.isSourcesExpanded(goal.id)) {
+      return goal.mappedSipNames;
+    }
+    const assetCount = goal.mappedAssetNames.length;
+    const remainingSlots = Math.max(0, limit - assetCount);
+    return goal.mappedSipNames.slice(0, remainingSlots);
+  }
+
+  getHiddenSourcesCount(goal: GoalWithProgress, limit = 3): number {
+    const total = goal.mappedAssetNames.length + goal.mappedSipNames.length;
+    return Math.max(0, total - limit);
+  }
 }

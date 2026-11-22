@@ -18,100 +18,124 @@
     </div>
 
     <div class="toolbar-actions">
-      @if (selectMode()) {
-        <span class="select-count">{{ selectedCount() }} selected</span>
-        <button class="btn btn-ghost btn-sm" (click)="selectAll()">Select All ({{ filteredAssets().length }})</button>
-        <button class="btn btn-ghost btn-sm" (click)="deselectAll()" [disabled]="selectedCount() === 0">Deselect</button>
-        <button class="btn btn-danger btn-sm" [disabled]="selectedCount() === 0 || deleting()" (click)="deleteSelected()">
-          <span class="material-icons sm-icon">delete</span>
-          {{ deleting() ? 'Deleting...' : 'Delete (' + selectedCount() + ')' }}
+      <!-- View Mode Selector (Table / Cards) -->
+      <div class="view-mode-pill-group">
+        <button
+          type="button"
+          class="view-pill-btn"
+          [class.active]="viewMode() === 'table'"
+          (click)="setViewMode('table')"
+          title="Switch to Table View">
+          <span class="material-icons sm-icon">table_chart</span>
+          <span class="btn-text">Table</span>
         </button>
-        <button class="btn btn-ghost btn-sm" (click)="toggleSelectMode()">Cancel</button>
-      } @else {
-        @if (assets().length > 0) {
-          <button class="btn btn-ghost btn-sm action-tool-btn" (click)="toggleSelectMode()" title="Select holdings (multi-select to delete)">
-            <span class="material-icons sm-icon">checklist</span>
-            <span class="btn-text">Select</span>
+        <button
+          type="button"
+          class="view-pill-btn"
+          [class.active]="viewMode() === 'cards'"
+          (click)="setViewMode('cards')"
+          title="Switch to Card View">
+          <span class="material-icons sm-icon">grid_view</span>
+          <span class="btn-text">Cards</span>
+        </button>
+      </div>
+
+      <div class="toolbar-action-buttons">
+        @if (selectMode()) {
+          <span class="select-count">{{ selectedCount() }} selected</span>
+          <button class="btn btn-ghost btn-sm" (click)="selectAll()">Select All ({{ filteredAssets().length }})</button>
+          <button class="btn btn-ghost btn-sm" (click)="deselectAll()" [disabled]="selectedCount() === 0">Deselect</button>
+          <button class="btn btn-danger btn-sm" [disabled]="selectedCount() === 0 || deleting()" (click)="deleteSelected()">
+            <span class="material-icons sm-icon">delete</span>
+            {{ deleting() ? 'Deleting...' : 'Delete (' + selectedCount() + ')' }}
+          </button>
+          <button class="btn btn-ghost btn-sm" (click)="toggleSelectMode()">Cancel</button>
+        } @else {
+          @if (assets().length > 0) {
+            <button class="btn btn-ghost btn-sm action-tool-btn" (click)="toggleSelectMode()" title="Select holdings (multi-select to delete)">
+              <span class="material-icons sm-icon">checklist</span>
+              <span class="btn-text">Select</span>
+            </button>
+          }
+
+          <!-- Combined Add Asset Button + Dropdown -->
+          <div class="add-asset-split-group" (click)="$event.stopPropagation()">
+            <button class="btn btn-primary btn-sm add-main-btn" id="add-asset-btn" (click)="openAdd()" title="Add Asset (+)">
+              <span class="plus-icon">+</span>
+              <span class="btn-text">Add Asset</span>
+            </button>
+            <button class="btn btn-primary btn-sm add-dropdown-toggle" (click)="toggleAddDropdown($event)" title="Add specific holding type">
+              <span class="material-icons caret-icon">arrow_drop_down</span>
+            </button>
+
+            @if (showAddDropdown()) {
+              <div class="add-asset-dropdown-menu">
+                <div class="dropdown-header">Add New Holding</div>
+                <button class="dropdown-item" (click)="openAdd(AssetType.Stock, 'INR')">
+                  <span class="material-icons item-icon">show_chart</span>
+                  <span class="item-label">Indian Stock</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.USStock, 'USD')">
+                  <span class="material-icons item-icon">language</span>
+                  <span class="item-label">US Stock ($)</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.MutualFund, 'INR')">
+                  <span class="material-icons item-icon">pie_chart</span>
+                  <span class="item-label">Mutual Fund</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.FixedDeposit, 'INR')">
+                  <span class="material-icons item-icon">savings</span>
+                  <span class="item-label">Fixed Deposit (FD)</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.Bond, 'INR')">
+                  <span class="material-icons item-icon">receipt_long</span>
+                  <span class="item-label">Corporate &amp; Govt Bonds</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.ETF, 'INR')">
+                  <span class="material-icons item-icon">trending_up</span>
+                  <span class="item-label">ETF</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.SavingsAccount, 'INR')">
+                  <span class="material-icons item-icon">account_balance</span>
+                  <span class="item-label">Savings Account (Bank)</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.Cash, 'INR')">
+                  <span class="material-icons item-icon">payments</span>
+                  <span class="item-label">Physical Cash (In Hand)</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.RealEstate, 'INR')">
+                  <span class="material-icons item-icon">home</span>
+                  <span class="item-label">Real Estate</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.Gold, 'INR')">
+                  <span class="material-icons item-icon">star</span>
+                  <span class="item-label">Gold / SGB</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.Crypto, 'USD')">
+                  <span class="material-icons item-icon">currency_bitcoin</span>
+                  <span class="item-label">Crypto ($)</span>
+                </button>
+                <button class="dropdown-item" (click)="openAdd(AssetType.Other, 'INR')">
+                  <span class="material-icons item-icon">category</span>
+                  <span class="item-label">Other Asset</span>
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- Import Button (Plus-style / document import symbol with tooltip) -->
+          <button class="btn btn-ghost btn-sm action-tool-btn" (click)="showImport.set(true)" title="Import portfolio from Groww, INDmoney, or CDSL/NSDL CAS">
+            <span class="material-icons sm-icon">post_add</span>
+            <span class="btn-text">Import</span>
+          </button>
+
+          <!-- Export Button (Up symbol with tooltip) -->
+          <button class="btn btn-ghost btn-sm action-tool-btn" (click)="exportPortfolio()" title="Export portfolio to CSV">
+            <span class="material-icons sm-icon">arrow_upward</span>
+            <span class="btn-text">Export</span>
           </button>
         }
-
-        <!-- Combined Add Asset Button + Dropdown -->
-        <div class="add-asset-split-group" (click)="$event.stopPropagation()">
-          <button class="btn btn-primary btn-sm add-main-btn" id="add-asset-btn" (click)="openAdd()" title="Add Asset (+)">
-            <span class="plus-icon">+</span>
-            <span class="btn-text">Add Asset</span>
-          </button>
-          <button class="btn btn-primary btn-sm add-dropdown-toggle" (click)="toggleAddDropdown($event)" title="Add specific holding type">
-            <span class="material-icons caret-icon">arrow_drop_down</span>
-          </button>
-
-          @if (showAddDropdown()) {
-            <div class="add-asset-dropdown-menu">
-              <div class="dropdown-header">Add New Holding</div>
-              <button class="dropdown-item" (click)="openAdd(AssetType.Stock, 'INR')">
-                <span class="material-icons item-icon">show_chart</span>
-                <span class="item-label">Indian Stock</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.USStock, 'USD')">
-                <span class="material-icons item-icon">language</span>
-                <span class="item-label">US Stock ($)</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.MutualFund, 'INR')">
-                <span class="material-icons item-icon">pie_chart</span>
-                <span class="item-label">Mutual Fund</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.FixedDeposit, 'INR')">
-                <span class="material-icons item-icon">savings</span>
-                <span class="item-label">Fixed Deposit (FD)</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.Bond, 'INR')">
-                <span class="material-icons item-icon">receipt_long</span>
-                <span class="item-label">Corporate &amp; Govt Bonds</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.ETF, 'INR')">
-                <span class="material-icons item-icon">trending_up</span>
-                <span class="item-label">ETF</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.SavingsAccount, 'INR')">
-                <span class="material-icons item-icon">account_balance</span>
-                <span class="item-label">Savings Account (Bank)</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.Cash, 'INR')">
-                <span class="material-icons item-icon">payments</span>
-                <span class="item-label">Physical Cash (In Hand)</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.RealEstate, 'INR')">
-                <span class="material-icons item-icon">home</span>
-                <span class="item-label">Real Estate</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.Gold, 'INR')">
-                <span class="material-icons item-icon">star</span>
-                <span class="item-label">Gold / SGB</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.Crypto, 'USD')">
-                <span class="material-icons item-icon">currency_bitcoin</span>
-                <span class="item-label">Crypto ($)</span>
-              </button>
-              <button class="dropdown-item" (click)="openAdd(AssetType.Other, 'INR')">
-                <span class="material-icons item-icon">category</span>
-                <span class="item-label">Other Asset</span>
-              </button>
-            </div>
-          }
-        </div>
-
-        <!-- Import Button (Plus-style / document import symbol with tooltip) -->
-        <button class="btn btn-ghost btn-sm action-tool-btn" (click)="showImport.set(true)" title="Import portfolio from Groww, INDmoney, or CDSL/NSDL CAS">
-          <span class="material-icons sm-icon">post_add</span>
-          <span class="btn-text">Import</span>
-        </button>
-
-        <!-- Export Button (Up symbol with tooltip) -->
-        <button class="btn btn-ghost btn-sm action-tool-btn" (click)="exportPortfolio()" title="Export portfolio to CSV">
-          <span class="material-icons sm-icon">arrow_upward</span>
-          <span class="btn-text">Export</span>
-        </button>
-      }
+      </div>
     </div>
   </div>
 
@@ -153,37 +177,27 @@
         </select>
       </div>
     }
-
-    <!-- View Mode Selector Pill Group in Strip -->
-    <div class="view-mode-pill-group strip-view-mode">
-      <button
-        type="button"
-        class="view-pill-btn"
-        [class.active]="viewMode() === 'table'"
-        (click)="setViewMode('table')"
-        title="Switch to Table View">
-        <span class="material-icons sm-icon">table_chart</span>
-        <span class="btn-text">Table</span>
-      </button>
-      <button
-        type="button"
-        class="view-pill-btn"
-        [class.active]="viewMode() === 'cards'"
-        (click)="setViewMode('cards')"
-        title="Switch to Card View">
-        <span class="material-icons sm-icon">grid_view</span>
-        <span class="btn-text">Cards</span>
-      </button>
-    </div>
   </div>
 
   <!-- Portfolio Hero Summary Card -->
   <div class="portfolio-hero-card" [class.us-market-active]="isViewingUS()">
-    <div class="hero-top">
+    <!-- Top Header Line: Category/Current Value Label & Refresh Action -->
+    <div class="hero-header-line">
+      <span class="hero-label">
+        {{ isViewingUS() ? 'US PORTFOLIO VALUE' : (selectedCategory() === 'Indian Stocks' ? 'INDIAN STOCKS VALUE' : 'CURRENT VALUE') }}
+      </span>
+
+      <div class="hero-actions">
+        <button class="refresh-all-btn" (click)="refreshAllPrices(false)" [disabled]="refreshingStocks() || refreshingMFs()" [title]="refreshTooltip()">
+          <span class="material-icons" [class.spin]="refreshingStocks() || refreshingMFs()">sync</span>
+          <span class="refresh-text">Refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Row: Value Display + Non-colliding Background Sparkline -->
+    <div class="hero-main-row">
       <div class="hero-val-box">
-        <span class="hero-label">
-          {{ isViewingUS() ? 'US PORTFOLIO VALUE' : (selectedCategory() === 'Indian Stocks' ? 'INDIAN STOCKS VALUE' : 'CURRENT VALUE') }}
-        </span>
         <div class="hero-val-row">
           <span class="currency-sym">{{ isViewingUS() ? '$' : '₹' }}</span>
           <h1 class="hero-value-main">
@@ -244,13 +258,6 @@
           <circle class="sparkline-pulse-ring" [attr.cx]="spark.tipX" [attr.cy]="spark.tipY" r="5" />
           <circle class="sparkline-tip-dot" [attr.cx]="spark.tipX" [attr.cy]="spark.tipY" r="3.5" />
         </svg>
-      </div>
-
-      <div class="hero-actions">
-        <button class="refresh-all-btn" (click)="refreshAllPrices(false)" [disabled]="refreshingStocks() || refreshingMFs()" [title]="refreshTooltip()">
-          <span class="material-icons" [class.spin]="refreshingStocks() || refreshingMFs()">sync</span>
-          Refresh
-        </button>
       </div>
     </div>
 

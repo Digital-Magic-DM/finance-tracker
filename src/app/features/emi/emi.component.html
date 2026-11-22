@@ -897,17 +897,20 @@
           <!-- Principal Slider -->
           <div class="slider-group">
             <div class="slider-header">
-              <label>Loan Amount (Principal)</label>
-              <div class="input-with-currency">
+              <div class="slider-label-box">
+                <label>Loan Amount (Principal)</label>
+                <span class="full-amount-hint">({{ calcPrincipal() | currency:'INR':'symbol':'1.0-0' }})</span>
+              </div>
+              <div class="input-with-currency" [title]="(calcPrincipal() | currency:'INR':'symbol':'1.0-0')">
                 <span class="curr-sign">₹</span>
                 <input
-                  type="number"
+                  type="text"
                   class="form-control val-input"
-                  [ngModel]="calcPrincipal()"
-                  (ngModelChange)="calcPrincipal.set($event)"
-                  min="10000"
-                  max="100000000"
-                  step="50000"
+                  [value]="isEditingPrincipal() ? principalInputValue() : (calcPrincipal() | compactNumber)"
+                  (focus)="onPrincipalFocus()"
+                  (blur)="onPrincipalBlur()"
+                  (input)="onPrincipalInputChange($any($event.target).value)"
+                  (keydown.enter)="$any($event.target).blur()"
                 />
               </div>
             </div>

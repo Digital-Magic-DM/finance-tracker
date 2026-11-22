@@ -476,29 +476,84 @@
     .mapped-tags-strip {
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
       gap: 6px;
+      transition: all 0.25s ease;
+
+      &.expanded {
+        max-height: 140px;
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+
+        &::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
+        }
+      }
 
       .mapped-pill {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: 5px;
         font-size: 11px;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 4px;
-        border: 1px solid var(--border-color);
-        background: var(--bg-body, #000000);
+        font-weight: 600;
+        padding: 3px 9px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
         color: var(--text-primary);
+        max-width: 175px;
+        transition: all 0.15s ease;
 
         .pill-icon {
           font-size: 13px;
+          flex-shrink: 0;
+        }
+
+        .pill-name {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         &.asset-pill .pill-icon {
-          color: #3b82f6;
+          color: #38bdf8;
         }
+
         &.sip-pill .pill-icon {
-          color: #10b981;
+          color: #34d399;
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.16);
+        }
+
+        &.more-pill,
+        &.less-pill {
+          background: rgba(99, 102, 241, 0.12);
+          border: 1px solid rgba(99, 102, 241, 0.28);
+          color: var(--accent-primary, #818cf8);
+          font-weight: 700;
+          cursor: pointer;
+          gap: 3px;
+
+          .pill-chevron {
+            font-size: 15px;
+            line-height: 1;
+            transition: transform 0.2s ease;
+          }
+
+          &:hover {
+            background: rgba(99, 102, 241, 0.22);
+            border-color: rgba(99, 102, 241, 0.45);
+            transform: translateY(-1px);
+          }
         }
       }
     }

@@ -12,11 +12,12 @@ import {
 
 import { TransactionService } from '../../services/transaction.service';
 import { TransactionType } from '../../models/finance.models';
+import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 
 @Component({
   selector: 'app-emi',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DecimalPipe],
+  imports: [CommonModule, FormsModule, CurrencyPipe, DecimalPipe, CompactNumberPipe],
   templateUrl: './emi.component.html',
   styleUrls: ['./emi.component.scss'],
 })
@@ -173,6 +174,64 @@ export class EmiComponent {
   calcPrincipal = signal<number>(1000000);
   calcRate = signal<number>(8.5);
   calcTenureYears = signal<number>(5);
+
+  isEditingPrincipal = signal<boolean>(false);
+  principalInputValue = signal<string>('');
+
+  onPrincipalFocus() {
+    this.isEditingPrincipal.set(true);
+    this.principalInputValue.set(String(this.calcPrincipal()));
+  }
+
+  onPrincipalBlur() {
+    this.isEditingPrincipal.set(false);
+    this.applyPrincipalInput(this.principalInputValue());
+  }
+
+  onPrincipalInputChange(val: string) {
+    this.principalInputValue.set(val);
+    this.applyPrincipalInput(val);
+  }
+
+  applyPrincipalInput(valStr: string) {
+    if (!valStr) return;
+    const cleaned = valStr.trim().toLowerCase();
+    let num = 0;
+
+    // Check for "cr" or "crore"
+    if (cleaned.includes('cr')) {
+      const numericPart = parseFloat(cleaned.replace(/[^0-9.]/g, ''));
+      if (!isNaN(numericPart)) {
+        num = Math.round(numericPart * 10000000);
+      }
+    }
+    // Check for "l" or "lakh"
+    else if (cleaned.includes('l')) {
+      const numericPart = parseFloat(cleaned.replace(/[^0-9.]/g, ''));
+      if (!isNaN(numericPart)) {
+        num = Math.round(numericPart * 100000);
+      }
+    }
+    // Check for "k"
+    else if (cleaned.includes('k')) {
+      const numericPart = parseFloat(cleaned.replace(/[^0-9.]/g, ''));
+      if (!isNaN(numericPart)) {
+        num = Math.round(numericPart * 1000);
+      }
+    }
+    // Raw numeric
+    else {
+      const numericPart = parseFloat(cleaned.replace(/[^0-9.]/g, ''));
+      if (!isNaN(numericPart)) {
+        num = Math.round(numericPart);
+      }
+    }
+
+    if (num > 0) {
+      const clamped = Math.max(10000, Math.min(100000000, num));
+      this.calcPrincipal.set(clamped);
+    }
+  }
 
   calcEmi = computed(() => {
     return this.emiService.calculateEmi(

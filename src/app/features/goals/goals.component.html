@@ -192,20 +192,39 @@
               </div>
             </div>
 
-            <!-- Mapped Tags Strip -->
-            @if (goal.mappedAssetNames.length > 0 || goal.mappedSipNames.length > 0) {
-              <div class="mapped-tags-strip">
-                @for (name of goal.mappedAssetNames; track name) {
-                  <span class="mapped-pill asset-pill" title="Mapped Holding">
+            <!-- Mapped Tags Strip (Clean Optimized Preview) -->
+            @let totalSources = goal.mappedAssetNames.length + goal.mappedSipNames.length;
+            @if (totalSources > 0) {
+              <div class="mapped-tags-strip" [class.expanded]="isSourcesExpanded(goal.id)">
+                @for (name of getVisibleMappedAssets(goal, 3); track name) {
+                  <span class="mapped-pill asset-pill" [title]="name">
                     <span class="material-icons pill-icon">account_balance_wallet</span>
-                    <span>{{ name }}</span>
+                    <span class="pill-name">{{ name }}</span>
                   </span>
                 }
-                @for (name of goal.mappedSipNames; track name) {
-                  <span class="mapped-pill sip-pill" title="Mapped Monthly SIP">
+                @for (name of getVisibleMappedSips(goal, 3); track name) {
+                  <span class="mapped-pill sip-pill" [title]="name">
                     <span class="material-icons pill-icon">autorenew</span>
-                    <span>{{ name }}</span>
+                    <span class="pill-name">{{ name }}</span>
                   </span>
+                }
+                @if (!isSourcesExpanded(goal.id) && getHiddenSourcesCount(goal, 3) > 0) {
+                  <button type="button" 
+                          class="mapped-pill more-pill" 
+                          (click)="toggleSourcesExpanded(goal.id); $event.stopPropagation()"
+                          title="Click to view all {{ totalSources }} mapped sources">
+                    <span>+{{ getHiddenSourcesCount(goal, 3) }} more</span>
+                    <span class="material-icons pill-chevron">expand_more</span>
+                  </button>
+                }
+                @if (isSourcesExpanded(goal.id) && totalSources > 3) {
+                  <button type="button" 
+                          class="mapped-pill less-pill" 
+                          (click)="toggleSourcesExpanded(goal.id); $event.stopPropagation()"
+                          title="Collapse mapped sources">
+                    <span>Show less</span>
+                    <span class="material-icons pill-chevron">expand_less</span>
+                  </button>
                 }
               </div>
             } @else {
