@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmiService } from '../../services/emi.service';
@@ -20,6 +20,7 @@ import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
   imports: [CommonModule, FormsModule, CurrencyPipe, DecimalPipe, CompactNumberPipe],
   templateUrl: './emi.component.html',
   styleUrls: ['./emi.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmiComponent {
   public emiService = inject(EmiService);

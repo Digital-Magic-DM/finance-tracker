@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GoalService } from '../../services/goal.service';
@@ -20,6 +20,7 @@ import { Sip } from '../../models/sip.models';
   imports: [CommonModule, FormsModule],
   templateUrl: './goals.component.html',
   styleUrl: './goals.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GoalsComponent {
   goalService = inject(GoalService);

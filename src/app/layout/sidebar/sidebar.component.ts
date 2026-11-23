@@ -1,4 +1,4 @@
-import { Component, inject, output, input } from '@angular/core';
+import { Component, inject, output, input, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { PwaService } from '../../services/pwa.service';
@@ -17,6 +17,7 @@ interface NavItem {
     imports: [RouterLink, RouterLinkActive],
     templateUrl: './sidebar.component.html',
     styleUrl: './sidebar.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarComponent {
     private authService = inject(AuthService);
@@ -32,20 +33,18 @@ export class SidebarComponent {
             window.location.hostname === '127.0.0.1' ||
             window.location.hostname.startsWith('192.168.'));
 
-    get navItems(): NavItem[] {
-        return [
-            // { label: 'Live Market', icon: 'bolt', route: '/app/market' },
-            { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard' },
-            { label: 'Assets', icon: 'account_balance_wallet', route: '/app/assets' },
-            { label: 'Transactions', icon: 'receipt_long', route: '/app/transactions' },
-            { label: 'SIP', icon: 'autorenew', route: '/app/sip' },
-            { label: 'Financial Goals', icon: 'flag', route: '/app/goals' },
-            { label: 'Analytics', icon: 'analytics', route: '/app/analytics' },
-            { label: 'Essentials', icon: 'health_and_safety', route: '/app/essentials' },
-            { label: 'EMI & Loans', icon: 'credit_score', route: '/app/emi' },
-            { label: 'Settings', icon: 'settings', route: '/app/settings' },
-        ];
-    }
+    readonly navItems: readonly NavItem[] = [
+        // { label: 'Live Market', icon: 'bolt', route: '/app/market' },
+        { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard' },
+        { label: 'Assets', icon: 'account_balance_wallet', route: '/app/assets' },
+        { label: 'Transactions', icon: 'receipt_long', route: '/app/transactions' },
+        { label: 'SIP', icon: 'autorenew', route: '/app/sip' },
+        { label: 'Financial Goals', icon: 'flag', route: '/app/goals' },
+        { label: 'Analytics', icon: 'analytics', route: '/app/analytics' },
+        { label: 'Essentials', icon: 'health_and_safety', route: '/app/essentials' },
+        { label: 'EMI & Loans', icon: 'credit_score', route: '/app/emi' },
+        { label: 'Settings', icon: 'settings', route: '/app/settings' },
+    ];
 
     signOut() {
         this.authService.signOut().subscribe();

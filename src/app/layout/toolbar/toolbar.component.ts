@@ -1,4 +1,4 @@
-import { Component, inject, output, signal, HostListener, ElementRef } from '@angular/core';
+import { Component, inject, output, signal, HostListener, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
@@ -15,6 +15,7 @@ import { DeviceSessionService, DeviceSession } from '../../services/device-sessi
     imports: [RouterLink],
     templateUrl: './toolbar.component.html',
     styleUrl: './toolbar.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarComponent {
     authService = inject(AuthService);

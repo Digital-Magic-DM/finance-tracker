@@ -784,10 +784,12 @@
     </div>
     }
   } @else {
-    <div class="card empty-state" style="margin-top: 30px;">
-      <span class="material-icons empty-icon">work</span>
-      <h3>No holdings found</h3>
-      <p>Try clearing your search or filter, or import holdings from INDmoney / Groww.</p>
+    <div class="card" style="margin-top: 30px;">
+      <app-empty-state
+        icon="work"
+        title="No holdings found"
+        description="Try clearing your search or filter, or import holdings from INDmoney / Groww.">
+      </app-empty-state>
     </div>
   }
 </div>

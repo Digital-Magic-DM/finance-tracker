@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CurrencyPipe, DecimalPipe, CommonModule } from '@angular/common';
 import { EssentialsService } from '../../services/essentials.service';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,8 @@ import { FormsModule } from '@angular/forms';
     standalone: true,
     imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule],
     templateUrl: './essentials.component.html',
-    styleUrl: './essentials.component.scss'
+    styleUrl: './essentials.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EssentialsComponent {
     public essentialsService = inject(EssentialsService);

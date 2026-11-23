@@ -189,11 +189,11 @@
         </tbody>
       </table>
     } @else {
-      <div class="empty-state">
-        <span class="material-icons empty-icon">receipt_long</span>
-        <span class="empty-title">No transactions found</span>
-        <span class="empty-text">Try changing filters or add a new transaction.</span>
-      </div>
+      <app-empty-state
+        icon="receipt_long"
+        title="No transactions found"
+        description="Try changing filters or add a new transaction.">
+      </app-empty-state>
     }
   </div>
 </div>

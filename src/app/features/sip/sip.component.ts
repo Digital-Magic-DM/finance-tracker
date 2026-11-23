@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, HostListener } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SipService } from '../../services/sip.service';
@@ -29,6 +29,7 @@ import { GOAL_CATEGORY_CONFIG } from '../../models/goal.models';
   imports: [CommonModule, FormsModule, CurrencyPipe, DecimalPipe],
   templateUrl: './sip.component.html',
   styleUrls: ['./sip.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SipComponent implements OnInit {
   public sipService = inject(SipService);

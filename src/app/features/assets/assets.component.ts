@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, NgZone, ChangeDetectorRef, OnInit, HostListener } from '@angular/core';
+import { Component, inject, signal, computed, NgZone, ChangeDetectorRef, OnInit, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AssetService } from '../../services/asset.service';
@@ -11,11 +11,12 @@ import { TickerRegistryService } from '../../services/ticker-registry.service';
 import { BondLookupService } from '../../services/bond-lookup.service';
 import { CompanyLogoService } from '../../services/company-logo.service';
 import { SnapshotService } from '../../services/snapshot.service';
-import { Asset, AssetType, ASSET_COLORS } from '../../models/finance.models';
+import { Asset, AssetType, ASSET_COLORS, getAssetAppSource } from '../../models/finance.models';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportDataComponent } from '../settings/import-data/import-data.component';
 import { LocationPickerComponent } from '../../shared/location-picker/location-picker.component';
 import { CustomSelectDirective } from '../../shared/directives/custom-select.directive';
+import { EmptyStateComponent } from '../../shared/empty-state/empty-state.component';
 
 interface AssetGroup {
     type: string;
@@ -41,9 +42,10 @@ interface AssetGroup {
 @Component({
     selector: 'app-assets',
     standalone: true,
-    imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent, LocationPickerComponent, CustomSelectDirective],
+    imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent, LocationPickerComponent, CustomSelectDirective, EmptyStateComponent],
     templateUrl: './assets.component.html',
     styleUrl: './assets.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetsComponent implements OnInit {
     private assetService = inject(AssetService);
@@ -208,17 +210,7 @@ export class AssetsComponent implements OnInit {
     }
 
     getAssetApp(a: Asset): string {
-        const raw = (a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace(/^Imported from\s*/i, '').trim() : '')).trim();
-        if (!raw) return 'Manual';
-        if (/indmoney|indstocks/i.test(raw)) return 'INDmoney';
-        if (/groww/i.test(raw)) return 'Groww';
-        if (/zerodha/i.test(raw)) return 'Zerodha';
-        if (/cdsl|nsdl/i.test(raw)) return 'CDSL / NSDL';
-        if (/csv/i.test(raw)) return 'CSV Import';
-
-        // Strip trailing PDF Statement or (ISIN: ...)
-        const clean = raw.replace(/\s*(pdf\s*statement|statement|\(isin:[^)]*\)|isin:[^\s)]*).*/gi, '').trim();
-        return clean || 'Imported';
+        return getAssetAppSource(a);
     }
 
     availableApps = computed(() => {

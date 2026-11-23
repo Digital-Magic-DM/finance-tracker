@@ -1,8 +1,7 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
-// import { MarketService } from '../services/market.service';
 import { Meta } from '@angular/platform-browser';
 import { AiChatComponent } from '../shared/ai-chat/ai-chat.component';
 import { PinLockComponent } from '../shared/pin-lock/pin-lock.component';
@@ -24,6 +23,7 @@ import { SipService } from '../services/sip.service';
     ],
     templateUrl: './layout.component.html',
     styleUrl: './layout.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LayoutComponent implements OnInit {
     private meta = inject(Meta);

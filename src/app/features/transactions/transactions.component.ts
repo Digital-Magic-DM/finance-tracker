@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/transaction.service';
@@ -7,13 +7,15 @@ import { Transaction, TransactionType, TRANSACTION_CATEGORIES } from '../../mode
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ImportTransactionsComponent } from './import-transactions/import-transactions.component';
 import { CustomSelectDirective } from '../../shared/directives/custom-select.directive';
+import { EmptyStateComponent } from '../../shared/empty-state/empty-state.component';
 
 @Component({
     selector: 'app-transactions',
     standalone: true,
-    imports: [CommonModule, FormsModule, DatePipe, CurrencyPipe, ImportTransactionsComponent, CustomSelectDirective],
+    imports: [CommonModule, FormsModule, DatePipe, CurrencyPipe, ImportTransactionsComponent, CustomSelectDirective, EmptyStateComponent],
     templateUrl: './transactions.component.html',
     styleUrl: './transactions.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TransactionsComponent {
     private txService = inject(TransactionService);

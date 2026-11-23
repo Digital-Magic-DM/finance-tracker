@@ -10,7 +10,9 @@ import { PriceService } from '../../services/price.service';
 
 import {
     TransactionType,
-    AssetType, AssetAllocation, Asset
+    AssetType, AssetAllocation, Asset,
+    getAssetAppSource,
+    getAppBrandColor
 } from '../../models/finance.models';
 import { PortfolioChartComponent } from '../../shared/portfolio-chart/portfolio-chart.component';
 import { NetworthChartComponent } from '../../shared/networth-chart/networth-chart.component';
@@ -173,29 +175,11 @@ export class DashboardComponent implements OnInit {
     }
 
     getAssetApp(a: Asset): string {
-        const raw = (a.appSource || (a.notes?.includes('Imported from') ? a.notes.replace(/^Imported from\s*/i, '').trim() : '')).trim();
-        if (!raw) return 'Manual';
-        if (/indmoney|indstocks/i.test(raw)) return 'INDmoney';
-        if (/groww/i.test(raw)) return 'Groww';
-        if (/zerodha/i.test(raw)) return 'Zerodha';
-        if (/cdsl|nsdl/i.test(raw)) return 'CDSL / NSDL';
-        if (/csv/i.test(raw)) return 'CSV Import';
-
-        const clean = raw.replace(/\s*(pdf\s*statement|statement|\(isin:[^)]*\)|isin:[^\s)]*).*/gi, '').trim();
-        return clean || 'Imported';
+        return getAssetAppSource(a);
     }
 
     getAppColor(appName: string): string {
-        const map: Record<string, string> = {
-            'INDmoney': '#6366F1',
-            'Groww': '#00D09C',
-            'Zerodha': '#387ED1',
-            'CDSL / NSDL': '#F59E0B',
-            'CSV Import': '#06B6D4',
-            'Manual': '#EC4899',
-            'Imported': '#8B5CF6'
-        };
-        return map[appName] || '#A855F7';
+        return getAppBrandColor(appName);
     }
 
     monthlyIncome = computed(() => {
