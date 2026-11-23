@@ -56,6 +56,7 @@ Unlike competitors that offer 3 fixed pie charts, this application ships with a 
 ### 4. Zero-Compromise Security Architecture
 *   By relying strictly on Firebase Auth and granular Firestore Security Rules, user data is hermetically isolated at the server level. 
 *   Because the app utilizes user-driven statement uploads over opaque Broker API token connections, users retain 100% agency and control over their financial footprint.
+*   **Production Data Protection Policy**: Never use `dineshmurugan518@gmail.com` for testing, demo statements, or mock evaluations. That account is reserved strictly for real personal financial data. All test operations must use mock emails (e.g., `test.user@example.com`). See [AGENTS.md](../AGENTS.md).
 
 ### 5. Highly Optimized Progressive Web App (PWA)
 The app is entirely responsive, but it goes further. It implements dedicated mobile layouts (e.g., gracefully hiding complex decorative SVGs on mobile to yield screen space for critical financial data). As a PWA, it leverages service workers to cache the application shell. This guarantees that basic features remain operable even while traversing dead zones like subway tunnels or rural highways.

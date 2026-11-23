@@ -237,8 +237,8 @@ export class TransactionsComponent {
         this.showDeleteModal.set(true);
     }
 
-    closeDeleteModal() {
-        if (this.deleting()) return;
+    closeDeleteModal(force = false) {
+        if (this.deleting() && !force) return;
         this.showDeleteModal.set(false);
         this.txPendingDeletion.set([]);
     }
@@ -247,7 +247,7 @@ export class TransactionsComponent {
         const toDelete = this.txPendingDeletion();
         const ids = toDelete.map(t => t.id!).filter(Boolean);
         if (ids.length === 0) {
-            this.closeDeleteModal();
+            this.closeDeleteModal(true);
             return;
         }
 
@@ -271,12 +271,13 @@ export class TransactionsComponent {
                 `Successfully deleted ${ids.length} transaction${ids.length > 1 ? 's' : ''}`,
                 'success'
             );
-            this.closeDeleteModal();
+            this.closeDeleteModal(true);
         } catch (err: any) {
             console.error('[Transactions] Batch delete failed:', err);
             this.snackbar.show('Failed to delete transactions. Please try again.', 'error');
         } finally {
             this.deleting.set(false);
+            this.closeDeleteModal(true);
         }
     }
 

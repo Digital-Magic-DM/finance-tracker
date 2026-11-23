@@ -25,12 +25,16 @@ interface AssetGroup {
     totalInvested: number;
     totalGain: number;
     gainPct: number;
+    totalDaysGain: number;
+    daysGainPct: number;
+    hasDayChange: boolean;
     allocation: number;
     color: string;
     expanded: boolean;
     currency: 'INR' | 'USD';
     totalValueINR?: number;
     totalInvestedINR?: number;
+    totalDaysGainINR?: number;
     lastUpdated?: string;
 }
 
@@ -60,6 +64,14 @@ export class AssetsComponent implements OnInit {
     }
 
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
+    locallyDeletedIds = signal<Set<string>>(new Set());
+
+    // Active assets excluding any items deleted in the current session
+    activeAssets = computed(() => {
+        const deleted = this.locallyDeletedIds();
+        if (deleted.size === 0) return this.assets();
+        return this.assets().filter(a => !a.id || !deleted.has(a.id));
+    });
     snapshots = toSignal(this.snapshotService.getSnapshots(), { initialValue: [] });
     showModal = signal(false);
     showImport = signal(false);
@@ -123,11 +135,11 @@ export class AssetsComponent implements OnInit {
     hideAmounts = signal<boolean>(localStorage.getItem('hideAssetAmounts') === 'true');
     appFilter = signal<string>('All');
 
-    // Sorting state: 'value' | 'invested' | 'gain' | 'gainPct' | 'name' | 'quantity'
-    sortField = signal<'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct'>('value');
+    // Sorting state: 'value' | 'invested' | 'gain' | 'gainPct' | 'name' | 'quantity' | 'dayGain'
+    sortField = signal<'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct' | 'dayGain'>('value');
     sortDirection = signal<'asc' | 'desc'>('desc');
 
-    toggleSort(field: 'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct') {
+    toggleSort(field: 'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct' | 'dayGain') {
         if (this.sortField() === field) {
             this.sortDirection.update((d) => (d === 'asc' ? 'desc' : 'asc'));
         } else {
@@ -136,7 +148,7 @@ export class AssetsComponent implements OnInit {
         }
     }
 
-    setSortField(field: 'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct') {
+    setSortField(field: 'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct' | 'dayGain') {
         this.sortField.set(field);
     }
 
@@ -144,7 +156,7 @@ export class AssetsComponent implements OnInit {
         this.sortDirection.update((d) => (d === 'asc' ? 'desc' : 'asc'));
     }
 
-    getSortIcon(field: 'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct'): string {
+    getSortIcon(field: 'name' | 'quantity' | 'invested' | 'value' | 'gain' | 'gainPct' | 'dayGain'): string {
         if (this.sortField() !== field) return 'unfold_more';
         return this.sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward';
     }
@@ -184,6 +196,12 @@ export class AssetsComponent implements OnInit {
                     diff = this.getGainPct(a) - this.getGainPct(b);
                     break;
                 }
+                case 'dayGain': {
+                    const dayA = this.getAssetDayGain(a) * this.getFxRate(a);
+                    const dayB = this.getAssetDayGain(b) * this.getFxRate(b);
+                    diff = dayA - dayB;
+                    break;
+                }
             }
             return diff * dir;
         });
@@ -205,7 +223,7 @@ export class AssetsComponent implements OnInit {
 
     availableApps = computed(() => {
         const apps = new Set<string>();
-        for (const a of this.assets()) {
+        for (const a of this.activeAssets()) {
             apps.add(this.getAssetApp(a));
         }
         return Array.from(apps).sort();
@@ -313,12 +331,12 @@ export class AssetsComponent implements OnInit {
         return !this.isUSAsset(a);
     }
 
-    allIndAssets = computed(() => this.assets().filter(a => this.isIndianAsset(a)));
-    allUsAssets = computed(() => this.assets().filter(a => this.isUSAsset(a)));
+    allIndAssets = computed(() => this.activeAssets().filter(a => this.isIndianAsset(a)));
+    allUsAssets = computed(() => this.activeAssets().filter(a => this.isUSAsset(a)));
     hasBothMarkets = computed(() => this.allIndAssets().length > 0 && this.allUsAssets().length > 0);
 
     categories = computed(() => {
-        const assets = this.assets();
+        const assets = this.activeAssets();
 
         const counts = new Map<string, number>();
         let hasUS = false;
@@ -356,7 +374,7 @@ export class AssetsComponent implements OnInit {
     });
 
     filteredAssets = computed(() => {
-        let list = this.assets();
+        let list = this.activeAssets();
 
         // 1. App Filter
         const app = this.appFilter();
@@ -808,8 +826,16 @@ export class AssetsComponent implements OnInit {
             const tInvested = usStocks.reduce((s, a) => s + (a.buyPrice * a.quantity), 0);
             const tGain = tValue - tInvested;
             const gPct = tInvested > 0 ? (tGain / tInvested) * 100 : 0;
+            const tDaysGain = usStocks.reduce((s, a) => {
+                const cp = a.currentPrice > 0 ? a.currentPrice : 0;
+                const pct = (a.dailyChange || 0) / 100;
+                return s + (cp * pct * a.quantity);
+            }, 0);
+            const daysGainPct = tValue > 0 ? (tDaysGain / tValue) * 100 : 0;
+            const hasDayChange = usStocks.some(a => a.dailyChange !== undefined && a.dailyChange !== null);
             const tValueINR = tValue * usdRate;
             const tInvestedINR = tInvested * usdRate;
+            const tDaysGainINR = tDaysGain * usdRate;
             const allocation = totalPortfolioValue > 0 ? (tValueINR / totalPortfolioValue) * 100 : 0;
 
             const latestUpdate = usStocks
@@ -825,12 +851,16 @@ export class AssetsComponent implements OnInit {
                 totalInvested: tInvested,
                 totalGain: tGain,
                 gainPct: gPct,
+                totalDaysGain: tDaysGain,
+                daysGainPct,
+                hasDayChange,
                 allocation,
                 color: this.getColor(AssetType.USStock),
                 expanded: this.isGroupExpanded('USStock'),
                 currency: 'USD',
                 totalValueINR: tValueINR,
                 totalInvestedINR: tInvestedINR,
+                totalDaysGainINR: tDaysGainINR,
                 lastUpdated: latestUpdate
             });
         }
@@ -843,6 +873,13 @@ export class AssetsComponent implements OnInit {
                 const tInvested = typeAssets.reduce((s, a) => s + (a.buyPrice * a.quantity), 0);
                 const tGain = tValue - tInvested;
                 const gPct = tInvested > 0 ? (tGain / tInvested) * 100 : 0;
+                const tDaysGain = typeAssets.reduce((s, a) => {
+                    const cp = a.currentPrice > 0 ? a.currentPrice : 0;
+                    const pct = (a.dailyChange || 0) / 100;
+                    return s + (cp * pct * a.quantity);
+                }, 0);
+                const daysGainPct = tValue > 0 ? (tDaysGain / tValue) * 100 : 0;
+                const hasDayChange = typeAssets.some(a => a.dailyChange !== undefined && a.dailyChange !== null);
                 const allocation = totalPortfolioValue > 0 ? (tValue / totalPortfolioValue) * 100 : 0;
 
                 // Find latest update time in group
@@ -863,12 +900,16 @@ export class AssetsComponent implements OnInit {
                     totalInvested: tInvested,
                     totalGain: tGain,
                     gainPct: gPct,
+                    totalDaysGain: tDaysGain,
+                    daysGainPct,
+                    hasDayChange,
                     allocation,
                     color: ASSET_COLORS[type],
                     expanded: this.isGroupExpanded(type),
                     currency: 'INR',
                     totalValueINR: tValue,
                     totalInvestedINR: tInvested,
+                    totalDaysGainINR: tDaysGain,
                     lastUpdated: latestUpdate
                 });
             }
@@ -897,6 +938,9 @@ export class AssetsComponent implements OnInit {
                     break;
                 case 'gainPct':
                     diff = a.gainPct - b.gainPct;
+                    break;
+                case 'dayGain':
+                    diff = (a.totalDaysGainINR ?? a.totalDaysGain) - (b.totalDaysGainINR ?? b.totalDaysGain);
                     break;
             }
             return diff * dir;
@@ -962,6 +1006,42 @@ export class AssetsComponent implements OnInit {
     getAssetValue(a: Asset) {
         const cp = a.currentPrice > 0 ? a.currentPrice : (this.isNonMarketAsset(a) ? a.buyPrice : 0);
         return a.quantity * cp;
+    }
+
+    hasAssetDayGain(a: Asset): boolean {
+        if (this.isNonMarketAsset(a)) return false;
+        return a.currentPrice > 0 && a.dailyChange !== undefined && a.dailyChange !== null;
+    }
+
+    getAssetDayGain(a: Asset): number {
+        if (!this.hasAssetDayGain(a)) return 0;
+        const cp = a.currentPrice > 0 ? a.currentPrice : 0;
+        const pct = (a.dailyChange || 0) / 100;
+        return cp * pct * (a.quantity || 0);
+    }
+
+    getAssetSparkline(asset: Asset): { path: string; isPositive: boolean; stroke: string } {
+        const isPos = (asset.dailyChange || 0) >= 0;
+        const stroke = isPos ? '#10b981' : '#ef4444';
+        if (this.isNonMarketAsset(asset) || !asset.currentPrice) {
+            return { path: 'M 2 13 L 58 13', isPositive: true, stroke: 'rgba(255, 255, 255, 0.25)' };
+        }
+
+        // Hash asset symbol/name for deterministic wave pattern
+        const str = asset.symbol || asset.name || '';
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = (hash << 5) - hash + str.charCodeAt(i);
+        const seed = Math.abs(hash) % 100;
+
+        const yStart = isPos ? 17 + (seed % 4) : 8 + (seed % 4);
+        const yEnd = isPos ? 5 + (seed % 3) : 21 - (seed % 3);
+        const m1 = isPos ? 13 - (seed % 5) : 7 + (seed % 5);
+        const m2 = isPos ? 18 - (seed % 4) : 15 + (seed % 4);
+        const m3 = isPos ? 8 + (seed % 3) : 12 - (seed % 3);
+        const m4 = isPos ? 11 - (seed % 4) : 19 - (seed % 4);
+
+        const path = `M 2 ${yStart} Q 11 ${m1}, 20 ${m2} T 38 ${m3} T 48 ${m4} T 58 ${yEnd}`;
+        return { path, isPositive: isPos, stroke };
     }
 
     getColor(type: AssetType | string) {
@@ -1065,15 +1145,15 @@ export class AssetsComponent implements OnInit {
         const ids = this.selectedIds();
         if (ids.size === 0) return;
 
-        const toDelete = this.assets().filter(a => a.id && ids.has(a.id));
+        const toDelete = this.activeAssets().filter(a => a.id && ids.has(a.id));
         if (toDelete.length === 0) return;
 
         this.assetsPendingDeletion.set(toDelete);
         this.showDeleteModal.set(true);
     }
 
-    closeDeleteModal() {
-        if (this.deleting()) return;
+    closeDeleteModal(force = false) {
+        if (this.deleting() && !force) return;
         this.showDeleteModal.set(false);
         this.assetsPendingDeletion.set([]);
     }
@@ -1082,13 +1162,18 @@ export class AssetsComponent implements OnInit {
         const toDelete = this.assetsPendingDeletion();
         const ids = toDelete.map(a => a.id!).filter(Boolean);
         if (ids.length === 0) {
-            this.closeDeleteModal();
+            this.closeDeleteModal(true);
             return;
         }
 
         this.deleting.set(true);
         try {
-            await this.assetService.batchDeleteAssets(ids);
+            // Optimistically update local deleted set so the items vanish from UI immediately
+            this.locallyDeletedIds.update(set => {
+                const next = new Set(set);
+                for (const id of ids) next.add(id);
+                return next;
+            });
 
             // Remove deleted IDs from current selection
             this.selectedIds.update(set => {
@@ -1103,16 +1188,27 @@ export class AssetsComponent implements OnInit {
                 this.selectMode.set(false);
             }
 
+            await this.assetService.batchDeleteAssets(ids);
+
             this.snackbar.show(
                 `Successfully deleted ${ids.length} holding${ids.length > 1 ? 's' : ''}`,
                 'success'
             );
-            this.closeDeleteModal();
+            this.closeDeleteModal(true);
+            this.cdr.markForCheck();
         } catch (err: any) {
             console.error('[Assets] Batch delete failed:', err);
+            // Rollback optimistic deletion on error
+            this.locallyDeletedIds.update(set => {
+                const next = new Set(set);
+                for (const id of ids) next.delete(id);
+                return next;
+            });
             this.snackbar.show('Failed to delete holdings. Please try again.', 'error');
         } finally {
             this.deleting.set(false);
+            this.closeDeleteModal(true);
+            this.cdr.markForCheck();
         }
     }
 
@@ -1473,7 +1569,7 @@ export class AssetsComponent implements OnInit {
     }
 
     delete(id: string) {
-        const asset = this.assets().find(a => a.id === id);
+        const asset = this.activeAssets().find(a => a.id === id);
         if (!asset) return;
         this.assetsPendingDeletion.set([asset]);
         this.showDeleteModal.set(true);

@@ -10,6 +10,7 @@ The MCP server implements **isolated multi-tenant security**:
 * **Zero Shared Passwords Needed**: Each user (you and your friends) generates their own private, cryptographically secure key (`ft_mcp_<uid>_<secret>`) directly inside the FinTracker web app.
 * **Hermetic User Isolation**: The MCP server verifies every request against Firestore and binds each session exclusively to that caller's UID. User A can never read or modify User B's portfolio.
 * **Automatic Browser Redirection**: Visiting the server's root URL in a web browser automatically redirects you to `https://dmfintracker.web.app/login?redirect=/app/settings?tab=mcp`.
+* **Testing Policy**: Never run verification tests, simulated queries, or stress tests with `dineshmurugan518@gmail.com` as it holds live production data. Always use designated test accounts (e.g., `test.user@example.com`). See [AGENTS.md](../AGENTS.md).
 
 ---
 

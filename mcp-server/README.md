@@ -27,6 +27,7 @@ The server equips your AI client with 8 specialized financial tools:
 2. **Hermetic Session Scoping**: The MCP server extracts the caller's verified `uid` and restricts all 8 financial tools exclusively to that user's Firestore records. No user can ever query or tamper with another user's data.
 3. **Zero Hardcoded Secrets**: All Firebase keys are loaded exclusively from runtime environment variables.
 4. **Strict `.gitignore`**: All local `.env` files and `*service-account*.json` keys are strictly blocked from git tracking.
+5. **Testing Policy & Data Safety**: Never run test queries, mutations, or automated benchmarks against `dineshmurugan518@gmail.com`. That account contains live personal financial records. Always test with mock/dummy test accounts (e.g., `test.user@example.com`, `demo@example.com`). See [AGENTS.md](../AGENTS.md).
 
 ---
 

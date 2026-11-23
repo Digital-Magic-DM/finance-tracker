@@ -538,32 +538,31 @@
         <div class="table-header-row">
           <div class="col-name sortable-col" [class.is-sorted]="sortField() === 'name'" (click)="toggleSort('name')" title="Sort by Holding Name">
             <span class="th-content">
-              <span>Holding Name</span>
+              <span>Holding / Qty</span>
               <span class="material-icons sort-icon">{{ getSortIcon('name') }}</span>
             </span>
           </div>
-          <div class="col-alloc sortable-col" [class.is-sorted]="sortField() === 'quantity'" (click)="toggleSort('quantity')" title="Sort by Allocation / Quantity">
+          <div class="col-trend" title="Intraday Trend">
             <span class="th-content">
-              <span>Alloc / Qty</span>
-              <span class="material-icons sort-icon">{{ getSortIcon('quantity') }}</span>
+              <span>Trend</span>
             </span>
           </div>
-          <div class="col-invested sortable-col" [class.is-sorted]="sortField() === 'invested'" (click)="toggleSort('invested')" title="Sort by Invested Capital">
+          <div class="col-market sortable-col" [class.is-sorted]="sortField() === 'dayGain'" (click)="toggleSort('dayGain')" title="Sort by Market Price / Day's P&L">
             <span class="th-content">
-              <span>Invested</span>
-              <span class="material-icons sort-icon">{{ getSortIcon('invested') }}</span>
-            </span>
-          </div>
-          <div class="col-value sortable-col" [class.is-sorted]="sortField() === 'value'" (click)="toggleSort('value')" title="Sort by Current Value">
-            <span class="th-content">
-              <span>Current Value</span>
-              <span class="material-icons sort-icon">{{ getSortIcon('value') }}</span>
+              <span>LTP / Day's P&amp;L</span>
+              <span class="material-icons sort-icon">{{ getSortIcon('dayGain') }}</span>
             </span>
           </div>
           <div class="col-returns sortable-col" [class.is-sorted]="sortField() === 'gain' || sortField() === 'gainPct'" (click)="toggleSort('gain')" title="Sort by Returns / P&L">
             <span class="th-content">
-              <span>Returns / P&amp;L</span>
+              <span>Total Returns</span>
               <span class="material-icons sort-icon">{{ getSortIcon('gain') }}</span>
+            </span>
+          </div>
+          <div class="col-value sortable-col" [class.is-sorted]="sortField() === 'value'" (click)="toggleSort('value')" title="Sort by Current Value">
+            <span class="th-content">
+              <span>Current / Invested</span>
+              <span class="material-icons sort-icon">{{ getSortIcon('value') }}</span>
             </span>
           </div>
           <div class="col-actions header-actions-col">
@@ -596,7 +595,7 @@
                 </div>
               </div>
               
-              <div class="col-alloc">
+              <div class="col-trend">
                 <div class="allocation-wrapper">
                   <div class="allocation-bar">
                     <div class="allocation-fill" [style.width.%]="group.allocation" [style.background]="group.color"></div>
@@ -605,25 +604,29 @@
                 </div>
               </div>
 
-              <div class="col-invested">
-                <span class="main-val">{{ hideAmounts() ? '••••••' : (group.totalInvested | currency:group.currency:'symbol':(group.currency === 'USD' ? '1.2-2' : '1.0-0')) }}</span>
-                @if (group.currency === 'USD') {
-                  <span class="sub-val" style="font-size: 11px; opacity: 0.7;">≈ {{ hideAmounts() ? '••••••' : (group.totalInvestedINR | currency:'INR':'symbol':'1.0-0') }}</span>
-                }
-              </div>
-
-              <div class="col-value">
-                <span class="main-val">{{ hideAmounts() ? '••••••' : (group.totalValue | currency:group.currency:'symbol':(group.currency === 'USD' ? '1.2-2' : '1.0-0')) }}</span>
-                @if (group.currency === 'USD') {
-                  <span class="sub-val" style="font-size: 11px; opacity: 0.7;">≈ {{ hideAmounts() ? '••••••' : (group.totalValueINR | currency:'INR':'symbol':'1.0-0') }}</span>
+              <div class="col-market">
+                @if (group.hasDayChange) {
+                  <span class="main-val" [class.positive]="group.totalDaysGain >= 0" [class.negative]="group.totalDaysGain < 0">
+                    {{ hideAmounts() ? '••••••' : ((group.totalDaysGain >= 0 ? '+' : '') + (group.totalDaysGain | currency:group.currency:'symbol':(group.currency === 'USD' ? '1.2-2' : '1.0-0'))) }}
+                  </span>
+                  <span class="sub-day-pnl" [class.positive]="group.totalDaysGain >= 0" [class.negative]="group.totalDaysGain < 0">
+                    ({{ group.daysGainPct >= 0 ? '+' : '' }}{{ group.daysGainPct | number:'1.2-2' }}%)
+                  </span>
+                } @else {
+                  <span class="main-val unpriced">--</span>
                 }
               </div>
 
               <div class="col-returns">
                 <div class="gain-box" [class.positive]="group.totalGain >= 0" [class.negative]="group.totalGain < 0">
                   <span class="gain-val">{{ hideAmounts() ? '••••••' : ((group.totalGain >= 0 ? '+' : '') + (group.totalGain | currency:group.currency:'symbol':(group.currency === 'USD' ? '1.2-2' : '1.0-0'))) }}</span>
-                  <span class="gain-pct">({{ group.gainPct | number:'1.1-1' }}%)</span>
+                  <span class="gain-pct">({{ group.gainPct >= 0 ? '+' : '' }}{{ group.gainPct | number:'1.1-1' }}%)</span>
                 </div>
+              </div>
+
+              <div class="col-value">
+                <span class="main-val">{{ hideAmounts() ? '••••••' : (group.totalValue | currency:group.currency:'symbol':(group.currency === 'USD' ? '1.2-2' : '1.0-0')) }}</span>
+                <span class="sub-val">{{ hideAmounts() ? '••••••' : (group.totalInvested | currency:group.currency:'symbol':(group.currency === 'USD' ? '1.2-2' : '1.0-0')) }}</span>
               </div>
 
               <div class="col-actions">
@@ -676,7 +679,7 @@
 
                         <div class="name-box">
                           <div class="name-headline-row">
-                            <span class="name-text">{{ asset.name }}</span>
+                            <span class="name-text">{{ asset.symbol || asset.name }}</span>
                             @if (getGoalInfo(asset); as goal) {
                               <span class="goal-icon-badge" 
                                     [style.color]="goal.color" 
@@ -688,58 +691,64 @@
                               </span>
                             }
                           </div>
-                          @if (asset.symbol) {
-                            <span class="symbol-text">{{ asset.symbol }}</span>
-                          }
-                          @if (asset.type === 'FixedDeposit' && asset.interestRate) {
-                            <span class="symbol-text" style="color: #f59e0b; font-weight: 600;">{{ asset.interestRate }}% p.a.{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}</span>
-                          }
-                          @if (asset.type === 'Bond') {
-                            <span class="symbol-text" style="color: #14b8a6; font-weight: 600;">{{ asset.subType || 'Bond' }}{{ asset.interestRate ? ' · ' + asset.interestRate + '%' : '' }}{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}{{ asset.payoutDates ? ' · ' + asset.payoutDates : '' }}</span>
-                          }
+                          <div class="sub-qty-row">
+                            @if (asset.type === 'FixedDeposit') {
+                              <span>1 deposit · {{ asset.interestRate ? asset.interestRate + '% p.a.' : 'FD' }}{{ asset.maturityDate ? ' · Mat: ' + asset.maturityDate : '' }}</span>
+                            } @else if (asset.type === 'Bond') {
+                              <span>{{ asset.quantity }} qty · {{ asset.interestRate ? asset.interestRate + '%' : (asset.subType || 'Bond') }}</span>
+                            } @else {
+                              <span>{{ asset.quantity | number:'1.0-4' }} {{ asset.type === 'MutualFund' ? 'units' : (asset.quantity === 1 ? 'share' : 'shares') }} • Avg. {{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.buyPrice | number:'1.2-2' }}</span>
+                            }
+                          </div>
                         </div>
                       </div>
 
-                      <div class="col-alloc child-qty-col">
-                        <span class="qty-val">{{ asset.quantity | number:'1.0-4' }} {{ asset.type === 'MutualFund' ? 'units' : (asset.type === 'FixedDeposit' ? 'deposit' : 'qty') }}</span>
+                      <div class="col-trend">
+                        @let spark = getAssetSparkline(asset);
+                        <svg class="mini-sparkline-svg" viewBox="0 0 60 26" preserveAspectRatio="none" aria-hidden="true">
+                          <line x1="0" y1="11" x2="60" y2="11" class="sparkline-baseline" stroke-dasharray="2 2" stroke-width="1" />
+                          <path [attr.d]="spark.path" [attr.stroke]="spark.stroke" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
                       </div>
 
-                      <div class="col-invested child-invested-col">
-                        <span class="main-val">{{ hideAmounts() ? '••••••' : ((asset.buyPrice * asset.quantity) | currency:getAssetCurrency(asset):'symbol':'1.0-2') }}</span>
-                        <span class="sub-val">@ {{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.buyPrice | number:'1.0-2' }}</span>
-                      </div>
-
-                      <div class="col-value child-value-col">
-                        <div class="val-box">
-                          @if (asset.currentPrice && asset.currentPrice > 0 || isNonMarketAsset(asset)) {
-                            <span class="main-val">{{ hideAmounts() ? '••••••' : (getAssetValue(asset) | currency:getAssetCurrency(asset):'symbol':'1.0-2') }}</span>
-                          } @else {
-                            <span class="main-val unpriced">--</span>
-                          }
-                          @if (asset.currentPrice && asset.currentPrice > 0) {
-                            <span class="sub-val">@ {{ (isUSAsset(asset) ? '$' : '₹') }}{{ asset.currentPrice | number:'1.2-2' }}</span>
-                          } @else {
-                            <span class="sub-val unpriced">@ --</span>
-                          }
-                          @if (asset.navDate) {
-                            <span class="row-last-updated">NAV: {{ asset.navDate }}</span>
-                          } @else if (asset.lastUpdated) {
-                            <span class="row-last-updated">{{ asset.lastUpdated }}</span>
-                          }
-                        </div>
+                      <div class="col-market child-market-col">
+                        @if (asset.currentPrice && asset.currentPrice > 0 || isNonMarketAsset(asset)) {
+                          <span class="main-val">{{ (isUSAsset(asset) ? '$' : '₹') }}{{ (asset.currentPrice > 0 ? asset.currentPrice : asset.buyPrice) | number:'1.2-2' }}</span>
+                        } @else {
+                          <span class="main-val unpriced">--</span>
+                        }
+                        @if (hasAssetDayGain(asset)) {
+                          <span class="sub-day-pnl" [class.positive]="getAssetDayGain(asset) >= 0" [class.negative]="getAssetDayGain(asset) < 0">
+                            {{ hideAmounts() ? '••••••' : ((getAssetDayGain(asset) >= 0 ? '+' : '') + (getAssetDayGain(asset) | currency:getAssetCurrency(asset):'symbol':(isUSAsset(asset) ? '1.2-2' : '1.0-0'))) }}
+                            ({{ (asset.dailyChange || 0) >= 0 ? '+' : '' }}{{ (asset.dailyChange || 0) | number:'1.2-2' }}%)
+                          </span>
+                        } @else {
+                          <span class="sub-val unpriced">--</span>
+                        }
                       </div>
 
                       <div class="col-returns child-returns-col">
                         @if (asset.currentPrice && asset.currentPrice > 0) {
                           <div class="gain-box" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">
                             <span class="gain-val">{{ hideAmounts() ? '••••••' : ((getGain(asset) >= 0 ? '+' : '') + (getGain(asset) | currency:getAssetCurrency(asset):'symbol':(isUSAsset(asset) ? '1.2-2' : '1.0-0'))) }}</span>
-                            <span class="gain-pct">({{ getGainPct(asset) | number:'1.1-1' }}%)</span>
+                            <span class="gain-pct" [class.positive]="getGain(asset) >= 0" [class.negative]="getGain(asset) < 0">{{ getGainPct(asset) >= 0 ? '+' : '' }}{{ getGainPct(asset) | number:'1.2-2' }}%</span>
                           </div>
                         } @else {
                           <div class="gain-box unpriced">
                             <span class="gain-val">--</span>
                           </div>
                         }
+                      </div>
+
+                      <div class="col-value child-value-col">
+                        <div class="val-box">
+                          @if (asset.currentPrice && asset.currentPrice > 0 || isNonMarketAsset(asset)) {
+                            <span class="main-val">{{ hideAmounts() ? '••••••' : (getAssetValue(asset) | currency:getAssetCurrency(asset):'symbol':'1.2-2') }}</span>
+                          } @else {
+                            <span class="main-val unpriced">--</span>
+                          }
+                          <span class="sub-val">{{ hideAmounts() ? '••••••' : ((asset.buyPrice * asset.quantity) | currency:getAssetCurrency(asset):'symbol':(isUSAsset(asset) ? '1.2-2' : '1.0-0')) }}</span>
+                        </div>
                       </div>
 
                       <div class="col-actions child-actions-col">

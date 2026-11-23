@@ -55,6 +55,9 @@ npm run build
 ```
 The build artifacts will be stored in the `dist/finance-tracker/browser` directory. 
 
+### Testing & Data Safety Policy
+> ⚠️ **CRITICAL**: Never run automated or manual tests, statement import experiments, or seed data against `dineshmurugan518@gmail.com`. This is a real personal production account holding live financial data, not test data. All testing and mock data must strictly use mock test emails (e.g., `test.user@example.com`, `demo@financetracker.dev`). See [AGENTS.md](./AGENTS.md) for complete guidelines.
+
 ### Deployment
 The project is configured for Firebase Hosting.
 

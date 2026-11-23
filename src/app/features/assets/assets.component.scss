@@ -1354,16 +1354,15 @@
     flex-direction: column;
     gap: 16px;
     margin-bottom: 30px;
-    width: max-content;
-    min-width: 100%;
-    padding-right: 24px;
+    width: 100%;
+    min-width: 690px;
 }
 
 .table-header-row {
     display: grid;
-    /* 6 columns matching accordion-parent: Name, Alloc, Invested, Value, Return, Actions */
-    grid-template-columns: minmax(260px, 2.4fr) minmax(120px, 1.1fr) minmax(115px, 1fr) minmax(115px, 1fr) minmax(120px, 1fr) 120px;
-    grid-column-gap: 16px;
+    /* 6 columns matching modern compact 2-line layout: Holding/Qty, Trend, LTP/Day PnL, Total Returns, Current/Invested, Actions */
+    grid-template-columns: minmax(160px, 1.8fr) minmax(65px, 0.65fr) minmax(115px, 1.1fr) minmax(105px, 1fr) minmax(110px, 1fr) 75px;
+    grid-column-gap: 12px;
     align-items: center;
     padding: 10px 16px;
     background: rgba(255, 255, 255, 0.02);
@@ -1374,7 +1373,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    min-width: 960px;
+    min-width: 690px;
     white-space: nowrap;
 
     .btn-expand-all {
@@ -1446,7 +1445,7 @@
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     border-radius: 12px;
     overflow: hidden;
-    min-width: 960px;
+    min-width: 690px;
     transition: all 0.3s ease;
 
     &.expanded {
@@ -1458,13 +1457,13 @@
 .accordion-parent {
     display: grid;
     /* 6 columns strictly matching table-header-row and accordion-child */
-    grid-template-columns: minmax(260px, 2.4fr) minmax(120px, 1.1fr) minmax(115px, 1fr) minmax(115px, 1fr) minmax(120px, 1fr) 120px;
-    grid-column-gap: 16px;
+    grid-template-columns: minmax(160px, 1.8fr) minmax(65px, 0.65fr) minmax(115px, 1.1fr) minmax(105px, 1fr) minmax(110px, 1fr) 75px;
+    grid-column-gap: 12px;
     align-items: center;
-    padding: 16px;
+    padding: 14px 16px;
     cursor: pointer;
     user-select: none;
-    min-width: 960px;
+    min-width: 690px;
     white-space: nowrap;
     transition: background 0.2s;
 
@@ -1477,7 +1476,7 @@
     border-top: 1px solid var(--border-color);
     background: rgba(0, 0, 0, 0.15); // slightly darker for children
     animation: slideDown 0.3s ease-out;
-    min-width: 960px;
+    min-width: 690px;
 
     @keyframes slideDown {
         from {
@@ -1494,14 +1493,14 @@
 
 .accordion-child {
     display: grid;
-    /* Same exact grid layout as header and parent so columns strictly align */
-    grid-template-columns: minmax(260px, 2.4fr) minmax(120px, 1.1fr) minmax(115px, 1fr) minmax(115px, 1fr) minmax(120px, 1fr) 120px;
-    grid-column-gap: 16px;
+    /* Same exact 6-column grid layout as header and parent so columns strictly align */
+    grid-template-columns: minmax(160px, 1.8fr) minmax(65px, 0.65fr) minmax(115px, 1.1fr) minmax(105px, 1fr) minmax(110px, 1fr) 75px;
+    grid-column-gap: 12px;
     align-items: center;
-    padding: 12px 16px;
+    padding: 10px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: background 0.2s;
-    min-width: 960px;
+    min-width: 690px;
     white-space: nowrap;
 
     &:last-child {
@@ -1620,48 +1619,103 @@
     }
 }
 
-.col-alloc {
-    padding-right: 12px;
+.col-trend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 0;
 
     .allocation-wrapper {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 6px;
         width: 100%;
+
+        .allocation-bar {
+            flex: 1;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+
+            .allocation-fill {
+                height: 100%;
+                border-radius: 3px;
+            }
+        }
+
+        .allocation-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            min-width: 32px;
+            text-align: right;
+        }
     }
 
-    .allocation-bar {
-        flex: 1;
-        height: 6px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 3px;
-        overflow: hidden;
-    }
+    .mini-sparkline-svg {
+        width: 60px;
+        height: 26px;
+        display: block;
+        overflow: visible;
 
-    .allocation-fill {
-        height: 100%;
-        border-radius: 3px;
-    }
-
-    .allocation-text {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-muted);
-        min-width: 40px;
-        text-align: right;
-    }
-
-    .qty-val {
-        font-size: 13px;
-        color: var(--text-muted);
-        font-weight: 500;
-        white-space: nowrap;
+        .sparkline-baseline {
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-dasharray: 2 2;
+        }
     }
 }
 
-.col-invested,
-.col-value,
+.col-market {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    text-align: right;
+    gap: 2px;
+    min-width: 0;
+
+    .main-val {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+
+        &.positive {
+            color: #10b981;
+        }
+
+        &.negative {
+            color: #ef4444;
+        }
+
+        &.unpriced {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+    }
+
+    .sub-day-pnl {
+        font-size: 11px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+
+        &.positive {
+            color: #10b981;
+        }
+
+        &.negative {
+            color: #ef4444;
+        }
+    }
+
+    .sub-val.unpriced {
+        font-size: 11px;
+        color: var(--text-muted);
+        opacity: 0.5;
+    }
+}
+
 .col-returns {
     display: flex;
     flex-direction: column;
@@ -1669,17 +1723,81 @@
     align-items: flex-end;
     text-align: right;
     gap: 2px;
+    min-width: 0;
+
+    .gain-box {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+
+        &.positive {
+            color: #10b981;
+        }
+
+        &.negative {
+            color: #ef4444;
+        }
+
+        &.unpriced {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        .gain-val {
+            font-size: 13.5px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .gain-pct {
+            font-size: 11px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+
+            &.positive {
+                color: #10b981;
+            }
+
+            &.negative {
+                color: #ef4444;
+            }
+        }
+    }
+}
+
+.col-value {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    text-align: right;
+    gap: 2px;
+    min-width: 0;
+
+    .val-box {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+    }
 
     .main-val {
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 700;
         color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+
+        &.unpriced {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
     }
 
     .sub-val {
         font-size: 11px;
         color: var(--text-muted);
-        font-family: monospace;
+        font-variant-numeric: tabular-nums;
     }
 }
 
@@ -1687,12 +1805,12 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 4px;
 
     .refresh-btn {
-        opacity: 0.5;
+        opacity: 0.6;
         color: var(--text-muted);
-        padding: 4px;
+        padding: 2px;
         background: transparent;
         border: none;
         cursor: pointer;
@@ -1710,7 +1828,7 @@
     }
 
     .expand-icon {
-        font-size: 24px;
+        font-size: 20px;
         color: var(--text-muted);
         transition: transform 0.2s;
     }
@@ -1720,7 +1838,7 @@
     padding: 8px 16px;
     background: rgba(255, 255, 255, 0.02);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    min-width: 960px;
+    min-width: 690px;
     white-space: nowrap;
 }
 
@@ -1784,10 +1902,38 @@
     max-width: 100%;
     overflow: hidden;
 
+    .name-headline-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        max-width: 100%;
+
+        .name-text {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 13.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            flex: 1;
+        }
+    }
+
+    .sub-qty-row {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .name-text {
-        font-weight: 600;
+        font-weight: 700;
         color: var(--text-primary);
-        font-size: 14px;
+        font-size: 13.5px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1834,21 +1980,25 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 
     .btn-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 28px !important;
-        height: 28px !important;
+        width: 24px !important;
+        height: 24px !important;
         padding: 0;
         background: transparent !important;
         border: 1px solid var(--border-color) !important;
-        border-radius: 6px !important;
+        border-radius: 5px !important;
         cursor: pointer;
         transition: all 0.2s;
         color: var(--text-primary) !important;
+
+        .material-icons {
+            font-size: 14px;
+        }
 
         &:hover {
             background: rgba(var(--text-primary-rgb, 255, 255, 255), 0.1) !important;
@@ -1891,6 +2041,88 @@
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
+    }
+
+    .accordion-container {
+        min-width: 440px;
+        padding-right: 0;
+        gap: 10px;
+    }
+
+    .table-header-row,
+    .accordion-parent,
+    .accordion-child {
+        grid-template-columns: minmax(120px, 1.4fr) minmax(88px, 1.05fr) minmax(80px, 0.95fr) minmax(82px, 1fr) 55px;
+        grid-column-gap: 8px;
+        padding: 8px 10px;
+        min-width: 440px;
+    }
+
+    .accordion-section,
+    .accordion-children,
+    .group-select-bar {
+        min-width: 440px;
+    }
+
+    .col-trend {
+        display: none !important;
+    }
+
+    .child-name-col {
+        padding-left: 0 !important;
+        gap: 8px;
+
+        &:has(.select-checkbox) {
+            padding-left: 24px !important;
+        }
+    }
+
+    .holding-logo-wrap {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        min-height: 30px;
+        border-radius: 7px;
+    }
+
+    .name-box {
+        .name-headline-row .name-text {
+            font-size: 12px;
+        }
+
+        .sub-qty-row {
+            font-size: 10px;
+        }
+    }
+
+    .col-market,
+    .col-returns,
+    .col-value {
+        .main-val,
+        .gain-val {
+            font-size: 12px;
+        }
+
+        .sub-day-pnl,
+        .gain-pct,
+        .sub-val {
+            font-size: 10px;
+        }
+    }
+
+    .col-actions {
+        .actions-wrapper {
+            gap: 2px;
+
+            .btn-icon {
+                width: 22px !important;
+                height: 22px !important;
+
+                .material-icons {
+                    font-size: 13px;
+                }
+            }
+        }
     }
 }
 

@@ -11,6 +11,7 @@ It consolidates all domestic and international wealth into a single unified dash
 - **Reactive Signals Pipeline**: Zero-latency UI updates driven by `assets()`, `filteredAssets()`, `assetGroups()`, `sortField()`, and `sortDirection()`.
 - **Hybrid Visualization**: Dual-mode rendering supporting both visual **Broker Holding Cards** and a dense **Grouped Accordion Table** with interactive sortable column headers.
 - **Privacy & Security**: Client-side parsing (SheetJS) for statements, Firestore document isolation, and one-click numeric privacy masking (`••••••`).
+- **Testing & Data Separation**: Under no circumstances should tests or dummy assets be run or seeded against `dineshmurugan518@gmail.com`. All test suites, parser validations, and mock assets must use dummy emails (e.g., `test.user@example.com`, `investor@example.com`). See [AGENTS.md](../AGENTS.md).
 
 ---
 
