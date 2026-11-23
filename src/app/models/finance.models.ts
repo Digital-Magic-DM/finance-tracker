@@ -28,6 +28,9 @@ export interface EssentialsProfile {
     monthlyExpenseOverride?: number; // Manual monthly expense/burn rate (₹)
     monthlyIncomeOverride?: number;  // Manual monthly income (₹)
     targetRunwayMonths?: number;     // Target emergency runway months (e.g. 3, 6, 9, 12; default 6)
+    startingNetWorth?: number;       // Custom starting capital baseline (₹)
+    startingDate?: string;           // Custom starting date YYYY-MM-DD
+    startingRunwayMonths?: number;   // Custom starting runway buffer (months)
 }
 
 export enum TransactionType {

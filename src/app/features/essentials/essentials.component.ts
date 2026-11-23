@@ -34,7 +34,10 @@ export class EssentialsComponent {
         },
         monthlyExpenseOverride: 0,
         monthlyIncomeOverride: 0,
-        targetRunwayMonths: 6
+        targetRunwayMonths: 6,
+        startingNetWorth: 0,
+        startingDate: '',
+        startingRunwayMonths: 1
     });
 
     // FI Matrix Data (Savings Rate vs Years to FI)
@@ -72,10 +75,24 @@ export class EssentialsComponent {
                 },
                 monthlyExpenseOverride: current.monthlyExpenseOverride || (this.essentialsService.avgMonthlyExpense() || 0),
                 monthlyIncomeOverride: current.monthlyIncomeOverride || 0,
-                targetRunwayMonths: current.targetRunwayMonths || 6
+                targetRunwayMonths: current.targetRunwayMonths || 6,
+                startingNetWorth: current.startingNetWorth || 0,
+                startingDate: current.startingDate || '',
+                startingRunwayMonths: current.startingRunwayMonths || 1
             });
         }
         this.isEditing.set(true);
+    }
+
+    formatDateStr(dStr?: string): string {
+        if (!dStr) return 'Beginning of Tracking';
+        try {
+            const d = new Date(dStr);
+            if (isNaN(d.getTime())) return dStr;
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch {
+            return dStr;
+        }
     }
 
     async quickSetRunway(months: number) {

@@ -7,6 +7,7 @@ import { AssetService } from './asset.service';
 import { TransactionService } from './transaction.service';
 import { GoogleFinanceService } from './google-finance.service';
 import { PriceService } from './price.service';
+import { SnapshotService } from './snapshot.service';
 import { AssetType, TransactionType, EssentialsProfile } from '../models/finance.models';
 
 @Injectable({ providedIn: 'root' })
@@ -17,6 +18,7 @@ export class EssentialsService {
     private txService = inject(TransactionService);
     private googleFinance = inject(GoogleFinanceService);
     private priceService = inject(PriceService);
+    private snapshotService = inject(SnapshotService);
 
     // Profile Data
     private profileRef$ = new Observable<EssentialsProfile | null>(subscriber => {
@@ -31,6 +33,7 @@ export class EssentialsService {
     // Base Signals
     assets = toSignal(this.assetService.getAssets(), { initialValue: [] });
     transactions = toSignal(this.txService.getTransactions(), { initialValue: [] });
+    snapshots = toSignal(this.snapshotService.getSnapshots(), { initialValue: [] });
 
     // Baseline fallbacks when transactions are sparse and no profile override is set
     readonly defaultMonthlyExpense = 50000;
@@ -234,6 +237,145 @@ export class EssentialsService {
 
     estimatedMonthlySavings = computed(() => {
         return Math.max(0, this.effectiveMonthlyIncome() - this.effectiveMonthlyExpense());
+    });
+
+    // 9. Financial & Essentials Progress Leap (Tracking How Far User Has Jumped)
+    progressLeap = computed(() => {
+        const profile = this.profile();
+        const currentNW = this.currentNetWorth();
+        const currentRunway = this.runwayMonths();
+        const currentHealth = this.healthScore();
+        const currentFiPct = this.fiProgressPct();
+        const currentFiYears = this.yearsToFI();
+        const currentSavingsRate = this.savingsRate();
+        const snapList = this.snapshots();
+
+        // 1. Determine baseline starting date
+        let startDateStr = profile?.startingDate;
+        if (!startDateStr) {
+            if (snapList.length > 0 && snapList[0].date) {
+                startDateStr = snapList[0].date;
+            } else {
+                // Find earliest asset purchase date
+                const assetsWithDates = this.assets()
+                    .filter(a => a.purchaseDate && !isNaN(new Date(a.purchaseDate).getTime()))
+                    .sort((a, b) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime());
+                if (assetsWithDates.length > 0) {
+                    startDateStr = new Date(assetsWithDates[0].purchaseDate).toISOString().split('T')[0];
+                } else {
+                    const d = new Date();
+                    d.setMonth(d.getMonth() - 6);
+                    startDateStr = d.toISOString().split('T')[0];
+                }
+            }
+        }
+
+        // 2. Determine baseline starting net worth
+        let startNW = profile?.startingNetWorth;
+        if (startNW === undefined || startNW === null || startNW <= 0) {
+            if (snapList.length > 0 && snapList[0].netWorth > 0) {
+                startNW = snapList[0].netWorth;
+            } else {
+                // Cost basis of all assets
+                const totalCost = this.assets().reduce((s, a) => {
+                    const fx = this.priceService.isUSAsset(a) ? this.googleFinance.usdToInrRate() : 1;
+                    return s + (a.quantity * a.buyPrice * fx);
+                }, 0);
+                startNW = totalCost > 0 ? totalCost : Math.round(currentNW * 0.7);
+            }
+        }
+
+        // 3. Determine baseline starting runway
+        let startRunway = profile?.startingRunwayMonths;
+        if (startRunway === undefined || startRunway === null) {
+            startRunway = Math.max(0.5, Math.round(Math.min(currentRunway * 0.4, 2) * 10) / 10);
+        }
+
+        // 4. Determine baseline health score
+        const startHealth = 4.5;
+
+        // 5. Calculate Jump Deltas
+        const nwJump = currentNW - startNW;
+        const nwGrowthPct = startNW > 0 ? Math.round((nwJump / startNW) * 1000) / 10 : 0;
+        const runwayJump = Math.round((currentRunway - startRunway) * 10) / 10;
+        const healthJump = Math.round((currentHealth - startHealth) * 10) / 10;
+
+        // Months elapsed
+        const startD = new Date(startDateStr);
+        const nowD = new Date();
+        const monthsElapsed = Math.max(
+            1,
+            (nowD.getFullYear() - startD.getFullYear()) * 12 + (nowD.getMonth() - startD.getMonth())
+        );
+
+        // Milestone Stages Progress
+        const stage1Completed = currentRunway >= 3;
+        const stage2Completed = currentRunway >= 6 && (profile?.insurance?.termCover || 0) > 0;
+        const stage3Completed = currentSavingsRate >= 30 && currentNW >= 1000000;
+        const stage4Completed = currentNW >= this.fiTargetNetWorth() && this.fiTargetNetWorth() > 0;
+
+        let currentStageNumber = 1;
+        if (stage4Completed) currentStageNumber = 4;
+        else if (stage3Completed) currentStageNumber = 4;
+        else if (stage2Completed) currentStageNumber = 3;
+        else if (stage1Completed) currentStageNumber = 2;
+
+        return {
+            startDate: startDateStr,
+            monthsElapsed,
+            startNW,
+            currentNW,
+            nwJump,
+            nwGrowthPct,
+            startRunway,
+            currentRunway,
+            runwayJump,
+            startHealth,
+            currentHealth,
+            healthJump,
+            currentFiPct,
+            currentFiYears,
+            currentSavingsRate,
+            currentStageNumber,
+            stages: [
+                {
+                    id: 1,
+                    title: 'Survival Buffer',
+                    desc: '3 Months liquid runway to weather unforeseen job or life shocks',
+                    target: '3M Runway',
+                    isCompleted: stage1Completed,
+                    isCurrent: currentStageNumber === 1,
+                    icon: 'shield'
+                },
+                {
+                    id: 2,
+                    title: 'Fortress Protection',
+                    desc: '6+ Months runway & pure term life insurance to protect family',
+                    target: '6M + Insurance',
+                    isCompleted: stage2Completed,
+                    isCurrent: currentStageNumber === 2,
+                    icon: 'verified_user'
+                },
+                {
+                    id: 3,
+                    title: 'Wealth Velocity',
+                    desc: '30%+ Monthly savings rate & rapid capital compounding (> ₹10L NW)',
+                    target: '30%+ Savings & 10L+',
+                    isCompleted: stage3Completed,
+                    isCurrent: currentStageNumber === 3,
+                    icon: 'trending_up'
+                },
+                {
+                    id: 4,
+                    title: 'Financial Independence (FI)',
+                    desc: '25x Annual burn reached. Work becomes 100% optional forever',
+                    target: '25x Annual Burn',
+                    isCompleted: stage4Completed,
+                    isCurrent: currentStageNumber === 4,
+                    icon: 'flight_takeoff'
+                }
+            ]
+        };
     });
 
     async updateProfile(data: Partial<EssentialsProfile>) {

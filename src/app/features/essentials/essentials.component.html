@@ -92,6 +92,165 @@
         </div>
     </div>
 
+    <!-- ── Financial & Essentials Progress (The Leap Tracker) ── -->
+    @let leap = essentialsService.progressLeap();
+    <div class="card progress-leap-card animate-fade-in">
+        <div class="leap-header">
+            <div class="leap-title-group">
+                <div class="leap-badge">
+                    <span class="material-icons leap-badge-icon">rocket_launch</span>
+                    <span>YOUR FINANCIAL LEAP</span>
+                </div>
+                <h2 class="leap-main-title">Progress &amp; Essentials Growth</h2>
+                <p class="leap-subtitle">
+                    Tracking how far your net worth, emergency runway, and financial independence have jumped since
+                    <strong>{{ formatDateStr(leap.startDate) }}</strong>
+                    <span class="leap-elapsed-tag">({{ leap.monthsElapsed }} {{ leap.monthsElapsed === 1 ? 'month' : 'months' }} elapsed)</span>
+                </p>
+            </div>
+            <button class="btn-edit-baseline" (click)="startEdit()" title="Customize your starting capital &amp; baseline date">
+                <span class="material-icons">history_edu</span>
+                <span>Adjust Baseline</span>
+            </button>
+        </div>
+
+        <!-- 4 Key Jump Metric Cards -->
+        <div class="leap-metrics-grid">
+            <!-- 1. Net Worth Jump -->
+            <div class="leap-stat-card">
+                <div class="stat-top">
+                    <span class="material-icons stat-icon nw-icon">account_balance</span>
+                    <span class="stat-tier-badge" [class.positive]="leap.nwJump >= 0">
+                        {{ leap.nwJump >= 0 ? '+' : '' }}{{ leap.nwGrowthPct }}% Jump
+                    </span>
+                </div>
+                <div class="stat-delta" [class.positive]="leap.nwJump >= 0" [class.negative]="leap.nwJump < 0">
+                    {{ leap.nwJump >= 0 ? '+' : '' }}{{ leap.nwJump | currency:'INR':'symbol':'1.0-0' }}
+                </div>
+                <div class="stat-origin-row">
+                    <span class="origin-item">
+                        <small>Started:</small> 
+                        <strong>{{ leap.startNW | currency:'INR':'symbol':'1.0-0' }}</strong>
+                    </span>
+                    <span class="origin-arrow">➔</span>
+                    <span class="origin-item">
+                        <small>Now:</small> 
+                        <strong>{{ leap.currentNW | currency:'INR':'symbol':'1.0-0' }}</strong>
+                    </span>
+                </div>
+                <div class="stat-caption">Net capital expansion since launch</div>
+            </div>
+
+            <!-- 2. Emergency Runway Jump -->
+            <div class="leap-stat-card">
+                <div class="stat-top">
+                    <span class="material-icons stat-icon runway-icon">shield</span>
+                    <span class="stat-tier-badge" [class.positive]="leap.runwayJump >= 0">
+                        {{ leap.runwayJump >= 0 ? '+' : '' }}{{ leap.runwayJump }} Mo Gained
+                    </span>
+                </div>
+                <div class="stat-delta" [class.positive]="leap.runwayJump >= 0" [class.negative]="leap.runwayJump < 0">
+                    {{ leap.currentRunway | number:'1.1-1' }} <span class="unit">Months</span>
+                </div>
+                <div class="stat-origin-row">
+                    <span class="origin-item">
+                        <small>Started:</small> 
+                        <strong>{{ leap.startRunway | number:'1.1-1' }}m</strong>
+                    </span>
+                    <span class="origin-arrow">➔</span>
+                    <span class="origin-item">
+                        <small>Target:</small> 
+                        <strong>{{ essentialsService.targetRunwayMonths() }}m</strong>
+                    </span>
+                </div>
+                <div class="stat-caption">Survival runway buffer extended</div>
+            </div>
+
+            <!-- 3. Financial Independence Clock -->
+            <div class="leap-stat-card">
+                <div class="stat-top">
+                    <span class="material-icons stat-icon fi-icon">hourglass_top</span>
+                    <span class="stat-tier-badge info">
+                        {{ leap.currentFiPct | number:'1.1-1' }}% of FI Target
+                    </span>
+                </div>
+                <div class="stat-delta info">
+                    {{ leap.currentFiYears === 0 ? 'FI Met!' : (leap.currentFiYears | number:'1.0-1') }} 
+                    <span class="unit">{{ leap.currentFiYears === 0 ? '' : 'Yrs to FI' }}</span>
+                </div>
+                <div class="stat-origin-row">
+                    <span class="origin-item">
+                        <small>Savings Velocity:</small> 
+                        <strong>{{ leap.currentSavingsRate }}%</strong>
+                    </span>
+                    <span class="origin-arrow">·</span>
+                    <span class="origin-item">
+                        <small>Target:</small> 
+                        <strong>{{ leap.currentStageNumber === 4 ? 'FI' : 'Stage ' + (leap.currentStageNumber + 1) }}</strong>
+                    </span>
+                </div>
+                <div class="stat-caption">Working years cutting speed</div>
+            </div>
+
+            <!-- 4. Essentials Health Score Jump -->
+            <div class="leap-stat-card">
+                <div class="stat-top">
+                    <span class="material-icons stat-icon health-icon">{{ healthStatus().icon }}</span>
+                    <span class="stat-tier-badge" [class.positive]="leap.healthJump >= 0">
+                        {{ leap.healthJump >= 0 ? '+' : '' }}{{ leap.healthJump }} Pts Leap
+                    </span>
+                </div>
+                <div class="stat-delta" [style.color]="healthStatus().color">
+                    {{ leap.currentHealth }} <span class="unit">/ 10</span>
+                </div>
+                <div class="stat-origin-row">
+                    <span class="origin-item">
+                        <small>Grade:</small> 
+                        <strong>{{ healthStatus().grade }} ({{ healthStatus().label }})</strong>
+                    </span>
+                </div>
+                <div class="stat-caption">Comprehensive resilience audit</div>
+            </div>
+        </div>
+
+        <!-- Stepped Financial Journey Milestones -->
+        <div class="journey-track-section">
+            <div class="journey-track-header">
+                <span class="journey-heading">Financial Maturity Path</span>
+                <span class="journey-status">
+                    Stage {{ leap.currentStageNumber }} of 4: 
+                    <strong>{{ leap.stages[leap.currentStageNumber - 1].title }}</strong>
+                </span>
+            </div>
+
+            <div class="journey-steps-grid">
+                @for (stage of leap.stages; track stage.id) {
+                    <div class="journey-step-node" 
+                         [class.completed]="stage.isCompleted" 
+                         [class.current]="stage.isCurrent"
+                         [class.upcoming]="!stage.isCompleted && !stage.isCurrent">
+                        <div class="node-indicator">
+                            <span class="material-icons step-icon">
+                                {{ stage.isCompleted ? 'check_circle' : stage.icon }}
+                            </span>
+                            <span class="step-num">{{ stage.id }}</span>
+                        </div>
+                        <div class="node-body">
+                            <div class="node-title-row">
+                                <span class="node-title">{{ stage.title }}</span>
+                                <span class="node-pill" [class.achieved]="stage.isCompleted">
+                                    {{ stage.isCompleted ? 'Cleared ✓' : (stage.isCurrent ? 'In Progress' : 'Upcoming') }}
+                                </span>
+                            </div>
+                            <p class="node-desc">{{ stage.desc }}</p>
+                            <span class="node-target-tag">Target: {{ stage.target }}</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
     <!-- Stats Grid -->
     <div class="essentials-grid">
         <!-- Emergency Runway -->
@@ -560,6 +719,25 @@
                         <div class="form-group">
                             <label>Active Health Insurance Cover (₹)</label>
                             <input type="number" [(ngModel)]="editData().insurance.healthCover" placeholder="e.g. 1000000" />
+                        </div>
+                    </div>
+
+                    <!-- Section: Starting Progress Baseline (The Leap Tracker) -->
+                    <div class="form-section-title">Starting Baseline (Your Journey's Origin)</div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label>
+                                Starting Capital / Net Worth (₹)
+                                <small class="text-muted">(Leave 0 to auto-calculate from earliest record)</small>
+                            </label>
+                            <input type="number" [(ngModel)]="editData().startingNetWorth" placeholder="e.g. 50000" />
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                Journey Start Date
+                                <small class="text-muted">(Leave blank for earliest snapshot date)</small>
+                            </label>
+                            <input type="date" [(ngModel)]="editData().startingDate" />
                         </div>
                     </div>
 

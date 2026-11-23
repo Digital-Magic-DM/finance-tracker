@@ -1138,6 +1138,398 @@
     }
 }
 
+// ─── Financial & Essentials Progress Leap Tracker ──────────
+.progress-leap-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md, 12px);
+    padding: 24px;
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #6366f1 0%, #3b82f6 50%, #10b981 100%);
+    }
+
+    .leap-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        .leap-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            .leap-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 3px 10px;
+                border-radius: 20px;
+                background: rgba(99, 102, 241, 0.12);
+                border: 1px solid rgba(99, 102, 241, 0.25);
+                color: var(--accent-primary, #818cf8);
+                font-size: 10.5px;
+                font-weight: 800;
+                letter-spacing: 0.8px;
+                width: fit-content;
+
+                .leap-badge-icon {
+                    font-size: 14px;
+                }
+            }
+
+            .leap-main-title {
+                font-size: 20px;
+                font-weight: 800;
+                color: var(--text-primary);
+                margin: 0;
+                letter-spacing: -0.3px;
+            }
+
+            .leap-subtitle {
+                font-size: 13px;
+                color: var(--text-muted);
+                margin: 0;
+                line-height: 1.4;
+
+                strong {
+                    color: var(--text-primary);
+                }
+
+                .leap-elapsed-tag {
+                    color: var(--accent-primary, #818cf8);
+                    font-weight: 600;
+                    margin-left: 4px;
+                }
+            }
+        }
+
+        .btn-edit-baseline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            .material-icons {
+                font-size: 16px;
+            }
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.08);
+                color: var(--text-primary);
+                border-color: var(--accent-primary, #6366f1);
+            }
+        }
+    }
+
+    // ── 4 Metrics Jump Grid ──
+    .leap-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+
+        @media (max-width: 1024px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 600px) {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .leap-stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+
+            &:hover {
+                border-color: rgba(255, 255, 255, 0.18);
+                transform: translateY(-2px);
+            }
+
+            .stat-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .stat-icon {
+                    font-size: 20px;
+
+                    &.nw-icon { color: #10b981; }
+                    &.runway-icon { color: #3b82f6; }
+                    &.fi-icon { color: #f59e0b; }
+                    &.health-icon { color: #8b5cf6; }
+                }
+
+                .stat-tier-badge {
+                    font-size: 10.5px;
+                    font-weight: 800;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    background: rgba(255, 255, 255, 0.05);
+                    color: var(--text-muted);
+
+                    &.positive {
+                        background: rgba(16, 185, 129, 0.15);
+                        color: #10b981;
+                    }
+
+                    &.info {
+                        background: rgba(59, 130, 246, 0.15);
+                        color: #3b82f6;
+                    }
+                }
+            }
+
+            .stat-delta {
+                font-size: 22px;
+                font-weight: 800;
+                letter-spacing: -0.5px;
+                color: var(--text-primary);
+                font-variant-numeric: tabular-nums;
+
+                &.positive {
+                    color: #10b981;
+                }
+
+                &.negative {
+                    color: #ef4444;
+                }
+
+                &.info {
+                    color: #3b82f6;
+                }
+
+                .unit {
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: var(--text-muted);
+                    margin-left: 2px;
+                }
+            }
+
+            .stat-origin-row {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 11.5px;
+                color: var(--text-muted);
+
+                .origin-item {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 3px;
+
+                    small {
+                        opacity: 0.7;
+                    }
+
+                    strong {
+                        color: var(--text-primary);
+                        font-weight: 700;
+                    }
+                }
+
+                .origin-arrow {
+                    color: var(--accent-primary, #6366f1);
+                    font-weight: 800;
+                    font-size: 11px;
+                }
+            }
+
+            .stat-caption {
+                font-size: 11px;
+                color: var(--text-muted);
+                opacity: 0.8;
+                margin-top: auto;
+            }
+        }
+    }
+
+    // ── Financial Journey Stepped Path ──
+    .journey-track-section {
+        background: rgba(255, 255, 255, 0.015);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        .journey-track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            .journey-heading {
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                color: var(--text-muted);
+            }
+
+            .journey-status {
+                color: var(--text-muted);
+
+                strong {
+                    color: var(--text-primary);
+                }
+            }
+        }
+
+        .journey-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+
+            @media (max-width: 1024px) {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            @media (max-width: 600px) {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .journey-step-node {
+                display: flex;
+                gap: 12px;
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 12px 14px;
+                transition: all 0.2s ease;
+
+                .node-indicator {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 2px;
+                    flex-shrink: 0;
+
+                    .step-icon {
+                        font-size: 20px;
+                        color: var(--text-muted);
+                    }
+
+                    .step-num {
+                        font-size: 10px;
+                        font-weight: 800;
+                        color: var(--text-muted);
+                        opacity: 0.6;
+                    }
+                }
+
+                .node-body {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                    flex: 1;
+                    min-width: 0;
+
+                    .node-title-row {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 6px;
+
+                        .node-title {
+                            font-size: 13px;
+                            font-weight: 700;
+                            color: var(--text-primary);
+                        }
+
+                        .node-pill {
+                            font-size: 9.5px;
+                            font-weight: 800;
+                            padding: 2px 6px;
+                            border-radius: 4px;
+                            background: rgba(255, 255, 255, 0.06);
+                            color: var(--text-muted);
+                            white-space: nowrap;
+
+                            &.achieved {
+                                background: rgba(16, 185, 129, 0.15);
+                                color: #10b981;
+                            }
+                        }
+                    }
+
+                    .node-desc {
+                        font-size: 11px;
+                        color: var(--text-muted);
+                        margin: 0;
+                        line-height: 1.35;
+                    }
+
+                    .node-target-tag {
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: var(--accent-primary, #818cf8);
+                        margin-top: 2px;
+                    }
+                }
+
+                &.completed {
+                    border-color: rgba(16, 185, 129, 0.35);
+                    background: rgba(16, 185, 129, 0.03);
+
+                    .node-indicator .step-icon {
+                        color: #10b981;
+                    }
+                }
+
+                &.current {
+                    border-color: rgba(99, 102, 241, 0.45);
+                    background: rgba(99, 102, 241, 0.05);
+                    box-shadow: 0 0 16px rgba(99, 102, 241, 0.12);
+
+                    .node-indicator .step-icon {
+                        color: var(--accent-primary, #818cf8);
+                    }
+                }
+
+                &.upcoming {
+                    opacity: 0.65;
+                }
+            }
+        }
+    }
+}
+
+
 .input-with-chips {
     display: flex;
     flex-direction: column;
@@ -1172,4 +1564,396 @@
         }
     }
 }
+
+// ─── Financial & Essentials Progress Leap Tracker ──────────
+.progress-leap-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md, 12px);
+    padding: 24px;
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #6366f1 0%, #3b82f6 50%, #10b981 100%);
+    }
+
+    .leap-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        .leap-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            .leap-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 3px 10px;
+                border-radius: 20px;
+                background: rgba(99, 102, 241, 0.12);
+                border: 1px solid rgba(99, 102, 241, 0.25);
+                color: var(--accent-primary, #818cf8);
+                font-size: 10.5px;
+                font-weight: 800;
+                letter-spacing: 0.8px;
+                width: fit-content;
+
+                .leap-badge-icon {
+                    font-size: 14px;
+                }
+            }
+
+            .leap-main-title {
+                font-size: 20px;
+                font-weight: 800;
+                color: var(--text-primary);
+                margin: 0;
+                letter-spacing: -0.3px;
+            }
+
+            .leap-subtitle {
+                font-size: 13px;
+                color: var(--text-muted);
+                margin: 0;
+                line-height: 1.4;
+
+                strong {
+                    color: var(--text-primary);
+                }
+
+                .leap-elapsed-tag {
+                    color: var(--accent-primary, #818cf8);
+                    font-weight: 600;
+                    margin-left: 4px;
+                }
+            }
+        }
+
+        .btn-edit-baseline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            .material-icons {
+                font-size: 16px;
+            }
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.08);
+                color: var(--text-primary);
+                border-color: var(--accent-primary, #6366f1);
+            }
+        }
+    }
+
+    // ── 4 Metrics Jump Grid ──
+    .leap-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+
+        @media (max-width: 1024px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 600px) {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .leap-stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+
+            &:hover {
+                border-color: rgba(255, 255, 255, 0.18);
+                transform: translateY(-2px);
+            }
+
+            .stat-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .stat-icon {
+                    font-size: 20px;
+
+                    &.nw-icon { color: #10b981; }
+                    &.runway-icon { color: #3b82f6; }
+                    &.fi-icon { color: #f59e0b; }
+                    &.health-icon { color: #8b5cf6; }
+                }
+
+                .stat-tier-badge {
+                    font-size: 10.5px;
+                    font-weight: 800;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    background: rgba(255, 255, 255, 0.05);
+                    color: var(--text-muted);
+
+                    &.positive {
+                        background: rgba(16, 185, 129, 0.15);
+                        color: #10b981;
+                    }
+
+                    &.info {
+                        background: rgba(59, 130, 246, 0.15);
+                        color: #3b82f6;
+                    }
+                }
+            }
+
+            .stat-delta {
+                font-size: 22px;
+                font-weight: 800;
+                letter-spacing: -0.5px;
+                color: var(--text-primary);
+                font-variant-numeric: tabular-nums;
+
+                &.positive {
+                    color: #10b981;
+                }
+
+                &.negative {
+                    color: #ef4444;
+                }
+
+                &.info {
+                    color: #3b82f6;
+                }
+
+                .unit {
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: var(--text-muted);
+                    margin-left: 2px;
+                }
+            }
+
+            .stat-origin-row {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 11.5px;
+                color: var(--text-muted);
+
+                .origin-item {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 3px;
+
+                    small {
+                        opacity: 0.7;
+                    }
+
+                    strong {
+                        color: var(--text-primary);
+                        font-weight: 700;
+                    }
+                }
+
+                .origin-arrow {
+                    color: var(--accent-primary, #6366f1);
+                    font-weight: 800;
+                    font-size: 11px;
+                }
+            }
+
+            .stat-caption {
+                font-size: 11px;
+                color: var(--text-muted);
+                opacity: 0.8;
+                margin-top: auto;
+            }
+        }
+    }
+
+    // ── Financial Journey Stepped Path ──
+    .journey-track-section {
+        background: rgba(255, 255, 255, 0.015);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        .journey-track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+
+            .journey-heading {
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                color: var(--text-muted);
+            }
+
+            .journey-status {
+                color: var(--text-muted);
+
+                strong {
+                    color: var(--text-primary);
+                }
+            }
+        }
+
+        .journey-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+
+            @media (max-width: 1024px) {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            @media (max-width: 600px) {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .journey-step-node {
+                display: flex;
+                gap: 12px;
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 12px 14px;
+                transition: all 0.2s ease;
+
+                .node-indicator {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 2px;
+                    flex-shrink: 0;
+
+                    .step-icon {
+                        font-size: 20px;
+                        color: var(--text-muted);
+                    }
+
+                    .step-num {
+                        font-size: 10px;
+                        font-weight: 800;
+                        color: var(--text-muted);
+                        opacity: 0.6;
+                    }
+                }
+
+                .node-body {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                    flex: 1;
+                    min-width: 0;
+
+                    .node-title-row {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 6px;
+
+                        .node-title {
+                            font-size: 13px;
+                            font-weight: 700;
+                            color: var(--text-primary);
+                        }
+
+                        .node-pill {
+                            font-size: 9.5px;
+                            font-weight: 800;
+                            padding: 2px 6px;
+                            border-radius: 4px;
+                            background: rgba(255, 255, 255, 0.06);
+                            color: var(--text-muted);
+                            white-space: nowrap;
+
+                            &.achieved {
+                                background: rgba(16, 185, 129, 0.15);
+                                color: #10b981;
+                            }
+                        }
+                    }
+
+                    .node-desc {
+                        font-size: 11px;
+                        color: var(--text-muted);
+                        margin: 0;
+                        line-height: 1.35;
+                    }
+
+                    .node-target-tag {
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: var(--accent-primary, #818cf8);
+                        margin-top: 2px;
+                    }
+                }
+
+                &.completed {
+                    border-color: rgba(16, 185, 129, 0.35);
+                    background: rgba(16, 185, 129, 0.03);
+
+                    .node-indicator .step-icon {
+                        color: #10b981;
+                    }
+                }
+
+                &.current {
+                    border-color: rgba(99, 102, 241, 0.45);
+                    background: rgba(99, 102, 241, 0.05);
+                    box-shadow: 0 0 16px rgba(99, 102, 241, 0.12);
+
+                    .node-indicator .step-icon {
+                        color: var(--accent-primary, #818cf8);
+                    }
+                }
+
+                &.upcoming {
+                    opacity: 0.65;
+                }
+            }
+        }
+    }
+}
+
 
