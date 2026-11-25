@@ -13,7 +13,7 @@ For all automated testing, manual feature verification, statement import simulat
 * `test.user@example.com`
 * `demo.portfolio@example.com`
 * `investor@example.com`
-* `tester@financetracker.dev`
+* `tester@financetracker.dev`    
 * Any custom placeholder email (e.g., `user_<random>@test.local`)
 
 ### 3. Verification & Mocking Standard

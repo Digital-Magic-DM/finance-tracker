@@ -126,7 +126,8 @@ export type NetworthGrouping = 'ALL' | 'WEEK' | 'MONTH' | 'YEAR';
             </div>
 
             <!-- Legend & Interactive Track Toggles -->
-            <div class="metric-legend-pills">
+            @if (showSummaryPills) {
+              <div class="metric-legend-pills">
                 <!-- Net Worth Pill -->
                 <button 
                     type="button"
@@ -178,7 +179,8 @@ export type NetworthGrouping = 'ALL' | 'WEEK' | 'MONTH' | 'YEAR';
                     </div>
                     <span class="material-icons toggle-icon">{{ showProfit() ? 'check' : 'add' }}</span>
                 </button>
-            </div>
+              </div>
+            }
 
             <!-- Canvas Wrapper -->
             <div class="chart-canvas-wrap" [style.height.px]="height">
@@ -412,6 +414,7 @@ export class NetworthChartComponent implements AfterViewInit, OnChanges, OnDestr
     @Input() data: NetWorthPoint[] = [];
     @Input() height = 260;
     @Input() defaultPeriod: NetworthPeriod = 'ALL';
+    @Input() showSummaryPills = true;
 
     private themeService = inject(ThemeService);
     private chart?: Chart;

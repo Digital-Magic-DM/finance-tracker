@@ -1,0 +1,410 @@
+.analysis-page-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding-bottom: 24px;
+    animation: fadeIn 0.25s ease;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+// ── Single Compact Top Header Bar ───────────────
+.analysis-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
+
+    .top-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+
+        .btn-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+
+            .back-icon {
+                font-size: 16px;
+                color: var(--text-secondary);
+                transition: transform 0.2s;
+            }
+
+            &:hover {
+                border-color: var(--text-primary);
+                background: var(--bg-card-hover, rgba(128, 128, 128, 0.08));
+
+                .back-icon {
+                    transform: translateX(-2px);
+                    color: var(--text-primary);
+                }
+            }
+        }
+
+        .title-stack {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+
+            .analysis-main-title {
+                font-size: 20px;
+                font-weight: 800;
+                color: var(--text-primary);
+                letter-spacing: -0.02em;
+                margin: 0;
+                line-height: 1.15;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .analysis-subtitle {
+                font-size: 11.5px;
+                color: var(--text-muted);
+                font-weight: 500;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+
+    .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        max-width: 100%;
+
+        .analysis-tab-switcher {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 3px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            max-width: 100%;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            .switcher-tab {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 5px 12px;
+                border-radius: 7px;
+                border: none;
+                background: transparent;
+                color: var(--text-secondary);
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.18s ease;
+                white-space: nowrap;
+                flex-shrink: 0;
+
+                .sm-icon {
+                    font-size: 15px;
+                }
+
+                &:hover:not(.active) {
+                    color: var(--text-primary);
+                    background: rgba(128, 128, 128, 0.08);
+                }
+
+                &.active {
+                    background: #00d09c;
+                    color: #000000;
+                    font-weight: 700;
+                    box-shadow: 0 2px 8px rgba(0, 208, 156, 0.25);
+
+                    .sm-icon {
+                        color: #000000;
+                    }
+                }
+            }
+        }
+
+        .visibility-btn {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+
+            .material-icons {
+                font-size: 18px;
+            }
+
+            &:hover {
+                color: var(--text-primary);
+                border-color: var(--text-secondary);
+            }
+        }
+    }
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-bottom: 12px;
+
+        .top-bar-left {
+            justify-content: flex-start;
+
+            .title-stack .analysis-main-title {
+                font-size: 18px;
+            }
+        }
+
+        .top-bar-right {
+            width: 100%;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+
+            .analysis-tab-switcher {
+                flex: 1;
+                min-width: 0;
+            }
+        }
+    }
+}
+
+// ── Main Chart Card (Full Width) ────────────────
+.analysis-chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    margin-bottom: 14px;
+    width: 100%;
+    box-sizing: border-box;
+
+    .chart-card-legends-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+
+        .legend-column {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+
+            &.right-aligned {
+                text-align: right;
+            }
+
+            .legend-tag {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+
+                .legend-indicator {
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 2px;
+                    flex-shrink: 0;
+
+                    &.purple-indicator {
+                        background: #8b5cf6;
+                    }
+
+                    &.grey-indicator {
+                        background: #94a3b8;
+                    }
+                }
+
+                .legend-tag-label {
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: var(--text-muted);
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                }
+            }
+
+            &.right-aligned .legend-tag {
+                justify-content: flex-end;
+            }
+
+            .legend-amount-val {
+                font-size: 26px;
+                font-weight: 800;
+                color: var(--text-primary);
+                font-variant-numeric: tabular-nums;
+                line-height: 1.15;
+
+                &.grey-val {
+                    color: var(--text-secondary);
+                }
+            }
+
+            .legend-return-badge {
+                font-size: 13px;
+                font-weight: 700;
+                margin-top: 2px;
+                font-variant-numeric: tabular-nums;
+
+                &.positive {
+                    color: #00d09c;
+                }
+
+                &.negative {
+                    color: #eb5b3c;
+                }
+            }
+        }
+    }
+
+    .analysis-chart-embed {
+        width: 100%;
+    }
+
+    @media (max-width: 640px) {
+        padding: 12px 14px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+
+        .chart-card-legends-row {
+            margin-bottom: 12px;
+            gap: 12px;
+
+            .legend-column {
+                .legend-amount-val {
+                    font-size: 20px;
+                }
+
+                .legend-return-badge {
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}
+
+// ── Summary Metrics Grid ────────────────────────
+.analysis-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+
+    .summary-stat-box {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        box-sizing: border-box;
+        min-width: 0;
+
+        .stat-box-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stat-box-val {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &.positive {
+                color: #00d09c;
+            }
+
+            &.negative {
+                color: #eb5b3c;
+            }
+        }
+
+        .stat-box-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &.positive {
+                color: #00d09c;
+            }
+
+            &.negative {
+                color: #eb5b3c;
+            }
+        }
+    }
+
+    @media (max-width: 860px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    @media (max-width: 480px) {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+
+        .summary-stat-box {
+            padding: 10px 12px;
+
+            .stat-box-title {
+                font-size: 10px;
+            }
+
+            .stat-box-val {
+                font-size: 14.5px;
+            }
+
+            .stat-box-sub {
+                font-size: 10px;
+            }
+        }
+    }
+}

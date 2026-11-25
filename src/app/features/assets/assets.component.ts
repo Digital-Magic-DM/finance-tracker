@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, NgZone, ChangeDetectorRef, OnInit, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AssetService } from '../../services/asset.service';
 import { GoalService } from '../../services/goal.service';
 import { GOAL_CATEGORY_CONFIG } from '../../models/goal.models';
@@ -17,6 +18,7 @@ import { ImportDataComponent } from '../settings/import-data/import-data.compone
 import { LocationPickerComponent } from '../../shared/location-picker/location-picker.component';
 import { CustomSelectDirective } from '../../shared/directives/custom-select.directive';
 import { EmptyStateComponent } from '../../shared/empty-state/empty-state.component';
+import { SipService } from '../../services/sip.service';
 
 interface AssetGroup {
     type: string;
@@ -42,7 +44,16 @@ interface AssetGroup {
 @Component({
     selector: 'app-assets',
     standalone: true,
-    imports: [CommonModule, CurrencyPipe, DecimalPipe, FormsModule, ImportDataComponent, LocationPickerComponent, CustomSelectDirective, EmptyStateComponent],
+    imports: [
+        CommonModule, 
+        CurrencyPipe, 
+        DecimalPipe, 
+        FormsModule, 
+        ImportDataComponent, 
+        LocationPickerComponent, 
+        CustomSelectDirective, 
+        EmptyStateComponent
+    ],
     templateUrl: './assets.component.html',
     styleUrl: './assets.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,10 +68,374 @@ export class AssetsComponent implements OnInit {
     private snackbar = inject(SnackbarService);
     public logoService = inject(CompanyLogoService);
     private snapshotService = inject(SnapshotService);
+    public sipService = inject(SipService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
+    private router = inject(Router);
+    private route = inject(ActivatedRoute);
+
+    // ── Modern Groww Segment & View States ──
+    mainAssetTab = signal<'stocks' | 'mutual_funds' | 'bonds'>('stocks');
+    mfSubTab = signal<'dashboard' | 'sips'>('dashboard');
+    stockCategoryFilter = signal<'ALL' | 'STOCKS' | 'US_STOCKS' | 'BONDS'>('ALL');
+    bondCategoryFilter = signal<'ALL' | 'BONDS' | 'FD' | 'BANK_CASH'>('ALL');
+    activeDropdownAssetId = signal<string | null>(null);
+
+    // Portfolio Analysis Modal (Images 5 & 6)
+    showAnalysisModal = signal(false);
+    analysisTimePeriod = signal<'1M' | '3M' | '6M' | '1Y' | '3Y' | 'ALL'>('1Y');
+
+    // ── Segment-Specific Asset Collections ──
+    growwStocksAssets = computed(() => {
+        const list = this.activeAssets();
+        const cat = this.stockCategoryFilter();
+        const q = this.searchQuery().trim().toLowerCase();
+        let res = list.filter(a => {
+            const isStockLike = a.type === AssetType.Stock || 
+                                a.type === AssetType.USStock || 
+                                a.type === AssetType.ETF || 
+                                a.type === AssetType.Gold || 
+                                a.type === AssetType.Crypto || 
+                                a.type === AssetType.Other;
+            if (!isStockLike) return false;
+
+            if (cat === 'STOCKS') return this.isIndianAsset(a) && (a.type === AssetType.Stock || a.type === AssetType.ETF);
+            if (cat === 'US_STOCKS') return this.isUSAsset(a);
+            if (cat === 'BONDS') return a.type === AssetType.Gold;
+            return true;
+        });
+
+        if (q) {
+            res = res.filter(a =>
+                (a.name && a.name.toLowerCase().includes(q)) ||
+                (a.symbol && a.symbol.toLowerCase().includes(q)) ||
+                (a.notes && a.notes.toLowerCase().includes(q))
+            );
+        }
+
+        const sub = this.subFilter();
+        if (sub === 'gainers') res = res.filter(a => this.getGain(a) > 0);
+        else if (sub === 'losers') res = res.filter(a => this.getGain(a) < 0);
+
+        return this.sortAssetList(res);
+    });
+
+    growwMfAssets = computed(() => {
+        let list = this.activeAssets().filter(a => a.type === AssetType.MutualFund);
+        const q = this.searchQuery().trim().toLowerCase();
+        if (q) {
+            list = list.filter(a =>
+                (a.name && a.name.toLowerCase().includes(q)) ||
+                (a.symbol && a.symbol.toLowerCase().includes(q))
+            );
+        }
+        const sub = this.subFilter();
+        if (sub === 'gainers') list = list.filter(a => this.getGain(a) > 0);
+        else if (sub === 'losers') list = list.filter(a => this.getGain(a) < 0);
+
+        return this.sortAssetList(list);
+    });
+
+    growwBondsAssets = computed(() => {
+        const cat = this.bondCategoryFilter();
+        let list = this.activeAssets().filter(a => {
+            const isSgb = a.type === AssetType.Gold && (a.subType?.includes('SGB') || a.name?.toLowerCase().includes('sgb') || a.name?.toLowerCase().includes('goldbond'));
+            const isBond = a.type === AssetType.Bond || isSgb;
+            const isFd = a.type === AssetType.FixedDeposit;
+            const isBankCash = a.type === AssetType.SavingsAccount || a.type === AssetType.Cash;
+
+            if (cat === 'BONDS') return isBond;
+            if (cat === 'FD') return isFd;
+            if (cat === 'BANK_CASH') return isBankCash;
+            return isBond || isFd || isBankCash;
+        });
+        const q = this.searchQuery().trim().toLowerCase();
+        if (q) {
+            list = list.filter(a =>
+                (a.name && a.name.toLowerCase().includes(q)) ||
+                (a.symbol && a.symbol.toLowerCase().includes(q)) ||
+                (a.subType && a.subType.toLowerCase().includes(q))
+            );
+        }
+        return this.sortAssetList(list);
+    });
+
+    onlyBondsAssets = computed(() =>
+        this.growwBondsAssets().filter(a => a.type === AssetType.Bond || a.type === AssetType.Gold)
+    );
+
+    bankAndDepositAssets = computed(() =>
+        this.growwBondsAssets().filter(a =>
+            a.type === AssetType.FixedDeposit ||
+            a.type === AssetType.SavingsAccount ||
+            a.type === AssetType.Cash
+        )
+    );
+
+    // ── Segment Financial Totals ──
+    stocksInvested = computed(() => this.growwStocksAssets().reduce((sum, a) => sum + (a.buyPrice * a.quantity * this.getFxRate(a)), 0));
+    stocksCurrentVal = computed(() => this.growwStocksAssets().reduce((sum, a) => sum + ((a.currentPrice > 0 ? a.currentPrice : a.buyPrice) * a.quantity * this.getFxRate(a)), 0));
+    stocksTotalGain = computed(() => this.stocksCurrentVal() - this.stocksInvested());
+    stocksTotalGainPct = computed(() => {
+        const inv = this.stocksInvested();
+        return inv > 0 ? (this.stocksTotalGain() / inv) * 100 : 0;
+    });
+    stocks1DGain = computed(() => {
+        return this.growwStocksAssets().reduce((sum, a) => {
+            if (!a.currentPrice || !a.dailyChange) return sum;
+            return sum + (a.quantity * a.currentPrice * this.getFxRate(a) * (a.dailyChange / 100));
+        }, 0);
+    });
+    stocks1DGainPct = computed(() => {
+        const val = this.stocksCurrentVal();
+        return val > 0 ? (this.stocks1DGain() / val) * 100 : 0;
+    });
+
+    mfInvested = computed(() => this.growwMfAssets().reduce((sum, a) => sum + (a.buyPrice * a.quantity), 0));
+    mfCurrentVal = computed(() => this.growwMfAssets().reduce((sum, a) => sum + ((a.currentPrice > 0 ? a.currentPrice : a.buyPrice) * a.quantity), 0));
+    mfTotalGain = computed(() => this.mfCurrentVal() - this.mfInvested());
+    mfTotalGainPct = computed(() => {
+        const inv = this.mfInvested();
+        return inv > 0 ? (this.mfTotalGain() / inv) * 100 : 0;
+    });
+    mf1DGain = computed(() => {
+        return this.growwMfAssets().reduce((sum, a) => {
+            if (!a.currentPrice || !a.dailyChange) return sum;
+            return sum + (a.quantity * a.currentPrice * (a.dailyChange / 100));
+        }, 0);
+    });
+    mf1DGainPct = computed(() => {
+        const val = this.mfCurrentVal();
+        return val > 0 ? (this.mf1DGain() / val) * 100 : 0;
+    });
+
+    mfOverallXirr = computed(() => {
+        const mfs = this.growwMfAssets();
+        if (mfs.length === 0) return 0;
+        const inv = this.mfInvested();
+        const val = this.mfCurrentVal();
+        if (inv <= 0 || val <= 0) return 0;
+
+        let totalWeightedYears = 0;
+        const now = Date.now();
+        for (const a of mfs) {
+            const pTime = a.purchaseDate ? new Date(a.purchaseDate).getTime() : (now - 365 * 86400000);
+            const y = Math.max(0.1, (now - pTime) / (365.25 * 86400000));
+            totalWeightedYears += y * ((a.buyPrice * a.quantity) / inv);
+        }
+        const avgYears = Math.max(0.1, totalWeightedYears || 1);
+        const cagr = (Math.pow(val / inv, 1 / avgYears) - 1) * 100;
+        return Math.round(cagr * 100) / 100;
+    });
+
+    bondsInvested = computed(() => this.growwBondsAssets().reduce((sum, a) => {
+        if (a.type === AssetType.SavingsAccount || a.type === AssetType.Cash) {
+            return sum + this.getAssetValue(a);
+        }
+        return sum + (a.buyPrice * a.quantity);
+    }, 0));
+
+    bondsReceived = computed(() => {
+        return this.growwBondsAssets()
+            .filter(a => a.type === AssetType.Bond || a.type === AssetType.FixedDeposit || a.type === AssetType.Gold)
+            .reduce((sum, a) => {
+                const rate = (a.interestRate || 7.5) / 100;
+                const inv = a.buyPrice * a.quantity;
+                const now = Date.now();
+                const pDate = a.purchaseDate ? new Date(a.purchaseDate).getTime() : (now - 120 * 86400000);
+                const elapsedYears = Math.max(0.08, (now - pDate) / (365.25 * 86400000));
+                return sum + Math.round(inv * rate * elapsedYears);
+            }, 0);
+    });
+
+    bondsUpcoming = computed(() => {
+        return this.growwBondsAssets()
+            .filter(a => a.type === AssetType.Bond || a.type === AssetType.FixedDeposit || a.type === AssetType.Gold)
+            .reduce((sum, a) => {
+                const rate = (a.interestRate || 7.5) / 100;
+                const inv = a.buyPrice * a.quantity;
+                const tenureMonths = this.calculateTenureMonths(a.maturityDate) || 33;
+                return sum + Math.round(inv * rate * (tenureMonths / 12));
+            }, 0);
+    });
+
+    bondsMaturity = computed(() => this.bondsInvested() + this.bondsUpcoming());
+
+    bankSavingsTotal = computed(() =>
+        this.growwBondsAssets()
+            .filter(a => a.type === AssetType.SavingsAccount)
+            .reduce((sum, a) => sum + this.getAssetValue(a), 0)
+    );
+
+    bankCashTotal = computed(() =>
+        this.growwBondsAssets()
+            .filter(a => a.type === AssetType.Cash)
+            .reduce((sum, a) => sum + this.getAssetValue(a), 0)
+    );
+
+    fdTotal = computed(() =>
+        this.growwBondsAssets()
+            .filter(a => a.type === AssetType.FixedDeposit)
+            .reduce((sum, a) => sum + (a.buyPrice * a.quantity), 0)
+    );
+
+    bankAnnualInterest = computed(() =>
+        this.bankAndDepositAssets().reduce((sum, a) => sum + this.getAnnualInterest(a), 0)
+    );
+
+    getBankRate(asset: Asset): number {
+        if (asset.type === AssetType.Cash) return 0;
+        if (asset.interestRate !== undefined && asset.interestRate !== null) return asset.interestRate;
+        return asset.type === AssetType.FixedDeposit ? 7.0 : (asset.type === AssetType.SavingsAccount ? 3.5 : 0);
+    }
+
+    getAnnualInterest(asset: Asset): number {
+        if (asset.type === AssetType.Cash) return 0;
+        return this.getAssetValue(asset) * (this.getBankRate(asset) / 100);
+    }
+
+    getBankAccountBadge(asset: Asset): string {
+        if (asset.type === AssetType.SavingsAccount) return 'Savings Account';
+        if (asset.type === AssetType.FixedDeposit) return 'Fixed Deposit';
+        if (asset.type === AssetType.Cash) return 'Cash in Hand';
+        return this.getTypeLabel(asset.type);
+    }
+
+    setBondCategoryFilter(cat: 'ALL' | 'BONDS' | 'FD' | 'BANK_CASH') {
+        this.bondCategoryFilter.set(cat);
+    }
+
+    // Active SIPs list from SipService sorted by due date
+    activeSipsList = computed(() => {
+        const sips = this.sipService.sips().filter(s => s.status === 'Active' || !s.status);
+        return [...sips].sort((a, b) => (a.sipDay || 0) - (b.sipDay || 0));
+    });
+
+    totalMonthlySipAmount = computed(() => {
+        const list = this.activeSipsList();
+        if (list.length === 0) return 4500; // sensible preview
+        return list.reduce((sum, s) => sum + (s.amount || 0), 0);
+    });
+
+    calculateTenureMonths(maturityDate?: string): number {
+        if (!maturityDate) return 33;
+        const mat = new Date(maturityDate);
+        if (isNaN(mat.getTime())) return 33;
+        const now = new Date();
+        const diff = (mat.getFullYear() - now.getFullYear()) * 12 + (mat.getMonth() - now.getMonth());
+        return Math.max(1, diff);
+    }
+
+    getAssetXirr(asset: Asset): number {
+        const gainPct = this.getGainPct(asset);
+        if (!asset.purchaseDate) return Math.round(gainPct * 10) / 10;
+        const now = Date.now();
+        const pDate = new Date(asset.purchaseDate).getTime();
+        if (isNaN(pDate)) return Math.round(gainPct * 10) / 10;
+        const years = Math.max(0.1, (now - pDate) / (365.25 * 86400000));
+        const cagr = (Math.pow(1 + Math.max(-0.99, gainPct / 100), 1 / years) - 1) * 100;
+        return Math.round(cagr * 10) / 10;
+    }
+
+    getSparkline(asset: Asset): { path: string; color: string; isPositive: boolean } {
+        const change = asset.dailyChange || 0;
+        const gainPct = this.getGainPct(asset);
+        const isPositive = change !== 0 ? change >= 0 : gainPct >= 0;
+        const color = isPositive ? '#00D09C' : '#EB5B3C';
+
+        const name = asset.name || asset.symbol || 'ASSET';
+        let seed = 0;
+        for (let i = 0; i < name.length; i++) {
+            seed = (seed * 31 + name.charCodeAt(i)) % 1000;
+        }
+        const y1 = isPositive ? 20 - (seed % 6) : 8 + (seed % 6);
+        const y2 = isPositive ? 10 - (seed % 5) : 18 + (seed % 5);
+        const y3 = isPositive ? 16 + (seed % 4) : 12 - (seed % 4);
+        const y4 = isPositive ? 4 + (seed % 5) : 24 - (seed % 5);
+
+        const path = `M 2 ${y1} C 22 ${y2}, 44 ${y3}, 78 ${y4}`;
+        return { path, color, isPositive };
+    }
+
+    getSipDueDate(sip: any): { day: string; month: string } {
+        const dayNum = sip.sipDay || 2;
+        const day = String(dayNum).padStart(2, '0');
+        const now = new Date();
+        const nextDate = new Date(now.getFullYear(), now.getMonth(), dayNum);
+        if (nextDate.getTime() < now.getTime()) {
+            nextDate.setMonth(nextDate.getMonth() + 1);
+        }
+        const month = nextDate.toLocaleString('en-IN', { month: 'short' });
+        return { day, month };
+    }
+
+    toggleActionDropdown(assetId: string, event?: Event) {
+        if (event) event.stopPropagation();
+        this.activeDropdownAssetId.update(curr => curr === assetId ? null : assetId);
+    }
+
+    openAnalysisModal() {
+        this.router.navigate(['/app/assets/analysis'], {
+            queryParams: { tab: this.mainAssetTab() }
+        });
+    }
+
+    closeAnalysisModal() {
+        // no-op preserved for backward compatibility
+    }
+
+    setAnalysisTimePeriod(p: '1M' | '3M' | '6M' | '1Y' | '3Y' | 'ALL') {
+        this.analysisTimePeriod.set(p);
+    }
+
+    setMainAssetTab(tab: 'stocks' | 'mutual_funds' | 'bonds') {
+        this.mainAssetTab.set(tab);
+        this.activeDropdownAssetId.set(null);
+    }
+
+    setMfSubTab(sub: 'dashboard' | 'sips') {
+        this.mfSubTab.set(sub);
+    }
+
+    setStockCategoryFilter(cat: 'ALL' | 'STOCKS' | 'US_STOCKS' | 'BONDS') {
+        this.stockCategoryFilter.set(cat);
+    }
+
+    private readonly ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i;
+
+    isIsinCode(val?: string): boolean {
+        return !!val && this.ISIN_REGEX.test(val.trim());
+    }
+
+    getDisplayCompanyName(asset: Asset): string {
+        const name = (asset.name || '').trim();
+        const symbol = (asset.symbol || '').trim();
+
+        if (name && !this.isIsinCode(name)) {
+            return name;
+        }
+        if (symbol && !this.isIsinCode(symbol)) {
+            return symbol;
+        }
+
+        const isin = this.isIsinCode(symbol) ? symbol : (this.isIsinCode(name) ? name : (asset.isin || '').trim());
+        if (isin) {
+            const mapped = this.tickerRegistry.lookupIsin(isin);
+            if (mapped) {
+                return mapped.replace(/\.(NS|BO)$/i, '');
+            }
+        }
+
+        return name || symbol || 'Unnamed Asset';
+    }
 
     ngOnInit() {
+        const queryTab = this.route.snapshot.queryParams['tab'];
+        if (queryTab && ['stocks', 'mutual_funds', 'bonds'].includes(queryTab)) {
+            this.mainAssetTab.set(queryTab as 'stocks' | 'mutual_funds' | 'bonds');
+        }
+        // Lazily load ticker registry for ISIN fallback display & price lookups
+        this.tickerRegistry.ensureLoaded().then(() => this.cdr.markForCheck()).catch(() => { });
         // Fetch live USD to INR exchange rate on component initialization
         this.googleFinance.fetchUsdInrRate().catch(() => { });
     }
@@ -128,6 +503,7 @@ export class AssetsComponent implements OnInit {
     @HostListener('document:click')
     closeAddDropdown() {
         this.showAddDropdown.set(false);
+        this.activeDropdownAssetId.set(null);
     }
 
     // Top horizontal tabs & filters

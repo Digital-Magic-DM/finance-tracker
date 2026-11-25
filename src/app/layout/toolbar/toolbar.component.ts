@@ -43,6 +43,9 @@ export class ToolbarComponent {
             filter((e) => e instanceof NavigationEnd),
             map(() => {
                 const urlWithoutQuery = this.router.url.split('?')[0];
+                if (urlWithoutQuery.includes('assets/analysis')) {
+                    return 'Portfolio Analysis';
+                }
                 const parts = urlWithoutQuery.split('/');
                 const url = parts[2] || parts[1] || 'dashboard';
                 // Handle complex routes like market-dashboard -> Market

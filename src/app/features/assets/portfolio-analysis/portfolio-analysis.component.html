@@ -1,0 +1,136 @@
+<div class="analysis-page-container">
+  <!-- Single Compact Top Bar: Back + Title + Segment Switcher + Visibility -->
+  <div class="analysis-top-bar">
+    <div class="top-bar-left">
+      <button type="button" class="btn-back-link" (click)="goBack()" title="Back to Holdings">
+        <span class="material-icons back-icon">arrow_back</span>
+        <span class="back-text">Holdings</span>
+      </button>
+
+      <div class="title-stack">
+        <h1 class="analysis-main-title">{{ pageTitle() }}</h1>
+        <span class="analysis-subtitle">Computed as of previous trading day</span>
+      </div>
+    </div>
+
+    <div class="top-bar-right">
+      <div class="analysis-tab-switcher" role="tablist" aria-label="Portfolio Segment Switcher">
+        <button 
+          type="button" 
+          class="switcher-tab" 
+          [class.active]="activeTab() === 'stocks'" 
+          (click)="setTab('stocks')" 
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'stocks'">
+          <span class="material-icons sm-icon">show_chart</span>
+          <span class="tab-txt">Stocks</span>
+        </button>
+        <button 
+          type="button" 
+          class="switcher-tab" 
+          [class.active]="activeTab() === 'mutual_funds'" 
+          (click)="setTab('mutual_funds')" 
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'mutual_funds'">
+          <span class="material-icons sm-icon">pie_chart</span>
+          <span class="tab-txt">Mutual Funds</span>
+        </button>
+        <button 
+          type="button" 
+          class="switcher-tab" 
+          [class.active]="activeTab() === 'bonds'" 
+          (click)="setTab('bonds')" 
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'bonds'">
+          <span class="material-icons sm-icon">account_balance</span>
+          <span class="tab-txt">Bonds &amp; Fixed</span>
+        </button>
+        <button 
+          type="button" 
+          class="switcher-tab" 
+          [class.active]="activeTab() === 'all'" 
+          (click)="setTab('all')" 
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'all'">
+          <span class="material-icons sm-icon">account_balance_wallet</span>
+          <span class="tab-txt">All Holdings</span>
+        </button>
+      </div>
+
+      <button class="btn-icon visibility-btn" (click)="toggleHideAmounts()" title="{{ hideAmounts() ? 'Show amounts' : 'Hide amounts' }}">
+        <span class="material-icons">{{ hideAmounts() ? 'visibility_off' : 'visibility' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Full-Width Groww-style Dual Indicator Chart Card -->
+  <div class="analysis-chart-card">
+    <div class="chart-card-legends-row">
+      <div class="legend-column">
+        <div class="legend-tag">
+          <span class="legend-indicator purple-indicator"></span>
+          <span class="legend-tag-label">Current</span>
+        </div>
+        <div class="legend-amount-val">
+          ₹{{ hideAmounts() ? '••••••' : (currentValue() | number:'1.2-2') }}
+        </div>
+        <div class="legend-return-badge" [class.positive]="totalGain() >= 0" [class.negative]="totalGain() < 0">
+          {{ totalGain() >= 0 ? '+' : '' }}₹{{ hideAmounts() ? '••••••' : (totalGain() | number:'1.2-2') }}
+          ({{ totalGainPct() >= 0 ? '+' : '' }}{{ totalGainPct() | number:'1.2-2' }}%) All time
+        </div>
+      </div>
+
+      <div class="legend-column right-aligned">
+        <div class="legend-tag">
+          <span class="legend-indicator grey-indicator"></span>
+          <span class="legend-tag-label">Invested</span>
+        </div>
+        <div class="legend-amount-val grey-val">
+          ₹{{ hideAmounts() ? '••••••' : (investedValue() | number:'1.2-2') }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Dual Line Chart Embed -->
+    <div class="analysis-chart-embed">
+      <app-networth-chart [data]="chartPoints()" [height]="380" [showSummaryPills]="false" />
+    </div>
+  </div>
+
+  <!-- Holdings & Allocation Breakdown Stats -->
+  <div class="analysis-summary-grid">
+    <div class="summary-stat-box">
+      <span class="stat-box-title">Total Returns</span>
+      <span class="stat-box-val" [class.positive]="totalGain() >= 0" [class.negative]="totalGain() < 0">
+        {{ totalGain() >= 0 ? '+' : '' }}₹{{ hideAmounts() ? '••••••' : (totalGain() | number:'1.2-2') }}
+      </span>
+      <span class="stat-box-sub" [class.positive]="totalGainPct() >= 0" [class.negative]="totalGainPct() < 0">
+        {{ totalGainPct() >= 0 ? '+' : '' }}{{ totalGainPct() | number:'1.2-2' }}% overall
+      </span>
+    </div>
+
+    <div class="summary-stat-box">
+      <span class="stat-box-title">1D Day Change</span>
+      <span class="stat-box-val" [class.positive]="dayGain() >= 0" [class.negative]="dayGain() < 0">
+        {{ dayGain() >= 0 ? '+' : '' }}₹{{ hideAmounts() ? '••••••' : (dayGain() | number:'1.2-2') }}
+      </span>
+      <span class="stat-box-sub" [class.positive]="dayGainPct() >= 0" [class.negative]="dayGainPct() < 0">
+        {{ dayGainPct() >= 0 ? '+' : '' }}{{ dayGainPct() | number:'1.2-2' }}% today
+      </span>
+    </div>
+
+    <div class="summary-stat-box">
+      <span class="stat-box-title">Active Holdings</span>
+      <span class="stat-box-val text-primary">{{ filteredAssets().length }}</span>
+      <span class="stat-box-sub">Assets in segment</span>
+    </div>
+
+    <div class="summary-stat-box">
+      <span class="stat-box-title">Portfolio Weight</span>
+      <span class="stat-box-val text-primary">
+        {{ assets().length > 0 ? ((filteredAssets().length / assets().length) * 100 | number:'1.0-0') : 100 }}%
+      </span>
+      <span class="stat-box-sub">Of total tracked</span>
+    </div>
+  </div>
+</div>

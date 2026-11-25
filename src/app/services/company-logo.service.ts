@@ -92,8 +92,17 @@ export class CompanyLogoService {
     });
   }
 
+  private resolveIsin(asset: Partial<Asset>): string {
+    const explicit = (asset.isin || '').toUpperCase().trim();
+    if (explicit) return explicit;
+    const sym = (asset.symbol || '').toUpperCase().trim();
+    if (/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(sym)) return sym;
+    const notesMatch = (asset.notes || '').match(/\b(IN[A-Z0-9]{9}[0-9])\b/i);
+    return notesMatch ? notesMatch[1].toUpperCase() : '';
+  }
+
   getLogoKey(asset: Partial<Asset>): string {
-    return (asset.isin || asset.symbol || asset.name || '').toUpperCase().trim();
+    return (this.resolveIsin(asset) || asset.symbol || asset.name || '').toUpperCase().trim();
   }
 
   getLogoUrl(asset: Partial<Asset>): string | null {
@@ -102,7 +111,7 @@ export class CompanyLogoService {
 
     const name = (asset.name || '').toLowerCase();
     const type = asset.type;
-    const isin = (asset.isin || '').toUpperCase().trim();
+    const isin = this.resolveIsin(asset);
 
     // 0. Non-market assets or Government Sovereign Gold Bonds bypass directly to styled vector fallbacks
     if (
@@ -177,7 +186,7 @@ export class CompanyLogoService {
   getFallback(asset: Partial<Asset>): LogoFallback {
     const name = (asset.name || '').toLowerCase();
     const type = asset.type;
-    const isin = (asset.isin || '').toUpperCase().trim();
+    const isin = this.resolveIsin(asset);
 
     // Gold / Sovereign Gold Bond
     if (type === AssetType.Gold || name.includes('gold') || name.includes('sgb') || isin.startsWith('IN00')) {
